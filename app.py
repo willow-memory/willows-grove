@@ -13,6 +13,11 @@ from textual.binding import Binding
 from textual.widgets import Footer, Header, TabbedContent, TabPane
 
 from panes.overview  import OverviewPane
+from panes.chat      import ChatPane
+from panes.tasks     import TasksPane
+from panes.agents    import AgentsPane
+from panes.routing   import RoutingPane
+from panes.knowledge import KnowledgePane
 from panes.providers import ProvidersPane
 from panes.skills    import SkillsPane
 from panes.health    import HealthPane
@@ -42,7 +47,8 @@ class WillowGrove(App):
         text-style: bold;
     }
 
-    #overview-title, #sysinfo-title, #prov-title,
+    #overview-title, #sysinfo-title, #tasks-title, #agents-title,
+    #routing-title, #kb-title, #prov-title,
     #skills-title, #health-title, #logs-title {
         color: #58a6ff;
         padding: 1 2;
@@ -74,11 +80,40 @@ class WillowGrove(App):
         height: 1fr;
         border: round #30363d;
     }
+
+    ChatPane #channel-sidebar {
+        width: 26;
+        background: #161b22;
+        border-right: solid #30363d;
+    }
+
+    ChatPane #sidebar-label {
+        padding: 1 1 0 1;
+        color: #8b949e;
+        text-style: bold;
+    }
+
+    ChatPane #channel-title {
+        background: #161b22;
+        color: #58a6ff;
+        border-bottom: solid #30363d;
+    }
+
+    ChatPane #msg-log {
+        height: 1fr;
+        padding: 1 2;
+    }
     """
 
     BINDINGS = [
         Binding("q", "quit",    "Quit"),
         Binding("r", "refresh", "Refresh"),
+        Binding("1", "switch_tab('tab-overview')",  "Overview",  show=False),
+        Binding("2", "switch_tab('tab-chat')",      "Chat",      show=False),
+        Binding("3", "switch_tab('tab-tasks')",     "Tasks",     show=False),
+        Binding("4", "switch_tab('tab-agents')",    "Agents",    show=False),
+        Binding("5", "switch_tab('tab-routing')",   "Routing",   show=False),
+        Binding("6", "switch_tab('tab-knowledge')", "Knowledge", show=False),
     ]
 
     TITLE     = "Willow Grove"
@@ -89,6 +124,16 @@ class WillowGrove(App):
         with TabbedContent():
             with TabPane("Overview",  id="tab-overview"):
                 yield OverviewPane(id="overview-pane")
+            with TabPane("Chat",      id="tab-chat"):
+                yield ChatPane(id="chat-pane")
+            with TabPane("Tasks",     id="tab-tasks"):
+                yield TasksPane(id="tasks-pane")
+            with TabPane("Agents",    id="tab-agents"):
+                yield AgentsPane(id="agents-pane")
+            with TabPane("Routing",   id="tab-routing"):
+                yield RoutingPane(id="routing-pane")
+            with TabPane("Knowledge", id="tab-knowledge"):
+                yield KnowledgePane(id="knowledge-pane")
             with TabPane("Providers", id="tab-providers"):
                 yield ProvidersPane(id="providers-pane")
             with TabPane("Skills",    id="tab-skills"):
@@ -118,6 +163,12 @@ class WillowGrove(App):
     def action_refresh(self) -> None:
         self._do_refresh()
         self.notify("Refreshed")
+
+    def action_switch_tab(self, tab_id: str) -> None:
+        try:
+            self.query_one(TabbedContent).active = tab_id
+        except Exception:
+            pass
 
 
 if __name__ == "__main__":
