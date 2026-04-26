@@ -91,13 +91,13 @@ class WillowHero(Static):
 
     def on_mount(self) -> None:
         self.set_interval(0.18, self._tick)
-        self._render()
+        self._redraw()
 
     def _tick(self) -> None:
         self._pose, self._frame = advance_frame(self._pose, self._frame)
-        self._render()
+        self._redraw()
 
-    def _render(self) -> None:
+    def _redraw(self) -> None:
         branch = render_frame(self._pose, self._frame)
         lines  = _SCENE_TOP + [f"    {branch}"] + _SCENE_BOTTOM
         self.update("\n".join(lines))
