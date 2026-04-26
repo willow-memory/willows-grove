@@ -23,6 +23,8 @@ from textual.widgets import (
 )
 from textual import work
 
+from widgets.status_row import StatusRow
+
 # ── Paths ──────────────────────────────────────────────────────────────────────
 WILLOW_ROOT = Path(os.environ.get("WILLOW_ROOT", Path.home() / "github" / "willow-1.9"))
 WILLOW_STORE = Path(os.environ.get("WILLOW_STORE_ROOT", Path.home() / ".willow" / "store"))
@@ -147,25 +149,6 @@ def _tail_log(lines: int = 50) -> list[str]:
         return logs[0].read_text().splitlines()[-lines:]
     except Exception as e:
         return [f"Log read error: {e}"]
-
-
-# ── Status widget ──────────────────────────────────────────────────────────────
-
-class StatusRow(Static):
-    """One-line status indicator: [●] label  value"""
-
-    def __init__(self, label: str, **kwargs):
-        super().__init__(**kwargs)
-        self._label = label
-        self._value = "…"
-        self._ok: bool | None = None
-
-    def set_status(self, ok: bool | None, value: str) -> None:
-        self._ok = ok
-        self._value = value
-        color = "green" if ok else ("red" if ok is False else "yellow")
-        dot = "●" if ok else ("○" if ok is False else "◌")
-        self.update(f"[{color}]{dot}[/] [bold]{self._label}[/]  {value}")
 
 
 # ── Overview tab ───────────────────────────────────────────────────────────────
