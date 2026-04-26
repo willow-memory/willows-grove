@@ -1,0 +1,52 @@
+{
+  "app_id": "willow-grove",
+  "name": "Willow Grove",
+  "version": "1.9.0",
+  "safe_version": ">=2.0.0",
+  "b17": "WGRV1",
+  "agent_type": "infra",
+  "description": "Sovereign workspace — unified dashboard, messaging, and agent coordination for the Willow system",
+  "author": "Sean Campbell",
+  "data_streams": [
+    {
+      "id": "grove_channels",
+      "purpose": "Agent and human messaging via Grove channels",
+      "retention": "persistent",
+      "description": "Postgres grove.channels + grove.messages"
+    },
+    {
+      "id": "dm_conversations",
+      "purpose": "Encrypted human-to-human direct messages via u2u",
+      "retention": "persistent",
+      "description": "End-to-end encrypted, local-only"
+    },
+    {
+      "id": "system_stats",
+      "purpose": "Live read of Postgres, Ollama, SAFE manifests, Kart queue",
+      "retention": "none",
+      "description": "Read-only, never persisted"
+    },
+    {
+      "id": "session_context",
+      "purpose": "Active session chat context for agent chat panel",
+      "retention": "session",
+      "description": "Cleared on exit"
+    }
+  ],
+  "permissions": [
+    "local_llm",
+    "cloud_llm_free",
+    "postgres_read",
+    "postgres_write",
+    "store_read",
+    "store_write",
+    "safe_manifest_read",
+    "lan_listen",
+    "lan_send"
+  ],
+  "privacy_tier": "local_only",
+  "local_processing": 1.0,
+  "entry_point": "app.py",
+  "license": "MIT",
+  "repository": "https://github.com/rudi193-cmd/safe-app-willow-grove"
+}
