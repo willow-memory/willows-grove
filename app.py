@@ -7,30 +7,26 @@ Run: python3 app.py
 """
 import json
 import os
-import re
-import sys
 import urllib.request
-from datetime import datetime, timezone
 from pathlib import Path
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.containers import Container, Horizontal, Vertical, ScrollableContainer
-from textual.reactive import reactive
+from textual.containers import Container
 from textual.widgets import (
     DataTable, Footer, Header, Label, Log,
     Static, TabbedContent, TabPane,
 )
-from textual import work
 
 from widgets.status_row import StatusRow
+from panes.providers import ProvidersPane
+from panes.skills    import SkillsPane
+from panes.health    import HealthPane
+from panes.logs      import LogsPane
 
 # ── Paths ──────────────────────────────────────────────────────────────────────
-WILLOW_ROOT = Path(os.environ.get("WILLOW_ROOT", Path.home() / "github" / "willow-1.9"))
-WILLOW_STORE = Path(os.environ.get("WILLOW_STORE_ROOT", Path.home() / ".willow" / "store"))
-WILLOW_LOGS = Path.home() / ".willow" / "logs"
+WILLOW_ROOT    = Path(os.environ.get("WILLOW_ROOT", Path.home() / "github" / "willow-1.9"))
 SESSION_ANCHOR = Path.home() / ".willow" / "session_anchor.json"
-SKILLS_DIR = WILLOW_ROOT / "willow" / "fylgja" / "skills"
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -94,63 +90,6 @@ def _last_handoff() -> str:
         return "—"
 
 
-def _read_providers() -> list[dict]:
-    col_dir = WILLOW_STORE / "willow" / "providers"
-    if not col_dir.exists():
-        return []
-    providers = []
-    try:
-        import sqlite3
-        db = col_dir / "store.db"
-        if db.exists():
-            conn = sqlite3.connect(str(db), check_same_thread=False)
-            rows = conn.execute(
-                "SELECT data FROM records WHERE deleted = 0"
-            ).fetchall()
-            conn.close()
-            for row in rows:
-                try:
-                    providers.append(json.loads(row[0]))
-                except Exception:
-                    pass
-    except Exception:
-        pass
-    return providers
-
-
-def _read_skills() -> list[dict]:
-    skills = []
-    if not SKILLS_DIR.exists():
-        return skills
-    for path in sorted(SKILLS_DIR.glob("*.md")):
-        name = path.stem
-        description = ""
-        try:
-            text = path.read_text()
-            in_front = False
-            for line in text.splitlines():
-                if line.strip() == "---":
-                    in_front = not in_front
-                    continue
-                if in_front and line.startswith("description:"):
-                    description = line[len("description:"):].strip().strip('"')
-                    break
-        except Exception:
-            pass
-        skills.append({"name": name, "description": description, "path": str(path)})
-    return skills
-
-
-def _tail_log(lines: int = 50) -> list[str]:
-    try:
-        logs = sorted(WILLOW_LOGS.glob("*.log"), key=lambda p: p.stat().st_mtime, reverse=True)
-        if not logs:
-            return ["No log files found in ~/.willow/logs/"]
-        return logs[0].read_text().splitlines()[-lines:]
-    except Exception as e:
-        return [f"Log read error: {e}"]
-
-
 # ── Overview tab ───────────────────────────────────────────────────────────────
 
 class OverviewPane(Container):
@@ -181,128 +120,6 @@ class OverviewPane(Container):
         )
         handoff = _last_handoff()
         self.query_one("#stat-handoff", StatusRow).set_status(None, handoff)
-
-
-# ── Providers tab ──────────────────────────────────────────────────────────────
-
-class ProvidersPane(Container):
-    BINDINGS = [
-        Binding("e", "enable_selected", "Enable"),
-        Binding("d", "disable_selected", "Disable"),
-    ]
-
-    def compose(self) -> ComposeResult:
-        yield Label("  Providers  (e=enable  d=disable)", id="prov-title")
-        table = DataTable(id="prov-table", cursor_type="row")
-        table.add_columns("Provider", "Status", "Type", "Models")
-        yield table
-
-    def refresh_data(self) -> None:
-        table = self.query_one("#prov-table", DataTable)
-        table.clear()
-        providers = _read_providers()
-        if not providers:
-            table.add_row("No provider data", "run willow providers list", "", "")
-            return
-        for p in providers:
-            status = "[green]ON[/]" if p.get("enabled") else "[red]OFF[/]"
-            ptype = "local" if p.get("local") else "cloud"
-            models = ", ".join(p.get("models", [])[:2])
-            table.add_row(p["name"], status, ptype, models)
-
-    def action_enable_selected(self) -> None:
-        table = self.query_one("#prov-table", DataTable)
-        row = table.cursor_row
-        if row < 0:
-            return
-        name = str(table.get_cell_at((row, 0)))
-        os.system(f"willow providers enable {name} &")
-        self.refresh_data()
-
-    def action_disable_selected(self) -> None:
-        table = self.query_one("#prov-table", DataTable)
-        row = table.cursor_row
-        if row < 0:
-            return
-        name = str(table.get_cell_at((row, 0)))
-        if name == "ollama":
-            self.app.notify("Ollama cannot be disabled — it's the default provider.", severity="warning")
-            return
-        os.system(f"willow providers disable {name} &")
-        self.refresh_data()
-
-
-# ── Skills tab ─────────────────────────────────────────────────────────────────
-
-class SkillsPane(Container):
-    def compose(self) -> ComposeResult:
-        yield Label(f"  Skills — {SKILLS_DIR}", id="skills-title")
-        table = DataTable(id="skills-table", cursor_type="row")
-        table.add_columns("Name", "Description")
-        yield table
-        yield Static("", id="skill-detail")
-
-    def refresh_data(self) -> None:
-        table = self.query_one("#skills-table", DataTable)
-        table.clear()
-        for s in _read_skills():
-            desc = s["description"][:80] + "…" if len(s["description"]) > 80 else s["description"]
-            table.add_row(s["name"], desc)
-
-    def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
-        skills = _read_skills()
-        if event.cursor_row < len(skills):
-            skill = skills[event.cursor_row]
-            try:
-                content = Path(skill["path"]).read_text()[:500]
-            except Exception:
-                content = "(unreadable)"
-            self.query_one("#skill-detail", Static).update(
-                f"\n[bold]{skill['name']}[/]\n{skill['description']}\n\n{content}"
-            )
-
-
-# ── Health tab ─────────────────────────────────────────────────────────────────
-
-class HealthPane(Container):
-    BINDINGS = [Binding("r", "run_health", "Run boot check")]
-
-    def compose(self) -> ComposeResult:
-        yield Label("  Health  (r=run boot check)", id="health-title")
-        yield Log(id="health-log", auto_scroll=True)
-
-    def action_run_health(self) -> None:
-        log = self.query_one("#health-log", Log)
-        log.clear()
-        log.write_line("Running willow health boot…")
-        script = WILLOW_ROOT / "willow" / "fylgja" / "skills" / "scripts" / "system_health.py"
-        import subprocess
-        try:
-            result = subprocess.run(
-                ["python3", str(script), "--check", "boot",
-                 "--willow-dir", str(Path.home() / ".willow"),
-                 "--repo", str(WILLOW_ROOT)],
-                capture_output=True, text=True, timeout=30
-            )
-            for line in (result.stdout + result.stderr).splitlines():
-                color = "green" if "HEALTHY" in line else ("red" if "CRITICAL" in line else ("yellow" if "WARN" in line else ""))
-                log.write_line(f"[{color}]{line}[/]" if color else line)
-        except Exception as e:
-            log.write_line(f"[red]Error: {e}[/]")
-
-
-# ── Logs tab ───────────────────────────────────────────────────────────────────
-
-class LogsPane(Container):
-    def compose(self) -> ComposeResult:
-        yield Label("  Logs — ~/.willow/logs/ (most recent)", id="logs-title")
-        yield Log(id="log-view", auto_scroll=True)
-
-    def refresh_data(self) -> None:
-        log = self.query_one("#log-view", Log)
-        log.clear()
-        for line in _tail_log(80):
-            log.write_line(line)
 
 
 # ── Main app ───────────────────────────────────────────────────────────────────
