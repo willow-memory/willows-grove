@@ -25,6 +25,10 @@ class LogsPane(Container):
         yield Label("  Logs — ~/.willow/logs/ (most recent)", id="logs-title")
         yield Log(id="log-view", auto_scroll=True)
 
+    def on_mount(self) -> None:
+        self.set_interval(30, self.refresh_data)
+        self.refresh_data()
+
     def refresh_data(self) -> None:
         log = self.query_one("#log-view", Log)
         log.clear()
