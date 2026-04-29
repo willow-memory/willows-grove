@@ -97,9 +97,9 @@ class TasksPane(Container):
             done = bp.get("atoms_done", 0)
             total = bp.get("total", 0)
             eta  = bp.get("eta_human", "?")
-            rate = bp.get("rate_per_sec", 0)
+            rate = bp.get("rate_recent") or bp.get("rate_per_sec", 0)
             updated = str(bp.get("updated_at", ""))[:16]
-            cmd = f"embed_backfill  {pct:.1f}%  {done:,}/{total:,}  {rate:.1f}/s  ETA {eta}"
+            cmd = f"embed_backfill  {pct:.1f}%  {done:,}/{total:,}  {rate:.2f}/s  ETA {eta}"
             table.add_row("BACKFILL", "[yellow]running[/]", cmd, updated)
 
         for row in data["rows"]:

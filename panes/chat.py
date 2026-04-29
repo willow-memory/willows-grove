@@ -124,6 +124,7 @@ class ChatPane(Container):
         self._active_channel: str  = ""
         self._channels: list[dict] = []
         self._cursors:  dict       = {}
+        self._cursors_initialized  = False
         self._listening            = False
 
     def compose(self):
@@ -144,11 +145,13 @@ class ChatPane(Container):
         try:
             channels = grove_reader.grove_channels(last_seen_ids=self._cursors)
             self._channels = sort_channels(channels)
-            # Initialize read cursors for channels seen for the first time so
-            # their full history doesn't count as unread.
-            for ch in self._channels:
-                if ch["name"] not in self._cursors:
+            # On first poll only: initialize cursors for existing channels to
+            # max_id so their full history doesn't count as unread. Channels
+            # that appear after launch start at 0 so no messages are missed.
+            if not self._cursors_initialized:
+                for ch in self._channels:
                     self._cursors[ch["name"]] = ch.get("max_id", 0)
+                self._cursors_initialized = True
             lst = self.query_one("#channel-list", ListView)
             lst.clear()
             for ch in self._channels:
@@ -165,19 +168,37 @@ class ChatPane(Container):
             conn = _pg_conn()
             conn.autocommit = True
             cur  = conn.cursor()
+            # Cache channel_id → name
+            cur.execute("SELECT id, name FROM grove.channels WHERE is_archived = FALSE")
+            ch_map = {row[0]: row[1] for row in cur.fetchall()}
             cur.execute("LISTEN grove_channel")
             while self._listening:
                 if select.select([conn], [], [], 1.0)[0]:
                     conn.poll()
+                    notified_channels: set[str] = set()
                     while conn.notifies:
-                        conn.notifies.pop(0)
-                        self.app.call_from_thread(self._on_notify)
+                        n = conn.notifies.pop(0)
+                        try:
+                            ch_id = int(n.payload)
+                            if ch_id not in ch_map:
+                                cur.execute("SELECT id, name FROM grove.channels WHERE is_archived = FALSE")
+                                ch_map = {row[0]: row[1] for row in cur.fetchall()}
+                            name = ch_map.get(ch_id)
+                            if name:
+                                notified_channels.add(name)
+                        except (ValueError, TypeError):
+                            pass
+                    if notified_channels:
+                        self.app.call_from_thread(self._on_notify, notified_channels)
         except Exception:
             pass
 
-    def _on_notify(self) -> None:
-        if self._active_channel:
+    def _on_notify(self, notified_channels: set[str]) -> None:
+        if self._active_channel in notified_channels:
             self._load_messages(self._active_channel)
+        # Refresh sidebar badges if any non-active channel got new messages
+        if notified_channels - {self._active_channel}:
+            self._poll()
 
     def _open_channel(self, name: str) -> None:
         self._active_channel = name

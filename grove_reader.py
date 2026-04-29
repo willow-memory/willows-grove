@@ -73,20 +73,21 @@ def grove_channels(conn=None, last_seen_ids: dict | None = None) -> list[dict]:
         cur = conn.cursor()
         cur.execute(
             "SELECT id, name FROM grove.channels "
-            "WHERE is_deleted = 0 OR is_deleted IS NULL ORDER BY id"
+            "WHERE is_archived = FALSE ORDER BY id"
         )
         channels = cur.fetchall()
         result = []
         for ch_id, name in channels:
             last_id = last_seen_ids.get(name, 0)
             cur.execute(
-                "SELECT COUNT(*) FROM grove.messages "
-                "WHERE channel_id = %s AND id > %s AND is_deleted = 0",
-                (ch_id, last_id),
+                "SELECT COUNT(*) FILTER (WHERE id > %s), COALESCE(MAX(id), 0) "
+                "FROM grove.messages WHERE channel_id = %s AND is_deleted = 0",
+                (last_id, ch_id),
             )
             row = cur.fetchone()
             unread = row[0] if row else 0
-            result.append({"id": ch_id, "name": name, "unread": unread})
+            max_id = row[1] if row else 0
+            result.append({"id": ch_id, "name": name, "unread": unread, "max_id": max_id})
         return result
     except Exception:
         return []
