@@ -65,9 +65,18 @@ _MY_ADDR = f"{_NAME}@{_HOST}:{_PORT}"
 _SENDER_COLORS = ["cyan", "magenta", "yellow", "bright_green", "bright_blue", "bright_red", "bright_cyan"]
 _MY_COLOR      = "green"
 
+_SENDER_COLOR_OVERRIDES: dict[str, str] = {
+    "vishwakarma": "green",
+}
+
 
 def _sender_color(addr: str) -> str:
-    return _MY_COLOR if addr == _MY_ADDR else _SENDER_COLORS[hash(addr) % len(_SENDER_COLORS)]
+    if addr == _MY_ADDR:
+        return _MY_COLOR
+    name = addr.split("@")[0]
+    if name in _SENDER_COLOR_OVERRIDES:
+        return _SENDER_COLOR_OVERRIDES[name]
+    return _SENDER_COLORS[hash(addr) % len(_SENDER_COLORS)]
 
 
 def _display_name(addr: str, contacts: ContactStore) -> str:

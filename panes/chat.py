@@ -144,14 +144,15 @@ class ChatPane(Container):
     def _poll(self) -> None:
         try:
             channels = grove_reader.grove_channels(last_seen_ids=self._cursors)
-            self._channels = sort_channels(channels)
-            # On first poll only: initialize cursors for existing channels to
-            # max_id so their full history doesn't count as unread. Channels
-            # that appear after launch start at 0 so no messages are missed.
+            # On first poll only: initialize cursors to max_id so existing
+            # messages don't count as unread, then re-fetch with those cursors
+            # so the first render is accurate rather than flashing inflated counts.
             if not self._cursors_initialized:
-                for ch in self._channels:
+                for ch in channels:
                     self._cursors[ch["name"]] = ch.get("max_id", 0)
                 self._cursors_initialized = True
+                channels = grove_reader.grove_channels(last_seen_ids=self._cursors)
+            self._channels = sort_channels(channels)
             lst = self.query_one("#channel-list", ListView)
             lst.clear()
             for ch in self._channels:
@@ -196,9 +197,8 @@ class ChatPane(Container):
     def _on_notify(self, notified_channels: set[str]) -> None:
         if self._active_channel in notified_channels:
             self._load_messages(self._active_channel)
-        # Refresh sidebar badges if any non-active channel got new messages
-        if notified_channels - {self._active_channel}:
-            self._poll()
+        # Badge counts for non-active channels update on the next scheduled
+        # _poll (5s). Calling _poll here caused ListView flicker under load.
 
     def _open_channel(self, name: str) -> None:
         self._active_channel = name
