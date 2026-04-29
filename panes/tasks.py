@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 from textual.containers import Container
-from textual.widgets import DataTable, Label, ProgressBar
+from textual.widgets import DataTable, Label
 
 from widgets.status_row import StatusRow
 
@@ -74,8 +74,6 @@ class TasksPane(Container):
         yield StatusRow("Running", id="stat-running")
         yield StatusRow("Pending", id="stat-pending")
         yield StatusRow("Done   ", id="stat-done")
-        yield Label("", id="backfill-label")
-        yield ProgressBar(total=100, show_eta=False, id="backfill-bar")
         table = DataTable(id="tasks-table", cursor_type="row")
         table.add_columns("ID", "Status", "Command", "Time")
         yield table
@@ -91,6 +89,19 @@ class TasksPane(Container):
         self.query_one("#stat-running", StatusRow).set_status(None,              str(data["running"]))
         self.query_one("#stat-pending", StatusRow).set_status(data["pending"]==0, str(data["pending"]))
         self.query_one("#stat-done",    StatusRow).set_status(None,              str(data["done"]))
+
+        # Backfill progress as a synthetic running row at the top
+        bp = fetch_backfill_progress()
+        if bp and bp.get("table") != "done":
+            pct  = bp.get("pct", 0)
+            done = bp.get("atoms_done", 0)
+            total = bp.get("total", 0)
+            eta  = bp.get("eta_human", "?")
+            rate = bp.get("rate_per_sec", 0)
+            updated = str(bp.get("updated_at", ""))[:16]
+            cmd = f"embed_backfill  {pct:.1f}%  {done:,}/{total:,}  {rate:.1f}/s  ETA {eta}"
+            table.add_row("BACKFILL", "[yellow]running[/]", cmd, updated)
+
         for row in data["rows"]:
             color = status_color(row["status"])
             table.add_row(
@@ -99,20 +110,3 @@ class TasksPane(Container):
                 row["cmd"][:60],
                 row["ts"],
             )
-
-        bp = fetch_backfill_progress()
-        bar   = self.query_one("#backfill-bar",   ProgressBar)
-        label = self.query_one("#backfill-label", Label)
-        if bp:
-            pct   = bp.get("pct", 0)
-            done  = bp.get("atoms_done", 0)
-            total = bp.get("total", 0)
-            eta   = bp.get("eta_human", "?")
-            rate  = bp.get("rate_per_sec", 0)
-            label.update(f"  Embed Backfill — {pct:.1f}%  {done:,}/{total:,}  {rate:.1f}/s  ETA {eta}")
-            bar.update(progress=pct)
-            bar.display = True
-            label.display = True
-        else:
-            bar.display = False
-            label.display = False
