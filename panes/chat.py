@@ -25,6 +25,22 @@ def sender_color(name: str) -> str:
     return _SENDER_COLORS[idx]
 
 
+_TYPED_CONTENT_PREFIXES = ("[image:", "[audio:", "[file:", "[code:")
+
+def render_content(content: str) -> str:
+    """Detect typed content prefix ([image: path], etc.) and render with label styling."""
+    for prefix in _TYPED_CONTENT_PREFIXES:
+        if content.startswith(prefix):
+            kind = prefix[1:-1].upper()
+            inner = content[len(prefix):]
+            if inner.endswith("]"):
+                inner = inner[:-1]
+            path = inner.strip()
+            ack = "[green]✓[/green]" if os.path.exists(path) else "[red]not found[/red]"
+            return f"[dim]{kind}:[/dim] [italic]{_e(path)}[/italic] {ack}"
+    return _e(content)
+
+
 def format_ts(ts) -> str:
     if ts is None:
         return ""
@@ -128,6 +144,11 @@ class ChatPane(Container):
         try:
             channels = grove_reader.grove_channels(last_seen_ids=self._cursors)
             self._channels = sort_channels(channels)
+            # Initialize read cursors for channels seen for the first time so
+            # their full history doesn't count as unread.
+            for ch in self._channels:
+                if ch["name"] not in self._cursors:
+                    self._cursors[ch["name"]] = ch.get("max_id", 0)
             lst = self.query_one("#channel-list", ListView)
             lst.clear()
             for ch in self._channels:
@@ -174,7 +195,7 @@ class ChatPane(Container):
                 ts      = format_ts(m.get("created_at"))
                 color   = sender_color(sender)
                 log.write(
-                    f"[dim]{ts}[/dim]  [{color} bold]{sender:<14}[/{color} bold]  {_e(content)}"
+                    f"[dim]{ts}[/dim]  [{color} bold]{sender:<14}[/{color} bold]  {render_content(content)}"
                 )
             if msgs:
                 self._cursors[channel] = msgs[-1]["id"]
@@ -201,11 +222,14 @@ class ChatPane(Container):
             )
             row = cur.fetchone()
             if row:
-                agent = os.environ.get("WILLOW_AGENT_NAME", "hanuman")
+                sender = os.environ.get(
+                    "GROVE_SENDER",
+                    os.environ.get("GROVE_NAME", os.environ.get("USER", "sean")),
+                )
                 cur.execute(
                     "INSERT INTO grove.messages (channel_id, sender, content)"
                     " VALUES (%s, %s, %s)",
-                    (row[0], agent, body),
+                    (row[0], sender, body),
                 )
                 conn.commit()
             conn.close()
