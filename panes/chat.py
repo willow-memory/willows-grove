@@ -152,11 +152,17 @@ class ChatPane(Container):
                     self._cursors[ch["name"]] = ch.get("max_id", 0)
                 self._cursors_initialized = True
                 channels = grove_reader.grove_channels(last_seen_ids=self._cursors)
-            self._channels = sort_channels(channels)
-            lst = self.query_one("#channel-list", ListView)
-            lst.clear()
-            for ch in self._channels:
-                lst.append(ChannelItem(ch))
+            new_channels = sort_channels(channels)
+            # Only rebuild the list when something actually changed — prevents
+            # the 5s clear/rebuild cycle from causing visible flicker.
+            new_snapshot = [(c["name"], c.get("unread", 0)) for c in new_channels]
+            old_snapshot = [(c["name"], c.get("unread", 0)) for c in self._channels]
+            self._channels = new_channels
+            if new_snapshot != old_snapshot:
+                lst = self.query_one("#channel-list", ListView)
+                lst.clear()
+                for ch in self._channels:
+                    lst.append(ChannelItem(ch))
             if not self._active_channel and self._channels:
                 self._open_channel(self._channels[0]["name"])
         except Exception:
