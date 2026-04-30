@@ -55,6 +55,16 @@ def sort_channels(channels: list[dict]) -> list[dict]:
     return sorted(channels, key=lambda c: (order.get(c["name"], 99), c["name"]))
 
 
+def _build_channel_label(ch: dict) -> str:
+    """Build the markup label for a channel list item."""
+    name        = ch["name"]
+    unread      = ch.get("unread", 0)
+    agent_name  = ch.get("agent_name")
+    agent_part  = f"  [dim]{agent_name}[/]" if agent_name else ""
+    unread_part = f"  [yellow bold]{unread}[/]" if unread else ""
+    return f"# {name}{agent_part}{unread_part}"
+
+
 def _pg_conn():
     import psycopg2
     return psycopg2.connect(
@@ -69,10 +79,7 @@ class ChannelItem(ListItem):
         self.channel = channel
 
     def compose(self):
-        name   = self.channel["name"]
-        unread = self.channel.get("unread", 0)
-        suffix = f" [yellow bold]{unread}[/]" if unread else ""
-        yield Label(f"# {name}{suffix}", markup=True)
+        yield Label(_build_channel_label(self.channel), markup=True)
 
 
 class ChannelList(Vertical):
