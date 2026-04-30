@@ -18,6 +18,8 @@ from textual.widgets import Footer, Label, Rule, Static
 from panes.chat      import ChatPane, ChannelList, sender_color
 from widgets.projects_nav    import ProjectsNav
 from widgets.knowledge_nav  import KnowledgeAtomSelected, KnowledgeNav
+from widgets.providers_nav  import ProviderRowSelected, ProvidersNav
+from widgets.health_nav     import HealthNav
 from panes.tasks     import TasksPane, fetch_backfill_progress, fetch_tasks
 from panes.agents    import AgentsPane
 from panes.routing   import RoutingPane
@@ -126,6 +128,8 @@ class ContextPanel(Vertical):
         yield ChannelList(id="ctx-chat")
         yield ProjectsNav(id="ctx-projects")
         yield KnowledgeNav(id="ctx-knowledge")
+        yield ProvidersNav(id="ctx-providers")
+        yield HealthNav(id="ctx-health")
 
     def on_mount(self) -> None:
         self._show_target("home")
@@ -139,6 +143,8 @@ class ContextPanel(Vertical):
             "chat":      "#ctx-chat",
             "projects":  "#ctx-projects",
             "knowledge": "#ctx-knowledge",
+            "providers": "#ctx-providers",
+            "health":    "#ctx-health",
         }
         for widget_id in ctx_map.values():
             try:
@@ -366,6 +372,12 @@ class WillowGrove(App):
     def on_knowledge_atom_selected(self, event: KnowledgeAtomSelected) -> None:
         try:
             self.query_one(KnowledgePane).display_atom(event.atom_id)
+        except NoMatches:
+            pass
+
+    def on_provider_row_selected(self, event: ProviderRowSelected) -> None:
+        try:
+            self.query_one(ProvidersPane).select_provider(event.name)
         except NoMatches:
             pass
 
