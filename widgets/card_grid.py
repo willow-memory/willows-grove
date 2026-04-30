@@ -292,7 +292,8 @@ class CardGrid(Widget):
 
         self.remove_children()
         cells = [
-            CardCell(cid, lbl, nav_target=self._nav_cache[cid], id=f"cell-{cid}")
+            CardCell(cid, lbl, nav_target=self._nav_cache[cid],
+                     id="cell-plus" if cid == "+" else f"cell-{cid}")
             for cid, lbl in self._cards
         ]
         self.mount(*cells)
@@ -306,6 +307,8 @@ class CardGrid(Widget):
     def on__cards_refreshed(self, event: _CardsRefreshed) -> None:
         from textual.css.query import NoMatches
         for card_id, _ in self._cards:
+            if card_id == "+":
+                continue
             card_data = event.data.get(card_id, {})
             try:
                 cell = self.query_one(f"#cell-{card_id}", CardCell)
