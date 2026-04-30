@@ -141,6 +141,32 @@ def grove_messages(channel_name: str, conn=None, limit: int = 50,
                 pass
 
 
+def grove_messages_all_agents(
+    known_agents: "frozenset[str]",
+    last_id: int = 0,
+    limit: int = 20,
+) -> "list[dict]":
+    """Return recent grove.messages from known agent senders, id > last_id."""
+    try:
+        conn = _pg_conn()
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT id, sender, content, created_at"
+            " FROM grove.messages"
+            " WHERE sender = ANY(%s::text[]) AND id > %s AND is_deleted = 0"
+            " ORDER BY id DESC LIMIT %s",
+            (list(known_agents), last_id, limit),
+        )
+        rows = cur.fetchall()
+        conn.close()
+        return [
+            {"id": r[0], "sender": r[1], "content": r[2], "created_at": r[3]}
+            for r in reversed(rows)
+        ]
+    except Exception:
+        return []
+
+
 def routing_decisions(conn=None, limit: int = 8) -> list[dict]:
     """Return recent routing decisions. Returns [] if table not yet created.
     Each entry: {ts, prompt_snippet, routed_to, rule_matched, confidence, latency_ms}
