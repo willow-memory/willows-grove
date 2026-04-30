@@ -274,7 +274,7 @@ class CardGrid(Widget):
     def compose(self) -> ComposeResult:
         for card_id, label in self._cards:
             nav = self._nav_cache.get(card_id, "")
-            yield CardCell(card_id, label, nav_target=nav, id=f"cell-{card_id}")
+            yield CardCell(card_id, label, nav_target=nav)
 
     def on_mount(self) -> None:
         self._fetch()
