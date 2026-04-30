@@ -20,6 +20,10 @@ from widgets.projects_nav    import ProjectsNav
 from widgets.knowledge_nav  import KnowledgeAtomSelected, KnowledgeNav
 from widgets.providers_nav  import ProviderRowSelected, ProvidersNav
 from widgets.health_nav     import HealthNav
+from widgets.settings_nav   import SettingsNav
+from widgets.help_nav       import HelpSectionSelected, HelpNav
+from panes.settings         import SettingsPane
+from panes.help             import HelpPane
 from panes.tasks     import TasksPane, fetch_backfill_progress, fetch_tasks
 from panes.agents    import AgentsPane
 from panes.routing   import RoutingPane
@@ -130,6 +134,8 @@ class ContextPanel(Vertical):
         yield KnowledgeNav(id="ctx-knowledge")
         yield ProvidersNav(id="ctx-providers")
         yield HealthNav(id="ctx-health")
+        yield SettingsNav(id="ctx-settings")
+        yield HelpNav(id="ctx-help")
 
     def on_mount(self) -> None:
         self._show_target("home")
@@ -145,6 +151,8 @@ class ContextPanel(Vertical):
             "knowledge": "#ctx-knowledge",
             "providers": "#ctx-providers",
             "health":    "#ctx-health",
+            "settings":  "#ctx-settings",
+            "help":      "#ctx-help",
         }
         for widget_id in ctx_map.values():
             try:
@@ -312,8 +320,8 @@ class WillowGrove(App):
                 yield KnowledgePane(id="pane-knowledge")
                 yield ProvidersPane(id="pane-providers")
                 yield HealthPane(id="pane-health")
-                yield Static("[ Settings — coming soon ]", id="pane-settings")
-                yield Static("[ Help — coming soon ]", id="pane-help")
+                yield SettingsPane(id="pane-settings")
+                yield HelpPane(id="pane-help")
                 # internal panes — reachable via Projects, not top nav
                 yield TasksPane(id="pane-tasks")
                 yield AgentsPane(id="pane-agents")
@@ -378,6 +386,12 @@ class WillowGrove(App):
     def on_provider_row_selected(self, event: ProviderRowSelected) -> None:
         try:
             self.query_one(ProvidersPane).select_provider(event.name)
+        except NoMatches:
+            pass
+
+    def on_help_section_selected(self, event: HelpSectionSelected) -> None:
+        try:
+            self.query_one(HelpPane).jump_to_section(event.section)
         except NoMatches:
             pass
 
