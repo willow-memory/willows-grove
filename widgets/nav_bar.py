@@ -7,7 +7,7 @@ from textual.app import ComposeResult
 from textual.containers import Horizontal
 from textual.css.query import NoMatches
 from textual.message import Message
-from textual.widgets import Button, Static
+from textual.widgets import Static
 
 
 NAV_TARGETS: list[str] = [
@@ -22,6 +22,17 @@ class NavChanged(Message):
         self.target = target
 
 
+class _NavItem(Static):
+    """Single clickable nav label. Posts NavChanged on click."""
+
+    def __init__(self, label: str, target: str, **kwargs) -> None:
+        super().__init__(label, **kwargs)
+        self._target = target
+
+    def on_click(self) -> None:
+        self.post_message(NavChanged(self._target))
+
+
 class NavBar(Horizontal):
     """Single-row nav strip. Emits NavChanged on click or highlight()."""
 
@@ -30,30 +41,27 @@ class NavBar(Horizontal):
         height: 1;
         background: #161b22;
         border-bottom: solid #30363d;
-        padding: 0 1;
+        padding: 0 0;
     }
-    NavBar Button {
+    _NavItem {
         height: 1;
-        min-width: 0;
-        border: none;
-        background: transparent;
-        color: #8b949e;
         padding: 0 1;
+        color: #8b949e;
     }
-    NavBar Button:hover {
+    _NavItem:hover {
         background: #21262d;
         color: #c9d1d9;
     }
-    NavBar Button.-active-nav {
+    _NavItem.-active-nav {
         color: #58a6ff;
         text-style: bold;
     }
-    NavBar #nav-logo {
+    _NavItem#nav-logo {
         color: #3fb950;
         text-style: bold;
-        padding: 0 2 0 0;
+        padding: 0 2;
     }
-    NavBar #nav-vitals {
+    #nav-vitals {
         width: 1fr;
         text-align: right;
         color: #8b949e;
@@ -62,34 +70,26 @@ class NavBar(Horizontal):
     """
 
     def compose(self) -> ComposeResult:
-        yield Button("◆", id="nav-logo")
+        yield _NavItem("◆", "home", id="nav-logo")
         for target in NAV_TARGETS:
-            yield Button(target.capitalize(), id=f"nav-{target}")
+            yield _NavItem(target.capitalize(), target, id=f"nav-{target}")
         yield Static("", id="nav-vitals")
 
     def on_mount(self) -> None:
         self.highlight("home")
 
-    def on_button_pressed(self, event: Button.Pressed) -> None:
-        btn_id = event.button.id or ""
-        if btn_id == "nav-logo":
-            self.highlight("home")
-            self.post_message(NavChanged("home"))
-        elif btn_id.startswith("nav-"):
-            target = btn_id[4:]
-            if target in NAV_TARGETS:
-                self.highlight(target)
-                self.post_message(NavChanged(target))
+    def on_nav_changed(self, event: NavChanged) -> None:
+        self.highlight(event.target)
 
     def highlight(self, target: str) -> None:
         """Update visual active state without emitting NavChanged."""
         for t in NAV_TARGETS:
             try:
-                btn = self.query_one(f"#nav-{t}", Button)
+                item = self.query_one(f"#nav-{t}", _NavItem)
                 if t == target:
-                    btn.add_class("-active-nav")
+                    item.add_class("-active-nav")
                 else:
-                    btn.remove_class("-active-nav")
+                    item.remove_class("-active-nav")
             except NoMatches:
                 pass  # widget not yet mounted
 
