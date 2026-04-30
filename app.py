@@ -5,16 +5,17 @@ b17: WGRV1  ΔΣ=42
 
 Run: python3 app.py
 """
+import json
 import os
 from pathlib import Path
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Horizontal, Vertical
-from textual.widgets import Footer, Header, Label, Rule, Static, TabbedContent, TabPane
+from textual.css.query import NoMatches
+from textual.widgets import Footer, Label, Rule, Static
 
-from panes.overview  import OverviewPane
-from panes.chat      import ChatPane, sender_color
+from panes.chat      import ChatPane, ChannelList, sender_color
 from panes.tasks     import TasksPane, fetch_backfill_progress, fetch_tasks
 from panes.agents    import AgentsPane
 from panes.routing   import RoutingPane
@@ -23,6 +24,13 @@ from panes.providers import ProvidersPane
 from panes.skills    import SkillsPane
 from panes.health    import HealthPane
 from panes.logs      import LogsPane
+from panes.home      import DeskPane, HomeGrid, ProjectsGrid
+
+from widgets.nav_bar        import NavBar, NavChanged, NAV_TARGETS
+from widgets.hero_scene     import HeroScene
+from widgets.chat_strip     import ChatStrip
+from widgets.thought_stream import ThoughtStream, SessionStats
+
 import grove_reader
 
 WILLOW_ROOT = Path(os.environ.get("WILLOW_ROOT", Path.home() / "github" / "willow-1.9"))
@@ -52,11 +60,16 @@ class VitalsBar(Static):
         bp    = fetch_backfill_progress()
         if bp and bp.get("table") != "done":
             pct   = bp.get("pct", 0)
-            embed = f"  embed [yellow]{pct:.1f}%[/]"
+            embed = f"embed [yellow]{pct:.1f}%[/]"
         else:
-            embed = "  embed [green]done[/]"
+            embed = "embed [green]done[/]"
         model = os.environ.get("WILLOW_MODEL", "claude-sonnet-4-6")
-        self.update(f" [dim]model:[/] {model}  {pg}{embed}")
+        text  = f"[dim]{model}[/]  {pg}  {embed}"
+        self.update(text)
+        try:
+            self.app.query_one(NavBar).set_vitals(text)
+        except NoMatches:
+            pass
 
 
 class GroveRightPanel(Container):
@@ -66,6 +79,10 @@ class GroveRightPanel(Container):
         yield Rule()
         yield Label("AGENTS", id="rp-agents-label")
         yield Static("", id="rp-agents-list")
+        yield Rule()
+        yield Label("THOUGHTS", id="rp-thoughts-label")
+        yield ThoughtStream(id="rp-thought-stream")
+        yield SessionStats(id="rp-session-stats")
 
     def on_mount(self) -> None:
         self.set_interval(10, self._refresh)
@@ -94,68 +111,103 @@ class GroveRightPanel(Container):
     def _safe_update(self, selector: str, text: str) -> None:
         try:
             self.query_one(selector, Static).update(text)
-        except Exception:
+        except NoMatches:
             pass
+
+
+class ContextPanel(Vertical):
+    """Left column — swaps content based on active nav target."""
+
+    def compose(self) -> ComposeResult:
+        yield DeskPane(id="ctx-home")
+        yield ChannelList(id="ctx-chat")
+
+    def on_mount(self) -> None:
+        self._show_target("home")
+
+    def on_nav_changed(self, event: NavChanged) -> None:
+        self._show_target(event.target)
+
+    def _show_target(self, target: str) -> None:
+        ctx_map = {
+            "home": "#ctx-home",
+            "chat": "#ctx-chat",
+        }
+        for widget_id in ctx_map.values():
+            try:
+                self.query_one(widget_id).display = False
+            except NoMatches:
+                pass
+        active_id = ctx_map.get(target)
+        if active_id:
+            try:
+                self.query_one(active_id).display = True
+            except NoMatches:
+                pass
+
+
+# Content panes indexed by nav target
+_CONTENT_PANES: dict[str, str] = {
+    "home":      "#pane-home",
+    "chat":      "#pane-chat",
+    "projects":  "#pane-projects",
+    "knowledge": "#pane-knowledge",
+    "providers": "#pane-providers",
+    "health":    "#pane-health",
+    "settings":  "#pane-settings",
+    "help":      "#pane-help",
+}
+
+# Internal panes reachable via Projects — not in top nav
+_INTERNAL_PANES: list[str] = [
+    "#pane-tasks", "#pane-agents", "#pane-routing",
+    "#pane-skills", "#pane-logs",
+]
 
 
 class WillowGrove(App):
     CSS = """
     Screen { background: #0d1117; }
 
-    Header {
-        background: #161b22;
-        color: #58a6ff;
-        text-style: bold;
-    }
     Footer { background: #161b22; }
 
-    VitalsBar {
-        height: 1;
-        background: #161b22;
-        border-bottom: solid #30363d;
-        padding: 0 1;
-        color: #8b949e;
-    }
+    #vitals-source { display: none; }
 
     #main-area { height: 1fr; }
 
-    #tabs-area {
+    ContextPanel {
+        width: 26;
+        background: #161b22;
+        border-right: solid #30363d;
+    }
+
+    #content-area {
         width: 1fr;
         height: 1fr;
     }
-
-    TabbedContent { height: 1fr; }
-    TabPane       { height: 1fr; padding: 0; }
 
     GroveRightPanel {
         width: 30;
         background: #161b22;
         border-left: solid #30363d;
-        padding: 1 1;
+        padding: 0 1;
     }
 
-    GroveRightPanel #rp-tasks-label {
+    GroveRightPanel #rp-tasks-label,
+    GroveRightPanel #rp-agents-label,
+    GroveRightPanel #rp-thoughts-label {
         color: #58a6ff;
         text-style: bold;
         padding: 0 0 1 0;
     }
 
-    GroveRightPanel #rp-task-counts {
-        padding: 0 0 0 1;
-        color: #8b949e;
-    }
-
-    GroveRightPanel #rp-agents-label {
-        color: #58a6ff;
-        text-style: bold;
-        padding: 0 0 1 0;
-    }
-
+    GroveRightPanel #rp-task-counts,
     GroveRightPanel #rp-agents-list {
         padding: 0 0 0 1;
         color: #8b949e;
-        height: 1fr;
     }
+
+    GroveRightPanel #rp-agents-list { height: auto; }
 
     Rule { margin: 1 0; color: #30363d; }
 
@@ -166,17 +218,9 @@ class WillowGrove(App):
         text-style: bold;
     }
 
-    #overview-title, #sysinfo-title, #tasks-title, #agents-title,
-    #routing-title, #kb-title, #prov-title,
-    #skills-title, #health-title, #logs-title {
-        color: #58a6ff;
-        padding: 1 2;
-        text-style: bold;
-    }
-
-    StatusRow {
-        padding: 0 4;
-        height: 1;
+    #pane-settings, #pane-help {
+        padding: 2;
+        color: #8b949e;
     }
 
     DataTable {
@@ -220,85 +264,104 @@ class WillowGrove(App):
         height: 1fr;
         padding: 1 2;
     }
+
+    StatusRow {
+        padding: 0 4;
+        height: 1;
+    }
     """
 
     BINDINGS = [
-        Binding("q", "quit",    "Quit"),
-        Binding("r", "refresh", "Refresh"),
-        Binding("1", "switch_tab('tab-overview')",  "Overview",  show=False),
-        Binding("2", "switch_tab('tab-chat')",      "Chat",      show=False),
-        Binding("3", "switch_tab('tab-tasks')",     "Tasks",     show=False),
-        Binding("4", "switch_tab('tab-agents')",    "Agents",    show=False),
-        Binding("5", "switch_tab('tab-routing')",   "Routing",   show=False),
-        Binding("6", "switch_tab('tab-knowledge')", "Knowledge", show=False),
-        Binding("7", "switch_tab('tab-providers')", "Providers", show=False),
-        Binding("8", "switch_tab('tab-skills')",    "Skills",    show=False),
-        Binding("9", "switch_tab('tab-health')",    "Health",    show=False),
-        Binding("0", "switch_tab('tab-logs')",      "Logs",      show=False),
+        Binding("q", "quit",            "Quit"),
+        Binding("r", "refresh",         "Refresh"),
+        Binding("1", "nav('home')",      "Home",      show=False),
+        Binding("2", "nav('chat')",      "Chat",      show=False),
+        Binding("3", "nav('projects')",  "Projects",  show=False),
+        Binding("4", "nav('knowledge')", "Knowledge", show=False),
+        Binding("5", "nav('providers')", "Providers", show=False),
+        Binding("6", "nav('health')",    "Health",    show=False),
+        Binding("7", "nav('settings')",  "Settings",  show=False),
+        Binding("8", "nav('help')",      "Help",      show=False),
     ]
 
     TITLE     = "Willow Grove"
     SUB_TITLE = f"local-first AI stack — {WILLOW_ROOT}"
 
     def compose(self) -> ComposeResult:
-        yield Header()
-        yield VitalsBar()
+        yield NavBar(id="nav-bar")
+        yield HeroScene(id="hero-scene")
         with Horizontal(id="main-area"):
-            with Vertical(id="tabs-area"):
-                with TabbedContent():
-                    with TabPane("Overview",  id="tab-overview"):
-                        yield OverviewPane(id="overview-pane")
-                    with TabPane("Chat",      id="tab-chat"):
-                        yield ChatPane(id="chat-pane")
-                    with TabPane("Tasks",     id="tab-tasks"):
-                        yield TasksPane(id="tasks-pane")
-                    with TabPane("Agents",    id="tab-agents"):
-                        yield AgentsPane(id="agents-pane")
-                    with TabPane("Routing",   id="tab-routing"):
-                        yield RoutingPane(id="routing-pane")
-                    with TabPane("Knowledge", id="tab-knowledge"):
-                        yield KnowledgePane(id="knowledge-pane")
-                    with TabPane("Providers", id="tab-providers"):
-                        yield ProvidersPane(id="providers-pane")
-                    with TabPane("Skills",    id="tab-skills"):
-                        yield SkillsPane(id="skills-pane")
-                    with TabPane("Health",    id="tab-health"):
-                        yield HealthPane(id="health-pane")
-                    with TabPane("Logs",      id="tab-logs"):
-                        yield LogsPane(id="logs-pane")
+            yield ContextPanel(id="context-panel")
+            with Vertical(id="content-area"):
+                yield HomeGrid(id="pane-home")
+                yield ChatPane(id="pane-chat")
+                yield ProjectsGrid(id="pane-projects")
+                yield KnowledgePane(id="pane-knowledge")
+                yield ProvidersPane(id="pane-providers")
+                yield HealthPane(id="pane-health")
+                yield Static("[ Settings — coming soon ]", id="pane-settings")
+                yield Static("[ Help — coming soon ]", id="pane-help")
+                # internal panes — reachable via Projects, not top nav
+                yield TasksPane(id="pane-tasks")
+                yield AgentsPane(id="pane-agents")
+                yield RoutingPane(id="pane-routing")
+                yield SkillsPane(id="pane-skills")
+                yield LogsPane(id="pane-logs")
             yield GroveRightPanel(id="right-panel")
+        yield ChatStrip(id="chat-strip")
+        yield VitalsBar(id="vitals-source")
         yield Footer()
 
     def on_mount(self) -> None:
+        self._hide_all_content_panes()
+        self._show_content_pane("home")
         self._do_refresh()
         self.set_interval(30, self._do_refresh)
 
+    def _hide_all_content_panes(self) -> None:
+        for pane_id in list(_CONTENT_PANES.values()) + _INTERNAL_PANES:
+            try:
+                self.query_one(pane_id).display = False
+            except NoMatches:
+                pass
+
+    def _show_content_pane(self, target: str) -> None:
+        pane_id = _CONTENT_PANES.get(target)
+        if pane_id:
+            try:
+                self.query_one(pane_id).display = True
+            except NoMatches:
+                pass
+
+    def on_nav_changed(self, event: NavChanged) -> None:
+        self._hide_all_content_panes()
+        self._show_content_pane(event.target)
+
     def _do_refresh(self) -> None:
         for pane_id, pane_cls in [
-            ("#overview-pane",  OverviewPane),
-            ("#providers-pane", ProvidersPane),
-            ("#skills-pane",    SkillsPane),
-            ("#logs-pane",      LogsPane),
+            ("#pane-providers", ProvidersPane),
+            ("#pane-skills",    SkillsPane),
+            ("#pane-logs",      LogsPane),
         ]:
             try:
                 self.query_one(pane_id, pane_cls).refresh_data()
-            except Exception:
+            except NoMatches:
                 pass
 
     def action_refresh(self) -> None:
         self._do_refresh()
         try:
-            self.query_one(VitalsBar)._refresh()
             self.query_one(GroveRightPanel)._refresh()
-        except Exception:
+        except NoMatches:
             pass
         self.notify("Refreshed")
 
-    def action_switch_tab(self, tab_id: str) -> None:
+    def action_nav(self, target: str) -> None:
         try:
-            self.query_one(TabbedContent).active = tab_id
-        except Exception:
+            self.query_one(NavBar).highlight(target)
+        except NoMatches:
             pass
+        self.post_message(NavChanged(target))
 
 
 if __name__ == "__main__":
