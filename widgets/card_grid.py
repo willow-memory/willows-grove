@@ -210,8 +210,9 @@ class CardCell(Widget):
         self._value      = value
         self._sub        = sub
         self._state      = state
-        # Widget IDs must be alphanumeric/hyphen only — sanitize special chars.
-        self._safe_id    = card_id.replace("+", "plus")
+        # Widget IDs must be [a-zA-Z0-9_-] only — strip everything else.
+        import re as _re
+        self._safe_id = _re.sub(r"[^a-zA-Z0-9_-]", "-", card_id).strip("-") or "card"
 
     def compose(self) -> ComposeResult:
         yield Static(self._label, classes="card-label", markup=False)
