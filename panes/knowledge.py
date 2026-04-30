@@ -3,9 +3,10 @@ b17: WGRV1  ΔΣ=42
 """
 import os
 
-from textual import on
+from textual import work
 from textual.containers import Container
-from textual.widgets import DataTable, Input, Label
+from textual.message import Message
+from textual.widgets import Static
 
 
 def _pg_conn():
@@ -126,25 +127,42 @@ def render_atom(atom: dict) -> str:
     return "\n".join(lines)
 
 
-class KnowledgePane(Container):
-    def compose(self):
-        yield Label("  Knowledge — search (Enter to run)", id="kb-title")
-        yield Input(placeholder="Search…", id="kb-search")
-        table = DataTable(id="kb-table", cursor_type="row")
-        table.add_columns("ID", "Title", "Domain", "W")
-        yield table
+class _AtomFetched(Message):
+    def __init__(self, atom: dict | None) -> None:
+        super().__init__()
+        self.atom = atom
 
-    @on(Input.Submitted, "#kb-search")
-    def _run_search(self, event: Input.Submitted) -> None:
-        query = event.value.strip()
-        table = self.query_one("#kb-table", DataTable)
-        table.clear()
-        if not query:
-            return
-        for row in search_kb(query):
-            table.add_row(
-                str(row["id"]),
-                truncate_text(row["title"], 50),
-                row["domain"],
-                str(row["weight"]),
-            )
+
+class KnowledgePane(Container):
+    DEFAULT_CSS = """
+    KnowledgePane {
+        height: 1fr;
+    }
+    KnowledgePane #kb-atom {
+        height: 1fr;
+        padding: 1 2;
+    }
+    """
+
+    def compose(self):
+        yield Static(
+            "[dim]Search knowledge in the left panel, then press Enter to view[/]",
+            id="kb-atom",
+            markup=True,
+        )
+
+    def display_atom(self, atom_id: int) -> None:
+        self._fetch(atom_id)
+
+    @work(thread=True)
+    def _fetch(self, atom_id: int) -> None:
+        atom = fetch_atom(atom_id)
+        self.post_message(_AtomFetched(atom))
+
+    def on__atom_fetched(self, event: _AtomFetched) -> None:
+        from textual.css.query import NoMatches
+        text = render_atom(event.atom) if event.atom else "[dim]Atom not found[/]"
+        try:
+            self.query_one("#kb-atom", Static).update(text)
+        except NoMatches:
+            pass
