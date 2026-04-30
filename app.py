@@ -8,6 +8,7 @@ Run: python3 app.py
 import json
 import logging
 import os
+from contextlib import suppress
 from pathlib import Path
 
 logging.basicConfig(
@@ -21,6 +22,7 @@ from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Horizontal, Vertical
 from textual.css.query import NoMatches
+from textual.screen import ModalScreen
 from textual.widgets import Footer, Label, Rule, Static
 
 from panes.chat      import ChatPane, ChannelList, sender_color
@@ -46,7 +48,8 @@ from widgets.nav_bar        import NavBar, NavChanged, NAV_TARGETS
 from widgets.hero_scene     import HeroScene
 from widgets.chat_strip     import ChatStrip
 from widgets.thought_stream import ThoughtStream, SessionStats
-from widgets.card_grid      import CardActivated
+from widgets.card_grid          import CardActivated
+from widgets.command_provider   import WillowCommandProvider
 
 import grove_reader
 
@@ -194,6 +197,45 @@ _INTERNAL_PANES: list[str] = [
 ]
 
 
+class KeymapScreen(ModalScreen):
+    """Modal overlay showing all keybindings."""
+
+    DEFAULT_CSS = """
+    KeymapScreen {
+        align: center middle;
+    }
+    KeymapScreen #keymap-dialog {
+        width: 46;
+        height: auto;
+        background: #161b22;
+        border: solid #30363d;
+        padding: 1 2;
+    }
+    """
+
+    BINDINGS = [
+        Binding("escape", "dismiss", "Close"),
+        Binding("?",      "dismiss", "Close"),
+    ]
+
+    def compose(self) -> ComposeResult:
+        with Container(id="keymap-dialog"):
+            yield Static(
+                "[bold #58a6ff]Keybindings[/]\n\n"
+                "[dim]Key         Action[/]\n"
+                "[dim]─────────────────────────────[/]\n"
+                "[#c9d1d9]1 – 8[/]       [#8b949e]Navigate to tab[/]\n"
+                "[#c9d1d9]j / k[/]       [#8b949e]Move cursor down / up[/]\n"
+                "[#c9d1d9]Ctrl+P[/]      [#8b949e]Command palette[/]\n"
+                "[#c9d1d9]?[/]           [#8b949e]This help[/]\n"
+                "[#c9d1d9]r[/]           [#8b949e]Refresh[/]\n"
+                "[#c9d1d9]q[/]           [#8b949e]Quit[/]\n"
+                "[#c9d1d9]Enter[/]       [#8b949e]Select / open[/]\n"
+                "[#c9d1d9]Esc[/]         [#8b949e]Close / back[/]",
+                markup=True,
+            )
+
+
 class WillowGrove(App):
     CSS = """
     Screen { background: #0d1117; }
@@ -301,20 +343,25 @@ class WillowGrove(App):
     """
 
     BINDINGS = [
-        Binding("q", "quit",            "Quit"),
-        Binding("r", "refresh",         "Refresh"),
-        Binding("1", "nav('home')",      "Home",      show=False),
-        Binding("2", "nav('chat')",      "Chat",      show=False),
-        Binding("3", "nav('projects')",  "Projects",  show=False),
-        Binding("4", "nav('knowledge')", "Knowledge", show=False),
-        Binding("5", "nav('providers')", "Providers", show=False),
-        Binding("6", "nav('health')",    "Health",    show=False),
-        Binding("7", "nav('settings')",  "Settings",  show=False),
-        Binding("8", "nav('help')",      "Help",      show=False),
+        Binding("q",      "quit",            "Quit"),
+        Binding("r",      "refresh",         "Refresh"),
+        Binding("?",      "keymap",          "Keys"),
+        Binding("ctrl+p", "command_palette", "Commands", show=False),
+        Binding("j",      "cursor_down",     show=False),
+        Binding("k",      "cursor_up",       show=False),
+        Binding("1", "nav('home')",      "Home"),
+        Binding("2", "nav('chat')",      "Chat"),
+        Binding("3", "nav('projects')",  "Projects"),
+        Binding("4", "nav('knowledge')", "Knowledge"),
+        Binding("5", "nav('providers')", "Providers"),
+        Binding("6", "nav('health')",    "Health"),
+        Binding("7", "nav('settings')",  "Settings"),
+        Binding("8", "nav('help')",      "Help"),
     ]
 
     TITLE     = "Willow Grove"
     SUB_TITLE = f"local-first AI stack — {WILLOW_ROOT}"
+    COMMANDS  = {WillowCommandProvider}
 
     def compose(self) -> ComposeResult:
         yield NavBar(id="nav-bar")
@@ -426,6 +473,23 @@ class WillowGrove(App):
         except NoMatches:
             pass
         self.post_message(NavChanged(target))
+
+    def action_keymap(self) -> None:
+        self.push_screen(KeymapScreen())
+
+    def action_cursor_down(self) -> None:
+        from textual.widgets import Input
+        focused = self.focused
+        if focused and not isinstance(focused, Input):
+            with suppress(AttributeError):
+                focused.action_cursor_down()
+
+    def action_cursor_up(self) -> None:
+        from textual.widgets import Input
+        focused = self.focused
+        if focused and not isinstance(focused, Input):
+            with suppress(AttributeError):
+                focused.action_cursor_up()
 
 
 if __name__ == "__main__":

@@ -53,3 +53,64 @@ def _channel_hits(fetch_fn: Callable) -> list[dict]:
         ]
     except Exception:
         return []
+
+
+from functools import partial
+
+from textual.command import Hit, Hits, Provider
+
+
+class WillowCommandProvider(Provider):
+    """Supplies nav, action, and channel hits to the Willow command palette."""
+
+    _channel_data: list[dict]
+
+    async def startup(self) -> None:
+        """Fetch channels once when the palette opens."""
+        try:
+            import grove_reader
+            self._channel_data = _channel_hits(grove_reader.grove_channels)
+        except Exception:
+            self._channel_data = []
+
+    async def search(self, query: str) -> Hits:
+        """Yield hits matching query across nav targets, actions, and channels."""
+        matcher = self.matcher(query)
+
+        for hit in _nav_hits():
+            score = matcher.match(hit["text"])
+            if score > 0:
+                target = hit["target"]
+                yield Hit(
+                    score=score,
+                    match_display=hit["display"],
+                    command=partial(self.app.action_nav, target),
+                )
+
+        for hit in _action_hits():
+            score = matcher.match(hit["text"])
+            if score > 0:
+                action_name = hit["action"]
+                yield Hit(
+                    score=score,
+                    match_display=hit["display"],
+                    command=getattr(self.app, f"action_{action_name}"),
+                )
+
+        for hit in getattr(self, "_channel_data", []):
+            score = matcher.match(hit["text"])
+            if score > 0:
+                channel = hit["channel"]
+                yield Hit(
+                    score=score,
+                    match_display=hit["display"],
+                    command=partial(self._open_channel, channel),
+                )
+
+    async def _open_channel(self, channel: str) -> None:
+        from panes.chat import ChatPane
+        self.app.action_nav("chat")
+        try:
+            self.app.query_one(ChatPane)._open_channel(channel)
+        except Exception:
+            pass
