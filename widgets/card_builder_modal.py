@@ -95,27 +95,11 @@ class CardBuilderModal(ModalScreen):
 
     @work(thread=True)
     def _setup(self) -> None:
-        try:
-            from grove_db import ensure_card_builder_channel
-            ensure_card_builder_channel()
-        except Exception:
-            pass
-
-        channel_id = None
-        try:
-            conn = _pg_conn()
-            cur  = conn.cursor()
-            cur.execute("SELECT id FROM grove.channels WHERE name = 'card-builder' LIMIT 1")
-            row = cur.fetchone()
-            if row:
-                channel_id = row[0]
-            conn.close()
-        except Exception:
-            pass
+        channel_id = self._get_or_create_channel()
 
         if channel_id is None:
             self.app.call_from_thread(
-                self._set_status, "[red]Could not connect to #card-builder[/]"
+                self._set_status, "[red]Could not connect to #card-builder — check grove_error.log[/]"
             )
             return
 
@@ -128,6 +112,26 @@ class CardBuilderModal(ModalScreen):
             self._dispatch_intro(channel_id)
 
         self._start_listener()
+
+    def _get_or_create_channel(self) -> int | None:
+        """Upsert #card-builder then return its id. Returns None on any DB error."""
+        import logging
+        try:
+            conn = _pg_conn()
+            cur  = conn.cursor()
+            cur.execute("""
+                INSERT INTO grove.channels (name, channel_type, description, agent_name)
+                VALUES ('card-builder', 'group', 'Heimdallr card builder interview', 'heimdallr')
+                ON CONFLICT (name) DO NOTHING
+            """)
+            conn.commit()
+            cur.execute("SELECT id FROM grove.channels WHERE name = 'card-builder' LIMIT 1")
+            row = cur.fetchone()
+            conn.close()
+            return row[0] if row else None
+        except Exception as exc:
+            logging.getLogger(__name__).error("card-builder channel error: %s", exc)
+            return None
 
     def _dispatch_intro(self, channel_id: int) -> None:
         try:
