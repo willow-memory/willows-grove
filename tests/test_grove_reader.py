@@ -48,8 +48,8 @@ def test_grove_agents_empty():
 
 def test_grove_channels_with_unread():
     channel_rows = [(1, "general"), (2, "architecture")]
-    unread_general = [(0,)]
-    unread_arch = [(3,)]
+    unread_general = [(0, 100)]
+    unread_arch = [(3, 52)]
     conn = _mock_conn([channel_rows, unread_general, unread_arch])
     result = grove_reader.grove_channels(conn=conn, last_seen_ids={"architecture": 49})
     assert len(result) == 2
