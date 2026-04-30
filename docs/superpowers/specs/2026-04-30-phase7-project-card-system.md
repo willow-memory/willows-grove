@@ -184,12 +184,13 @@ BINDINGS = [Binding("escape", "dismiss", "Close")]
 
 ### `app.py` (modified)
 
-Import `CardBuilderModal`. Add dismiss handler:
+Import `CardBuilderModal`. Add dismiss handler scoped to modal type:
 
 ```python
 def on_screen_dismiss(self, event) -> None:
-    with suppress(NoMatches):
-        self.query_one(HomeGrid).refresh_cards()
+    if isinstance(event.screen, CardBuilderModal):
+        with suppress(NoMatches):
+            self.query_one(HomeGrid).refresh_cards()
 ```
 
 ---
