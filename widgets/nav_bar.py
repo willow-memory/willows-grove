@@ -5,6 +5,7 @@ from __future__ import annotations
 
 from textual.app import ComposeResult
 from textual.containers import Horizontal
+from textual.css.query import NoMatches
 from textual.message import Message
 from textual.widgets import Button, Static
 
@@ -17,8 +18,8 @@ NAV_TARGETS: list[str] = [
 
 class NavChanged(Message):
     def __init__(self, target: str) -> None:
-        self.target = target
         super().__init__()
+        self.target = target
 
 
 class NavBar(Horizontal):
@@ -89,11 +90,11 @@ class NavBar(Horizontal):
                     btn.add_class("-active-nav")
                 else:
                     btn.remove_class("-active-nav")
-            except Exception:
-                pass
+            except NoMatches:
+                pass  # widget not yet mounted
 
     def set_vitals(self, text: str) -> None:
         try:
             self.query_one("#nav-vitals", Static).update(text)
-        except Exception:
-            pass
+        except NoMatches:
+            pass  # widget not yet mounted
