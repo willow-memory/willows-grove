@@ -98,7 +98,6 @@ def render_atom(atom: dict) -> str:
     """Render a knowledge atom dict as Textual rich markup."""
     _H = "[bold #58a6ff]"
     _D = "[dim]"
-    _V = "[#c9d1d9]"
     _E = "[/]"
     lines: list[str] = []
 

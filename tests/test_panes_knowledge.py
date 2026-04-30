@@ -4,8 +4,20 @@ b17: WGRV1  ΔΣ=42
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from unittest.mock import MagicMock
-from panes.knowledge import fetch_atom, render_atom
+from unittest.mock import MagicMock, patch
+from panes.knowledge import fetch_atom, render_atom, search_kb, truncate_text
+
+
+# ── truncate_text ─────────────────────────────────────────────────────────────
+
+def test_truncate_short():
+    assert truncate_text("hello", 10) == "hello"
+
+
+def test_truncate_long():
+    result = truncate_text("hello world", 5)
+    assert result == "hello…"
+    assert len(result) == 6
 
 
 # ── render_atom ───────────────────────────────────────────────────────────────
@@ -29,6 +41,7 @@ def test_render_atom_missing_content_key():
     atom = {"id": 1, "title": "X", "summary": "s", "domain": "d", "weight": 0}
     out = render_atom(atom)
     assert isinstance(out, str)
+    assert "CONTENT" not in out
 
 
 def test_render_atom_includes_content():
@@ -67,3 +80,15 @@ def test_fetch_atom_returns_none_on_db_error():
     cur.execute.side_effect = Exception("db error")
     result = fetch_atom(42, conn=conn)
     assert result is None
+
+
+# ── search_kb ─────────────────────────────────────────────────────────────────
+
+def test_search_kb_empty_query():
+    assert search_kb("") == []
+
+
+def test_search_kb_no_db():
+    with patch("panes.knowledge._pg_conn", side_effect=Exception("no db")):
+        result = search_kb("anything")
+    assert result == []
