@@ -72,3 +72,113 @@ def test_projects_placeholder_lists_internal_panes():
     text = PROJECTS_PLACEHOLDER.lower()
     for pane in ("tasks", "agents", "routing", "skills", "logs"):
         assert pane in text
+
+
+# ── render_desk sections ──────────────────────────────────────────────────────
+from panes.home import render_desk
+
+def test_render_desk_running_always_present():
+    d = DeskData()
+    out = render_desk(d)
+    assert "RUNNING" in out
+
+def test_render_desk_system_always_present():
+    d = DeskData()
+    out = render_desk(d)
+    assert "SYSTEM" in out
+
+def test_render_desk_attention_absent_when_empty():
+    d = DeskData()
+    out = render_desk(d)
+    assert "ATTENTION" not in out
+
+def test_render_desk_attention_present_with_unread():
+    d = DeskData(unread_channels=[{"name": "general", "unread": 3}])
+    out = render_desk(d)
+    assert "ATTENTION" in out
+    assert "general" in out
+    assert "3" in out
+
+def test_render_desk_attention_present_with_flags():
+    d = DeskData(open_flags=2)
+    out = render_desk(d)
+    assert "ATTENTION" in out
+    assert "2" in out
+    assert "flags" in out
+
+def test_render_desk_attention_present_with_mention():
+    d = DeskData(mentions=[{"channel": "general", "sender": "hanuman", "snippet": "hey @sean"}])
+    out = render_desk(d)
+    assert "ATTENTION" in out
+    assert "hanuman" in out
+
+def test_render_desk_idle_when_no_tasks():
+    d = DeskData(running_tasks=0, pending_tasks=0)
+    out = render_desk(d)
+    assert "idle" in out.lower()
+
+def test_render_desk_task_counts():
+    d = DeskData(running_tasks=2, pending_tasks=5)
+    out = render_desk(d)
+    assert "2" in out
+    assert "5" in out
+
+def test_render_desk_backfill_bar():
+    d = DeskData(backfill={"pct": 80, "table": "embeddings"})
+    out = render_desk(d)
+    assert "embed" in out
+    assert "80" in out
+
+def test_render_desk_done_today_absent_when_zero():
+    d = DeskData(done_today=0)
+    out = render_desk(d)
+    assert "DONE" not in out
+
+def test_render_desk_done_today_present():
+    d = DeskData(done_today=3)
+    out = render_desk(d)
+    assert "DONE" in out
+    assert "3" in out
+
+def test_render_desk_agent_line():
+    d = DeskData(agents=[{"sender": "hanuman", "age_secs": 60}])
+    out = render_desk(d)
+    assert "hanuman" in out
+
+def test_render_desk_no_agents():
+    d = DeskData(agents=[])
+    out = render_desk(d)
+    assert "no agents" in out
+
+def test_render_desk_cpu_mem():
+    d = DeskData(sysinfo={"cpu": 12, "mem": 44, "disk": 30, "temp": 0})
+    out = render_desk(d)
+    assert "12" in out
+    assert "44" in out
+
+def test_render_desk_temp_absent_when_zero():
+    d = DeskData(sysinfo={"cpu": 10, "mem": 20, "disk": 30, "temp": 0})
+    out = render_desk(d)
+    assert "temp" not in out.lower()
+
+def test_render_desk_temp_present_when_set():
+    d = DeskData(sysinfo={"cpu": 10, "mem": 20, "disk": 30, "temp": 55})
+    out = render_desk(d)
+    assert "55" in out
+
+def test_render_desk_is_string():
+    assert isinstance(render_desk(DeskData()), str)
+
+
+# ── fetch_desk_data ────────────────────────────────────────────────────────────
+from panes.home import fetch_desk_data
+
+def test_fetch_desk_data_returns_desk_data():
+    """fetch_desk_data must return DeskData even when all sources fail."""
+    result = fetch_desk_data("sean")
+    assert isinstance(result, DeskData)
+    assert isinstance(result.unread_channels, list)
+    assert isinstance(result.agents, list)
+    assert isinstance(result.sysinfo, dict)
+    assert isinstance(result.running_tasks, int)
+    assert isinstance(result.done_today, int)
