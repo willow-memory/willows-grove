@@ -76,9 +76,9 @@ class ConsentToggleRow(Container):
         yield Static("", id=f"ctr-{self._key}-label", markup=True)
 
     def on_mount(self) -> None:
-        self._render()
+        self._update_label()
 
-    def _render(self) -> None:
+    def _update_label(self) -> None:
         from textual.css.query import NoMatches
         dot = "[green]●[/]" if self._enabled else "[red]●[/]"
         status = "ON" if self._enabled else "OFF"
@@ -91,7 +91,7 @@ class ConsentToggleRow(Container):
 
     def action_consent_toggle(self) -> None:
         self._enabled = not self._enabled
-        self._render()
+        self._update_label()
         self.post_message(_ConsentChanged(self._key, self._enabled))
 
     def on_click(self) -> None:

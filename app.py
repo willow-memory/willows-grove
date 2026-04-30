@@ -6,8 +6,16 @@ b17: WGRV1  ΔΣ=42
 Run: python3 app.py
 """
 import json
+import logging
 import os
 from pathlib import Path
+
+logging.basicConfig(
+    filename=Path.home() / ".willow" / "grove_error.log",
+    level=logging.DEBUG,
+    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+)
+logging.captureWarnings(True)
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding
