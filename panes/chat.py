@@ -75,6 +75,57 @@ class ChannelItem(ListItem):
         yield Label(f"# {name}{suffix}", markup=True)
 
 
+class ChannelList(Vertical):
+    """Standalone channel list widget — usable by ContextPanel independently of ChatPane."""
+
+    DEFAULT_CSS = """
+    ChannelList {
+        width: 1fr;
+        height: 1fr;
+        background: $panel;
+    }
+    ChannelList #cl-label {
+        padding: 1 1 0 1;
+        color: $text-muted;
+        text-style: bold;
+    }
+    """
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self._channels: list[dict] = []
+        self._cursors:  dict       = {}
+        self._cursors_initialized  = False
+
+    def compose(self):
+        yield Label("CHANNELS", id="cl-label")
+        yield ListView(id="cl-channel-list")
+
+    def on_mount(self) -> None:
+        self.set_interval(5, self._poll)
+        self._poll()
+
+    def _poll(self) -> None:
+        try:
+            channels = grove_reader.grove_channels(last_seen_ids=self._cursors)
+            if not self._cursors_initialized:
+                for ch in channels:
+                    self._cursors[ch["name"]] = ch.get("max_id", 0)
+                self._cursors_initialized = True
+                channels = grove_reader.grove_channels(last_seen_ids=self._cursors)
+            new = sort_channels(channels)
+            new_snap = [(c["name"], c.get("unread", 0)) for c in new]
+            old_snap = [(c["name"], c.get("unread", 0)) for c in self._channels]
+            self._channels = new
+            if new_snap != old_snap:
+                lst = self.query_one("#cl-channel-list", ListView)
+                lst.clear()
+                for ch in self._channels:
+                    lst.append(ChannelItem(ch))
+        except Exception:
+            pass
+
+
 class ChatPane(Container):
     DEFAULT_CSS = """
     ChatPane {
