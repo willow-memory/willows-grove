@@ -23,20 +23,20 @@ class NavChanged(Message):
         self.target = target
 
 
-class _NavItem(Static):
+class NavItem(Static):
     """Single clickable nav item."""
 
     DEFAULT_CSS = """
-    _NavItem {
+    NavItem {
         width: auto;
         padding: 0 1;
         color: #8b949e;
     }
-    _NavItem:hover {
+    NavItem:hover {
         color: #c9d1d9;
         background: #21262d;
     }
-    _NavItem.-active {
+    NavItem.-active {
         color: #58a6ff;
         text-style: bold;
     }
@@ -79,7 +79,7 @@ class NavBar(Horizontal):
     def compose(self) -> ComposeResult:
         yield Static("[bold green]◆[/]", id="nav-logo", markup=True)
         for target in NAV_TARGETS:
-            yield _NavItem(target, id=f"nav-{target}")
+            yield NavItem(target, id=f"nav-{target}")
         yield Static("", id="nav-vitals", markup=True)
 
     def on_mount(self) -> None:
@@ -98,7 +98,7 @@ class NavBar(Horizontal):
     def _update_active(self) -> None:
         for target in NAV_TARGETS:
             try:
-                item = self.query_one(f"#nav-{target}", _NavItem)
+                item = self.query_one(f"#nav-{target}", NavItem)
                 if target == self._active:
                     item.add_class("-active")
                 else:
