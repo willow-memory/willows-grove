@@ -50,7 +50,7 @@ class _ConsentChanged(Message):
 
 class ConsentToggleRow(Widget):
     can_focus = True
-    BINDINGS = [Binding("enter", "toggle", "Toggle")]
+    BINDINGS = [Binding("enter", "consent_toggle", "Toggle")]
 
     DEFAULT_CSS = """
     ConsentToggleRow {
@@ -89,13 +89,13 @@ class ConsentToggleRow(Widget):
         except NoMatches:
             pass
 
-    def action_toggle(self) -> None:
+    def action_consent_toggle(self) -> None:
         self._enabled = not self._enabled
         self._render()
         self.post_message(_ConsentChanged(self._key, self._enabled))
 
     def on_click(self) -> None:
-        self.action_toggle()
+        self.action_consent_toggle()
 
 
 class SettingsPane(Container):
@@ -118,15 +118,13 @@ class SettingsPane(Container):
     ]
 
     def compose(self) -> ComposeResult:
-        yield Label("CONSENT", id="sp-header")
-
-    def on_mount(self) -> None:
         consent = _read_consent()
+        yield Label("CONSENT", id="sp-header")
         for key, label, desc in self._ROWS:
-            self.mount(ConsentToggleRow(
+            yield ConsentToggleRow(
                 key, label, desc, consent.get(key, True),
                 id=f"ctr-row-{key}",
-            ))
+            )
 
     def on__consent_changed(self, event: _ConsentChanged) -> None:
         consent = _read_consent()

@@ -50,7 +50,7 @@ def test_consent_toggle_row_stores_fields():
 
 def test_consent_toggle_row_toggle_flips():
     row = ConsentToggleRow("lan", "LAN", "Local network", False)
-    row.action_toggle()
+    row.action_consent_toggle()
     assert row._enabled is True
-    row.action_toggle()
+    row.action_consent_toggle()
     assert row._enabled is False
