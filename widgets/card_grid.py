@@ -210,28 +210,30 @@ class CardCell(Widget):
         self._value      = value
         self._sub        = sub
         self._state      = state
+        # Widget IDs must be alphanumeric/hyphen only — sanitize special chars.
+        self._safe_id    = card_id.replace("+", "plus")
 
     def compose(self) -> ComposeResult:
         yield Static(self._label, classes="card-label", markup=False)
-        v = Static(self._value, id=f"cv-{self._card_id}", classes="card-value", markup=False)
+        v = Static(self._value, id=f"cv-{self._safe_id}", classes="card-value", markup=False)
         v.styles.color      = _STATE_COLORS.get(self._state, "#8b949e")
         v.styles.text_style = "bold"
         v.styles.height     = "auto"
         yield v
-        yield Static(self._sub, id=f"cs-{self._card_id}", classes="card-sub", markup=False)
+        yield Static(self._sub, id=f"cs-{self._safe_id}", classes="card-sub", markup=False)
 
     def update_card(self, value: str, sub: str, state: str) -> None:
         """Update the displayed value, sub-text, and state color."""
         from textual.css.query import NoMatches
         color = _STATE_COLORS.get(state, "#8b949e")
         try:
-            v = self.query_one(f"#cv-{self._card_id}", Static)
+            v = self.query_one(f"#cv-{self._safe_id}", Static)
             v.update(value)
             v.styles.color = color
         except NoMatches:
             pass
         try:
-            self.query_one(f"#cs-{self._card_id}", Static).update(sub)
+            self.query_one(f"#cs-{self._safe_id}", Static).update(sub)
         except NoMatches:
             pass
 
