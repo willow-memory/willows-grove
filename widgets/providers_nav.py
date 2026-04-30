@@ -3,6 +3,7 @@ b17: WGRV1  ΔΣ=42
 """
 from __future__ import annotations
 
+from textual import work
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.message import Message
@@ -65,3 +66,66 @@ class ProvidersNavRow(Widget):
 
     def on_click(self) -> None:
         self.action_activate()
+
+
+class _ProvidersRefreshed(Message):
+    def __init__(self, providers: list[dict]) -> None:
+        super().__init__()
+        self.providers = providers
+
+
+class ProvidersNav(Widget):
+    DEFAULT_CSS = """
+    ProvidersNav {
+        width: 1fr;
+        height: 1fr;
+        padding: 1 0;
+    }
+    ProvidersNav #pn-header {
+        color: #58a6ff;
+        text-style: bold;
+        padding: 0 1;
+    }
+    """
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self._provider_names: list[str] = []
+
+    def compose(self) -> ComposeResult:
+        yield Static("PROVIDERS", id="pn-header")
+
+    def on_mount(self) -> None:
+        self._fetch()
+        self.set_interval(15, self._fetch)
+
+    @work(thread=True)
+    def _fetch(self) -> None:
+        from panes.providers import _read_providers
+        providers = _read_providers()
+        self.post_message(_ProvidersRefreshed(providers))
+
+    def on__providers_refreshed(self, event: _ProvidersRefreshed) -> None:
+        providers = event.providers
+        new_names = [p["name"] for p in providers]
+
+        if new_names == self._provider_names:
+            for p in providers:
+                try:
+                    row = self.query_one(f"#pnr-row-{p['name']}", ProvidersNavRow)
+                    row.update_row(bool(p.get("enabled")), "local" if p.get("local") else "cloud")
+                except Exception:
+                    pass
+            return
+
+        self._provider_names = new_names
+        for child in list(self.query(ProvidersNavRow)):
+            child.remove()
+        for p in providers:
+            row = ProvidersNavRow(
+                p["name"],
+                bool(p.get("enabled")),
+                "local" if p.get("local") else "cloud",
+                id=f"pnr-row-{p['name']}",
+            )
+            self.mount(row)
