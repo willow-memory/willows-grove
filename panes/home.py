@@ -188,20 +188,6 @@ def fetch_desk_data(sender_name: str) -> DeskData:
     return data
 
 
-HOMEGRID_PLACEHOLDER = (
-    "[ Home Grid ]\n\n"
-    "  Card grid launcher — Phase 3.\n\n"
-    "  Each card opens an app or shows a live data feed.\n"
-    "  Cards defined in cards.py are loaded here."
-)
-
-PROJECTS_PLACEHOLDER = (
-    "[ Projects ]\n\n"
-    "  Click a card to open the pane:\n\n"
-    "  [Tasks]      [Agents]     [Routing]\n"
-    "  [Skills]     [Logs]\n\n"
-    "  Phase 3 adds live card grid from cards.py."
-)
 
 
 class _DeskRefreshed(Message):
@@ -254,33 +240,42 @@ class DeskPane(Container):
             pass
 
 
-class HomeGrid(Static):
-    """Center area for Home. Phase 3 replaces with live Textual card grid."""
+class HomeGrid(Container):
+    """Center area for Home — live card grid of 7 built-in system cards."""
 
     DEFAULT_CSS = """
     HomeGrid {
         width: 1fr;
         height: 1fr;
-        padding: 1 2;
-        color: #8b949e;
     }
     """
 
-    def __init__(self, **kwargs) -> None:
-        super().__init__(HOMEGRID_PLACEHOLDER, **kwargs)
+    def compose(self) -> ComposeResult:
+        from widgets.card_grid import CardGrid, BUILTIN_CARDS
+        yield CardGrid(BUILTIN_CARDS)
 
 
-class ProjectsGrid(Static):
-    """Center area for Projects nav. Phase 3 replaces with live card grid."""
+class ProjectsGrid(Container):
+    """Center area for Projects — launcher tiles for internal panes."""
 
     DEFAULT_CSS = """
     ProjectsGrid {
         width: 1fr;
         height: 1fr;
-        padding: 1 2;
-        color: #8b949e;
+        layout: grid;
+        grid-size: 3;
+        grid-gutter: 1 1;
+        padding: 1 1;
     }
     """
 
-    def __init__(self, **kwargs) -> None:
-        super().__init__(PROJECTS_PLACEHOLDER, **kwargs)
+    def compose(self) -> ComposeResult:
+        from widgets.card_grid import CardCell, LAUNCHER_CARDS
+        for card_id, label, nav in LAUNCHER_CARDS:
+            yield CardCell(
+                card_id, label,
+                nav_target=nav,
+                value="→",
+                state="blue",
+                id=f"cell-{card_id}",
+            )

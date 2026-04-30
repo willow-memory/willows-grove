@@ -84,3 +84,20 @@ def test_fetch_mcp_reads_file(tmp_path, monkeypatch):
     (tmp_path / ".mcp.json").write_text(json.dumps(mcp))
     result = fetch_runtime_card_values()
     assert result["mcp"]["value"] == "2"
+
+
+# ── CardActivated ─────────────────────────────────────────────────────────────
+from widgets.card_grid import CardActivated
+
+def test_card_activated_fields():
+    msg = CardActivated("kart", "#pane-tasks")
+    assert msg.card_id == "kart"
+    assert msg.nav_target == "#pane-tasks"
+
+def test_card_activated_empty_nav():
+    msg = CardActivated("secrets", "")
+    assert msg.nav_target == ""
+
+def test_card_activated_content_nav():
+    msg = CardActivated("knowledge", "knowledge")
+    assert msg.nav_target == "knowledge"

@@ -156,3 +156,141 @@ def fetch_runtime_card_values() -> dict[str, dict]:
         pass
 
     return out
+
+
+class CardActivated(Message):
+    """Posted by CardCell when the user activates a card (Enter or click)."""
+
+    def __init__(self, card_id: str, nav_target: str) -> None:
+        super().__init__()
+        self.card_id    = card_id
+        self.nav_target = nav_target
+
+
+class CardCell(Widget):
+    """A single focusable card tile showing label / value / sub-text."""
+
+    can_focus = True
+
+    BINDINGS = [("enter", "activate", "Open")]
+
+    DEFAULT_CSS = """
+    CardCell {
+        border: solid #30363d;
+        padding: 1 1;
+        height: 7;
+        background: #161b22;
+    }
+    CardCell:focus {
+        border: solid #58a6ff;
+    }
+    CardCell .card-label {
+        color: #58a6ff;
+        text-style: bold;
+    }
+    CardCell .card-sub {
+        color: #8b949e;
+    }
+    """
+
+    def __init__(
+        self,
+        card_id: str,
+        label: str,
+        nav_target: str = "",
+        value: str = "—",
+        sub: str = "",
+        state: str = "",
+        **kwargs,
+    ) -> None:
+        super().__init__(**kwargs)
+        self._card_id    = card_id
+        self._label      = label
+        self._nav_target = nav_target
+        self._value      = value
+        self._sub        = sub
+        self._state      = state
+
+    def compose(self) -> ComposeResult:
+        yield Static(self._label, classes="card-label", markup=False)
+        v = Static(self._value, id=f"cv-{self._card_id}", classes="card-value", markup=False)
+        v.styles.color      = _STATE_COLORS.get(self._state, "#8b949e")
+        v.styles.text_style = "bold"
+        v.styles.height     = "auto"
+        yield v
+        yield Static(self._sub, id=f"cs-{self._card_id}", classes="card-sub", markup=False)
+
+    def update_card(self, value: str, sub: str, state: str) -> None:
+        """Update the displayed value, sub-text, and state color."""
+        from textual.css.query import NoMatches
+        color = _STATE_COLORS.get(state, "#8b949e")
+        try:
+            v = self.query_one(f"#cv-{self._card_id}", Static)
+            v.update(value)
+            v.styles.color = color
+        except NoMatches:
+            pass
+        try:
+            self.query_one(f"#cs-{self._card_id}", Static).update(sub)
+        except NoMatches:
+            pass
+
+    def action_activate(self) -> None:
+        if self._nav_target:
+            self.post_message(CardActivated(self._card_id, self._nav_target))
+
+    def on_click(self) -> None:
+        self.action_activate()
+
+
+class _CardsRefreshed(Message):
+    def __init__(self, data: dict) -> None:
+        super().__init__()
+        self.data = data
+
+
+class CardGrid(Widget):
+    """Grid of CardCell widgets. Fetches live data every 30s via background worker."""
+
+    DEFAULT_CSS = """
+    CardGrid {
+        layout: grid;
+        grid-size: 3;
+        grid-gutter: 1 1;
+        height: 1fr;
+        width: 1fr;
+        padding: 1 1;
+    }
+    """
+
+    def __init__(self, cards: list[tuple[str, str]], **kwargs) -> None:
+        super().__init__(**kwargs)
+        self._cards = cards
+
+    def compose(self) -> ComposeResult:
+        for card_id, label in self._cards:
+            nav = _CARD_NAV.get(card_id, "")
+            yield CardCell(card_id, label, nav_target=nav, id=f"cell-{card_id}")
+
+    def on_mount(self) -> None:
+        self._fetch()
+        self.set_interval(30, self._fetch)
+
+    @work(thread=True)
+    def _fetch(self) -> None:
+        data = fetch_runtime_card_values()
+        self.post_message(_CardsRefreshed(data))
+
+    def on__cards_refreshed(self, event: _CardsRefreshed) -> None:
+        from textual.css.query import NoMatches
+        for card_id, _ in self._cards:
+            card_data = event.data.get(card_id, {})
+            try:
+                cell = self.query_one(f"#cell-{card_id}", CardCell)
+                cell.update_card(
+                    card_data.get("value", "—"),
+                    card_data.get("sub",   ""),
+                    card_data.get("state", ""),
+                )
+            except NoMatches:
+                pass

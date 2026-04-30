@@ -5,7 +5,7 @@ import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from panes.home import (
     DeskData, agent_dot, format_age, mini_bar,
-    HOMEGRID_PLACEHOLDER, PROJECTS_PLACEHOLDER,
+    HomeGrid, ProjectsGrid,
 )
 
 # ── DeskData ──────────────────────────────────────────────────────────────────
@@ -65,13 +65,13 @@ def test_mini_bar_half():
 
 # ── placeholder strings still present ────────────────────────────────────────
 
-def test_homegrid_placeholder_mentions_phase():
-    assert "Phase" in HOMEGRID_PLACEHOLDER or "home" in HOMEGRID_PLACEHOLDER.lower()
+def test_homegrid_is_container():
+    from textual.containers import Container
+    assert issubclass(HomeGrid, Container)
 
-def test_projects_placeholder_lists_internal_panes():
-    text = PROJECTS_PLACEHOLDER.lower()
-    for pane in ("tasks", "agents", "routing", "skills", "logs"):
-        assert pane in text
+def test_projectsgrid_is_container():
+    from textual.containers import Container
+    assert issubclass(ProjectsGrid, Container)
 
 
 # ── render_desk sections ──────────────────────────────────────────────────────

@@ -30,6 +30,7 @@ from widgets.nav_bar        import NavBar, NavChanged, NAV_TARGETS
 from widgets.hero_scene     import HeroScene
 from widgets.chat_strip     import ChatStrip
 from widgets.thought_stream import ThoughtStream, SessionStats
+from widgets.card_grid      import CardActivated
 
 import grove_reader
 
@@ -347,6 +348,23 @@ class WillowGrove(App):
                 self.query_one(pane_id, pane_cls).refresh_data()
             except NoMatches:
                 pass
+
+    def _show_internal_pane(self, pane_id: str) -> None:
+        """Hide all content + internal panes, then show the requested internal pane."""
+        self._hide_all_content_panes()
+        try:
+            self.query_one(pane_id).display = True
+        except NoMatches:
+            pass
+
+    def on_card_activated(self, event: CardActivated) -> None:
+        target = event.nav_target
+        if not target:
+            return
+        if target.startswith("#"):
+            self._show_internal_pane(target)
+        else:
+            self.action_nav(target)
 
     def action_refresh(self) -> None:
         self._do_refresh()
