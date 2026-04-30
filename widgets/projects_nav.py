@@ -1,17 +1,11 @@
-"""widgets/projects_nav.py — ProjectsNavRow, ProjectsNav for ContextPanel.
+"""widgets/projects_nav.py — data layer and widget classes for Projects ContextPanel nav.
 b17: WGRV1  ΔΣ=42
 """
 from __future__ import annotations
 
 from pathlib import Path
 
-from textual import work
-from textual.app import ComposeResult
 from textual.message import Message
-from textual.widget import Widget
-from textual.widgets import Label, Rule, Static
-
-from widgets.card_grid import CardActivated
 
 
 # (card_id, label, nav_target)
@@ -47,22 +41,27 @@ def _fetch_nav_counts() -> dict[str, dict]:
     except Exception:
         pass
 
-    # Agents — active count
     try:
-        import grove_reader
-        agents = grove_reader.grove_agents()
-        count = len(agents)
-        out["agents"] = {"count": str(count), "state": "green" if count > 0 else "dim"}
+        import grove_reader as _gr
     except Exception:
-        pass
+        _gr = None  # type: ignore
+
+    # Agents — active count
+    if _gr is not None:
+        try:
+            agents = _gr.grove_agents()
+            count = len(agents)
+            out["agents"] = {"count": str(count), "state": "green" if count > 0 else "dim"}
+        except Exception:
+            pass
 
     # Routing — recent decision count
-    try:
-        import grove_reader
-        decisions = grove_reader.routing_decisions()
-        out["routing"] = {"count": str(len(decisions)), "state": "dim"}
-    except Exception:
-        pass
+    if _gr is not None:
+        try:
+            decisions = _gr.routing_decisions()
+            out["routing"] = {"count": str(len(decisions)), "state": "dim"}
+        except Exception:
+            pass
 
     # Skills — count .md files in ~/.willow/skills/
     try:
@@ -82,6 +81,6 @@ def _fetch_nav_counts() -> dict[str, dict]:
 
 
 class _NavRefreshed(Message):
-    def __init__(self, data: dict) -> None:
+    def __init__(self, data: dict[str, dict]) -> None:
         super().__init__()
-        self.data = data
+        self.data: dict[str, dict] = data

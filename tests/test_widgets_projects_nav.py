@@ -22,9 +22,13 @@ def test_fetch_values_are_strings():
         assert isinstance(result[cid]["state"], str), f"{cid}.state not str"
 
 
-def test_fetch_never_raises():
+def test_fetch_agents_fallback_on_failure(monkeypatch):
+    import grove_reader
+    def _fail(*args, **kwargs): raise RuntimeError("db down")
+    monkeypatch.setattr(grove_reader, "grove_agents", _fail)
     result = _fetch_nav_counts()
-    assert isinstance(result, dict)
+    assert result["agents"]["count"] == "—"
+    assert result["logs"]["count"] == "live"
 
 
 def test_fetch_logs_always_live():
