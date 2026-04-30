@@ -16,7 +16,8 @@ from textual.css.query import NoMatches
 from textual.widgets import Footer, Label, Rule, Static
 
 from panes.chat      import ChatPane, ChannelList, sender_color
-from widgets.projects_nav import ProjectsNav
+from widgets.projects_nav    import ProjectsNav
+from widgets.knowledge_nav  import KnowledgeAtomSelected, KnowledgeNav
 from panes.tasks     import TasksPane, fetch_backfill_progress, fetch_tasks
 from panes.agents    import AgentsPane
 from panes.routing   import RoutingPane
@@ -124,6 +125,7 @@ class ContextPanel(Vertical):
         yield DeskPane(id="ctx-home")
         yield ChannelList(id="ctx-chat")
         yield ProjectsNav(id="ctx-projects")
+        yield KnowledgeNav(id="ctx-knowledge")
 
     def on_mount(self) -> None:
         self._show_target("home")
@@ -133,9 +135,10 @@ class ContextPanel(Vertical):
 
     def _show_target(self, target: str) -> None:
         ctx_map = {
-            "home":     "#ctx-home",
-            "chat":     "#ctx-chat",
-            "projects": "#ctx-projects",
+            "home":      "#ctx-home",
+            "chat":      "#ctx-chat",
+            "projects":  "#ctx-projects",
+            "knowledge": "#ctx-knowledge",
         }
         for widget_id in ctx_map.values():
             try:
@@ -357,6 +360,12 @@ class WillowGrove(App):
         self._hide_all_content_panes()
         try:
             self.query_one(pane_id).display = True
+        except NoMatches:
+            pass
+
+    def on_knowledge_atom_selected(self, event: KnowledgeAtomSelected) -> None:
+        try:
+            self.query_one(KnowledgePane).display_atom(event.atom_id)
         except NoMatches:
             pass
 
