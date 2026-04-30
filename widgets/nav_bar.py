@@ -22,8 +22,29 @@ class NavChanged(Message):
         self.target = target
 
 
-class _NavItem(Static):
+class NavItem(Static):
     """Single clickable nav label. Posts NavChanged on click."""
+
+    DEFAULT_CSS = """
+    NavItem {
+        height: 1;
+        padding: 0 1;
+        color: #8b949e;
+    }
+    NavItem:hover {
+        background: #21262d;
+        color: #c9d1d9;
+    }
+    NavItem.-active-nav {
+        color: #58a6ff;
+        text-style: bold;
+    }
+    NavItem#nav-logo {
+        color: #3fb950;
+        text-style: bold;
+        padding: 0 2;
+    }
+    """
 
     def __init__(self, label: str, target: str, **kwargs) -> None:
         super().__init__(label, **kwargs)
@@ -40,28 +61,9 @@ class NavBar(Horizontal):
     NavBar {
         height: 1;
         background: #161b22;
-        border-bottom: solid #30363d;
         padding: 0 0;
     }
-    _NavItem {
-        height: 1;
-        padding: 0 1;
-        color: #8b949e;
-    }
-    _NavItem:hover {
-        background: #21262d;
-        color: #c9d1d9;
-    }
-    _NavItem.-active-nav {
-        color: #58a6ff;
-        text-style: bold;
-    }
-    _NavItem#nav-logo {
-        color: #3fb950;
-        text-style: bold;
-        padding: 0 2;
-    }
-    #nav-vitals {
+    NavBar #nav-vitals {
         width: 1fr;
         text-align: right;
         color: #8b949e;
@@ -70,9 +72,9 @@ class NavBar(Horizontal):
     """
 
     def compose(self) -> ComposeResult:
-        yield _NavItem("◆", "home", id="nav-logo")
+        yield NavItem("◆", "home", id="nav-logo")
         for target in NAV_TARGETS:
-            yield _NavItem(target.capitalize(), target, id=f"nav-{target}")
+            yield NavItem(target.capitalize(), target, id=f"nav-{target}")
         yield Static("", id="nav-vitals")
 
     def on_mount(self) -> None:
@@ -85,7 +87,7 @@ class NavBar(Horizontal):
         """Update visual active state without emitting NavChanged."""
         for t in NAV_TARGETS:
             try:
-                item = self.query_one(f"#nav-{t}", _NavItem)
+                item = self.query_one(f"#nav-{t}", NavItem)
                 if t == target:
                     item.add_class("-active-nav")
                 else:
