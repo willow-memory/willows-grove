@@ -143,3 +143,52 @@ class ProjectsNavRow(Widget):
 
     def on_click(self) -> None:
         self.action_activate()
+
+
+class ProjectsNav(Widget):
+    """Left-panel navigator for the Projects target. Polls counts every 10s."""
+
+    DEFAULT_CSS = """
+    ProjectsNav {
+        width: 1fr;
+        height: 1fr;
+        padding: 1 0;
+    }
+    ProjectsNav #pn-header {
+        color: #58a6ff;
+        text-style: bold;
+        padding: 0 1;
+    }
+    ProjectsNav Rule {
+        margin: 0;
+        color: #30363d;
+    }
+    """
+
+    def compose(self) -> ComposeResult:
+        yield Label("PROJECTS", id="pn-header")
+        yield Rule()
+        for card_id, label, nav in _NAV_ROWS:
+            yield ProjectsNavRow(card_id, label, nav, id=f"pnrow-{card_id}")
+
+    def on_mount(self) -> None:
+        self._fetch()
+        self.set_interval(10, self._fetch)
+
+    @work(thread=True)
+    def _fetch(self) -> None:
+        data = _fetch_nav_counts()
+        self.post_message(_NavRefreshed(data))
+
+    def on__nav_refreshed(self, event: _NavRefreshed) -> None:
+        from textual.css.query import NoMatches
+        for card_id, _, _ in _NAV_ROWS:
+            row_data = event.data.get(card_id, {})
+            try:
+                row = self.query_one(f"#pnrow-{card_id}", ProjectsNavRow)
+                row.update_row(
+                    row_data.get("count", "—"),
+                    row_data.get("state", "dim"),
+                )
+            except NoMatches:
+                pass
