@@ -251,8 +251,8 @@ class HomeGrid(Container):
     """
 
     def compose(self) -> ComposeResult:
-        from widgets.card_grid import CardGrid, BUILTIN_CARDS
-        yield CardGrid(BUILTIN_CARDS)
+        from widgets.card_grid import CardGrid
+        yield CardGrid([])  # on_mount calls reload() to populate from SOIL + built-ins
 
     def on_mount(self) -> None:
         from widgets import card_store

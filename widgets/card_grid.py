@@ -278,7 +278,12 @@ class CardGrid(Widget):
         self.set_interval(30, self._fetch)
 
     def reload(self) -> None:
-        """Rebuild cells from SOIL enabled cards + built-ins + plus card."""
+        """Rebuild cells from SOIL enabled cards + built-ins + plus card.
+
+        Cells are created without widget IDs to avoid Textual's ID-registry
+        conflict when remove_children() + mount() are called synchronously.
+        on__cards_refreshed iterates query(CardCell) instead.
+        """
         from widgets import card_store
         soil_cards = [
             (c["id"], c["label"], c.get("nav_target") or "")
@@ -291,9 +296,10 @@ class CardGrid(Widget):
         self._nav_cache = {cid: nav for cid, _, nav in all_entries}
 
         self.remove_children()
+        # No id= kwarg — avoids duplicate-ID errors when IDs from the prior
+        # compose() or reload() haven't been fully deregistered yet.
         cells = [
-            CardCell(cid, lbl, nav_target=self._nav_cache[cid],
-                     id="cell-plus" if cid == "+" else f"cell-{cid}")
+            CardCell(cid, lbl, nav_target=self._nav_cache[cid])
             for cid, lbl in self._cards
         ]
         self.mount(*cells)
@@ -305,17 +311,13 @@ class CardGrid(Widget):
         self.post_message(_CardsRefreshed(data))
 
     def on__cards_refreshed(self, event: _CardsRefreshed) -> None:
-        from textual.css.query import NoMatches
-        for card_id, _ in self._cards:
-            if card_id == "+":
+        for cell in self.query(CardCell):
+            cid = cell._card_id
+            if cid == "+":
                 continue
-            card_data = event.data.get(card_id, {})
-            try:
-                cell = self.query_one(f"#cell-{card_id}", CardCell)
-                cell.update_card(
-                    card_data.get("value", "—"),
-                    card_data.get("sub",   ""),
-                    card_data.get("state", ""),
-                )
-            except NoMatches:
-                pass
+            card_data = event.data.get(cid, {})
+            cell.update_card(
+                card_data.get("value", "—"),
+                card_data.get("sub",   ""),
+                card_data.get("state", ""),
+            )
