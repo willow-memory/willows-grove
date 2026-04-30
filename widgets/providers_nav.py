@@ -40,7 +40,7 @@ class ProvidersNavRow(Widget):
         self._ptype = ptype
 
     def compose(self) -> ComposeResult:
-        yield Static("", id="pnr-label", markup=True)
+        yield Static("", id=f"pnr-{self._name}-label", markup=True)
 
     def on_mount(self) -> None:
         self._render()
@@ -51,7 +51,7 @@ class ProvidersNavRow(Widget):
         status = "ON" if self._enabled else "OFF"
         text = f"{dot} {self._name}  {status}  {self._ptype}"
         try:
-            self.query_one("#pnr-label", Static).update(text)
+            self.query_one(f"#pnr-{self._name}-label", Static).update(text)
         except NoMatches:
             pass
 
