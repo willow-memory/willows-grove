@@ -120,8 +120,8 @@ class CardBuilderModal(ModalScreen):
             conn = _pg_conn()
             cur  = conn.cursor()
             cur.execute("""
-                INSERT INTO grove.channels (name, channel_type, description, agent_name)
-                VALUES ('card-builder', 'group', 'Heimdallr card builder interview', 'heimdallr')
+                INSERT INTO grove.channels (name, channel_type, description)
+                VALUES ('card-builder', 'group', 'Heimdallr card builder interview')
                 ON CONFLICT (name) DO NOTHING
             """)
             conn.commit()
