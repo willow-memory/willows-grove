@@ -175,11 +175,17 @@ class ChatPane(Container):
     ChatPane #msg-input:focus {
         border: tall $accent;
     }
+    ChatPane #agent-status {
+        height: 1;
+        padding: 0 2;
+        color: #8b949e;
+    }
     """
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._active_channel: str  = ""
+        self._active_agent:   str  = ""
         self._channels: list[dict] = []
         self._cursors:  dict       = {}
         self._cursors_initialized  = False
@@ -191,6 +197,7 @@ class ChatPane(Container):
             yield ListView(id="channel-list")
         with Vertical(id="msg-area"):
             yield Static("Select a channel", id="channel-title")
+            yield Static("", id="agent-status", markup=True)
             yield RichLog(id="msg-log", highlight=False, markup=True, wrap=True)
             yield Input(placeholder="Message…", id="msg-input")
 
@@ -260,14 +267,56 @@ class ChatPane(Container):
 
     def _on_notify(self, notified_channels: set[str]) -> None:
         if self._active_channel in notified_channels:
+            self._clear_agent_status()
             self._load_messages(self._active_channel)
         # Badge counts for non-active channels update on the next scheduled
         # _poll (5s). Calling _poll here caused ListView flicker under load.
 
+    def _clear_agent_status(self) -> None:
+        from textual.css.query import NoMatches
+        try:
+            self.query_one("#agent-status", Static).update("")
+        except NoMatches:
+            pass
+
     def _open_channel(self, name: str) -> None:
         self._active_channel = name
-        self.query_one("#channel-title", Static).update(f"# {name}")
+        ch = next((c for c in self._channels if c["name"] == name), {})
+        self._active_agent = ch.get("agent_name") or ""
+        if self._active_agent:
+            title = f"# {name}  [dim]· {self._active_agent}[/]"
+        else:
+            title = f"# {name}"
+        self.query_one("#channel-title", Static).update(title)
+        self._clear_agent_status()
         self._load_messages(name)
+
+    @work(thread=True)
+    def _dispatch_to_agent(self, agent: str, message: str, channel: str) -> None:
+        """Post a dispatch request to #dispatch grove channel."""
+        try:
+            conn = _pg_conn()
+            cur  = conn.cursor()
+            cur.execute(
+                "SELECT id FROM grove.channels WHERE name = 'dispatch' LIMIT 1"
+            )
+            row = cur.fetchone()
+            if row:
+                import json as _json
+                payload = _json.dumps({
+                    "to":            agent,
+                    "prompt":        message,
+                    "reply_channel": channel,
+                })
+                cur.execute(
+                    "INSERT INTO grove.messages (channel_id, sender, content)"
+                    " VALUES (%s, %s, %s)",
+                    (row[0], "dashboard", payload),
+                )
+                conn.commit()
+            conn.close()
+        except Exception:
+            pass
 
     def _load_messages(self, channel: str) -> None:
         try:
@@ -320,6 +369,15 @@ class ChatPane(Container):
             conn.close()
         except Exception:
             pass
+        if self._active_agent:
+            from textual.css.query import NoMatches
+            try:
+                self.query_one("#agent-status", Static).update(
+                    f"[dim]● waiting for {self._active_agent}…[/]"
+                )
+            except NoMatches:
+                pass
+            self._dispatch_to_agent(self._active_agent, body, self._active_channel)
         self._load_messages(self._active_channel)
 
     def on_unmount(self) -> None:

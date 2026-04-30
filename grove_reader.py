@@ -71,13 +71,20 @@ def grove_channels(conn=None, last_seen_ids: dict | None = None) -> list[dict]:
     last_seen_ids = last_seen_ids or {}
     try:
         cur = conn.cursor()
-        cur.execute(
-            "SELECT id, name FROM grove.channels "
-            "WHERE is_archived = FALSE ORDER BY id"
-        )
-        channels = cur.fetchall()
+        try:
+            cur.execute(
+                "SELECT id, name, agent_name FROM grove.channels "
+                "WHERE is_archived = FALSE ORDER BY id"
+            )
+            channels = [(r[0], r[1], r[2]) for r in cur.fetchall()]
+        except Exception:
+            cur.execute(
+                "SELECT id, name FROM grove.channels "
+                "WHERE is_archived = FALSE ORDER BY id"
+            )
+            channels = [(r[0], r[1], None) for r in cur.fetchall()]
         result = []
-        for ch_id, name in channels:
+        for ch_id, name, agent_name in channels:
             last_id = last_seen_ids.get(name, 0)
             cur.execute(
                 "SELECT COUNT(*) FILTER (WHERE id > %s), COALESCE(MAX(id), 0) "
@@ -87,7 +94,8 @@ def grove_channels(conn=None, last_seen_ids: dict | None = None) -> list[dict]:
             row = cur.fetchone()
             unread = row[0] if row else 0
             max_id = row[1] if row else 0
-            result.append({"id": ch_id, "name": name, "unread": unread, "max_id": max_id})
+            result.append({"id": ch_id, "name": name, "unread": unread,
+                           "max_id": max_id, "agent_name": agent_name})
         return result
     except Exception:
         return []

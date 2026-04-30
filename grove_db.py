@@ -79,10 +79,15 @@ def init_schema(conn):
             name            TEXT NOT NULL UNIQUE,
             channel_type    TEXT NOT NULL CHECK (channel_type IN ('direct','group','persona','broadcast')),
             description     TEXT,
+            agent_name      TEXT,
             created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             is_archived     BOOLEAN DEFAULT FALSE
         )
+    """)
+
+    cur.execute("""
+        ALTER TABLE channels ADD COLUMN IF NOT EXISTS agent_name TEXT
     """)
 
     cur.execute("""
