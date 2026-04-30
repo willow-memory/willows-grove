@@ -12,7 +12,7 @@ from widgets.card_grid import (
 # ── constants ─────────────────────────────────────────────────────────────────
 
 def test_state_colors_has_required_keys():
-    for key in ("green", "amber", "red", "blue", "dim", ""):
+    for key in ("green", "amber", "red", "blue", "yellow", "dim", ""):
         assert key in _STATE_COLORS
 
 def test_card_nav_covers_all_builtin_ids():

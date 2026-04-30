@@ -83,16 +83,18 @@ def fetch_runtime_card_values() -> dict[str, dict]:
             user=os.environ.get("WILLOW_PG_USER", os.environ.get("USER", "")),
             connect_timeout=2,
         )
-        cur = conn.cursor()
-        cur.execute("SELECT COUNT(*) FROM public.knowledge")
-        total = cur.fetchone()[0]
-        cur.execute(
-            "SELECT COUNT(*) FROM public.knowledge"
-            " WHERE created_at > NOW() - INTERVAL '24 hours'"
-        )
-        today = cur.fetchone()[0]
-        conn.close()
-        out["knowledge"] = {"value": str(total), "sub": f"{today} today", "state": "blue"}
+        try:
+            cur = conn.cursor()
+            cur.execute("SELECT COUNT(*) FROM public.knowledge")
+            total = cur.fetchone()[0]
+            cur.execute(
+                "SELECT COUNT(*) FROM public.knowledge"
+                " WHERE created_at > NOW() - INTERVAL '24 hours'"
+            )
+            today = cur.fetchone()[0]
+            out["knowledge"] = {"value": str(total), "sub": f"{today} today", "state": "blue"}
+        finally:
+            conn.close()
     except Exception:
         pass
 
