@@ -47,6 +47,86 @@ def search_kb(query: str, limit: int = 50) -> list[dict]:
         return []
 
 
+def fetch_atom(atom_id: int, conn=None) -> dict | None:
+    """Fetch a single knowledge atom by id. Returns None if not found or on failure."""
+    close = conn is None
+    if conn is None:
+        try:
+            conn = _pg_conn()
+        except Exception:
+            return None
+    try:
+        cur = conn.cursor()
+        try:
+            cur.execute(
+                "SELECT id, title, summary, domain, weight, content "
+                "FROM public.knowledge WHERE id = %s",
+                (atom_id,),
+            )
+            row = cur.fetchone()
+            if not row:
+                return None
+            return {
+                "id": row[0], "title": row[1] or "", "summary": row[2] or "",
+                "domain": row[3] or "", "weight": row[4] or 0, "content": row[5] or "",
+            }
+        except Exception:
+            conn.rollback()
+            cur.execute(
+                "SELECT id, title, summary, domain, weight "
+                "FROM public.knowledge WHERE id = %s",
+                (atom_id,),
+            )
+            row = cur.fetchone()
+            if not row:
+                return None
+            return {
+                "id": row[0], "title": row[1] or "", "summary": row[2] or "",
+                "domain": row[3] or "", "weight": row[4] or 0,
+            }
+    except Exception:
+        return None
+    finally:
+        if close:
+            try:
+                conn.close()
+            except Exception:
+                pass
+
+
+def render_atom(atom: dict) -> str:
+    """Render a knowledge atom dict as Textual rich markup."""
+    _H = "[bold #58a6ff]"
+    _D = "[dim]"
+    _V = "[#c9d1d9]"
+    _E = "[/]"
+    lines: list[str] = []
+
+    lines.append(
+        f"{_H}#{atom.get('id', '?')}[/]  "
+        f"{_D}{atom.get('domain', '')}  w={atom.get('weight', 0)}{_E}"
+    )
+    lines.append("")
+
+    title = atom.get("title", "")
+    if title:
+        lines.append(f"[bold]{title}[/]")
+        lines.append("")
+
+    summary = atom.get("summary", "")
+    if summary:
+        lines.append(f"{_D}SUMMARY{_E}")
+        lines.append(summary)
+        lines.append("")
+
+    content = atom.get("content", "")
+    if content:
+        lines.append(f"{_D}CONTENT{_E}")
+        lines.append(content)
+
+    return "\n".join(lines)
+
+
 class KnowledgePane(Container):
     def compose(self):
         yield Label("  Knowledge — search (Enter to run)", id="kb-title")
