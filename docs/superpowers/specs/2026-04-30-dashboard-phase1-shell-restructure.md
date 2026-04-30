@@ -18,7 +18,7 @@ This is structural only. No new data sources. No new panes. The 10 existing pane
 
 ```
 ┌─ NavBar ──────────────────────────────────────────── VitalsBar ─┐
-│  ◆ Home  Chat  Tasks  Agents  Knowledge  Providers  Skills  …   │
+│  ◆ Home  Chat  Projects  Knowledge  Providers  Health  Settings  Help  │
 ├─ HeroScene (full width) ────────────────────────────────────────┤
 │                         ,                                        │
 │                        /|\       ☁  ☁       ☀ 18°C  09:41      │
@@ -43,9 +43,11 @@ This is structural only. No new data sources. No new panes. The 10 existing pane
 ## Regions
 
 ### NavBar
-A single-row `Horizontal` widget replacing `TabbedContent`'s built-in tab strip. Contains clickable nav labels (Home, Chat, Tasks, Agents, Knowledge, Providers, Skills, Health, Logs) and the `VitalsBar` content inlined at the right. Clicking a label sets `ContentArea`'s active pane and triggers a `NavChanged` message that the `ContextPanel` and `ChatStrip` listen to.
+A single-row `Horizontal` widget replacing `TabbedContent`'s built-in tab strip. Left side: `◆` logo button (home shortcut) followed by nav labels — **Home, Chat, Projects, Knowledge, Providers, Health, Settings, Help**. Right side: `VitalsBar` content inlined. Clicking a label sets `ContentArea`'s active pane and triggers a `NavChanged` message that the `ContextPanel` and `ChatStrip` listen to.
 
 Not a Textual `TabbedContent` — a custom `NavBar` widget that emits `NavChanged(target: str)` messages.
+
+**What is NOT in the nav bar:** Tasks, Agents, Routing, Skills, Logs. Tasks and Agents are always visible in `RightPanel`. Routing, Skills, and Logs are internal views reachable from the Projects card grid or the left `ContextPanel` — they do not need top-level slots.
 
 ### HeroScene
 Full-width band below the NavBar. Fixed height: 10 lines.
@@ -85,14 +87,14 @@ Center column, `width: 1fr`. Contains all 10 existing panes plus the new `HomeGr
 |---|---|
 | Home | `HomeGrid` (Phase 3 fills with live cards; Phase 1 = static placeholder grid) |
 | Chat | `ChatPane` (existing, untouched) |
-| Tasks | `TasksPane` (existing, untouched) |
-| Agents | `AgentsPane` (existing, untouched) |
-| Routing | `RoutingPane` (existing, untouched) |
+| Projects | `ProjectsGrid` — card grid launcher (Phase 3 live; Phase 1 = static placeholder). Cards include Agents, Tasks, Routing, Skills, Logs, and project-specific entries. |
 | Knowledge | `KnowledgePane` (existing, untouched) |
 | Providers | `ProvidersPane` (existing, untouched) |
-| Skills | `SkillsPane` (existing, untouched) |
 | Health | `HealthPane` (existing, untouched) |
-| Logs | `LogsPane` (existing, untouched) |
+| Settings | `SettingsPane` (Phase 1 = static placeholder) |
+| Help | `HelpPane` (Phase 1 = static placeholder) |
+
+**Internal pane access:** `TasksPane`, `AgentsPane`, `RoutingPane`, `SkillsPane`, and `LogsPane` remain mounted but are reached via the Projects card grid (card click → show pane), not direct nav bar links. Tasks and Agents are also always visible in `RightPanel`.
 
 Panes are mounted once at startup and shown/hidden via `display` toggling — not destroyed and recreated. This preserves pane state (scroll position, loaded data) across nav switches.
 
@@ -179,10 +181,11 @@ Approximate widths at 120-col terminal:
 ## Definition of done
 
 - `python3 app.py` starts without error
-- All 10 existing panes accessible via nav labels, content switches correctly
+- All 8 nav targets accessible, content switches correctly
+- Internal panes (Tasks, Agents, Routing, Skills, Logs) reachable via Projects card grid
 - Hero scene renders (static ground strip acceptable for Phase 1)
 - `ContextPanel` shows placeholder on Home, channel list on Chat
 - `RightPanel` includes `ThoughtStream` and session stats
 - `ChatStrip` shows last Grove message, updates on nav change
 - No regressions in `ChatPane` behaviour (NOTIFY, badge, ListView)
-- Keyboard bindings preserved (1-0 for nav, q=quit, r=refresh)
+- Keyboard bindings preserved (1-8 for nav, q=quit, r=refresh)
