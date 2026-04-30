@@ -184,6 +184,26 @@ def archive_channel(conn, channel_id: int) -> bool:
     return cur.rowcount > 0
 
 
+def ensure_card_builder_channel() -> None:
+    """Idempotent: create #card-builder channel with agent_name='heimdallr' if absent."""
+    import os
+    import psycopg2
+    try:
+        pg_db   = os.environ.get("WILLOW_PG_DB", "willow_19")
+        pg_user = os.environ.get("WILLOW_PG_USER", os.environ.get("USER", ""))
+        conn = psycopg2.connect(dbname=pg_db, user=pg_user, connect_timeout=2)
+        cur  = conn.cursor()
+        cur.execute("""
+            INSERT INTO grove.channels (name, channel_type, description, agent_name)
+            VALUES ('card-builder', 'group', 'Heimdallr card builder interview', 'heimdallr')
+            ON CONFLICT (name) DO NOTHING
+        """)
+        conn.commit()
+        conn.close()
+    except Exception:
+        pass
+
+
 # ---------------------------------------------------------------------------
 # Messages
 # ---------------------------------------------------------------------------

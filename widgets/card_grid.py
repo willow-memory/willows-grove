@@ -265,16 +265,38 @@ class CardGrid(Widget):
 
     def __init__(self, cards: list[tuple[str, str]], **kwargs) -> None:
         super().__init__(**kwargs)
-        self._cards = cards
+        self._cards: list[tuple[str, str]]  = cards
+        self._nav_cache: dict[str, str]     = {cid: _CARD_NAV.get(cid, "") for cid, _ in cards}
 
     def compose(self) -> ComposeResult:
         for card_id, label in self._cards:
-            nav = _CARD_NAV.get(card_id, "")
+            nav = self._nav_cache.get(card_id, "")
             yield CardCell(card_id, label, nav_target=nav, id=f"cell-{card_id}")
 
     def on_mount(self) -> None:
         self._fetch()
         self.set_interval(30, self._fetch)
+
+    def reload(self) -> None:
+        """Rebuild cells from SOIL enabled cards + built-ins + plus card."""
+        from widgets import card_store
+        soil_cards = [
+            (c["id"], c["label"], c.get("nav_target") or "")
+            for c in card_store.load_cards()
+        ]
+        builtin    = [(cid, lbl, _CARD_NAV.get(cid, "")) for cid, lbl in BUILTIN_CARDS]
+        all_entries = soil_cards + builtin + [("+", "+ Add Card", "+")]
+
+        self._cards     = [(cid, lbl) for cid, lbl, _ in all_entries]
+        self._nav_cache = {cid: nav for cid, _, nav in all_entries}
+
+        self.remove_children()
+        cells = [
+            CardCell(cid, lbl, nav_target=self._nav_cache[cid], id=f"cell-{cid}")
+            for cid, lbl in self._cards
+        ]
+        self.mount(*cells)
+        self._fetch()
 
     @work(thread=True)
     def _fetch(self) -> None:

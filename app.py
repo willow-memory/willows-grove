@@ -50,6 +50,7 @@ from widgets.chat_strip     import ChatStrip
 from widgets.thought_stream import ThoughtStream, SessionStats
 from widgets.card_grid          import CardActivated
 from widgets.command_provider   import WillowCommandProvider
+from widgets.card_builder_modal import CardBuilderModal
 
 import grove_reader
 
@@ -466,6 +467,11 @@ class WillowGrove(App):
         except NoMatches:
             pass
         self.notify("Refreshed")
+
+    def on_screen_dismiss(self, event) -> None:
+        if isinstance(event.screen, CardBuilderModal):
+            with suppress(NoMatches):
+                self.query_one(HomeGrid).refresh_cards()
 
     def action_nav(self, target: str) -> None:
         try:

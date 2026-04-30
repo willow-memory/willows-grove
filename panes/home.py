@@ -241,7 +241,7 @@ class DeskPane(Container):
 
 
 class HomeGrid(Container):
-    """Center area for Home — live card grid of 7 built-in system cards."""
+    """Center area for Home — live card grid backed by SOIL + built-ins."""
 
     DEFAULT_CSS = """
     HomeGrid {
@@ -253,6 +253,29 @@ class HomeGrid(Container):
     def compose(self) -> ComposeResult:
         from widgets.card_grid import CardGrid, BUILTIN_CARDS
         yield CardGrid(BUILTIN_CARDS)
+
+    def on_mount(self) -> None:
+        from widgets import card_store
+        from widgets.card_grid import CardGrid
+        from textual.css.query import NoMatches
+        card_store.seed_catalog()
+        try:
+            self.query_one(CardGrid).reload()
+        except NoMatches:
+            pass
+
+    def on_card_activated(self, event) -> None:
+        if getattr(event, "nav_target", None) == "+":
+            from widgets.card_builder_modal import CardBuilderModal
+            self.app.push_screen(CardBuilderModal())
+
+    def refresh_cards(self) -> None:
+        from widgets.card_grid import CardGrid
+        from textual.css.query import NoMatches
+        try:
+            self.query_one(CardGrid).reload()
+        except NoMatches:
+            pass
 
 
 class ProjectsGrid(Container):
