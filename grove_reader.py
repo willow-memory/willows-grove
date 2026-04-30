@@ -78,6 +78,8 @@ def grove_channels(conn=None, last_seen_ids: dict | None = None) -> list[dict]:
             )
             channels = [(r[0], r[1], r[2]) for r in cur.fetchall()]
         except Exception:
+            conn.rollback()
+            cur = conn.cursor()
             cur.execute(
                 "SELECT id, name FROM grove.channels "
                 "WHERE is_archived = FALSE ORDER BY id"
