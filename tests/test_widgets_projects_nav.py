@@ -57,3 +57,30 @@ def test_nav_refreshed_carries_data():
     data = {"tasks": {"count": "3", "state": "yellow"}}
     msg = _NavRefreshed(data)
     assert msg.data == data
+
+
+from widgets.projects_nav import ProjectsNavRow
+
+
+def test_row_stores_card_id():
+    row = ProjectsNavRow("tasks", "Tasks", "#pane-tasks")
+    assert row._card_id == "tasks"
+
+
+def test_row_stores_nav_target():
+    row = ProjectsNavRow("agents", "Agents", "#pane-agents")
+    assert row._nav_target == "#pane-agents"
+
+
+def test_row_stores_label():
+    row = ProjectsNavRow("routing", "Routing", "#pane-routing")
+    assert row._label == "Routing"
+
+
+def test_update_row_accepts_call():
+    row = ProjectsNavRow("tasks", "Tasks", "#pane-tasks")
+    row._count = "0"
+    row._state = "dim"
+    row.update_row("3", "yellow")
+    assert row._count == "3"
+    assert row._state == "yellow"

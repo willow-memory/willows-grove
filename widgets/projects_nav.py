@@ -5,7 +5,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from textual import work
+from textual.app import ComposeResult
 from textual.message import Message
+from textual.widget import Widget
+from textual.widgets import Label, Rule, Static
 
 
 # (card_id, label, nav_target)
@@ -84,3 +88,58 @@ class _NavRefreshed(Message):
     def __init__(self, data: dict[str, dict]) -> None:
         super().__init__()
         self.data: dict[str, dict] = data
+
+
+class ProjectsNavRow(Widget):
+    """Single focusable nav row: dot + label + count badge."""
+
+    can_focus = True
+
+    BINDINGS = [("enter", "activate", "Open")]
+
+    DEFAULT_CSS = """
+    ProjectsNavRow {
+        height: 1;
+        width: 1fr;
+        padding: 0 1;
+    }
+    ProjectsNavRow:focus {
+        background: #21262d;
+    }
+    """
+
+    def __init__(self, card_id: str, label: str, nav_target: str, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self._card_id    = card_id
+        self._label      = label
+        self._nav_target = nav_target
+        self._count      = "—"
+        self._state      = "dim"
+
+    def compose(self) -> ComposeResult:
+        yield Static("", id=f"pnrt-{self._card_id}", markup=True)
+
+    def on_mount(self) -> None:
+        self._render()
+
+    def _render(self) -> None:
+        from textual.css.query import NoMatches
+        color = _ROW_COLORS.get(self._state, "#8b949e")
+        dot   = f"[{color}]●[/]"
+        text  = f"{dot} {self._label:<12} [{color}]{self._count}[/]"
+        try:
+            self.query_one(f"#pnrt-{self._card_id}", Static).update(text)
+        except NoMatches:
+            pass
+
+    def update_row(self, count: str, state: str) -> None:
+        self._count = count
+        self._state = state
+        self._render()
+
+    def action_activate(self) -> None:
+        from widgets.card_grid import CardActivated
+        self.post_message(CardActivated(self._card_id, self._nav_target))
+
+    def on_click(self) -> None:
+        self.action_activate()
