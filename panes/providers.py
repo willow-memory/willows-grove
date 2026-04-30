@@ -79,3 +79,10 @@ class ProvidersPane(Container):
             return
         os.system(f"willow providers disable {name} &")
         self.refresh_data()
+
+    def select_provider(self, name: str) -> None:
+        table = self.query_one("#prov-table", DataTable)
+        for i in range(table.row_count):
+            if str(table.get_cell_at((i, 0))) == name:
+                table.move_cursor(row=i)
+                return
