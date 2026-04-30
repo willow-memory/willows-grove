@@ -48,7 +48,7 @@ class _ConsentChanged(Message):
         self.enabled = enabled
 
 
-class ConsentToggleRow(Widget):
+class ConsentToggleRow(Container):
     can_focus = True
     BINDINGS = [Binding("enter", "consent_toggle", "Toggle")]
 
