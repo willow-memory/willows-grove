@@ -16,6 +16,7 @@ from textual.css.query import NoMatches
 from textual.widgets import Footer, Label, Rule, Static
 
 from panes.chat      import ChatPane, ChannelList, sender_color
+from widgets.projects_nav import ProjectsNav
 from panes.tasks     import TasksPane, fetch_backfill_progress, fetch_tasks
 from panes.agents    import AgentsPane
 from panes.routing   import RoutingPane
@@ -122,6 +123,7 @@ class ContextPanel(Vertical):
     def compose(self) -> ComposeResult:
         yield DeskPane(id="ctx-home")
         yield ChannelList(id="ctx-chat")
+        yield ProjectsNav(id="ctx-projects")
 
     def on_mount(self) -> None:
         self._show_target("home")
@@ -131,8 +133,9 @@ class ContextPanel(Vertical):
 
     def _show_target(self, target: str) -> None:
         ctx_map = {
-            "home": "#ctx-home",
-            "chat": "#ctx-chat",
+            "home":     "#ctx-home",
+            "chat":     "#ctx-chat",
+            "projects": "#ctx-projects",
         }
         for widget_id in ctx_map.values():
             try:
