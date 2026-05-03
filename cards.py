@@ -7,6 +7,7 @@ import os
 import sqlite3
 from dataclasses import dataclass, field
 from typing import Optional
+import grove_db
 import soil
 import skins
 
@@ -299,31 +300,22 @@ def _run_soil_query(card: CardDef, sql: str) -> str:
     return str(row[0]) if row and row[0] is not None else "0"
 
 
-def _pg_conn():
-    """Open a Postgres connection the same way the dashboard does."""
-    import psycopg2
-    dsn = os.environ.get("WILLOW_DB_URL", "")
-    if dsn:
-        return psycopg2.connect(dsn)
-    return psycopg2.connect(
-        dbname=os.environ.get("WILLOW_PG_DB", "willow"),
-        user=os.environ.get("WILLOW_PG_USER", os.environ.get("USER", "")),
-    )
-
-
 def _run_pg_query(card: CardDef, sql: str) -> str:
     """Run a Postgres query against the card's pg_table context."""
     if not sql:
         return ""
+    conn = None
     try:
-        conn = _pg_conn()
-        cur  = conn.cursor()
+        conn = grove_db.get_connection()
+        cur = conn.cursor()
         cur.execute(sql)
         row = cur.fetchone()
-        conn.close()
         return str(row[0]) if row and row[0] is not None else "0"
     except Exception as e:
         return f"!{type(e).__name__}"
+    finally:
+        if conn is not None:
+            grove_db.release_connection(conn)
 
 
 def _run_card_query(card: CardDef, sql: str) -> str:
@@ -344,11 +336,15 @@ def _run_expand_query(card: CardDef) -> tuple[list[dict], list[str]]:
     if card.expand_query and card.expand_columns:
         try:
             if card.pg_table:
-                conn = _pg_conn()
-                cur  = conn.cursor()
-                cur.execute(card.expand_query)
-                rows = cur.fetchall()
-                conn.close()
+                conn = None
+                try:
+                    conn = grove_db.get_connection()
+                    cur = conn.cursor()
+                    cur.execute(card.expand_query)
+                    rows = cur.fetchall()
+                finally:
+                    if conn is not None:
+                        grove_db.release_connection(conn)
             elif card.soil_collection:
                 rows = soil.query(card.soil_collection, card.expand_query)
             else:

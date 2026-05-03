@@ -89,6 +89,6 @@ def test_search_kb_empty_query():
 
 
 def test_search_kb_no_db():
-    with patch("panes.knowledge._pg_conn", side_effect=Exception("no db")):
+    with patch("grove_db.get_connection", side_effect=Exception("no db")):
         result = search_kb("anything")
     assert result == []

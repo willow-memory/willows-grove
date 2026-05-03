@@ -5,6 +5,7 @@ import curses
 import os
 import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+import grove_db
 import soil
 import grove_reader
 from grove.apps.base import App
@@ -195,8 +196,9 @@ class ChatApp(App):
         return False
 
     def _send(self, text: str) -> None:
+        conn = None
         try:
-            conn = grove_reader._pg_conn()
+            conn = grove_db.get_connection()
             cur = conn.cursor()
             cur.execute("SELECT id FROM grove.channels WHERE name = %s LIMIT 1",
                         (self._active_channel,))
@@ -209,9 +211,11 @@ class ChatApp(App):
                     (row[0], agent, text),
                 )
                 conn.commit()
-            conn.close()
         except Exception:
             pass
+        finally:
+            if conn is not None:
+                grove_db.release_connection(conn)
         self._input.clear()
         try:
             self._messages = grove_reader.grove_messages(

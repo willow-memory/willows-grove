@@ -1,20 +1,12 @@
 """panes/knowledge.py — Knowledge base search pane.
 b17: WGRV1  ΔΣ=42
 """
-import os
-
 from textual import work
 from textual.containers import Container
 from textual.message import Message
 from textual.widgets import Static
 
-
-def _pg_conn():
-    import psycopg2
-    return psycopg2.connect(
-        dbname=os.environ.get("WILLOW_PG_DB",   "willow_19"),
-        user=os.environ.get("WILLOW_PG_USER", os.environ.get("USER", "")),
-    )
+import grove_db
 
 
 def truncate_text(text: str, max_len: int) -> str:
@@ -26,9 +18,10 @@ def truncate_text(text: str, max_len: int) -> str:
 def search_kb(query: str, limit: int = 50) -> list[dict]:
     if not query.strip():
         return []
+    conn = None
     try:
-        conn = _pg_conn()
-        cur  = conn.cursor()
+        conn = grove_db.get_connection()
+        cur = conn.cursor()
         cur.execute("""
             SELECT id, title, summary, domain, weight
             FROM public.knowledge
@@ -38,7 +31,6 @@ def search_kb(query: str, limit: int = 50) -> list[dict]:
             LIMIT %s
         """, (f"%{query}%", f"%{query}%", limit))
         rows = cur.fetchall()
-        conn.close()
         return [
             {"id": r[0], "title": r[1] or "", "summary": r[2] or "",
              "domain": r[3] or "", "weight": r[4] or 0}
@@ -46,14 +38,17 @@ def search_kb(query: str, limit: int = 50) -> list[dict]:
         ]
     except Exception:
         return []
+    finally:
+        if conn is not None:
+            grove_db.release_connection(conn)
 
 
 def fetch_atom(atom_id: int, conn=None) -> dict | None:
     """Fetch a single knowledge atom by id. Returns None if not found or on failure."""
-    close = conn is None
-    if conn is None:
+    owned = conn is None
+    if owned:
         try:
-            conn = _pg_conn()
+            conn = grove_db.get_connection()
         except Exception:
             return None
     try:
@@ -88,11 +83,8 @@ def fetch_atom(atom_id: int, conn=None) -> dict | None:
     except Exception:
         return None
     finally:
-        if close:
-            try:
-                conn.close()
-            except Exception:
-                pass
+        if owned and conn is not None:
+            grove_db.release_connection(conn)
 
 
 def render_atom(atom: dict) -> str:

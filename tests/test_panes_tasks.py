@@ -7,7 +7,7 @@ from unittest.mock import patch
 from panes.tasks import fetch_tasks, status_color
 
 def test_fetch_tasks_no_db():
-    with patch("panes.tasks._pg_conn", side_effect=Exception("no db")):
+    with patch("grove_db.get_connection", side_effect=Exception("no db")):
         result = fetch_tasks()
     assert result["pending"] == 0
     assert result["running"] == 0

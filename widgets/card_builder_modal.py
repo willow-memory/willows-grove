@@ -16,23 +16,11 @@ from textual.message import Message
 from textual.screen import ModalScreen
 from textual.widgets import Input, RichLog, Static
 
-import psycopg2
-
 import grove_db
 import grove_reader
 
 _CARD_DEF_RE = re.compile(r"```card-def\s*\n(.*?)\n```", re.DOTALL)
 
-
-def _listen_conn() -> "psycopg2.connection":
-    """Open a dedicated autocommit connection for LISTEN — not from the pool."""
-    import os
-    pg_db   = os.getenv("WILLOW_PG_DB",   "willow_19")
-    pg_user = os.getenv("WILLOW_PG_USER",  os.getenv("USER", ""))
-    dsn     = os.getenv("WILLOW_DB_URL",   "") or f"dbname={pg_db} user={pg_user}"
-    conn    = psycopg2.connect(dsn)
-    conn.autocommit = True
-    return conn
 
 _INTRO_PROMPT = (
     "The user wants to add a new card to their Willow Grove dashboard. "
@@ -210,7 +198,7 @@ class CardBuilderModal(ModalScreen):
     def _start_listener(self) -> None:
         self._listening = True
         try:
-            conn = _listen_conn()
+            conn = grove_db.listen_connection()
             cur  = conn.cursor()
             cur.execute("LISTEN grove_channel")
             while self._listening:

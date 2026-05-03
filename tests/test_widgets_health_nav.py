@@ -30,8 +30,9 @@ def test_health_status_label_is_str():
 
 def test_health_status_never_raises():
     with patch("psycopg2.connect", side_effect=Exception("no db")):
-        with patch("urllib.request.urlopen", side_effect=Exception("no net")):
-            status = _fetch_health_status()
+        with patch("grove_db.get_connection", side_effect=Exception("no db")):
+            with patch("urllib.request.urlopen", side_effect=Exception("no net")):
+                status = _fetch_health_status()
     assert isinstance(status, dict)
     assert status["pg"]["ok"] is False
     assert status["ollama"]["ok"] is False
@@ -56,7 +57,8 @@ def test_kart_ok_with_mock_db():
     mock_cur = MagicMock()
     mock_cur.fetchone.return_value = (3,)
     mock_conn.cursor.return_value = mock_cur
-    with patch("psycopg2.connect", return_value=mock_conn):
-        status = _fetch_health_status()
+    with patch("grove_db.get_connection", return_value=mock_conn):
+        with patch("grove_db.release_connection"):
+            status = _fetch_health_status()
     assert status["kart"]["ok"] is True
     assert "3" in status["kart"]["label"]

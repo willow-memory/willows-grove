@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import os
 
+import grove_db
 from textual import work
 from textual.app import ComposeResult
 from textual.message import Message
@@ -76,27 +77,23 @@ def fetch_runtime_card_values() -> dict[str, dict]:
         pass
 
     # Knowledge — total atom count + today's additions
+    conn = None
     try:
-        import psycopg2
-        conn = psycopg2.connect(
-            dbname=os.environ.get("WILLOW_PG_DB", "willow_19"),
-            user=os.environ.get("WILLOW_PG_USER", os.environ.get("USER", "")),
-            connect_timeout=2,
+        conn = grove_db.get_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT COUNT(*) FROM public.knowledge")
+        total = cur.fetchone()[0]
+        cur.execute(
+            "SELECT COUNT(*) FROM public.knowledge"
+            " WHERE created_at > NOW() - INTERVAL '24 hours'"
         )
-        try:
-            cur = conn.cursor()
-            cur.execute("SELECT COUNT(*) FROM public.knowledge")
-            total = cur.fetchone()[0]
-            cur.execute(
-                "SELECT COUNT(*) FROM public.knowledge"
-                " WHERE created_at > NOW() - INTERVAL '24 hours'"
-            )
-            today = cur.fetchone()[0]
-            out["knowledge"] = {"value": str(total), "sub": f"{today} today", "state": "blue"}
-        finally:
-            conn.close()
+        today = cur.fetchone()[0]
+        out["knowledge"] = {"value": str(total), "sub": f"{today} today", "state": "blue"}
     except Exception:
         pass
+    finally:
+        if conn is not None:
+            grove_db.release_connection(conn)
 
     # Yggdrasil — active model from env
     try:

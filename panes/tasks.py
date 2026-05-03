@@ -1,22 +1,14 @@
 """panes/tasks.py — Kart task queue pane.
 b17: WGRV1  ΔΣ=42
 """
-import os
 import sys
 from pathlib import Path
 
 from textual.containers import Container
 from textual.widgets import DataTable, Label
 
+import grove_db
 from widgets.status_row import StatusRow
-
-
-def _pg_conn():
-    import psycopg2
-    return psycopg2.connect(
-        dbname=os.environ.get("WILLOW_PG_DB",   "willow_19"),
-        user=os.environ.get("WILLOW_PG_USER", os.environ.get("USER", "")),
-    )
 
 
 def status_color(status: str) -> str:
@@ -29,14 +21,15 @@ def status_color(status: str) -> str:
 
 def fetch_tasks() -> dict:
     result = {"pending": 0, "running": 0, "done": 0, "rows": []}
+    conn = None
     try:
-        conn = _pg_conn()
-        cur  = conn.cursor()
+        conn = grove_db.get_connection()
+        cur = conn.cursor()
         cur.execute("""
             SELECT
-                COUNT(*) FILTER (WHERE status IN ('pending','queued'))              AS pending,
-                COUNT(*) FILTER (WHERE status = 'running')                          AS running,
-                COUNT(*) FILTER (WHERE status IN ('complete','completed','failed','error')) AS done
+                COUNT(*) FILTER (WHERE status IN ('pending','queued'))                       AS pending,
+                COUNT(*) FILTER (WHERE status = 'running')                                   AS running,
+                COUNT(*) FILTER (WHERE status IN ('complete','completed','failed','error'))   AS done
             FROM public.tasks
         """)
         row = cur.fetchone()
@@ -52,9 +45,11 @@ def fetch_tasks() -> dict:
             {"id": r[0], "status": r[1], "cmd": r[2] or "", "ts": str(r[3])[:16]}
             for r in cur.fetchall()
         ]
-        conn.close()
     except Exception:
         pass
+    finally:
+        if conn is not None:
+            grove_db.release_connection(conn)
     return result
 
 

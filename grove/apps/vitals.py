@@ -3,28 +3,29 @@ b17: WDASH  ΔΣ=42
 """
 import json
 import os
+import sys
 import urllib.request
 import urllib.error
 from pathlib import Path
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+import grove_db
 from grove.apps.base import App
 from grove import theme
 
 
 def _pg_ok() -> tuple[bool, str]:
+    conn = None
     try:
-        import psycopg2
-        conn = psycopg2.connect(
-            dbname=os.environ.get("WILLOW_PG_DB", "willow_19"),
-            user=os.environ.get("WILLOW_PG_USER", os.environ.get("USER", "")),
-            connect_timeout=2,
-        )
+        conn = grove_db.get_connection()
         cur = conn.cursor()
         cur.execute("SELECT COUNT(*) FROM public.knowledge")
         count = cur.fetchone()[0]
-        conn.close()
         return True, f"{count:,} atoms"
     except Exception as e:
         return False, str(e)[:30]
+    finally:
+        if conn is not None:
+            grove_db.release_connection(conn)
 
 
 def _ollama_ok() -> dict:
@@ -46,25 +47,23 @@ def _soil_ok() -> bool:
 
 
 def _kart_ok() -> dict:
+    conn = None
     try:
-        import psycopg2
-        conn = psycopg2.connect(
-            dbname=os.environ.get("WILLOW_PG_DB", "willow_19"),
-            user=os.environ.get("WILLOW_PG_USER", os.environ.get("USER", "")),
-            connect_timeout=2,
-        )
+        conn = grove_db.get_connection()
         cur = conn.cursor()
         cur.execute("""
             SELECT
                 COUNT(*) FILTER (WHERE status='running') AS running,
                 COUNT(*) FILTER (WHERE status='queued')  AS queued
-            FROM willow.tasks
+            FROM public.tasks
         """)
         row = cur.fetchone()
-        conn.close()
         return {"ok": True, "running": row[0] or 0, "queued": row[1] or 0}
     except Exception:
         return {"ok": False, "running": 0, "queued": 0}
+    finally:
+        if conn is not None:
+            grove_db.release_connection(conn)
 
 
 def fetch_vitals() -> dict:

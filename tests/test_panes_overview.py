@@ -14,7 +14,7 @@ def test_fetch_sysinfo_keys():
         assert 0 <= info[key] <= 100
 
 def test_pg_status_returns_tuple():
-    with patch("panes.overview._pg_conn", side_effect=Exception("no db")):
+    with patch("grove_db.get_connection", side_effect=Exception("no db")):
         ok, count = _pg_status()
     assert ok is False
     assert count == 0
@@ -26,6 +26,6 @@ def test_ollama_status_unreachable():
     assert models == []
 
 def test_open_tasks_returns_int():
-    with patch("panes.overview._pg_conn", side_effect=Exception("no db")):
+    with patch("grove_db.get_connection", side_effect=Exception("no db")):
         count = _open_tasks()
     assert count == 0

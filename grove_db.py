@@ -47,15 +47,25 @@ get_unindexed     = _mod.get_unindexed
 mark_indexed      = _mod.mark_indexed
 
 
+def listen_connection():
+    """Open a dedicated autocommit connection for LISTEN — not from the pool.
+
+    Callers own this connection for its lifetime and must close() it themselves.
+    """
+    import psycopg2
+    pg_db   = os.getenv("WILLOW_PG_DB",   "willow_19")
+    pg_user = os.getenv("WILLOW_PG_USER",  os.getenv("USER", ""))
+    dsn     = os.getenv("WILLOW_DB_URL",   "") or f"dbname={pg_db} user={pg_user}"
+    conn    = psycopg2.connect(dsn)
+    conn.autocommit = True
+    return conn
+
+
 def ensure_card_builder_channel() -> None:
     """Idempotent: create #card-builder channel with agent_name='heimdallr' if absent."""
-    import psycopg2
+    conn = None
     try:
-        conn = psycopg2.connect(
-            dbname=os.environ.get("WILLOW_PG_DB", "willow_19"),
-            user=os.environ.get("WILLOW_PG_USER", os.environ.get("USER", "")),
-            connect_timeout=2,
-        )
+        conn = get_connection()
         cur = conn.cursor()
         cur.execute("""
             INSERT INTO grove.channels (name, channel_type, description, agent_name)
@@ -63,6 +73,8 @@ def ensure_card_builder_channel() -> None:
             ON CONFLICT (name) DO NOTHING
         """)
         conn.commit()
-        conn.close()
     except Exception:
         pass
+    finally:
+        if conn is not None:
+            release_connection(conn)

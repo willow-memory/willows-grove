@@ -2,7 +2,6 @@
 b17: WGRV1  ΔΣ=42
 """
 import json
-import os
 import shutil
 import urllib.request
 from pathlib import Path
@@ -10,6 +9,7 @@ from pathlib import Path
 from textual.containers import Container
 from textual.widgets import Label, Rule
 
+import grove_db
 from widgets.hero       import WillowHero
 from widgets.status_row import StatusRow
 
@@ -24,24 +24,19 @@ def _http_get(url: str, timeout: int = 2) -> dict | None:
         return None
 
 
-def _pg_conn():
-    import psycopg2
-    return psycopg2.connect(
-        dbname=os.environ.get("WILLOW_PG_DB",   "willow_19"),
-        user=os.environ.get("WILLOW_PG_USER", os.environ.get("USER", "")),
-    )
-
-
 def _pg_status() -> tuple[bool, int]:
+    conn = None
     try:
-        conn = _pg_conn()
-        cur  = conn.cursor()
-        cur.execute("SELECT COUNT(*) FROM knowledge")
+        conn = grove_db.get_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT COUNT(*) FROM public.knowledge")
         count = cur.fetchone()[0]
-        conn.close()
         return True, count
     except Exception:
         return False, 0
+    finally:
+        if conn is not None:
+            grove_db.release_connection(conn)
 
 
 def _ollama_status() -> tuple[bool, list[str]]:
@@ -56,15 +51,17 @@ def _litellm_status() -> bool:
 
 
 def _open_tasks() -> int:
+    conn = None
     try:
-        conn = _pg_conn()
-        cur  = conn.cursor()
+        conn = grove_db.get_connection()
+        cur = conn.cursor()
         cur.execute("SELECT COUNT(*) FROM public.tasks WHERE status IN ('pending','queued')")
-        count = cur.fetchone()[0]
-        conn.close()
-        return count
+        return cur.fetchone()[0]
     except Exception:
         return 0
+    finally:
+        if conn is not None:
+            grove_db.release_connection(conn)
 
 
 def _last_handoff() -> str:

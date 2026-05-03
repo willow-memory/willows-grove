@@ -6,6 +6,8 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+import grove_db
+
 from textual import work
 from textual.app import ComposeResult
 from textual.message import Message
@@ -41,20 +43,18 @@ def _fetch_health_status() -> dict:
         status["ollama"] = {"ok": False, "label": "down"}
 
     # kart — count pending+running tasks
+    conn = None
     try:
-        import psycopg2
-        conn = psycopg2.connect(
-            dbname=os.environ.get("WILLOW_PG_DB", "willow_19"),
-            user=os.environ.get("WILLOW_PG_USER", os.environ.get("USER", "")),
-            connect_timeout=2,
-        )
+        conn = grove_db.get_connection()
         cur = conn.cursor()
         cur.execute("SELECT COUNT(*) FROM public.tasks WHERE status IN ('pending','running')")
         count = cur.fetchone()[0]
-        conn.close()
         status["kart"] = {"ok": True, "label": f"{count} pending"}
     except Exception:
         status["kart"] = {"ok": False, "label": "down"}
+    finally:
+        if conn is not None:
+            grove_db.release_connection(conn)
 
     # soil
     ok = _SOIL_STORE.is_dir()

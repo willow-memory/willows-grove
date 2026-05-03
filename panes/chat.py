@@ -13,6 +13,7 @@ from textual import on, work
 from textual.containers import Container, Vertical
 from textual.widgets import Input, Label, ListItem, ListView, RichLog, Static
 
+import grove_db
 import grove_reader
 
 _SENDER_COLORS = ["cyan", "magenta", "yellow", "bright_green",
@@ -64,13 +65,6 @@ def _build_channel_label(ch: dict) -> str:
     unread_part = f"  [yellow bold]{unread}[/]" if unread else ""
     return f"# {name}{agent_part}{unread_part}"
 
-
-def _pg_conn():
-    import psycopg2
-    return psycopg2.connect(
-        dbname=os.environ.get("WILLOW_PG_DB",   "willow_19"),
-        user=os.environ.get("WILLOW_PG_USER", os.environ.get("USER", "")),
-    )
 
 
 class ChannelItem(ListItem):
@@ -237,8 +231,7 @@ class ChatPane(Container):
     def _start_listener(self) -> None:
         self._listening = True
         try:
-            conn = _pg_conn()
-            conn.autocommit = True
+            conn = grove_db.listen_connection()
             cur  = conn.cursor()
             # Cache channel_id → name
             cur.execute("SELECT id, name FROM grove.channels WHERE is_archived = FALSE")
@@ -294,15 +287,15 @@ class ChatPane(Container):
     @work(thread=True)
     def _dispatch_to_agent(self, agent: str, message: str, channel: str) -> None:
         """Post a dispatch request to #dispatch grove channel."""
+        import json as _json
+        conn = grove_db.get_connection()
         try:
-            conn = _pg_conn()
-            cur  = conn.cursor()
+            cur = conn.cursor()
             cur.execute(
                 "SELECT id FROM grove.channels WHERE name = 'dispatch' LIMIT 1"
             )
             row = cur.fetchone()
             if row:
-                import json as _json
                 payload = _json.dumps({
                     "to":            agent,
                     "prompt":        message,
@@ -314,9 +307,10 @@ class ChatPane(Container):
                     (row[0], "dashboard", payload),
                 )
                 conn.commit()
-            conn.close()
         except Exception:
             pass
+        finally:
+            grove_db.release_connection(conn)
 
     def _load_messages(self, channel: str) -> None:
         try:
@@ -347,9 +341,9 @@ class ChatPane(Container):
         if not body or not self._active_channel:
             return
         event.input.value = ""
+        conn = grove_db.get_connection()
         try:
-            conn = _pg_conn()
-            cur  = conn.cursor()
+            cur = conn.cursor()
             cur.execute(
                 "SELECT id FROM grove.channels WHERE name = %s LIMIT 1",
                 (self._active_channel,),
@@ -366,9 +360,10 @@ class ChatPane(Container):
                     (row[0], sender, body),
                 )
                 conn.commit()
-            conn.close()
         except Exception:
             pass
+        finally:
+            grove_db.release_connection(conn)
         if self._active_agent:
             from textual.css.query import NoMatches
             try:
