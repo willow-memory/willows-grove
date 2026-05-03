@@ -37,6 +37,9 @@ class LogsPane(Container):
         self.set_interval(30, self._fetch)
         self._fetch()
 
+    def refresh_data(self) -> None:
+        self._fetch()
+
     @work(thread=True)
     def _fetch(self) -> None:
         self.post_message(_LogsFetched(_tail_log(80)))
