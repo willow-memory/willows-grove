@@ -2,8 +2,9 @@
 b17: WDASH  ΔΣ=42
 """
 import hashlib
-import os
 from datetime import datetime, timezone
+
+import grove_db
 
 # ── Color hash palette (ANSI 16, maps to curses color pair numbers 11-17) ────
 _HASH_PAIRS = [11, 12, 13, 14, 15, 16, 17]
@@ -14,34 +15,45 @@ def color_for_sender(name: str) -> int:
     return _HASH_PAIRS[int(hashlib.md5(name.encode()).hexdigest(), 16) % len(_HASH_PAIRS)]
 
 
-def _pg_conn():
-    import psycopg2
-    dsn = os.environ.get("WILLOW_DB_URL", "")
-    if dsn:
-        return psycopg2.connect(dsn)
-    return psycopg2.connect(
-        dbname=os.environ.get("WILLOW_PG_DB", "willow_19"),
-        user=os.environ.get("WILLOW_PG_USER", os.environ.get("USER", "")),
-    )
+def _conn_ctx(conn):
+    """(conn, owned) — owned=True means caller must release to pool."""
+    if conn is not None:
+        return conn, False
+    return grove_db.get_connection(), True
+
+
+def _release(conn, owned: bool) -> None:
+    if owned:
+        grove_db.release_connection(conn)
 
 
 def grove_agents(conn=None) -> list[dict]:
-    """Return agents with last_seen from grove.messages, most recent first.
+    """Return agents from HEARTBEAT bus messages, most recent first.
     Each entry: {sender: str, last_seen_at: datetime, age_secs: int}
+    Falls back to all-sender inference if bus_type column is absent.
     """
-    close = conn is None
-    if conn is None:
-        conn = _pg_conn()
+    conn, owned = _conn_ctx(conn)
     try:
         cur = conn.cursor()
-        cur.execute("""
-            SELECT sender, MAX(created_at) AS last_seen
-            FROM grove.messages
-            WHERE is_deleted = 0
-            GROUP BY sender
-            ORDER BY last_seen DESC
-            LIMIT 20
-        """)
+        try:
+            cur.execute("""
+                SELECT sender, MAX(created_at) AS last_seen
+                FROM grove.messages
+                WHERE bus_type = 'HEARTBEAT' AND is_deleted = 0
+                GROUP BY sender
+                ORDER BY last_seen DESC
+                LIMIT 20
+            """)
+        except Exception:
+            conn.rollback()
+            cur.execute("""
+                SELECT sender, MAX(created_at) AS last_seen
+                FROM grove.messages
+                WHERE is_deleted = 0
+                GROUP BY sender
+                ORDER BY last_seen DESC
+                LIMIT 20
+            """)
         now = datetime.now(timezone.utc)
         rows = []
         for sender, last_seen in cur.fetchall():
@@ -53,21 +65,15 @@ def grove_agents(conn=None) -> list[dict]:
     except Exception:
         return []
     finally:
-        if close:
-            try:
-                conn.close()
-            except Exception:
-                pass
+        _release(conn, owned)
 
 
 def grove_channels(conn=None, last_seen_ids: dict | None = None) -> list[dict]:
     """Return channels with unread counts.
     last_seen_ids: {channel_name: last_seen_message_id}
-    Each entry: {id: int, name: str, unread: int}
+    Each entry: {id: int, name: str, unread: int, agent_name: str|None}
     """
-    close = conn is None
-    if conn is None:
-        conn = _pg_conn()
+    conn, owned = _conn_ctx(conn)
     last_seen_ids = last_seen_ids or {}
     try:
         cur = conn.cursor()
@@ -102,11 +108,7 @@ def grove_channels(conn=None, last_seen_ids: dict | None = None) -> list[dict]:
     except Exception:
         return []
     finally:
-        if close:
-            try:
-                conn.close()
-            except Exception:
-                pass
+        _release(conn, owned)
 
 
 def grove_messages(channel_name: str, conn=None, limit: int = 50,
@@ -114,9 +116,7 @@ def grove_messages(channel_name: str, conn=None, limit: int = 50,
     """Return messages for a channel, oldest first.
     Each entry: {id: int, sender: str, content: str, created_at: datetime}
     """
-    close = conn is None
-    if conn is None:
-        conn = _pg_conn()
+    conn, owned = _conn_ctx(conn)
     try:
         cur = conn.cursor()
         cur.execute(
@@ -144,11 +144,7 @@ def grove_messages(channel_name: str, conn=None, limit: int = 50,
     except Exception:
         return []
     finally:
-        if close:
-            try:
-                conn.close()
-            except Exception:
-                pass
+        _release(conn, owned)
 
 
 def grove_messages_all_agents(
@@ -157,8 +153,8 @@ def grove_messages_all_agents(
     limit: int = 20,
 ) -> "list[dict]":
     """Return recent grove.messages from known agent senders, id > last_id."""
+    conn, owned = _conn_ctx(None)
     try:
-        conn = _pg_conn()
         cur = conn.cursor()
         cur.execute(
             "SELECT id, sender, content, created_at"
@@ -168,32 +164,54 @@ def grove_messages_all_agents(
             (list(known_agents), last_id, limit),
         )
         rows = cur.fetchall()
-        conn.close()
         return [
             {"id": r[0], "sender": r[1], "content": r[2], "created_at": r[3]}
             for r in reversed(rows)
         ]
     except Exception:
         return []
+    finally:
+        _release(conn, owned)
+
+
+_ROUTING_DDL = """
+CREATE SCHEMA IF NOT EXISTS willow;
+CREATE TABLE IF NOT EXISTS willow.routing_decisions (
+    id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    ts          TIMESTAMPTZ NOT NULL DEFAULT now(),
+    session_id  TEXT,
+    prompt_snippet TEXT,
+    routed_to   TEXT,
+    rule_matched TEXT,
+    confidence  FLOAT,
+    latency_ms  INTEGER
+);
+CREATE INDEX IF NOT EXISTS idx_routing_decisions_ts
+    ON willow.routing_decisions (ts DESC);
+"""
 
 
 def routing_decisions(conn=None, limit: int = 8) -> list[dict]:
-    """Return recent routing decisions. Returns [] if table not yet created.
+    """Return recent routing decisions. Auto-creates table on first call.
     Each entry: {ts, prompt_snippet, routed_to, rule_matched, confidence, latency_ms}
     """
-    close = conn is None
-    if conn is None:
-        conn = _pg_conn()
+    conn, owned = _conn_ctx(conn)
     try:
         cur = conn.cursor()
-        cur.execute(
-            """
-            SELECT ts, prompt_snippet, routed_to, rule_matched, confidence, latency_ms
-            FROM willow.routing_decisions
-            ORDER BY ts DESC LIMIT %s
-            """,
-            (limit,),
-        )
+        try:
+            cur.execute(
+                """
+                SELECT ts, prompt_snippet, routed_to, rule_matched, confidence, latency_ms
+                FROM willow.routing_decisions
+                ORDER BY ts DESC LIMIT %s
+                """,
+                (limit,),
+            )
+        except Exception:
+            conn.rollback()
+            cur.execute(_ROUTING_DDL)
+            conn.commit()
+            return []
         rows = []
         for ts, snippet, routed_to, rule_matched, confidence, latency_ms in cur.fetchall():
             rows.append({
@@ -208,8 +226,4 @@ def routing_decisions(conn=None, limit: int = 8) -> list[dict]:
     except Exception:
         return []
     finally:
-        if close:
-            try:
-                conn.close()
-            except Exception:
-                pass
+        _release(conn, owned)

@@ -47,7 +47,7 @@ def test_grove_agents_empty():
 
 
 def test_grove_channels_with_unread():
-    channel_rows = [(1, "general"), (2, "architecture")]
+    channel_rows = [(1, "general", None), (2, "architecture", None)]
     unread_general = [(0, 100)]
     unread_arch = [(3, 52)]
     conn = _mock_conn([channel_rows, unread_general, unread_arch])

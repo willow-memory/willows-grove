@@ -16,9 +16,23 @@ from textual.message import Message
 from textual.screen import ModalScreen
 from textual.widgets import Input, RichLog, Static
 
+import psycopg2
+
+import grove_db
 import grove_reader
 
 _CARD_DEF_RE = re.compile(r"```card-def\s*\n(.*?)\n```", re.DOTALL)
+
+
+def _listen_conn() -> "psycopg2.connection":
+    """Open a dedicated autocommit connection for LISTEN — not from the pool."""
+    import os
+    pg_db   = os.getenv("WILLOW_PG_DB",   "willow_19")
+    pg_user = os.getenv("WILLOW_PG_USER",  os.getenv("USER", ""))
+    dsn     = os.getenv("WILLOW_DB_URL",   "") or f"dbname={pg_db} user={pg_user}"
+    conn    = psycopg2.connect(dsn)
+    conn.autocommit = True
+    return conn
 
 _INTRO_PROMPT = (
     "The user wants to add a new card to their Willow Grove dashboard. "
@@ -26,14 +40,6 @@ _INTRO_PROMPT = (
     "catalog (git-status, open-prs, build, todos) if relevant, then produce "
     "a ```card-def JSON block with at minimum 'id' and 'label' fields."
 )
-
-
-def _pg_conn():
-    import psycopg2
-    return psycopg2.connect(
-        dbname=os.environ.get("WILLOW_PG_DB",   "willow_19"),
-        user=os.environ.get("WILLOW_PG_USER", os.environ.get("USER", "")),
-    )
 
 
 class CardDefDetected(Message):
@@ -105,20 +111,36 @@ class CardBuilderModal(ModalScreen):
 
         self._channel_id = channel_id
 
+        # Check if Heimdallr has heartbeated recently (within 30 minutes)
+        agents = grove_reader.grove_agents()
+        heimdallr_age = next(
+            (a["age_secs"] for a in agents if a["sender"] == "heimdallr"), None
+        )
+        heimdallr_online = heimdallr_age is not None and heimdallr_age < 1800
+
         msgs = grove_reader.grove_messages("card-builder", limit=20)
         self.app.call_from_thread(self._load_history, msgs)
 
         if not msgs:
-            self._dispatch_intro(channel_id)
+            if heimdallr_online:
+                self._dispatch_intro(channel_id)
+            else:
+                self.app.call_from_thread(
+                    self._set_status,
+                    "[yellow]Heimdallr is not in session — your request has been queued in #dispatch. "
+                    "Start a Heimdallr session to continue.[/]"
+                )
+                self._dispatch_intro(channel_id)
+                return
 
         self._start_listener()
 
     def _get_or_create_channel(self) -> int | None:
         """Upsert #card-builder then return its id. Returns None on any DB error."""
         import logging
+        conn = grove_db.get_connection()
         try:
-            conn = _pg_conn()
-            cur  = conn.cursor()
+            cur = conn.cursor()
             cur.execute("""
                 INSERT INTO grove.channels (name, channel_type, description)
                 VALUES ('card-builder', 'group', 'Heimdallr card builder interview')
@@ -127,16 +149,17 @@ class CardBuilderModal(ModalScreen):
             conn.commit()
             cur.execute("SELECT id FROM grove.channels WHERE name = 'card-builder' LIMIT 1")
             row = cur.fetchone()
-            conn.close()
             return row[0] if row else None
         except Exception as exc:
             logging.getLogger(__name__).error("card-builder channel error: %s", exc)
             return None
+        finally:
+            grove_db.release_connection(conn)
 
     def _dispatch_intro(self, channel_id: int) -> None:
+        conn = grove_db.get_connection()
         try:
-            conn = _pg_conn()
-            cur  = conn.cursor()
+            cur = conn.cursor()
             cur.execute("SELECT id FROM grove.channels WHERE name = 'dispatch' LIMIT 1")
             row = cur.fetchone()
             if row:
@@ -151,9 +174,10 @@ class CardBuilderModal(ModalScreen):
                     (row[0], "dashboard", payload),
                 )
                 conn.commit()
-            conn.close()
         except Exception:
             pass
+        finally:
+            grove_db.release_connection(conn)
 
     def _load_history(self, msgs: list[dict]) -> None:
         log = self.query_one("#cb-log", RichLog)
@@ -186,8 +210,7 @@ class CardBuilderModal(ModalScreen):
     def _start_listener(self) -> None:
         self._listening = True
         try:
-            conn = _pg_conn()
-            conn.autocommit = True
+            conn = _listen_conn()
             cur  = conn.cursor()
             cur.execute("LISTEN grove_channel")
             while self._listening:
@@ -237,9 +260,9 @@ class CardBuilderModal(ModalScreen):
     def _post_confirmation(self, label: str) -> None:
         if self._channel_id is None:
             return
+        conn = grove_db.get_connection()
         try:
-            conn = _pg_conn()
-            cur  = conn.cursor()
+            cur = conn.cursor()
             sender = os.environ.get("GROVE_SENDER") or os.environ.get("USER", "dashboard")
             cur.execute(
                 "INSERT INTO grove.messages (channel_id, sender, content)"
@@ -248,9 +271,10 @@ class CardBuilderModal(ModalScreen):
                  f"Card '{label}' saved. Press Esc to close or continue the conversation."),
             )
             conn.commit()
-            conn.close()
         except Exception:
             pass
+        finally:
+            grove_db.release_connection(conn)
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
         body = event.value.strip()
@@ -258,18 +282,19 @@ class CardBuilderModal(ModalScreen):
             return
         event.input.value = ""
         sender = os.environ.get("GROVE_SENDER") or os.environ.get("USER", "sean")
+        conn = grove_db.get_connection()
         try:
-            conn = _pg_conn()
-            cur  = conn.cursor()
+            cur = conn.cursor()
             cur.execute(
                 "INSERT INTO grove.messages (channel_id, sender, content)"
                 " VALUES (%s, %s, %s)",
                 (self._channel_id, sender, body),
             )
             conn.commit()
-            conn.close()
         except Exception:
             pass
+        finally:
+            grove_db.release_connection(conn)
 
     def on_unmount(self) -> None:
         self._listening = False
