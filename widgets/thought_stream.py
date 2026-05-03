@@ -7,6 +7,8 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
+from textual import work
+from textual.message import Message
 from textual.widgets import RichLog, Static
 
 import grove_reader
@@ -44,6 +46,12 @@ def parse_session_stats(data: dict | None) -> str:
     return "  ".join(parts) if parts else "[dim]session active[/]"
 
 
+class _StreamFetched(Message):
+    def __init__(self, msgs: list[dict]) -> None:
+        super().__init__()
+        self.msgs = msgs
+
+
 class ThoughtStream(RichLog):
     """Live feed of agent messages from grove.messages. Polls every 10s."""
 
@@ -62,25 +70,29 @@ class ThoughtStream(RichLog):
         self._last_id: int = 0
 
     def on_mount(self) -> None:
-        self.set_interval(10, self._poll)
-        self._poll()
+        self.set_interval(10, self._fetch)
+        self._fetch()
 
-    def _poll(self) -> None:
+    @work(thread=True)
+    def _fetch(self) -> None:
         try:
             msgs = grove_reader.grove_messages_all_agents(
                 known_agents=KNOWN_AGENTS,
                 last_id=self._last_id,
                 limit=20,
             )
-            for m in msgs:
-                sender  = m.get("sender", "?")
-                content = m.get("content", "")
-                if len(content) > 60:
-                    content = content[:59] + "…"
-                self.write(f"[dim cyan]{sender}[/]  {content}")
-                self._last_id = max(self._last_id, m.get("id", 0))
         except Exception:
-            pass
+            msgs = []
+        self.post_message(_StreamFetched(msgs))
+
+    def on__stream_fetched(self, event: _StreamFetched) -> None:
+        for m in event.msgs:
+            sender  = m.get("sender", "?")
+            content = m.get("content", "")
+            if len(content) > 60:
+                content = content[:59] + "…"
+            self.write(f"[dim cyan]{sender}[/]  {content}")
+            self._last_id = max(self._last_id, m.get("id", 0))
 
 
 class SessionStats(Static):

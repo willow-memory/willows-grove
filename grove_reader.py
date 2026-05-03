@@ -174,6 +174,37 @@ def grove_messages_all_agents(
         _release(conn, owned)
 
 
+def grove_mentions(name: str, limit: int = 20, conn=None) -> list[dict]:
+    """Return recent messages that @mention name across all channels (DB query, not scan).
+
+    Each entry: {id, channel, sender, content}
+    """
+    conn, owned = _conn_ctx(conn)
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            SELECT m.id, c.name, m.sender, m.content
+            FROM grove.messages m
+            JOIN grove.channels c ON c.id = m.channel_id
+            WHERE m.content ILIKE %s
+              AND m.is_deleted = 0
+              AND c.is_archived = FALSE
+            ORDER BY m.id DESC
+            LIMIT %s
+            """,
+            (f"%@{name}%", limit),
+        )
+        return [
+            {"id": r[0], "channel": r[1], "sender": r[2], "content": r[3]}
+            for r in cur.fetchall()
+        ]
+    except Exception:
+        return []
+    finally:
+        _release(conn, owned)
+
+
 _ROUTING_DDL = """
 CREATE SCHEMA IF NOT EXISTS willow;
 CREATE TABLE IF NOT EXISTS willow.routing_decisions (

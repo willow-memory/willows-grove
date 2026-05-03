@@ -42,15 +42,19 @@ class SkillsPane(Container):
         yield table
         yield Static("", id="skill-detail")
 
+    def on_mount(self) -> None:
+        self._skills: list[dict] = []
+
     def refresh_data(self) -> None:
+        self._skills = _read_skills()
         table = self.query_one("#skills-table", DataTable)
         table.clear()
-        for s in _read_skills():
+        for s in self._skills:
             desc = s["description"][:80] + "…" if len(s["description"]) > 80 else s["description"]
             table.add_row(s["name"], desc)
 
     def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
-        skills = _read_skills()
+        skills = self._skills
         if event.cursor_row < len(skills):
             skill = skills[event.cursor_row]
             try:

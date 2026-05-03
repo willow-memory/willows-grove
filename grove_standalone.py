@@ -362,7 +362,6 @@ class GroveApp(App):
 
     def on_mount(self) -> None:
         self._conn = db.get_connection()
-        db.init_schema(self._conn)
         self.sub_title = f"{_MY_ADDR}"
         self.query_one(ConvHeader).clear()
         self._refresh_channels()

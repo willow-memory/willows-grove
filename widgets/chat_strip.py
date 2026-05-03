@@ -3,7 +3,9 @@ b17: WGRV1  ΔΣ=42
 """
 from __future__ import annotations
 
+from textual import work
 from textual.css.query import NoMatches
+from textual.message import Message
 from textual.widgets import Static
 
 import grove_reader
@@ -22,6 +24,14 @@ def format_strip_line(channel: str, sender: str, content: str, width: int) -> st
     if max_content < 4:
         return truncate_content(f"{prefix}{content}{suffix}", width)
     return f"{prefix}{truncate_content(content, max_content)}{suffix}"
+
+
+class _StripFetched(Message):
+    def __init__(self, channel: str, sender: str, content: str) -> None:
+        super().__init__()
+        self.channel = channel
+        self.sender  = sender
+        self.content = content
 
 
 class ChatStrip(Static):
@@ -44,10 +54,11 @@ class ChatStrip(Static):
         self._content = ""
 
     def on_mount(self) -> None:
-        self.set_interval(10, self._poll)
-        self._poll()
+        self.set_interval(10, self._fetch)
+        self._fetch()
 
-    def _poll(self) -> None:
+    @work(thread=True)
+    def _fetch(self) -> None:
         try:
             channels = grove_reader.grove_channels()
             if not channels:
@@ -56,12 +67,19 @@ class ChatStrip(Static):
             msgs = grove_reader.grove_messages(ch, limit=1)
             if msgs:
                 m = msgs[-1]
-                self._channel = ch
-                self._sender  = m.get("sender", "?")
-                self._content = m.get("content", "")
-                self._redraw()
+                self.post_message(_StripFetched(
+                    channel=ch,
+                    sender=m.get("sender", "?"),
+                    content=m.get("content", ""),
+                ))
         except Exception:
             pass
+
+    def on__strip_fetched(self, event: _StripFetched) -> None:
+        self._channel = event.channel
+        self._sender  = event.sender
+        self._content = event.content
+        self._redraw()
 
     def update_channel(self, channel: str) -> None:
         """Called by app when Chat pane changes active channel."""

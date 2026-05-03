@@ -123,20 +123,10 @@ def fetch_desk_data(sender_name: str) -> DeskData:
     except Exception:
         pass
 
-    # @mentions — scan general + architecture
+    # @mentions — SQL ILIKE across all channels
     try:
         import grove_reader
-        target = f"@{sender_name}".lower()
-        found: list[dict] = []
-        for ch_name in ("general", "architecture"):
-            for m in grove_reader.grove_messages(ch_name, limit=50):
-                if target in m.get("content", "").lower():
-                    found.append({
-                        "channel": ch_name,
-                        "sender": m.get("sender", "?"),
-                        "snippet": m.get("content", "")[:20],
-                    })
-        data.mentions = found
+        data.mentions = grove_reader.grove_mentions(sender_name, limit=20)
     except Exception:
         pass
 

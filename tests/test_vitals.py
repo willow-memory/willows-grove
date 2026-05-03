@@ -5,7 +5,7 @@ import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from unittest.mock import patch, MagicMock
 import json
-from grove.apps.vitals import fetch_vitals, format_vitals_line
+from grove.apps.vitals import fetch_vitals, format_vitals_line, _pg_ok, _kart_ok
 
 
 def test_fetch_vitals_structure():
@@ -42,6 +42,44 @@ def test_format_vitals_line_healthy():
     assert "pg" in line
     assert "●" in line
     assert "ygg" in line
+
+
+def test_pg_ok_returns_count():
+    mock_conn = MagicMock()
+    mock_conn.cursor.return_value.fetchone.return_value = (42,)
+    with patch("grove_db.get_connection", return_value=mock_conn):
+        with patch("grove_db.release_connection") as rel:
+            ok, detail = _pg_ok()
+    assert ok is True
+    assert "42" in detail
+    rel.assert_called_once_with(mock_conn)
+
+
+def test_pg_ok_db_error_returns_false():
+    with patch("grove_db.get_connection", side_effect=Exception("refused")):
+        ok, detail = _pg_ok()
+    assert ok is False
+    assert "refused" in detail
+
+
+def test_kart_ok_returns_counts():
+    mock_conn = MagicMock()
+    mock_conn.cursor.return_value.fetchone.return_value = (2, 5)
+    with patch("grove_db.get_connection", return_value=mock_conn):
+        with patch("grove_db.release_connection") as rel:
+            result = _kart_ok()
+    assert result["ok"] is True
+    assert result["running"] == 2
+    assert result["queued"] == 5
+    rel.assert_called_once_with(mock_conn)
+
+
+def test_kart_ok_db_error_returns_false():
+    with patch("grove_db.get_connection", side_effect=Exception("down")):
+        result = _kart_ok()
+    assert result["ok"] is False
+    assert result["running"] == 0
+    assert result["queued"] == 0
 
 
 def test_format_vitals_line_pg_down():

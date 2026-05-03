@@ -286,6 +286,7 @@ def execute_task(task_text: str) -> dict:
 
 
 def _pg_connect():
+    # Intentional dedicated connection — holds across claim+complete atomic pairs; reconnects on error.
     import psycopg2
     dsn = os.environ.get("WILLOW_DB_URL", "")
     if dsn:
