@@ -28,9 +28,9 @@ _CARD_NAV: dict[str, str] = {
     "knowledge": "knowledge",
     "yggdrasil": "providers",
     "agents":    "#pane-agents",
-    "secrets":   "",
-    "fleet":     "providers",
-    "mcp":       "providers",
+    "secrets":   "#pane-secrets",
+    "fleet":     "#pane-agents",
+    "mcp":       "#pane-mcp",
 }
 
 # (card_id, label) — order controls grid position

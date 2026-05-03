@@ -23,6 +23,8 @@ from textual.binding import Binding
 from textual.containers import Container, Horizontal, Vertical
 from textual.css.query import NoMatches
 from textual.screen import ModalScreen
+from textual import work
+from textual.message import Message
 from textual.widgets import Footer, Label, Rule, Static
 
 from panes.chat      import ChatPane, ChannelList, sender_color
@@ -42,6 +44,8 @@ from panes.providers import ProvidersPane
 from panes.skills    import SkillsPane
 from panes.health    import HealthPane
 from panes.logs      import LogsPane
+from panes.secrets   import SecretsPane
+from panes.mcp       import MCPPane
 from panes.home      import DeskPane, HomeGrid, ProjectsGrid
 
 from widgets.nav_bar        import NavBar, NavChanged, NAV_TARGETS
@@ -71,12 +75,19 @@ def _pg_ok() -> bool:
         return False
 
 
+class _VitalsData(Message):
+    def __init__(self, text: str) -> None:
+        super().__init__()
+        self.text = text
+
+
 class VitalsBar(Static):
     def on_mount(self) -> None:
-        self.set_interval(15, self._refresh)
-        self._refresh()
+        self.set_interval(15, self._fetch)
+        self._fetch()
 
-    def _refresh(self) -> None:
+    @work(thread=True)
+    def _fetch(self) -> None:
         pg    = "[green]pg:up[/]" if _pg_ok() else "[red]pg:down[/]"
         bp    = fetch_backfill_progress()
         if bp and bp.get("table") != "done":
@@ -85,12 +96,21 @@ class VitalsBar(Static):
         else:
             embed = "embed [green]done[/]"
         model = os.environ.get("WILLOW_MODEL", "claude-sonnet-4-6")
-        text  = f"[dim]{model}[/]  {pg}  {embed}"
-        self.update(text)
+        self.post_message(_VitalsData(f"[dim]{model}[/]  {pg}  {embed}"))
+
+    def on__vitals_data(self, event: _VitalsData) -> None:
+        self.update(event.text)
         try:
-            self.app.query_one(NavBar).set_vitals(text)
+            self.app.query_one(NavBar).set_vitals(event.text)
         except NoMatches:
             pass
+
+
+class _RightPanelData(Message):
+    def __init__(self, task_text: str, agents_text: str) -> None:
+        super().__init__()
+        self.task_text   = task_text
+        self.agents_text = agents_text
 
 
 class GroveRightPanel(Container):
@@ -106,16 +126,16 @@ class GroveRightPanel(Container):
         yield SessionStats(id="rp-session-stats")
 
     def on_mount(self) -> None:
-        self.set_interval(10, self._refresh)
-        self._refresh()
+        self.set_interval(10, self._fetch)
+        self._fetch()
 
-    def _refresh(self) -> None:
+    @work(thread=True)
+    def _fetch(self) -> None:
         data = fetch_tasks()
-        self._safe_update(
-            "#rp-task-counts",
+        task_text = (
             f"[yellow]{data['running']}[/] running\n"
             f"[dim]{data['pending']}[/] pending\n"
-            f"[green]{data['done']}[/] done",
+            f"[green]{data['done']}[/] done"
         )
         lines = []
         try:
@@ -127,7 +147,11 @@ class GroveRightPanel(Container):
                 lines.append(f"{dot} [{color}]{sender}[/]")
         except Exception:
             pass
-        self._safe_update("#rp-agents-list", "\n".join(lines) or "[dim]no agents[/]")
+        self.post_message(_RightPanelData(task_text, "\n".join(lines) or "[dim]no agents[/]"))
+
+    def on__right_panel_data(self, event: _RightPanelData) -> None:
+        self._safe_update("#rp-task-counts",  event.task_text)
+        self._safe_update("#rp-agents-list",  event.agents_text)
 
     def _safe_update(self, selector: str, text: str) -> None:
         try:
@@ -194,7 +218,7 @@ _CONTENT_PANES: dict[str, str] = {
 # Internal panes reachable via Projects — not in top nav
 _INTERNAL_PANES: list[str] = [
     "#pane-tasks", "#pane-agents", "#pane-routing",
-    "#pane-skills", "#pane-logs",
+    "#pane-skills", "#pane-logs", "#pane-secrets", "#pane-mcp",
 ]
 
 
@@ -378,12 +402,14 @@ class WillowGrove(App):
                 yield HealthPane(id="pane-health")
                 yield SettingsPane(id="pane-settings")
                 yield HelpPane(id="pane-help")
-                # internal panes — reachable via Projects, not top nav
+                # internal panes — reachable via card/tile nav, not top nav
                 yield TasksPane(id="pane-tasks")
                 yield AgentsPane(id="pane-agents")
                 yield RoutingPane(id="pane-routing")
                 yield SkillsPane(id="pane-skills")
                 yield LogsPane(id="pane-logs")
+                yield SecretsPane(id="pane-secrets")
+                yield MCPPane(id="pane-mcp")
             yield GroveRightPanel(id="right-panel")
         yield ChatStrip(id="chat-strip")
         yield VitalsBar(id="vitals-source")
