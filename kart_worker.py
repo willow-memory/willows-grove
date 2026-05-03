@@ -31,7 +31,7 @@ _SHELL_STARTERS = (
     'mkdir ', 'chmod ', 'find ', 'grep ', 'curl ', 'echo ',
     'mv ', 'rm ', 'ls ', 'cat ', 'psql ', 'git ', 'bash ',
     'ollama ', 'jupyter ', 'kaggle ',
-    '/home/sean-campbell/',
+    str(Path.home()) + os.sep,
     '/usr/', '/opt/',
 )
 

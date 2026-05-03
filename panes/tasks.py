@@ -55,7 +55,9 @@ def fetch_tasks() -> dict:
 
 def fetch_backfill_progress() -> dict | None:
     try:
-        sys.path.insert(0, str(Path.home() / "github" / "willow-1.9"))
+        import os
+        willow_root = os.environ.get("WILLOW_ROOT", str(Path.home() / "github" / "willow-1.9"))
+        sys.path.insert(0, willow_root)
         from core.willow_store import WillowStore
         store = WillowStore()
         return store.get("hanuman/tasks", "embed_backfill_progress")

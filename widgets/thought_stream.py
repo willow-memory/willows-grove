@@ -4,6 +4,7 @@ b17: WGRV1  ΔΣ=42
 from __future__ import annotations
 
 import json
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -14,15 +15,24 @@ from textual.widgets import RichLog, Static
 import grove_reader
 
 
-KNOWN_AGENTS: frozenset[str] = frozenset([
-    "hanuman", "heimdallr", "ganesha", "vishwakarma", "loki", "jeles",
-])
-
 _SESSION_ANCHOR = Path.home() / ".willow" / "session_anchor.json"
 
 
-def is_agent_sender(sender: str, agents: frozenset[str] = KNOWN_AGENTS) -> bool:
-    return sender.lower() in agents
+def _load_known_agents() -> frozenset[str]:
+    """Return agent names to watch in ThoughtStream.
+
+    Priority:
+    1. GROVE_KNOWN_AGENTS env var  — comma-separated list, always wins
+    2. DB heartbeat senders         — discovered dynamically from grove.messages
+    3. Empty set                    — show nothing rather than crash
+    """
+    env = os.environ.get("GROVE_KNOWN_AGENTS", "").strip()
+    if env:
+        return frozenset(n.strip().lower() for n in env.split(",") if n.strip())
+    try:
+        return frozenset(a["sender"].lower() for a in grove_reader.grove_agents())
+    except Exception:
+        return frozenset()
 
 
 def parse_session_stats(data: dict | None) -> str:
@@ -52,6 +62,12 @@ class _StreamFetched(Message):
         self.msgs = msgs
 
 
+class _AgentsRefreshed(Message):
+    def __init__(self, agents: frozenset[str]) -> None:
+        super().__init__()
+        self.agents = agents
+
+
 class ThoughtStream(RichLog):
     """Live feed of agent messages from grove.messages. Polls every 10s."""
 
@@ -68,22 +84,35 @@ class ThoughtStream(RichLog):
     def __init__(self, **kwargs) -> None:
         super().__init__(highlight=False, markup=True, wrap=True, **kwargs)
         self._last_id: int = 0
+        self._known_agents: frozenset[str] = frozenset()
 
     def on_mount(self) -> None:
-        self.set_interval(10, self._fetch)
-        self._fetch()
+        self._refresh_agents()
+        self.set_interval(10,  self._fetch)
+        self.set_interval(60,  self._refresh_agents)
+
+    @work(thread=True)
+    def _refresh_agents(self) -> None:
+        self.post_message(_AgentsRefreshed(_load_known_agents()))
 
     @work(thread=True)
     def _fetch(self) -> None:
+        if not self._known_agents:
+            return
         try:
             msgs = grove_reader.grove_messages_all_agents(
-                known_agents=KNOWN_AGENTS,
+                known_agents=self._known_agents,
                 last_id=self._last_id,
                 limit=20,
             )
         except Exception:
             msgs = []
         self.post_message(_StreamFetched(msgs))
+
+    def on__agents_refreshed(self, event: _AgentsRefreshed) -> None:
+        self._known_agents = event.agents
+        if self._known_agents and self._last_id == 0:
+            self._fetch()
 
     def on__stream_fetched(self, event: _StreamFetched) -> None:
         for m in event.msgs:
