@@ -439,6 +439,10 @@ class WillowGrove(App):
     def on_nav_changed(self, event: NavChanged) -> None:
         self._hide_all_content_panes()
         self._show_content_pane(event.target)
+        try:
+            self.query_one(ContextPanel)._show_target(event.target)
+        except NoMatches:
+            pass
 
     def _do_refresh(self) -> None:
         for pane_id, pane_cls in [
