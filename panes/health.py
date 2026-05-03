@@ -7,7 +7,7 @@ from pathlib import Path
 
 from textual.binding import Binding
 from textual.containers import Container
-from textual.widgets import Label, Log
+from textual.widgets import Label, RichLog
 
 WILLOW_ROOT = Path(os.environ.get("WILLOW_ROOT", Path.home() / "github" / "willow-1.9"))
 
@@ -17,13 +17,13 @@ class HealthPane(Container):
 
     def compose(self):
         yield Label("  Health  (r=run boot check)", id="health-title")
-        yield Log(id="health-log", auto_scroll=True)
+        yield RichLog(id="health-log", auto_scroll=True, markup=True)
 
     def action_run_health(self) -> None:
-        log    = self.query_one("#health-log", Log)
+        log    = self.query_one("#health-log", RichLog)
         script = WILLOW_ROOT / "willow" / "fylgja" / "skills" / "scripts" / "system_health.py"
         log.clear()
-        log.write_line("Running willow health boot…")
+        log.write("Running willow health boot…")
         try:
             result = subprocess.run(
                 ["python3", str(script), "--check", "boot",
@@ -32,9 +32,6 @@ class HealthPane(Container):
                 capture_output=True, text=True, timeout=30,
             )
             for line in (result.stdout + result.stderr).splitlines():
-                color = ("green"  if "HEALTHY"  in line else
-                         "red"    if "CRITICAL" in line else
-                         "yellow" if "WARN"     in line else "")
-                log.write_line(f"[{color}]{line}[/]" if color else line)
+                log.write(line)
         except Exception as e:
-            log.write_line(f"[red]Error: {e}[/]")
+            log.write(f"[red]Error: {e}[/]")

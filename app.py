@@ -332,7 +332,7 @@ class WillowGrove(App):
         color: #8b949e;
     }
 
-    Log {
+    Log, RichLog {
         margin: 0 2;
         height: 1fr;
         border: round #30363d;
@@ -415,6 +415,10 @@ class WillowGrove(App):
         yield VitalsBar(id="vitals-source")
         yield Footer()
 
+    def on_exception(self, error: Exception) -> None:
+        import traceback
+        logging.error("Textual exception: %s\n%s", error, traceback.format_exc())
+
     def on_mount(self) -> None:
         self._hide_all_content_panes()
         self._show_content_pane("home")
@@ -493,7 +497,7 @@ class WillowGrove(App):
     def action_refresh(self) -> None:
         self._do_refresh()
         try:
-            self.query_one(GroveRightPanel)._refresh()
+            self.query_one(GroveRightPanel)._fetch()
         except NoMatches:
             pass
         self.notify("Refreshed")

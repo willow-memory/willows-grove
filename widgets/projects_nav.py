@@ -120,9 +120,9 @@ class ProjectsNavRow(Widget):
         yield Static("", id=f"pnrt-{self._card_id}", markup=True)
 
     def on_mount(self) -> None:
-        self._render()
+        self._redraw()
 
-    def _render(self) -> None:
+    def _redraw(self) -> None:
         from textual.css.query import NoMatches
         color = _ROW_COLORS.get(self._state, "#8b949e")
         dot   = f"[{color}]●[/]"
@@ -135,7 +135,7 @@ class ProjectsNavRow(Widget):
     def update_row(self, count: str, state: str) -> None:
         self._count = count
         self._state = state
-        self._render()
+        self._redraw()
 
     def action_activate(self) -> None:
         from widgets.card_grid import CardActivated

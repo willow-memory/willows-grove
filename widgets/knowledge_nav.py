@@ -46,6 +46,7 @@ class KnowledgeNav(Widget):
         super().__init__(**kwargs)
         self._rows: list[dict] = []
         self._cursor: int = -1
+        self._last_query: str = ""
 
     def compose(self) -> ComposeResult:
         yield Input(placeholder="Search knowledge…", id="kn-search")
@@ -58,6 +59,11 @@ class KnowledgeNav(Widget):
             if self._cursor >= 0 and self._rows:
                 self.action_confirm()
             return
+        if self._rows and query == self._last_query:
+            # Same query submitted again — confirm current selection
+            self.action_confirm()
+            return
+        self._last_query = query
         self._search(query)
 
     @work(thread=True)
@@ -104,7 +110,7 @@ class KnowledgeNav(Widget):
                 title = (row.get("title", "") or "—")[:16]
                 atom_id = row.get("id", "?")
                 if i == self._cursor:
-                    lines.append(f"[reverse] {i + 1:2}. {atom_id} {title}[/]")
+                    lines.append(f"[reverse] {i + 1:2}. {atom_id} {title}  ↵[/]")
                 else:
                     lines.append(f"[dim] {i + 1:2}.[/] [#58a6ff]{atom_id}[/] {title}")
             text = "\n".join(lines)

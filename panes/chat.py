@@ -106,6 +106,7 @@ class ChannelList(Vertical):
         self.set_interval(5, self._poll)
         self._poll()
 
+    @work(thread=True)
     def _poll(self) -> None:
         try:
             channels = grove_reader.grove_channels(last_seen_ids=self._cursors)
@@ -117,14 +118,17 @@ class ChannelList(Vertical):
             new = sort_channels(channels)
             new_snap = [(c["name"], c.get("unread", 0)) for c in new]
             old_snap = [(c["name"], c.get("unread", 0)) for c in self._channels]
-            self._channels = new
             if new_snap != old_snap:
-                lst = self.query_one("#cl-channel-list", ListView)
-                lst.clear()
-                for ch in self._channels:
-                    lst.append(ChannelItem(ch))
+                self._channels = new
+                self.app.call_from_thread(self._rebuild_list, new)
         except Exception:
             pass
+
+    def _rebuild_list(self, channels: list) -> None:
+        lst = self.query_one("#cl-channel-list", ListView)
+        lst.clear()
+        for ch in channels:
+            lst.append(ChannelItem(ch))
 
 
 class ChatPane(Container):
@@ -200,6 +204,7 @@ class ChatPane(Container):
         self._poll()
         self._start_listener()
 
+    @work(thread=True)
     def _poll(self) -> None:
         try:
             channels = grove_reader.grove_channels(last_seen_ids=self._cursors)
@@ -216,16 +221,21 @@ class ChatPane(Container):
             # the 5s clear/rebuild cycle from causing visible flicker.
             new_snapshot = [(c["name"], c.get("unread", 0)) for c in new_channels]
             old_snapshot = [(c["name"], c.get("unread", 0)) for c in self._channels]
-            self._channels = new_channels
             if new_snapshot != old_snapshot:
-                lst = self.query_one("#channel-list", ListView)
-                lst.clear()
-                for ch in self._channels:
-                    lst.append(ChannelItem(ch))
-            if not self._active_channel and self._channels:
-                self._open_channel(self._channels[0]["name"])
+                self._channels = new_channels
+                self.app.call_from_thread(self._rebuild_channel_list, new_channels)
+            auto_open = not self._active_channel and bool(new_channels)
+            if auto_open:
+                first = new_channels[0]["name"]
+                self.app.call_from_thread(self._open_channel, first)
         except Exception:
             pass
+
+    def _rebuild_channel_list(self, channels: list) -> None:
+        lst = self.query_one("#channel-list", ListView)
+        lst.clear()
+        for ch in channels:
+            lst.append(ChannelItem(ch))
 
     @work(thread=True)
     def _start_listener(self) -> None:

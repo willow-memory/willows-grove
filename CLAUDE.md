@@ -86,7 +86,7 @@ This repo consolidates:
 2. **grove_db.py owns the schema.** Don't duplicate schema definitions elsewhere.
 3. **grove_reader.py is read-only.** Writes go through grove_db.py.
 4. **b17 on every new file before it is closed.**
-5. **Propose before acting.** Sean ratifies. Neither party acts alone.
+5. **Propose before acting — for new work.** Sean ratifies the start of new work. Neither party acts alone on new scope. But an authorized running task continues to completion without re-ratification at each sub-item. "Propose before acting" governs starting, not continuing. The only valid mid-task stops are genuine blockers: missing dependency, ambiguity that changes the implementation, or permission failure. Stopping mid-scope to check in is not governance — it is abandonment.
 
 ---
 

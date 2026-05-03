@@ -44,9 +44,9 @@ class ProvidersNavRow(Widget):
         yield Static("", id=f"pnr-{self._name}-label", markup=True)
 
     def on_mount(self) -> None:
-        self._render()
+        self._redraw()
 
-    def _render(self) -> None:
+    def _redraw(self) -> None:
         from textual.css.query import NoMatches
         dot = "[green]●[/]" if self._enabled else "[red]●[/]"
         status = "ON" if self._enabled else "OFF"
@@ -59,7 +59,7 @@ class ProvidersNavRow(Widget):
     def update_row(self, enabled: bool, ptype: str) -> None:
         self._enabled = enabled
         self._ptype = ptype
-        self._render()
+        self._redraw()
 
     def action_activate(self) -> None:
         self.post_message(ProviderRowSelected(self._name))

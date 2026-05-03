@@ -4,6 +4,7 @@ b17: WGRV1  ΔΣ=42
 import sys
 from pathlib import Path
 
+from textual import work
 from textual.containers import Container
 from textual.widgets import DataTable, Label
 
@@ -79,22 +80,26 @@ class TasksPane(Container):
         self.set_interval(10, self.refresh_data)
         self.refresh_data()
 
+    @work(thread=True)
     def refresh_data(self) -> None:
-        data  = fetch_tasks()
+        data = fetch_tasks()
+        bp   = fetch_backfill_progress()
+        self.app.call_from_thread(self._apply_data, data, bp)
+
+    def _apply_data(self, data: dict, bp: dict | None) -> None:
         table = self.query_one("#tasks-table", DataTable)
         table.clear()
-        self.query_one("#stat-running", StatusRow).set_status(None,              str(data["running"]))
-        self.query_one("#stat-pending", StatusRow).set_status(data["pending"]==0, str(data["pending"]))
-        self.query_one("#stat-done",    StatusRow).set_status(None,              str(data["done"]))
+        self.query_one("#stat-running", StatusRow).set_status(None,               str(data["running"]))
+        self.query_one("#stat-pending", StatusRow).set_status(data["pending"] == 0, str(data["pending"]))
+        self.query_one("#stat-done",    StatusRow).set_status(None,               str(data["done"]))
 
         # Backfill progress as a synthetic running row at the top
-        bp = fetch_backfill_progress()
         if bp and bp.get("table") != "done":
-            pct  = bp.get("pct", 0)
-            done = bp.get("atoms_done", 0)
-            total = bp.get("total", 0)
-            eta  = bp.get("eta_human", "?")
-            rate = bp.get("rate_recent") or bp.get("rate_per_sec", 0)
+            pct     = bp.get("pct", 0)
+            done    = bp.get("atoms_done", 0)
+            total   = bp.get("total", 0)
+            eta     = bp.get("eta_human", "?")
+            rate    = bp.get("rate_recent") or bp.get("rate_per_sec", 0)
             updated = str(bp.get("updated_at", ""))[:16]
             cmd = f"embed_backfill  {pct:.1f}%  {done:,}/{total:,}  {rate:.2f}/s  ETA {eta}"
             table.add_row("BACKFILL", "[yellow]running[/]", cmd, updated)
