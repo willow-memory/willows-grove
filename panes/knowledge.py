@@ -23,10 +23,10 @@ def search_kb(query: str, limit: int = 50) -> list[dict]:
         conn = grove_db.get_connection()
         cur = conn.cursor()
         cur.execute("""
-            SELECT id, title, summary, domain, weight
+            SELECT id, title, summary, project AS domain, weight
             FROM public.knowledge
             WHERE (title ILIKE %s OR summary ILIKE %s)
-              AND domain != 'archived'
+              AND invalid_at IS NULL
             ORDER BY weight DESC NULLS LAST, id DESC
             LIMIT %s
         """, (f"%{query}%", f"%{query}%", limit))
@@ -55,7 +55,7 @@ def fetch_atom(atom_id: int, conn=None) -> dict | None:
         cur = conn.cursor()
         try:
             cur.execute(
-                "SELECT id, title, summary, domain, weight, content "
+                "SELECT id, title, summary, project, weight, content "
                 "FROM public.knowledge WHERE id = %s",
                 (atom_id,),
             )
@@ -69,7 +69,7 @@ def fetch_atom(atom_id: int, conn=None) -> dict | None:
         except Exception:
             conn.rollback()
             cur.execute(
-                "SELECT id, title, summary, domain, weight "
+                "SELECT id, title, summary, project, weight "
                 "FROM public.knowledge WHERE id = %s",
                 (atom_id,),
             )
