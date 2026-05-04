@@ -3,55 +3,57 @@ b17: WGRV1  ΔΣ=42
 """
 from textual.widgets import Static
 
-# 10-frame animation poses — L=lean left, C=center, R=lean right
+# Weeping willow — canopy dome + hanging fronds sway L→C→R→C→L
+# Each pose: 10 frames of the hanging-frond row only.
+# _SCENE_TOP + [frond_row] + _SCENE_BOTTOM = full tree.
+
 POSES: dict[str, list[str]] = {
-    "L": [
-        r"ƒƒ\ ƒ ƒ ƒ  /ƒ ƒ ",
-        r"ƒ ƒ\ ƒ ƒ  / ƒ ƒ ",
-        r"ƒ  ƒ\ ƒ  /  ƒ ƒ ",
-        r"ƒ  ƒ \  / ƒ  ƒ  ",
-        r"ƒ  ƒ  \/  ƒ  ƒ  ",
-        r"ƒ  ƒ  ║   ƒ  ƒ  ",
-        r"ƒ  ƒ ƒ║    ƒ  ƒ ",
-        r"ƒ    ƒ║     ƒ  ƒ",
-        r"ƒ     ║ƒ     ƒ  ",
-        r"ƒ     ║ƒ      ƒ ",
+    "L": [  # fronds blown right by wind from left
+        r"  `. . | ..`    ",
+        r"  `. . |. .`    ",
+        r"  `. . |  .`    ",
+        r"   `. .|  .`    ",
+        r"   `. .|   `    ",
+        r"   `.  |   `    ",
+        r"   `.  |  .`    ",
+        r"   `. .|  .`    ",
+        r"   `. .| . `    ",
+        r"  `. . | . `    ",
     ],
-    "C": [
-        r"ƒƒ\ ƒ ƒ ƒ /ƒ ƒ  ",
-        r"ƒ ƒ\ ƒ ƒ / ƒ ƒ  ",
-        r"ƒ  ƒ\   /  ƒ ƒ  ",
-        r"ƒ  ƒ \ / ƒ  ƒ   ",
-        r"ƒ  ƒ  ║  ƒ  ƒ   ",
-        r"ƒ   ƒ ║  ƒ  ƒ   ",
-        r"ƒ   ƒ ║ƒ  ƒ  ƒ  ",
-        r"ƒ    ƒ║    ƒ  ƒ ",
-        r"ƒ     ║ƒ    ƒ  ƒ",
-        r"ƒ     ║ƒ     ƒ  ",
+    "C": [  # calm center
+        r"  `. . | . .`   ",
+        r"  `. .  . . `   ",
+        r"  `. . | . .`   ",
+        r"  ` . .|. . `   ",
+        r"  `. . | . .`   ",
+        r"   `. .|. .`    ",
+        r"  `. . | . .`   ",
+        r"  ` . .| . `    ",
+        r"  `. . | . .`   ",
+        r"   `. .| .`     ",
     ],
-    "R": [
-        r"ƒ\ ƒ ƒ ƒ ƒ/ƒƒ   ",
-        r"ƒ \ ƒ ƒ ƒ /ƒ ƒ  ",
-        r"ƒ  \ ƒ ƒ /  ƒ ƒ ",
-        r"ƒ ƒ \   /ƒ  ƒ ƒ ",
-        r"ƒ ƒ  \ / ƒ  ƒ ƒ ",
-        r"ƒ ƒ   ║  ƒ  ƒ ƒ ",
-        r"ƒ  ƒ ƒ║   ƒ  ƒ  ",
-        r"ƒ    ƒ║    ƒ  ƒ ",
-        r"ƒ     ║ƒ    ƒ   ",
-        r"ƒ     ║ ƒ    ƒ  ",
+    "R": [  # fronds blown left by wind from right
+        r"    `. .| . .`  ",
+        r"    `. | . .`   ",
+        r"    ` .| . .`   ",
+        r"    `.  . . .`  ",
+        r"    `   | . .`  ",
+        r"    `   |. .`   ",
+        r"    `. .|. .`   ",
+        r"    `. .| .`    ",
+        r"   `. . | .`    ",
+        r"  `. .  | .`    ",
     ],
 }
 
-_POSE_ORDER = ["L", "C", "R"]  # L→C→R→L cycle (30 frames total)
+_POSE_ORDER = ["L", "C", "R"]
 
 
 def advance_frame(pose: str, frame: int) -> tuple[str, int]:
-    """Return (next_pose, next_frame) after advancing one step."""
     frame += 1
     if frame >= len(POSES[pose]):
-        idx   = (_POSE_ORDER.index(pose) + 1) % len(_POSE_ORDER)
-        pose  = _POSE_ORDER[idx]
+        idx  = (_POSE_ORDER.index(pose) + 1) % len(_POSE_ORDER)
+        pose = _POSE_ORDER[idx]
         frame = 0
     return pose, frame
 
@@ -60,24 +62,28 @@ def render_frame(pose: str, frame: int) -> str:
     return POSES[pose][frame]
 
 
+# Weeping willow: round canopy dome, trunk visible through it
 _SCENE_TOP = [
-    "        ,",
-    "       /|\\",
-    "      / | \\",
+    "     * . * . *   ",
+    "    ( . . . . )  ",
+    "   ( .  . | . )  ",
 ]
 
+# Lower fronds + trunk — no ground line (ground is the full-width strip below)
 _SCENE_BOTTOM = [
-    "      |   |",
-    "   ~~~|~~~|~~~",
+    "    ` . | . `    ",
+    "      ` | `      ",
+    "        |        ",
 ]
 
 
 class WillowHero(Static):
-    """Animated 10-frame willow tree sway. Cycles L→C→R→C→L."""
+    """Animated weeping willow — drooping fronds sway L→C→R→C→L."""
 
     DEFAULT_CSS = """
     WillowHero {
-        height: 8;
+        width: 22;
+        height: 7;
         content-align: center middle;
         color: $success;
         text-style: bold;
@@ -98,6 +104,6 @@ class WillowHero(Static):
         self._redraw()
 
     def _redraw(self) -> None:
-        branch = render_frame(self._pose, self._frame)
-        lines  = _SCENE_TOP + [f"    {branch}"] + _SCENE_BOTTOM
+        frond = render_frame(self._pose, self._frame)
+        lines = _SCENE_TOP + [frond] + _SCENE_BOTTOM
         self.update("\n".join(lines))

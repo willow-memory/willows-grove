@@ -1,13 +1,15 @@
-"""widgets/hero_scene.py — HeroScene: willow tree + flower field + info panel.
+"""widgets/hero_scene.py — HeroScene: willow tree + info panel + full-width meadow.
 b17: WGRV1  ΔΣ=42
 """
 from __future__ import annotations
 
+import random
 import shutil
 from datetime import datetime
 
+from rich.markup import escape
 from textual.app import ComposeResult
-from textual.containers import Horizontal
+from textual.containers import Horizontal, Vertical
 from textual.widgets import Static
 
 from .hero import WillowHero
@@ -15,31 +17,34 @@ from .hero import WillowHero
 
 # ── Ground strip ─────────────────────────────────────────────────────────────
 
-GROUND_LINE = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+_BLOOMS   = ["✿", "✾", "❀", "⚘", "✿", "❀"]
+_GRASS    = [",", ".", ",,", " ,", ", "]
+_GROUND   = "~" * 80
 
-_FLOWERS    = ["✿", "✾", "❀", "⚘"]
-_SEPARATORS = [" │ ", " ∿ ", " │ ", " ∿ ", " │ ", " ∿ ", " │ "]
 
-
-def _make_scene(frame: int) -> str:
-    n = len(_FLOWERS)
-    parts: list[str] = []
-    for i in range(8):
-        parts.append(_FLOWERS[(frame + i) % n])
-        if i < 7:
-            parts.append(_SEPARATORS[i])
-    return "  " + "".join(parts) + "  "
+def _make_meadow(frame: int, width: int) -> str:
+    """Organic meadow row — flowers at irregular intervals with grass between."""
+    rng   = random.Random(frame * 7919)   # deterministic per frame
+    cells = []
+    x     = 0
+    while x < width - 2:
+        gap = rng.randint(2, 6)
+        cells.append(_GRASS[rng.randint(0, len(_GRASS) - 1)] * max(1, gap // 2))
+        x += gap
+        if x < width - 2:
+            cells.append(_BLOOMS[(frame + x) % len(_BLOOMS)])
+            x += 1
+    return "".join(cells)[:width]
 
 
 class GroundStrip(Static):
-    """Animated flower meadow strip — 4-frame cycle, staggered wave."""
+    """Full-width meadow — irregular flowers + grass, single ground line."""
 
     DEFAULT_CSS = """
     GroundStrip {
-        width: 1fr;
-        height: 10;
+        height: 3;
         color: #3fb950;
-        padding: 2 2 0 2;
+        padding: 0 0 0 0;
         content-align: left bottom;
     }
     """
@@ -49,21 +54,23 @@ class GroundStrip(Static):
         self._frame = 0
 
     def on_mount(self) -> None:
-        self.set_interval(0.6, self._tick)
+        self.set_interval(0.8, self._tick)
         self._redraw()
 
     def _tick(self) -> None:
-        self._frame = (self._frame + 1) % len(_FLOWERS)
+        self._frame = (self._frame + 1) % len(_BLOOMS)
         self._redraw()
 
     def _redraw(self) -> None:
-        self.update(f"{_make_scene(self._frame)}\n  {GROUND_LINE}")
+        w = max(20, self.size.width or 80)
+        meadow = _make_meadow(self._frame, w)
+        ground = _GROUND[:w]
+        self.update(f"\n{meadow}\n{ground}")
 
 
 # ── System info ───────────────────────────────────────────────────────────────
 
 def _sysinfo() -> dict:
-    """Read cpu/mem/disk/temp from /proc. Never raises."""
     r: dict = {"cpu": 0, "mem": 0, "disk": 0, "temp": 0}
     try:
         with open("/proc/stat") as f:
@@ -99,10 +106,11 @@ def _sysinfo() -> dict:
 
 # ── Info panel ────────────────────────────────────────────────────────────────
 
+# Sean's WILLOW wordmark from dashboard sketch — escaped for Rich markup
 _WILLOW_ART = [
-    r"_  _  _  __ __  __    _  _  _  _",
-    r"\\ \\ \\ || ||  ||  / o\ \\ \\ \\",
-    r" \\/ \// || |_] |_} \__/  \\/ \//",
+    escape("_  _  _  __ __  __    _  _  _  _"),
+    escape("\\\\ \\\\ \\\\ || ||  ||  / o\\ \\\\ \\\\ \\\\"),
+    escape(" \\\\/ \\\\// || |_] |_} \\\\__/  \\\\/ \\\\//"),
 ]
 
 
@@ -112,7 +120,7 @@ class HeroInfo(Static):
     DEFAULT_CSS = """
     HeroInfo {
         width: 36;
-        height: 10;
+        height: 7;
         color: #8b949e;
         padding: 0 1 0 1;
     }
@@ -140,17 +148,17 @@ class HeroInfo(Static):
         self.update(
             f"{art}\n"
             "\n"
-            f"[dim]v0.1[/]  [#f0883e]BETA[/]\n"
-            f"[dim]cpu {s['cpu']:3d}%  mem {s['mem']:3d}%[/]\n"
-            f"[dim]disk {s['disk']:3d}%  {temp}[/]\n"
+            f"[dim]v0.1[/]  [#f0883e]BETA[/]  "
+            f"[dim]cpu {s['cpu']:3d}%  mem {s['mem']:3d}%  "
+            f"disk {s['disk']:3d}%  {temp}[/]\n"
             f"[dim]{t} · {d}[/]"
         )
 
 
 # ── Scene ─────────────────────────────────────────────────────────────────────
 
-class HeroScene(Horizontal):
-    """Full-width hero band: tree (left) · flowers (center) · info (right)."""
+class HeroScene(Vertical):
+    """Hero band: top row (tree + info) over full-width meadow ground."""
 
     DEFAULT_CSS = """
     HeroScene {
@@ -158,12 +166,13 @@ class HeroScene(Horizontal):
         background: #0d1117;
         border-bottom: solid #30363d;
     }
-    HeroScene WillowHero {
-        width: 28;
+    #hero-top {
+        height: 7;
     }
     """
 
     def compose(self) -> ComposeResult:
-        yield WillowHero()
+        with Horizontal(id="hero-top"):
+            yield WillowHero()
+            yield HeroInfo()
         yield GroundStrip()
-        yield HeroInfo()
