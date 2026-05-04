@@ -12,7 +12,7 @@ from rich.markup import escape as _e
 from textual import on, work
 from textual.containers import Container, Vertical
 from textual.message import Message
-from textual.widgets import Input, Label, ListItem, ListView, Static, TextArea
+from textual.widgets import Input, Label, ListItem, ListView, RichLog, Static
 
 import grove_db
 import grove_reader
@@ -158,7 +158,7 @@ class ChatPane(Container):
         text-style: bold;
         border-bottom: solid $primary-darken-3;
     }
-    ChatPane #msg-log {
+    ChatPane RichLog {
         height: 1fr;
         padding: 1 2;
     }
@@ -189,7 +189,7 @@ class ChatPane(Container):
     def compose(self):
         yield Static("Select a channel", id="channel-title")
         yield Static("", id="agent-status", markup=True)
-        yield TextArea("", id="msg-log", read_only=True)
+        yield RichLog(id="msg-log", highlight=False, markup=True, wrap=True)
         yield Input(placeholder="Message…", id="msg-input")
 
     def on_mount(self) -> None:
@@ -273,6 +273,8 @@ class ChatPane(Container):
             pass
 
     def _open_channel(self, name: str) -> None:
+        if name != self._active_channel:
+            self._cursors.pop(name, None)  # force full reload on channel switch
         self._active_channel = name
         ch = next((c for c in self._channels if c["name"] == name), {})
         self._active_agent = ch.get("agent_name") or ""
@@ -319,16 +321,18 @@ class ChatPane(Container):
 
     def _load_messages(self, channel: str) -> None:
         try:
-            msgs = grove_reader.grove_messages(channel, limit=100)
-            log  = self.query_one("#msg-log", TextArea)
-            lines: list[str] = []
-            for m in msgs:
-                sender  = m.get("sender", "?")
-                content = m.get("content", "")
-                ts      = format_ts(m.get("created_at"))
-                lines.append(f"{ts}  {sender:<16}  {render_content(content)}")
-            log.load_text("\n".join(lines))
-            log.scroll_end(animate=False)
+            log = self.query_one("#msg-log", RichLog)
+            since = self._cursors.get(channel, 0)
+            if since == 0:
+                # First open: full history, clear first
+                msgs = grove_reader.grove_messages(channel, limit=100)
+                log.clear()
+                for m in msgs:
+                    self._write_msg(log, m)
+            else:
+                msgs = grove_reader.grove_messages(channel, limit=200, since_id=since)
+                for m in msgs:
+                    self._write_msg(log, m)
             if msgs:
                 self._cursors[channel] = msgs[-1]["id"]
                 try:
@@ -343,6 +347,16 @@ class ChatPane(Container):
                     pass
         except Exception:
             pass
+
+    def _write_msg(self, log: RichLog, m: dict) -> None:
+        sender  = m.get("sender", "?")
+        content = m.get("content", "")
+        ts      = format_ts(m.get("created_at"))
+        color   = sender_color(sender)
+        name    = (sender[:13] + "…") if len(sender) > 14 else f"{sender:<14}"
+        log.write(
+            f"[dim]{ts}[/dim]  [{color} bold]{name}[/{color} bold]  {_e(render_content(content))}"
+        )
 
     def on_channel_opened(self, event: ChannelOpened) -> None:
         self._open_channel(event.name)

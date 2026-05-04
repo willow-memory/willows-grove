@@ -19,7 +19,9 @@ from textual.widgets import Input, RichLog, Static
 import grove_db
 import grove_reader
 
-_CARD_DEF_RE = re.compile(r"```card-def\s*\n(.*?)\n```", re.DOTALL)
+_CARD_DEF_RE  = re.compile(r"```card-def\s*\n(.*?)\n```", re.DOTALL)
+_OLLAMA_URL   = os.environ.get("OLLAMA_URL", "http://localhost:11434")
+_OLLAMA_MODEL = os.environ.get("WILLOW_OLLAMA_MODEL", "yggdrasil:v9")
 
 
 _INTRO_PROMPT = (
@@ -115,12 +117,12 @@ class CardBuilderModal(ModalScreen):
                 self._interviewer = "heimdallr"
                 self._dispatch_intro(channel_id, to="heimdallr")
             else:
-                self._interviewer = "willow"
+                self._interviewer = "local"
                 self.app.call_from_thread(
                     self._set_status,
-                    "[dim]@willow is conducting the interview (Heimdallr offline)[/]"
+                    "[dim]local model is conducting the interview[/]"
                 )
-                self._dispatch_intro(channel_id, to="willow")
+                self._local_intro(channel_id)
 
         self._start_listener()
 
@@ -144,6 +146,60 @@ class CardBuilderModal(ModalScreen):
             return None
         finally:
             grove_db.release_connection(conn)
+
+    def _write_to_channel(self, channel_id: int, sender: str, content: str) -> None:
+        conn = grove_db.get_connection()
+        try:
+            cur = conn.cursor()
+            cur.execute(
+                "INSERT INTO grove.messages (channel_id, sender, content)"
+                " VALUES (%s, %s, %s)",
+                (channel_id, sender, content),
+            )
+            conn.commit()
+        except Exception:
+            pass
+        finally:
+            grove_db.release_connection(conn)
+
+    def _ollama_call(self, messages: list[dict]) -> str:
+        import urllib.request as _urlreq
+        try:
+            data = json.dumps({
+                "model":    _OLLAMA_MODEL,
+                "messages": messages,
+                "stream":   False,
+            }).encode()
+            req = _urlreq.Request(
+                f"{_OLLAMA_URL}/api/chat", data=data,
+                headers={"Content-Type": "application/json"},
+            )
+            with _urlreq.urlopen(req, timeout=60) as resp:
+                return json.load(resp).get("message", {}).get("content", "").strip()
+        except Exception as exc:
+            return f"(local model unavailable: {exc})"
+
+    def _local_intro(self, channel_id: int) -> None:
+        reply = self._ollama_call([
+            {"role": "system", "content": _INTRO_PROMPT},
+            {"role": "user",   "content": "begin"},
+        ])
+        if reply:
+            self._write_to_channel(channel_id, "willow", reply)
+
+    @work(thread=True)
+    def _local_reply(self) -> None:
+        if self._channel_id is None:
+            return
+        history = grove_reader.grove_messages("card-builder", limit=30)
+        messages = [{"role": "system", "content": _INTRO_PROMPT}]
+        for m in history:
+            sender = m.get("sender", "")
+            role   = "assistant" if sender == "willow" else "user"
+            messages.append({"role": role, "content": m.get("content", "")})
+        reply = self._ollama_call(messages)
+        if reply:
+            self._write_to_channel(self._channel_id, "willow", reply)
 
     def _dispatch_intro(self, channel_id: int, to: str = "heimdallr") -> None:
         conn = grove_db.get_connection()
@@ -271,19 +327,9 @@ class CardBuilderModal(ModalScreen):
             return
         event.input.value = ""
         sender = os.environ.get("GROVE_SENDER") or os.environ.get("USER", "sean")
-        conn = grove_db.get_connection()
-        try:
-            cur = conn.cursor()
-            cur.execute(
-                "INSERT INTO grove.messages (channel_id, sender, content)"
-                " VALUES (%s, %s, %s)",
-                (self._channel_id, sender, body),
-            )
-            conn.commit()
-        except Exception:
-            pass
-        finally:
-            grove_db.release_connection(conn)
+        self._write_to_channel(self._channel_id, sender, body)
+        if self._interviewer == "local":
+            self._local_reply()
 
     def on_unmount(self) -> None:
         self._listening = False
