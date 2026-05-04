@@ -115,10 +115,13 @@ def fetch_desk_data(sender_name: str) -> DeskData:
 
     data = DeskData()
 
-    # unread channels
+    # unread channels — load persisted read cursors so ATTENTION clears when Sean reads
     try:
         import grove_reader
-        all_ch = grove_reader.grove_channels()
+        import soil as _soil
+        cursor_records = _soil.all_records("willow-dashboard/cursors")
+        last_seen_ids = {r["_id"]: r.get("last_id", 0) for r in cursor_records}
+        all_ch = grove_reader.grove_channels(last_seen_ids=last_seen_ids)
         data.unread_channels = [c for c in all_ch if c.get("unread", 0) > 0]
     except Exception:
         pass

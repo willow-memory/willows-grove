@@ -327,6 +327,11 @@ class ChatPane(Container):
                 )
             if msgs:
                 self._cursors[channel] = msgs[-1]["id"]
+                try:
+                    import soil as _soil
+                    _soil.put("willow-dashboard/cursors", channel, {"last_id": msgs[-1]["id"]})
+                except Exception:
+                    pass
         except Exception:
             pass
 
