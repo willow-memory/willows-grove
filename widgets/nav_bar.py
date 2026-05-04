@@ -7,13 +7,14 @@ from textual.app import ComposeResult
 from textual.containers import Horizontal
 from textual.css.query import NoMatches
 from textual.message import Message
-from textual.widget import Widget
 from textual.widgets import Static
+
+from widgets.file_menu import FileMenuModal
 
 
 NAV_TARGETS: list[str] = [
     "home", "chat", "projects", "knowledge",
-    "providers", "health", "settings", "help",
+    "providers", "settings", "help",
 ]
 
 
@@ -50,6 +51,34 @@ class NavItem(Static):
         self.post_message(NavChanged(self._target))
 
 
+class NavLogo(Static):
+    """Top-left logo — click to open File menu."""
+
+    DEFAULT_CSS = """
+    NavLogo {
+        width: auto;
+        padding: 0 1;
+        color: #3fb950;
+    }
+    NavLogo:hover {
+        color: #58a6ff;
+        background: #21262d;
+    }
+    """
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__("[bold]◆[/]", markup=True, **kwargs)
+
+    def on_click(self) -> None:
+        async def _handle(action: str | None) -> None:
+            if action == "quit":
+                self.app.exit()
+            elif action and action != "quit":
+                self.app.notify(f"{action.capitalize()}: coming soon", timeout=2)
+
+        self.app.push_screen(FileMenuModal(), _handle)
+
+
 class NavBar(Horizontal):
     """Single-row nav strip with clickable items."""
 
@@ -77,7 +106,7 @@ class NavBar(Horizontal):
         self._active = "home"
 
     def compose(self) -> ComposeResult:
-        yield Static("[bold green]◆[/]", id="nav-logo", markup=True)
+        yield NavLogo(id="nav-logo")
         for target in NAV_TARGETS:
             yield NavItem(target, id=f"nav-{target}")
         yield Static("", id="nav-vitals", markup=True)

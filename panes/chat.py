@@ -12,7 +12,7 @@ from rich.markup import escape as _e
 from textual import on, work
 from textual.containers import Container, Vertical
 from textual.message import Message
-from textual.widgets import Input, Label, ListItem, ListView, RichLog, Static
+from textual.widgets import Input, Label, ListItem, ListView, Static, TextArea
 
 import grove_db
 import grove_reader
@@ -30,7 +30,7 @@ def sender_color(name: str) -> str:
 _TYPED_CONTENT_PREFIXES = ("[image:", "[audio:", "[file:", "[code:")
 
 def render_content(content: str) -> str:
-    """Detect typed content prefix ([image: path], etc.) and render with label styling."""
+    """Detect typed content prefix ([image: path], etc.) and render as plain text."""
     for prefix in _TYPED_CONTENT_PREFIXES:
         if content.startswith(prefix):
             kind = prefix[1:-1].upper()
@@ -38,9 +38,9 @@ def render_content(content: str) -> str:
             if inner.endswith("]"):
                 inner = inner[:-1]
             path = inner.strip()
-            ack = "[green]✓[/green]" if os.path.exists(path) else "[red]not found[/red]"
-            return f"[dim]{kind}:[/dim] [italic]{_e(path)}[/italic] {ack}"
-    return _e(content)
+            ack = "✓" if os.path.exists(path) else "not found"
+            return f"{kind}: {path} [{ack}]"
+    return content
 
 
 def format_ts(ts) -> str:
@@ -189,7 +189,7 @@ class ChatPane(Container):
     def compose(self):
         yield Static("Select a channel", id="channel-title")
         yield Static("", id="agent-status", markup=True)
-        yield RichLog(id="msg-log", highlight=False, markup=True, wrap=True)
+        yield TextArea("", id="msg-log", read_only=True)
         yield Input(placeholder="Message…", id="msg-input")
 
     def on_mount(self) -> None:
@@ -320,16 +320,15 @@ class ChatPane(Container):
     def _load_messages(self, channel: str) -> None:
         try:
             msgs = grove_reader.grove_messages(channel, limit=100)
-            log  = self.query_one("#msg-log", RichLog)
-            log.clear()
+            log  = self.query_one("#msg-log", TextArea)
+            lines: list[str] = []
             for m in msgs:
                 sender  = m.get("sender", "?")
                 content = m.get("content", "")
                 ts      = format_ts(m.get("created_at"))
-                color   = sender_color(sender)
-                log.write(
-                    f"[dim]{ts}[/dim]  [{color} bold]{sender:<14}[/{color} bold]  {render_content(content)}"
-                )
+                lines.append(f"{ts}  {sender:<16}  {render_content(content)}")
+            log.load_text("\n".join(lines))
+            log.scroll_end(animate=False)
             if msgs:
                 self._cursors[channel] = msgs[-1]["id"]
                 try:

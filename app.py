@@ -31,7 +31,6 @@ from panes.chat      import ChatPane, ChannelList, ChannelOpened, sender_color
 from widgets.projects_nav    import ProjectsNav
 from widgets.knowledge_nav  import KnowledgeAtomSelected, KnowledgeNav
 from widgets.providers_nav  import ProviderRowSelected, ProvidersNav
-from widgets.health_nav     import HealthNav
 from widgets.settings_nav   import SettingsNav
 from widgets.help_nav       import HelpSectionSelected, HelpNav
 from panes.settings         import SettingsPane
@@ -44,7 +43,6 @@ from panes.prs       import OpenPRsPane
 from panes.knowledge import KnowledgePane
 from panes.providers import ProvidersPane
 from panes.skills    import SkillsPane
-from panes.health    import HealthPane
 from panes.logs      import LogsPane
 from panes.secrets   import SecretsPane
 from panes.mcp       import MCPPane
@@ -171,7 +169,6 @@ class ContextPanel(Vertical):
         yield ProjectsNav(id="ctx-projects")
         yield KnowledgeNav(id="ctx-knowledge")
         yield ProvidersNav(id="ctx-providers")
-        yield HealthNav(id="ctx-health")
         yield SettingsNav(id="ctx-settings")
         yield HelpNav(id="ctx-help")
 
@@ -188,7 +185,6 @@ class ContextPanel(Vertical):
             "projects":  "#ctx-projects",
             "knowledge": "#ctx-knowledge",
             "providers": "#ctx-providers",
-            "health":    "#ctx-health",
             "settings":  "#ctx-settings",
             "help":      "#ctx-help",
         }
@@ -212,7 +208,6 @@ _CONTENT_PANES: dict[str, str] = {
     "projects":  "#pane-projects",
     "knowledge": "#pane-knowledge",
     "providers": "#pane-providers",
-    "health":    "#pane-health",
     "settings":  "#pane-settings",
     "help":      "#pane-help",
 }
@@ -371,7 +366,6 @@ class WillowGrove(App):
     """
 
     BINDINGS = [
-        Binding("q",      "quit",            "Quit"),
         Binding("r",      "refresh",         "Refresh"),
         Binding("?",      "keymap",          "Keys"),
         Binding("ctrl+p", "command_palette", "Commands", show=False),
@@ -382,9 +376,8 @@ class WillowGrove(App):
         Binding("3", "nav('projects')",  "Projects"),
         Binding("4", "nav('knowledge')", "Knowledge"),
         Binding("5", "nav('providers')", "Providers"),
-        Binding("6", "nav('health')",    "Health"),
-        Binding("7", "nav('settings')",  "Settings"),
-        Binding("8", "nav('help')",      "Help"),
+        Binding("6", "nav('settings')",  "Settings"),
+        Binding("7", "nav('help')",      "Help"),
     ]
 
     TITLE     = "Willow Grove"
@@ -402,7 +395,6 @@ class WillowGrove(App):
                 yield ProjectsGrid(id="pane-projects")
                 yield KnowledgePane(id="pane-knowledge")
                 yield ProvidersPane(id="pane-providers")
-                yield HealthPane(id="pane-health")
                 yield SettingsPane(id="pane-settings")
                 yield HelpPane(id="pane-help")
                 # internal panes — reachable via card/tile nav, not top nav

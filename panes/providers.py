@@ -4,6 +4,7 @@ b17: WGRV1  ΔΣ=42
 import json
 import os
 import sqlite3
+import urllib.request
 from pathlib import Path
 
 from textual.binding import Binding
@@ -13,24 +14,61 @@ from textual.widgets import DataTable, Label
 WILLOW_STORE = Path(os.environ.get("WILLOW_STORE_ROOT", Path.home() / ".willow" / "store"))
 
 
-def _read_providers() -> list[dict]:
-    col_dir = WILLOW_STORE / "willow" / "providers"
-    if not col_dir.exists():
+def _ollama_models() -> list[str]:
+    try:
+        with urllib.request.urlopen("http://localhost:11434/api/tags", timeout=2) as r:
+            data = json.loads(r.read())
+        return [m["name"] for m in data.get("models", [])]
+    except Exception:
         return []
-    providers = []
+
+
+def _read_providers() -> list[dict]:
+    providers: list[dict] = []
+
+    # Ollama — always first, live from API
+    models = _ollama_models()
+    providers.append({
+        "name": "ollama",
+        "enabled": bool(models),
+        "local": True,
+        "models": models,
+    })
+
+    # Cloud providers — presence of API key = configured
+    _CLOUD = [
+        ("anthropic", "ANTHROPIC_API_KEY"),
+        ("openai",    "OPENAI_API_KEY"),
+        ("groq",      "GROQ_API_KEY"),
+    ]
+    for name, env_key in _CLOUD:
+        if os.environ.get(env_key):
+            providers.append({
+                "name": name,
+                "enabled": True,
+                "local": False,
+                "models": [],
+            })
+
+    # SOIL store records (supplementary)
+    col_dir = WILLOW_STORE / "willow" / "providers"
     try:
         db = col_dir / "store.db"
         if db.exists():
             conn = sqlite3.connect(str(db), check_same_thread=False)
             rows = conn.execute("SELECT data FROM records WHERE deleted = 0").fetchall()
             conn.close()
+            known = {p["name"] for p in providers}
             for row in rows:
                 try:
-                    providers.append(json.loads(row[0]))
+                    p = json.loads(row[0])
+                    if p.get("name") not in known:
+                        providers.append(p)
                 except Exception:
                     pass
     except Exception:
         pass
+
     return providers
 
 

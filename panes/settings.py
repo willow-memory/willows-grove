@@ -12,7 +12,9 @@ from textual.binding import Binding
 from textual.containers import Container
 from textual.message import Message
 from textual.widget import Widget
-from textual.widgets import Label, Static
+from textual.widgets import Label, Rule, Static
+
+from panes.health import HealthPane
 
 _CONSENT_PATH = Path(os.environ.get("WILLOW_CONSENT_PATH",
                                     Path.home() / ".willow" / "consent.json"))
@@ -125,6 +127,8 @@ class SettingsPane(Container):
                 key, label, desc, consent.get(key, True),
                 id=f"ctr-row-{key}",
             )
+        yield Rule()
+        yield HealthPane(id="sp-health")
 
     def on__consent_changed(self, event: _ConsentChanged) -> None:
         consent = _read_consent()
