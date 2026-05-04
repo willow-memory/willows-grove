@@ -121,8 +121,13 @@ def fetch_desk_data(sender_name: str) -> DeskData:
         import soil as _soil
         cursor_records = _soil.all_records("willow-dashboard/cursors")
         last_seen_ids = {r["_id"]: r.get("last_id", 0) for r in cursor_records}
+        active_rec = _soil.get("willow-dashboard/active", "channel")
+        active_channel = active_rec.get("name", "") if active_rec else ""
         all_ch = grove_reader.grove_channels(last_seen_ids=last_seen_ids)
-        data.unread_channels = [c for c in all_ch if c.get("unread", 0) > 0]
+        data.unread_channels = [
+            c for c in all_ch
+            if c.get("unread", 0) > 0 and c["name"] != active_channel
+        ]
     except Exception:
         pass
 

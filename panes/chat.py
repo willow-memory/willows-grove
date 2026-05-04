@@ -282,6 +282,11 @@ class ChatPane(Container):
             title = f"# {name}"
         self.query_one("#channel-title", Static).update(title)
         self._clear_agent_status()
+        try:
+            import soil as _soil
+            _soil.put("willow-dashboard/active", "channel", {"name": name})
+        except Exception:
+            pass
         self._load_messages(name)
 
     @work(thread=True)
