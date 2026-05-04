@@ -3,57 +3,58 @@ b17: WGRV1  ΔΣ=42
 """
 from textual.widgets import Static
 
-# Weeping willow — canopy dome + hanging fronds sway L→C→R→C→L
-# Each pose: 10 frames of the hanging-frond row only.
-# _SCENE_TOP + [frond_row] + _SCENE_BOTTOM = full tree.
+# 10-frame animation poses — L=lean left, C=center, R=lean right
+# ƒ = hanging frond leaf, ║ = trunk. Source: willow_sway.py
+# 30-frame loop: L(10) → C(10) → R(10) at 2s/frame
 
 POSES: dict[str, list[str]] = {
-    "L": [  # fronds blown right by wind from left
-        r"  `. . | ..`    ",
-        r"  `. . |. .`    ",
-        r"  `. . |  .`    ",
-        r"   `. .|  .`    ",
-        r"   `. .|   `    ",
-        r"   `.  |   `    ",
-        r"   `.  |  .`    ",
-        r"   `. .|  .`    ",
-        r"   `. .| . `    ",
-        r"  `. . | . `    ",
+    "L": [
+        r"ƒƒ\ ƒ ƒ ƒ  /ƒ ƒ ",
+        r"ƒ ƒ\ ƒ ƒ  / ƒ ƒ ",
+        r"ƒ  ƒ\ ƒ  /  ƒ ƒ ",
+        r"ƒ  ƒ \  / ƒ  ƒ  ",
+        r"ƒ  ƒ  \/  ƒ  ƒ  ",
+        r"ƒ  ƒ  ║   ƒ  ƒ  ",
+        r"ƒ  ƒ ƒ║    ƒ  ƒ ",
+        r"ƒ    ƒ║     ƒ  ƒ",
+        r"ƒ     ║ƒ     ƒ  ",
+        r"ƒ     ║ƒ      ƒ ",
     ],
-    "C": [  # calm center
-        r"  `. . | . .`   ",
-        r"  `. .  . . `   ",
-        r"  `. . | . .`   ",
-        r"  ` . .|. . `   ",
-        r"  `. . | . .`   ",
-        r"   `. .|. .`    ",
-        r"  `. . | . .`   ",
-        r"  ` . .| . `    ",
-        r"  `. . | . .`   ",
-        r"   `. .| .`     ",
+    "C": [
+        r"ƒƒ\ ƒ ƒ ƒ /ƒ ƒ  ",
+        r"ƒ ƒ\ ƒ ƒ / ƒ ƒ  ",
+        r"ƒ  ƒ\   /  ƒ ƒ  ",
+        r"ƒ  ƒ \ / ƒ  ƒ   ",
+        r"ƒ  ƒ  ║  ƒ  ƒ   ",
+        r"ƒ   ƒ ║  ƒ  ƒ   ",
+        r"ƒ   ƒ ║ƒ  ƒ  ƒ  ",
+        r"ƒ    ƒ║    ƒ  ƒ ",
+        r"ƒ     ║ƒ    ƒ  ƒ",
+        r"ƒ     ║ƒ     ƒ  ",
     ],
-    "R": [  # fronds blown left by wind from right
-        r"    `. .| . .`  ",
-        r"    `. | . .`   ",
-        r"    ` .| . .`   ",
-        r"    `.  . . .`  ",
-        r"    `   | . .`  ",
-        r"    `   |. .`   ",
-        r"    `. .|. .`   ",
-        r"    `. .| .`    ",
-        r"   `. . | .`    ",
-        r"  `. .  | .`    ",
+    "R": [
+        r"ƒ\ ƒ ƒ ƒ ƒ/ƒƒ   ",
+        r"ƒ \ ƒ ƒ ƒ /ƒ ƒ  ",
+        r"ƒ  \ ƒ ƒ /  ƒ ƒ ",
+        r"ƒ ƒ \   /ƒ  ƒ ƒ ",
+        r"ƒ ƒ  \ / ƒ  ƒ ƒ ",
+        r"ƒ ƒ   ║  ƒ  ƒ ƒ ",
+        r"ƒ  ƒ ƒ║   ƒ  ƒ  ",
+        r"ƒ    ƒ║    ƒ  ƒ ",
+        r"ƒ     ║ƒ    ƒ   ",
+        r"ƒ     ║ ƒ    ƒ  ",
     ],
 }
 
-_POSE_ORDER = ["L", "C", "R"]
+_POSE_ORDER = ["L", "C", "R"]  # L→C→R→L cycle (30 frames total)
 
 
 def advance_frame(pose: str, frame: int) -> tuple[str, int]:
+    """Return (next_pose, next_frame) after advancing one step."""
     frame += 1
     if frame >= len(POSES[pose]):
-        idx  = (_POSE_ORDER.index(pose) + 1) % len(_POSE_ORDER)
-        pose = _POSE_ORDER[idx]
+        idx   = (_POSE_ORDER.index(pose) + 1) % len(_POSE_ORDER)
+        pose  = _POSE_ORDER[idx]
         frame = 0
     return pose, frame
 
@@ -62,29 +63,29 @@ def render_frame(pose: str, frame: int) -> str:
     return POSES[pose][frame]
 
 
-# Weeping willow: round canopy dome, trunk visible through it
+# Willow canopy crown — rounded dome above the drooping frond row.
+# ║ sits at column 6 of each 17-char row, matching the pose trunk position.
 _SCENE_TOP = [
-    "     * . * . *   ",
-    "    ( . . . . )  ",
-    "   ( .  . | . )  ",
+    " ƒ  * . * . *   ",   # sparse crown top
+    "ƒ ƒ . ƒ . ƒ . ƒ ",   # leafy canopy body
+    "ƒ ƒ  (║ . .) ƒ  ",   # canopy base — trunk visible
 ]
 
-# Lower fronds + trunk — no ground line (ground is the full-width strip below)
+# Below the animated frond row: fronds drooping to ground level (pose C rows 8-9)
 _SCENE_BOTTOM = [
-    "    ` . | . `    ",
-    "      ` | `      ",
-    "        |        ",
+    r"ƒ     ║ƒ    ƒ  ƒ",
+    r"ƒ     ║ƒ     ƒ  ",
 ]
 
 
 class WillowHero(Static):
-    """Animated weeping willow — drooping fronds sway L→C→R→C→L."""
+    """Animated weeping willow — 30-frame drooping frond loop."""
 
     DEFAULT_CSS = """
     WillowHero {
         width: 22;
         height: 7;
-        content-align: center middle;
+        content-align: center bottom;
         color: $success;
         text-style: bold;
     }

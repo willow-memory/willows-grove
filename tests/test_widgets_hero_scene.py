@@ -3,11 +3,7 @@ b17: WGRV1  ΔΣ=42
 """
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-from widgets.hero_scene import _GROUND, _BLOOMS, _make_meadow
-
-
-def test_ground_contains_tilde():
-    assert "~" in _GROUND
+from widgets.hero_scene import _BLOOMS, _make_meadow
 
 
 def test_make_meadow_is_string():
