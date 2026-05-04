@@ -73,16 +73,17 @@ class CardBuilderModal(ModalScreen):
 
     def __init__(self) -> None:
         super().__init__()
-        self._channel_id: int | None = None
-        self._cursor:     int        = 0
-        self._listening:  bool       = False
-        self._card_saved: bool       = False
+        self._channel_id:  int | None = None
+        self._cursor:      int        = 0
+        self._listening:   bool       = False
+        self._card_saved:  bool       = False
+        self._interviewer: str        = "heimdallr"
 
     def compose(self) -> ComposeResult:
         with Vertical(id="cb-dialog"):
             yield RichLog(id="cb-log", highlight=False, markup=True, wrap=True)
-            yield Static("[dim]Connecting to Heimdallr…[/]", id="cb-status", markup=True)
-            yield Input(placeholder="Message Heimdallr…", id="cb-input")
+            yield Static("[dim]Connecting…[/]", id="cb-status", markup=True)
+            yield Input(placeholder="Message…", id="cb-input")
 
     def on_mount(self) -> None:
         self._setup()
@@ -111,15 +112,15 @@ class CardBuilderModal(ModalScreen):
 
         if not msgs:
             if heimdallr_online:
-                self._dispatch_intro(channel_id)
+                self._interviewer = "heimdallr"
+                self._dispatch_intro(channel_id, to="heimdallr")
             else:
+                self._interviewer = "willow"
                 self.app.call_from_thread(
                     self._set_status,
-                    "[yellow]Heimdallr is not in session — your request has been queued in #dispatch. "
-                    "Start a Heimdallr session to continue.[/]"
+                    "[dim]@willow is conducting the interview (Heimdallr offline)[/]"
                 )
-                self._dispatch_intro(channel_id)
-                return
+                self._dispatch_intro(channel_id, to="willow")
 
         self._start_listener()
 
@@ -144,7 +145,7 @@ class CardBuilderModal(ModalScreen):
         finally:
             grove_db.release_connection(conn)
 
-    def _dispatch_intro(self, channel_id: int) -> None:
+    def _dispatch_intro(self, channel_id: int, to: str = "heimdallr") -> None:
         conn = grove_db.get_connection()
         try:
             cur = conn.cursor()
@@ -152,7 +153,7 @@ class CardBuilderModal(ModalScreen):
             row = cur.fetchone()
             if row:
                 payload = json.dumps({
-                    "to":            "heimdallr",
+                    "to":            to,
                     "prompt":        _INTRO_PROMPT,
                     "reply_channel": "card-builder",
                 })
@@ -174,7 +175,7 @@ class CardBuilderModal(ModalScreen):
             self._append_message(m)
         if msgs:
             self._cursor = msgs[-1]["id"]
-        self._set_status("[dim]Waiting for Heimdallr…[/]")
+        self._set_status(f"[dim]Waiting for @{self._interviewer}…[/]")
 
     def _append_message(self, m: dict) -> None:
         from panes.chat import format_ts, render_content, sender_color
