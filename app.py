@@ -25,7 +25,7 @@ from textual.css.query import NoMatches
 from textual.screen import ModalScreen
 from textual import work
 from textual.message import Message
-from textual.widgets import Footer, Label, Rule, Static
+from textual.widgets import Button, Footer, Input, Label, Rule, Select, Static
 
 from panes.chat      import ChatPane, ChannelList, ChannelOpened, sender_color
 from widgets.projects_nav    import ProjectsNav
@@ -56,6 +56,7 @@ from widgets.card_grid          import CardActivated
 from widgets.command_provider   import WillowCommandProvider
 from widgets.card_builder_modal import CardBuilderModal
 
+import grove_db
 import grove_reader
 
 WILLOW_ROOT = Path(os.environ.get("WILLOW_ROOT", Path.home() / "github" / "willow-1.9"))
@@ -220,6 +221,91 @@ _INTERNAL_PANES: list[str] = [
 ]
 
 
+_CHANNEL_TYPES = ["group", "direct", "persona", "broadcast"]
+
+
+class CreateChannelScreen(ModalScreen):
+    """Modal for creating a new Grove channel."""
+
+    DEFAULT_CSS = """
+    CreateChannelScreen {
+        align: center middle;
+    }
+    CreateChannelScreen #cc-dialog {
+        width: 60;
+        height: 16;
+        background: $surface;
+        border: solid $primary;
+        padding: 1 2;
+    }
+    CreateChannelScreen #cc-title {
+        text-style: bold;
+        margin-bottom: 1;
+        color: $accent;
+    }
+    CreateChannelScreen #cc-name {
+        margin-bottom: 1;
+    }
+    CreateChannelScreen #cc-type {
+        margin-bottom: 1;
+    }
+    CreateChannelScreen #cc-error {
+        color: $error;
+        height: 1;
+        margin-bottom: 1;
+    }
+    CreateChannelScreen #cc-buttons {
+        layout: horizontal;
+        height: 3;
+        align: right middle;
+    }
+    CreateChannelScreen Button {
+        margin-left: 1;
+    }
+    """
+
+    BINDINGS = [
+        Binding("escape", "dismiss(None)", "Cancel", show=False),
+    ]
+
+    def compose(self) -> ComposeResult:
+        with Vertical(id="cc-dialog"):
+            yield Label("New Channel", id="cc-title")
+            yield Input(placeholder="channel-name", id="cc-name")
+            yield Select(
+                [(t, t) for t in _CHANNEL_TYPES],
+                value="group",
+                id="cc-type",
+            )
+            yield Static("", id="cc-error")
+            with Horizontal(id="cc-buttons"):
+                yield Button("Cancel", variant="default", id="cc-cancel")
+                yield Button("Create", variant="primary",  id="cc-create")
+
+    def on_mount(self) -> None:
+        self.query_one("#cc-name", Input).focus()
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "cc-cancel":
+            self.dismiss(None)
+        elif event.button.id == "cc-create":
+            self._submit()
+
+    def on_input_submitted(self, _event: Input.Submitted) -> None:
+        self._submit()
+
+    def _submit(self) -> None:
+        name = self.query_one("#cc-name", Input).value.strip().lower()
+        if not name:
+            self.query_one("#cc-error", Static).update("Channel name is required.")
+            return
+        if not name.replace("-", "").replace("_", "").isalnum():
+            self.query_one("#cc-error", Static).update("Use only letters, numbers, hyphens, underscores.")
+            return
+        ch_type = self.query_one("#cc-type", Select).value
+        self.dismiss({"name": name, "channel_type": ch_type})
+
+
 class KeymapScreen(ModalScreen):
     """Modal overlay showing all keybindings."""
 
@@ -367,6 +453,7 @@ class WillowGrove(App):
 
     BINDINGS = [
         Binding("r",      "refresh",         "Refresh"),
+        Binding("c",      "create_channel",  "New channel"),
         Binding("?",      "keymap",          "Keys"),
         Binding("ctrl+p", "command_palette", "Commands", show=False),
         Binding("j",      "cursor_down",     show=False),
@@ -500,6 +587,26 @@ class WillowGrove(App):
             self._show_internal_pane(target)
         else:
             self.action_nav(target)
+
+    def action_create_channel(self) -> None:
+        def _on_result(result: dict | None) -> None:
+            if not result:
+                return
+            try:
+                conn = grove_db.get_connection()
+                grove_db.create_channel(
+                    conn,
+                    name=result["name"],
+                    channel_type=result["channel_type"],
+                )
+                grove_db.release_connection(conn)
+                with suppress(NoMatches):
+                    self.query_one(ChannelList)._poll()
+                self.notify(f"Channel #{result['name']} created.")
+            except Exception as exc:
+                self.notify(f"Failed: {exc}", severity="error")
+
+        self.push_screen(CreateChannelScreen(), _on_result)
 
     def action_refresh(self) -> None:
         self._do_refresh()
