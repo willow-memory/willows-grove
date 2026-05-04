@@ -16,34 +16,37 @@ from .hero import WillowHero
 
 # ── Ground strip ─────────────────────────────────────────────────────────────
 
-_BLOOMS   = ["✿", "✾", "❀", "⚘", "✿", "❀"]
-_GRASS    = [",", ".", ",,", " ,", ", "]
-_GROUND   = "~" * 80
+_BLOOMS = ["✿", "✾", "❀", "⚘"]
+_GRASS  = [",", ".", " ,", ", ", ".,", ", "]
 
 
 def _make_meadow(frame: int, width: int) -> str:
-    """Organic meadow row — flowers at irregular intervals with grass between."""
-    rng   = random.Random(frame * 7919)   # deterministic per frame
+    """Sparse meadow — grass fills gaps, flowers appear occasionally."""
+    rng   = random.Random(frame * 7919)
     cells = []
     x     = 0
-    while x < width - 2:
-        gap = rng.randint(2, 6)
-        cells.append(_GRASS[rng.randint(0, len(_GRASS) - 1)] * max(1, gap // 2))
+    while x < width - 1:
+        gap  = rng.randint(8, 18)
+        gstr = _GRASS[rng.randint(0, len(_GRASS) - 1)]
+        # fill gap with repeating grass, truncated to gap length
+        fill = (gstr * (gap // len(gstr) + 1))[:gap]
+        cells.append(fill[:max(0, width - x - 1)])
         x += gap
-        if x < width - 2:
+        if x < width - 1:
             cells.append(_BLOOMS[(frame + x) % len(_BLOOMS)])
             x += 1
     return "".join(cells)[:width]
 
 
 class GroundStrip(Static):
-    """Full-width meadow — irregular flowers + grass, single ground line."""
+    """Full-width meadow — sparse flowers, full-width tilde ground."""
 
     DEFAULT_CSS = """
     GroundStrip {
         height: 3;
+        width: 100%;
         color: #3fb950;
-        padding: 0 0 0 0;
+        padding: 0;
         content-align: left bottom;
     }
     """
@@ -53,7 +56,7 @@ class GroundStrip(Static):
         self._frame = 0
 
     def on_mount(self) -> None:
-        self.set_interval(0.8, self._tick)
+        self.set_interval(1.2, self._tick)
         self._redraw()
 
     def _tick(self) -> None:
@@ -61,9 +64,9 @@ class GroundStrip(Static):
         self._redraw()
 
     def _redraw(self) -> None:
-        w = max(20, self.size.width or 80)
+        w = max(20, self.size.width or 120)
         meadow = _make_meadow(self._frame, w)
-        ground = _GROUND[:w]
+        ground = "~" * w
         self.update(f"\n{meadow}\n{ground}")
 
 
@@ -107,9 +110,9 @@ def _sysinfo() -> dict:
 
 # Sean's WILLOW wordmark from dashboard sketch — escaped for Rich markup
 _WILLOW_ART = [
-    "_  _  _  __ __  __    _  _  _  _",
-    "\\ \\ \\ || ||  ||  / o\\ \\ \\ \\",
-    " \\/ \\// || |_] |_} \\__/  \\/ \\//",
+    r"_  _  _  __ __  __    _  _  _  _",
+    r"\\ \\ \\ || ||  ||  / o\ \\ \\ \\ ",  # trailing space prevents \[/] markup escape
+    r" \\/ \// || |_] |_} \__/  \\/ \//",
 ]
 
 
