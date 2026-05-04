@@ -337,6 +337,11 @@ class ChatPane(Container):
                     _soil.put("willow-dashboard/cursors", channel, {"last_id": msgs[-1]["id"]})
                 except Exception:
                     pass
+                try:
+                    from panes.home import DeskPane
+                    self.app.query_one(DeskPane)._fetch()
+                except Exception:
+                    pass
         except Exception:
             pass
 

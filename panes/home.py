@@ -223,7 +223,7 @@ class DeskPane(Container):
 
     def on_mount(self) -> None:
         self._fetch()
-        self.set_interval(15, self._fetch)
+        self.set_interval(5, self._fetch)
 
     @work(thread=True)
     def _fetch(self) -> None:
