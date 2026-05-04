@@ -7,7 +7,7 @@ from widgets.nav_bar import NAV_TARGETS, NavChanged
 
 def test_nav_targets_exact():
     assert NAV_TARGETS == ["home", "chat", "projects", "knowledge",
-                           "providers", "health", "settings", "help"]
+                           "providers", "settings", "help"]
 
 def test_nav_targets_no_internal_panes():
     for forbidden in ("tasks", "agents", "routing", "skills", "logs", "overview"):
