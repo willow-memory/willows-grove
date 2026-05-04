@@ -84,7 +84,7 @@ async def _lifespan(server: FastMCP) -> AsyncIterator[None]:
 
 _PORT = int(os.getenv("GROVE_MCP_PORT", "8765"))
 _SERVE_MODE = "--serve" in sys.argv
-_BASE_URL = os.getenv("GROVE_MCP_URL", "https://prelaunch-bonus-effective.ngrok-free.dev")
+_BASE_URL = os.getenv("GROVE_MCP_URL", "")  # required in serve mode — set GROVE_MCP_URL to your tunnel URL
 
 _common_kwargs = dict(
     instructions=(
