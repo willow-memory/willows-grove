@@ -444,6 +444,10 @@ class WillowGrove(App):
         self._hide_all_content_panes()
         self._show_content_pane(event.target)
         try:
+            self.query_one(NavBar).highlight(event.target)
+        except NoMatches:
+            pass
+        try:
             self.query_one(ContextPanel)._show_target(event.target)
         except NoMatches:
             pass
