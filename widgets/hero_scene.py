@@ -99,15 +99,22 @@ def _sysinfo() -> dict:
 
 # ── Info panel ────────────────────────────────────────────────────────────────
 
+_WILLOW_ART = [
+    r"_  _  _  __ __  __    _  _  _  _",
+    r"\\ \\ \\ || ||  ||  / o\ \\ \\ \\",
+    r" \\/ \// || |_] |_} \__/  \\/ \//",
+]
+
+
 class HeroInfo(Static):
-    """Right panel: wordmark · version · sysinfo · live clock."""
+    """Right panel: WILLOW wordmark · sysinfo · live clock."""
 
     DEFAULT_CSS = """
     HeroInfo {
-        width: 24;
+        width: 36;
         height: 10;
         color: #8b949e;
-        padding: 1 1 0 1;
+        padding: 0 1 0 1;
     }
     """
 
@@ -129,14 +136,13 @@ class HeroInfo(Static):
         d    = now.strftime("%a %b %-d")
         s    = self._sys
         temp = f"{s['temp']}°C" if s["temp"] else "n/a"
+        art  = "\n".join(f"[bold #58a6ff]{l}[/]" for l in _WILLOW_ART)
         self.update(
-            "[bold #58a6ff]◈ Willow[/]\n"
-            "[bold #58a6ff]  Grove[/]\n"
+            f"{art}\n"
             "\n"
-            "[dim]v0.1[/]  [#f0883e]BETA[/]\n"
+            f"[dim]v0.1[/]  [#f0883e]BETA[/]\n"
             f"[dim]cpu {s['cpu']:3d}%  mem {s['mem']:3d}%[/]\n"
             f"[dim]disk {s['disk']:3d}%  {temp}[/]\n"
-            "\n"
             f"[dim]{t} · {d}[/]"
         )
 

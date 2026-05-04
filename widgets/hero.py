@@ -90,7 +90,7 @@ class WillowHero(Static):
         self._frame = 4
 
     def on_mount(self) -> None:
-        self.set_interval(0.18, self._tick)
+        self.set_interval(2.0, self._tick)
         self._redraw()
 
     def _tick(self) -> None:
