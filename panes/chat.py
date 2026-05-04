@@ -11,6 +11,7 @@ from datetime import datetime
 from rich.markup import escape as _e
 from textual import on, work
 from textual.containers import Container, Vertical
+from textual.message import Message
 from textual.widgets import Input, Label, ListItem, ListView, RichLog, Static
 
 import grove_db
@@ -65,6 +66,13 @@ def _build_channel_label(ch: dict) -> str:
     unread_part = f"  [yellow bold]{unread}[/]" if unread else ""
     return f"# {name}{agent_part}{unread_part}"
 
+
+
+class ChannelOpened(Message):
+    """Posted by ChannelList when the user selects a channel."""
+    def __init__(self, name: str) -> None:
+        super().__init__()
+        self.name = name
 
 
 class ChannelItem(ListItem):
@@ -130,28 +138,17 @@ class ChannelList(Vertical):
         for ch in channels:
             lst.append(ChannelItem(ch))
 
+    @on(ListView.Selected, "#cl-channel-list")
+    def _channel_clicked(self, event: ListView.Selected) -> None:
+        if isinstance(event.item, ChannelItem):
+            self.post_message(ChannelOpened(event.item.channel["name"]))
+
 
 class ChatPane(Container):
     DEFAULT_CSS = """
     ChatPane {
-        layout: horizontal;
-        height: 1fr;
-    }
-    ChatPane #channel-sidebar {
-        width: 26;
-        background: $panel;
-        border-right: solid $primary-darken-3;
-        height: 1fr;
-    }
-    ChatPane #sidebar-label {
-        padding: 1 1 0 1;
-        color: $text-muted;
-        text-style: bold;
-    }
-    ChatPane #msg-area {
-        width: 1fr;
-        height: 1fr;
         layout: vertical;
+        height: 1fr;
     }
     ChatPane #channel-title {
         height: 1;
@@ -190,14 +187,10 @@ class ChatPane(Container):
         self._listening            = False
 
     def compose(self):
-        with Vertical(id="channel-sidebar"):
-            yield Label("CHANNELS", id="sidebar-label")
-            yield ListView(id="channel-list")
-        with Vertical(id="msg-area"):
-            yield Static("Select a channel", id="channel-title")
-            yield Static("", id="agent-status", markup=True)
-            yield RichLog(id="msg-log", highlight=False, markup=True, wrap=True)
-            yield Input(placeholder="Message…", id="msg-input")
+        yield Static("Select a channel", id="channel-title")
+        yield Static("", id="agent-status", markup=True)
+        yield RichLog(id="msg-log", highlight=False, markup=True, wrap=True)
+        yield Input(placeholder="Message…", id="msg-input")
 
     def on_mount(self) -> None:
         self.set_interval(5, self._poll)
@@ -232,10 +225,7 @@ class ChatPane(Container):
             pass
 
     def _rebuild_channel_list(self, channels: list) -> None:
-        lst = self.query_one("#channel-list", ListView)
-        lst.clear()
-        for ch in channels:
-            lst.append(ChannelItem(ch))
+        pass  # channel list lives in ContextPanel's ChannelList widget
 
     @work(thread=True)
     def _start_listener(self) -> None:
@@ -340,10 +330,8 @@ class ChatPane(Container):
         except Exception:
             pass
 
-    @on(ListView.Selected, "#channel-list")
-    def _channel_selected(self, event: ListView.Selected) -> None:
-        if isinstance(event.item, ChannelItem):
-            self._open_channel(event.item.channel["name"])
+    def on_channel_opened(self, event: ChannelOpened) -> None:
+        self._open_channel(event.name)
 
     @on(Input.Submitted, "#msg-input")
     def _send_message(self, event: Input.Submitted) -> None:

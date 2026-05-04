@@ -27,7 +27,7 @@ from textual import work
 from textual.message import Message
 from textual.widgets import Footer, Label, Rule, Static
 
-from panes.chat      import ChatPane, ChannelList, sender_color
+from panes.chat      import ChatPane, ChannelList, ChannelOpened, sender_color
 from widgets.projects_nav    import ProjectsNav
 from widgets.knowledge_nav  import KnowledgeAtomSelected, KnowledgeNav
 from widgets.providers_nav  import ProviderRowSelected, ProvidersNav
@@ -464,6 +464,12 @@ class WillowGrove(App):
         self._hide_all_content_panes()
         try:
             self.query_one(pane_id).display = True
+        except NoMatches:
+            pass
+
+    def on_channel_opened(self, event: ChannelOpened) -> None:
+        try:
+            self.query_one(ChatPane)._open_channel(event.name)
         except NoMatches:
             pass
 
