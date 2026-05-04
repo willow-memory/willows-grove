@@ -7,7 +7,6 @@ import random
 import shutil
 from datetime import datetime
 
-from rich.markup import escape
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.widgets import Static
@@ -108,9 +107,9 @@ def _sysinfo() -> dict:
 
 # Sean's WILLOW wordmark from dashboard sketch — escaped for Rich markup
 _WILLOW_ART = [
-    escape("_  _  _  __ __  __    _  _  _  _"),
-    escape("\\\\ \\\\ \\\\ || ||  ||  / o\\ \\\\ \\\\ \\\\"),
-    escape(" \\\\/ \\\\// || |_] |_} \\\\__/  \\\\/ \\\\//"),
+    "_  _  _  __ __  __    _  _  _  _",
+    "\\ \\ \\ || ||  ||  / o\\ \\ \\ \\",
+    " \\/ \\// || |_] |_} \\__/  \\/ \\//",
 ]
 
 
