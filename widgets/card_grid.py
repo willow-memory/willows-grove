@@ -24,13 +24,15 @@ _STATE_COLORS: dict[str, str] = {
 }
 
 _CARD_NAV: dict[str, str] = {
-    "kart":      "#pane-tasks",
-    "knowledge": "knowledge",
-    "yggdrasil": "providers",
-    "agents":    "#pane-agents",
-    "secrets":   "#pane-secrets",
-    "fleet":     "#pane-agents",
-    "mcp":       "#pane-mcp",
+    "kart":       "#pane-tasks",
+    "knowledge":  "knowledge",
+    "yggdrasil":  "providers",
+    "agents":     "#pane-agents",
+    "secrets":    "#pane-secrets",
+    "fleet":      "#pane-agents",
+    "mcp":        "#pane-mcp",
+    "git-status": "#pane-git",
+    "open-prs":   "#pane-prs",
 }
 
 # (card_id, label) — order controls grid position
@@ -149,6 +151,27 @@ def fetch_runtime_card_values() -> dict[str, dict]:
             data = json.loads(mcp_path.read_text())
             count = len(data.get("mcpServers", {}))
             out["mcp"] = {"value": str(count), "sub": "connected", "state": "dim"}
+    except Exception:
+        pass
+
+    # Git Status — dirty file count in the dashboard repo
+    try:
+        from panes.git import fetch_git_status
+        gs = fetch_git_status()
+        dirty = gs.get("dirty", 0)
+        state = "amber" if dirty > 0 else "green"
+        sub = gs.get("branch", "")
+        out["git-status"] = {"value": str(dirty) + " changed", "sub": sub, "state": state}
+    except Exception:
+        pass
+
+    # Open PRs — count via gh CLI
+    try:
+        from panes.prs import fetch_open_prs
+        prs = fetch_open_prs()
+        count = len(prs)
+        state = "amber" if count > 0 else "green"
+        out["open-prs"] = {"value": str(count), "sub": "open PRs", "state": state}
     except Exception:
         pass
 

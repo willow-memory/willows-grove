@@ -39,6 +39,8 @@ from panes.help             import HelpPane
 from panes.tasks     import TasksPane, fetch_backfill_progress, fetch_tasks
 from panes.agents    import AgentsPane
 from panes.routing   import RoutingPane
+from panes.git       import GitStatusPane
+from panes.prs       import OpenPRsPane
 from panes.knowledge import KnowledgePane
 from panes.providers import ProvidersPane
 from panes.skills    import SkillsPane
@@ -219,6 +221,7 @@ _CONTENT_PANES: dict[str, str] = {
 _INTERNAL_PANES: list[str] = [
     "#pane-tasks", "#pane-agents", "#pane-routing",
     "#pane-skills", "#pane-logs", "#pane-secrets", "#pane-mcp",
+    "#pane-git", "#pane-prs",
 ]
 
 
@@ -410,6 +413,8 @@ class WillowGrove(App):
                 yield LogsPane(id="pane-logs")
                 yield SecretsPane(id="pane-secrets")
                 yield MCPPane(id="pane-mcp")
+                yield GitStatusPane(id="pane-git")
+                yield OpenPRsPane(id="pane-prs")
             yield GroveRightPanel(id="right-panel")
         yield ChatStrip(id="chat-strip")
         yield VitalsBar(id="vitals-source")
