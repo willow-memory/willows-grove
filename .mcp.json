@@ -16,7 +16,8 @@
       "env": {
         "PYTHONPATH": "/home/sean-campbell/github/safe-app-willow-grove",
         "WILLOW_PG_DB": "willow_19",
-        "WILLOW_PG_USER": "sean-campbell"
+        "WILLOW_PG_USER": "sean-campbell",
+        "GROVE_MCP_URL": "https://prelaunch-bonus-effective.ngrok-free.dev"
       }
     }
   }
