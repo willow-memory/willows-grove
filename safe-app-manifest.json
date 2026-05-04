@@ -1,12 +1,15 @@
 {
   "app_id": "willow-grove",
   "name": "Willow Grove",
-  "version": "1.9.0",
+  "version": "1.9.1",
   "safe_version": ">=2.0.0",
   "b17": "WGRV1",
   "agent_type": "infra",
   "description": "Sovereign workspace — unified dashboard, messaging, and agent coordination for the Willow system",
   "author": "Sean Campbell",
+  "local": true,
+  "surfaces": ["tui"],
+  "sap_scope": "user-{uuid}/willow-grove/**",
   "data_streams": [
     {
       "id": "grove_channels",
@@ -27,15 +30,14 @@
       "description": "Read-only, never persisted"
     },
     {
-      "id": "session_context",
-      "purpose": "Active session chat context for agent chat panel",
-      "retention": "session",
-      "description": "Cleared on exit"
+      "id": "card_builder",
+      "purpose": "Card definition creation via @willow local persona interview",
+      "retention": "persistent",
+      "description": "Card defs written to SOIL store; @willow powered by local Willow MCP server"
     }
   ],
   "permissions": [
     "local_llm",
-    "cloud_llm_free",
     "postgres_read",
     "postgres_write",
     "store_read",
@@ -44,9 +46,29 @@
     "lan_listen",
     "lan_send"
   ],
+  "exposes": {
+    "card_defs": {
+      "path": "user-{uuid}/willow-grove/cards/",
+      "access": "read",
+      "requires_user_approval": true,
+      "description": "Dashboard card definitions — shareable layout atoms"
+    }
+  },
+  "reads_from": {
+    "willow_kb": {
+      "scope": "knowledge/**",
+      "access": "read",
+      "description": "Willow knowledge graph — read by @willow for card building context"
+    }
+  },
+  "dependencies": {
+    "willow_mcp_server": "required — local Willow server must be running for @willow card builder persona",
+    "postgres_willow": "required — grove.channels, grove.messages, willow.knowledge",
+    "user_identity_json": "optional — provisioned by willow-seed for u2u identity"
+  },
   "privacy_tier": "local_only",
   "local_processing": 1.0,
-  "entry_point": "app.py",
+  "entry_point": "willow-grove:app",
   "license": "MIT",
   "repository": "https://github.com/rudi193-cmd/safe-app-willow-grove"
 }
