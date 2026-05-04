@@ -137,15 +137,22 @@ def init_schema(conn):
         )
     """)
 
-    # Bus envelope columns — idempotent additions
-    for col_sql in [
-        "ALTER TABLE messages ADD COLUMN IF NOT EXISTS to_agent TEXT DEFAULT '__all__'",
-        "ALTER TABLE messages ADD COLUMN IF NOT EXISTS bus_type TEXT DEFAULT 'EVENT'",
-        "ALTER TABLE messages ADD COLUMN IF NOT EXISTS priority  INTEGER DEFAULT 3",
-        "ALTER TABLE messages ADD COLUMN IF NOT EXISTS correlation_id TEXT",
-        "ALTER TABLE messages ADD COLUMN IF NOT EXISTS ttl INTEGER",
+    # Bus envelope columns — only ALTER when column genuinely absent (avoids ACCESS EXCLUSIVE lock)
+    cur.execute("""
+        SELECT column_name FROM information_schema.columns
+        WHERE table_schema = 'grove' AND table_name = 'messages'
+          AND column_name IN ('to_agent', 'bus_type', 'priority', 'correlation_id', 'ttl')
+    """)
+    existing_msg_cols = {r[0] for r in cur.fetchall()}
+    for col_name, col_sql in [
+        ("to_agent",       "ALTER TABLE messages ADD COLUMN to_agent TEXT DEFAULT '__all__'"),
+        ("bus_type",       "ALTER TABLE messages ADD COLUMN bus_type TEXT DEFAULT 'EVENT'"),
+        ("priority",       "ALTER TABLE messages ADD COLUMN priority INTEGER DEFAULT 3"),
+        ("correlation_id", "ALTER TABLE messages ADD COLUMN correlation_id TEXT"),
+        ("ttl",            "ALTER TABLE messages ADD COLUMN ttl INTEGER"),
     ]:
-        cur.execute(col_sql)
+        if col_name not in existing_msg_cols:
+            cur.execute(col_sql)
 
     cur.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_channels_name ON channels (name)")
     cur.execute("CREATE INDEX IF NOT EXISTS idx_channels_type ON channels (channel_type)")
@@ -171,8 +178,13 @@ def init_schema(conn):
     cur.execute("CREATE INDEX IF NOT EXISTS idx_messages_priority ON messages (priority)")
     cur.execute("CREATE INDEX IF NOT EXISTS idx_messages_correlation ON messages (correlation_id) WHERE correlation_id IS NOT NULL")
 
-    # Optional agent_name column on channels (added when card-builder channel exists)
-    cur.execute("ALTER TABLE channels ADD COLUMN IF NOT EXISTS agent_name TEXT")
+    # Optional agent_name column on channels — only ALTER when absent (avoids ACCESS EXCLUSIVE lock)
+    cur.execute("""
+        SELECT 1 FROM information_schema.columns
+        WHERE table_schema = 'grove' AND table_name = 'channels' AND column_name = 'agent_name'
+    """)
+    if not cur.fetchone():
+        cur.execute("ALTER TABLE channels ADD COLUMN agent_name TEXT")
 
     # LISTEN/NOTIFY trigger — fires grove_channel notify on every new message
     cur.execute("""
@@ -184,11 +196,19 @@ def init_schema(conn):
         END;
         $$
     """)
-    cur.execute("DROP TRIGGER IF EXISTS trg_grove_notify ON messages")
     cur.execute("""
-        CREATE TRIGGER trg_grove_notify
-        AFTER INSERT ON messages
-        FOR EACH ROW EXECUTE FUNCTION grove_notify_message()
+        DO $$
+        BEGIN
+            IF NOT EXISTS (
+                SELECT 1 FROM pg_trigger
+                WHERE tgname = 'trg_grove_notify'
+            ) THEN
+                CREATE TRIGGER trg_grove_notify
+                AFTER INSERT ON messages
+                FOR EACH ROW EXECUTE FUNCTION grove_notify_message();
+            END IF;
+        END
+        $$
     """)
 
     conn.commit()
