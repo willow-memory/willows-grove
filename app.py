@@ -59,7 +59,7 @@ from widgets.card_builder_modal import CardBuilderModal
 
 import grove_db
 import grove_reader
-from fleet import FleetManager
+from fleet import FleetManager, already_running
 import grove_session
 
 WILLOW_ROOT = Path(os.environ.get("WILLOW_ROOT", Path.home() / "github" / "willow-1.9"))
@@ -562,11 +562,21 @@ class WillowGrove(App):
         logging.error("Textual exception: %s\n%s", error, traceback.format_exc())
 
     def on_mount(self) -> None:
+        # Instance lock — refuse to start if another Grove is running
+        if already_running():
+            self.notify(
+                "Another Grove instance is already running. Close it first.",
+                severity="error",
+                timeout=0,
+            )
+            self.call_after_refresh(self.action_quit)
+            return
+
         # Session state — mark open, get prior state for resume check
         self._prior_session = grove_session.mark_open()
         atexit.register(grove_session.mark_closed)
 
-        # Fleet — start all services
+        # Fleet — start all services; atexit covers abnormal exits
         self._fleet = FleetManager(on_alert=self._on_fleet_alert)
         self._fleet.start()
         atexit.register(self._fleet.stop)
@@ -609,7 +619,9 @@ class WillowGrove(App):
 
     def action_quit(self) -> None:
         grove_session.mark_closed()
-        self._fleet.stop()
+        fleet = getattr(self, "_fleet", None)
+        if fleet:
+            fleet.stop()
         super().action_quit()
 
     def _hide_all_content_panes(self) -> None:
