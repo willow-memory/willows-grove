@@ -5,6 +5,7 @@ b17: WGRV1  ΔΣ=42
 
 Run: python3 app.py
 """
+import atexit
 import json
 import logging
 import os
@@ -58,6 +59,8 @@ from widgets.card_builder_modal import CardBuilderModal
 
 import grove_db
 import grove_reader
+from fleet import FleetManager
+import grove_session
 
 WILLOW_ROOT = Path(os.environ.get("WILLOW_ROOT", Path.home() / "github" / "willow-1.9"))
 
@@ -345,6 +348,61 @@ class KeymapScreen(ModalScreen):
             )
 
 
+class ResumeSessionScreen(ModalScreen):
+    """Prompt shown when Grove detects a previous hard close."""
+
+    DEFAULT_CSS = """
+    ResumeSessionScreen {
+        align: center middle;
+    }
+    ResumeSessionScreen #rs-dialog {
+        width: 52;
+        height: 10;
+        background: $surface;
+        border: solid $primary;
+        padding: 1 2;
+    }
+    ResumeSessionScreen #rs-title {
+        text-style: bold;
+        color: $accent;
+        margin-bottom: 1;
+    }
+    ResumeSessionScreen #rs-body {
+        color: #8b949e;
+        margin-bottom: 1;
+    }
+    ResumeSessionScreen #rs-buttons {
+        layout: horizontal;
+        height: 3;
+        align: right middle;
+    }
+    ResumeSessionScreen Button { margin-left: 1; }
+    """
+
+    BINDINGS = [Binding("escape", "dismiss(False)", "No", show=False)]
+
+    def __init__(self, last_pane: str, last_channel: str | None) -> None:
+        super().__init__()
+        self._last_pane    = last_pane
+        self._last_channel = last_channel
+
+    def compose(self) -> ComposeResult:
+        ch = f" (#{self._last_channel})" if self._last_channel else ""
+        with Vertical(id="rs-dialog"):
+            yield Label("Resume last session?", id="rs-title")
+            yield Static(
+                f"Grove was closed without saving.\n"
+                f"Last position: {self._last_pane}{ch}",
+                id="rs-body",
+            )
+            with Horizontal(id="rs-buttons"):
+                yield Button("Start fresh", variant="default", id="rs-no")
+                yield Button("Resume",      variant="primary",  id="rs-yes")
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        self.dismiss(event.button.id == "rs-yes")
+
+
 class WillowGrove(App):
     CSS = """
     Screen { background: #0d1117; }
@@ -504,10 +562,55 @@ class WillowGrove(App):
         logging.error("Textual exception: %s\n%s", error, traceback.format_exc())
 
     def on_mount(self) -> None:
+        # Session state — mark open, get prior state for resume check
+        self._prior_session = grove_session.mark_open()
+        atexit.register(grove_session.mark_closed)
+
+        # Fleet — start all services
+        self._fleet = FleetManager(on_alert=self._on_fleet_alert)
+        self._fleet.start()
+        atexit.register(self._fleet.stop)
+
         self._hide_all_content_panes()
         self._show_content_pane("home")
         self._do_refresh()
         self.set_interval(30, self._do_refresh)
+
+        # Resume prompt — show after UI is ready if prior session was hard-closed
+        if grove_session.was_hard_closed(self._prior_session):
+            self.call_after_refresh(self._prompt_resume)
+
+    def _prompt_resume(self) -> None:
+        prior = self._prior_session
+        def _on_result(resume: bool) -> None:
+            if not resume:
+                return
+            pane    = prior.get("last_pane", "home")
+            channel = prior.get("last_channel")
+            self.action_nav(pane)
+            if channel:
+                with suppress(NoMatches):
+                    self.query_one(ChatPane)._open_channel(channel)
+        self.push_screen(
+            ResumeSessionScreen(
+                last_pane=prior.get("last_pane", "home"),
+                last_channel=prior.get("last_channel"),
+            ),
+            _on_result,
+        )
+
+    def _on_fleet_alert(self, service: str, count: int) -> None:
+        self.call_from_thread(
+            self.notify,
+            f"Fleet service '{service}' has crashed {count} times — check logs.",
+            severity="error",
+            timeout=10,
+        )
+
+    def action_quit(self) -> None:
+        grove_session.mark_closed()
+        self._fleet.stop()
+        super().action_quit()
 
     def _hide_all_content_panes(self) -> None:
         for pane_id in list(_CONTENT_PANES.values()) + _INTERNAL_PANES:
@@ -535,6 +638,7 @@ class WillowGrove(App):
             self.query_one(ContextPanel)._show_target(event.target)
         except NoMatches:
             pass
+        grove_session.save_state(pane=event.target)
 
     def _do_refresh(self) -> None:
         for pane_id, pane_cls in [
@@ -560,6 +664,7 @@ class WillowGrove(App):
             self.query_one(ChatPane)._open_channel(event.name)
         except NoMatches:
             pass
+        grove_session.save_state(pane="chat", channel=event.name)
 
     def on_knowledge_atom_selected(self, event: KnowledgeAtomSelected) -> None:
         try:
