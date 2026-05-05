@@ -175,7 +175,7 @@ from panes.home import fetch_desk_data
 
 def test_fetch_desk_data_returns_desk_data():
     """fetch_desk_data must return DeskData even when all sources fail."""
-    result = fetch_desk_data("sean")
+    result = fetch_desk_data()
     assert isinstance(result, DeskData)
     assert isinstance(result.unread_channels, list)
     assert isinstance(result.agents, list)

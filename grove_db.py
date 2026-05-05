@@ -439,7 +439,10 @@ def bus_receive(conn, agent: str, since_id: int = 0, limit: int = 50) -> List[Di
     cur = conn.cursor()
     cur.execute("""
         SELECT * FROM messages
-        WHERE (to_agent = %s OR to_agent = %s)
+        WHERE (
+            LOWER(TRIM(COALESCE(to_agent, ''))) = LOWER(TRIM(%s))
+            OR to_agent = %s
+          )
           AND is_deleted = 0
           AND id > %s
           AND (ttl IS NULL OR created_at + (ttl || ' seconds')::interval > NOW())

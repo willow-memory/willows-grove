@@ -2,6 +2,7 @@
 b17: WDASH  ΔΣ=42
 """
 import hashlib
+import os
 from datetime import datetime, timezone
 
 import grove_db
@@ -25,6 +26,188 @@ def _conn_ctx(conn):
 def _release(conn, owned: bool) -> None:
     if owned:
         grove_db.release_connection(conn)
+
+
+def dashboard_grove_sender() -> str:
+    """Sender name for dashboard chat + DeskPane (fleet identity).
+
+    Explicit GROVE_SENDER wins, then GROVE_NAME.
+    Otherwise 'Auto' (Cursor/dashboard router row in public.agents).
+    """
+    for key in ("GROVE_SENDER", "GROVE_NAME"):
+        v = (os.environ.get(key) or "").strip()
+        if v:
+            return v
+    return "Auto"
+
+
+def desk_mention_handles(primary_sender: str | None = None) -> list[str]:
+    """Handles for ATTENTION (@-substring match via ILIKE), deduped case-insensitively.
+
+    primary_sender overrides dashboard identity (e.g. MCP inbox with agent='Auto').
+
+    Includes the primary sender plus 'all' so @all broadcasts surface on the desk.
+    Optional GROVE_DESK_MENTIONS=comma,separated extras (handles without leading @).
+    """
+    handles: list[str] = []
+    seen: set[str] = set()
+
+    def _add(raw: str) -> None:
+        h = raw.strip().lstrip("@")
+        if not h:
+            return
+        k = h.lower()
+        if k in seen:
+            return
+        seen.add(k)
+        handles.append(h)
+
+    base = (
+        primary_sender.strip()
+        if (primary_sender and primary_sender.strip())
+        else dashboard_grove_sender()
+    )
+    _add(base)
+    _add("all")
+    extras = (os.environ.get("GROVE_DESK_MENTIONS") or "").strip()
+    for part in extras.split(","):
+        _add(part)
+    return handles
+
+
+def merge_attention_messages(*row_groups: list[dict], limit: int = 20) -> list[dict]:
+    """Dedupe-by-id descending merge for desk ATTENTION / inbox."""
+    seen: set[int] = set()
+    out: list[dict] = []
+    merged: list[dict] = []
+    for grp in row_groups:
+        merged.extend(grp or [])
+    for row in sorted(merged, key=lambda r: -int(r["id"])):
+        mid = int(row["id"])
+        if mid in seen:
+            continue
+        seen.add(mid)
+        out.append(row)
+        if len(out) >= limit:
+            break
+    return out
+
+
+def grove_messages_bus_addressed_to(
+    recipient: str,
+    *,
+    since_id: int = 0,
+    limit: int = 40,
+    conn=None,
+) -> list[dict]:
+    """Messages bus-routed *directly* to recipient (to_agent matches, case-insensitive).
+
+    Rows where content lacks @mentions but agents used MCP bus addressing.
+    Drops HEARTBEAT/ACK noise. Does NOT include '__all__' broadcasts (use mentions + history).
+    """
+    r = recipient.strip()
+    if not r:
+        return []
+    conn, owned = _conn_ctx(conn)
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            SELECT m.id, c.name, m.sender, m.content
+            FROM grove.messages m
+            JOIN grove.channels c ON c.id = m.channel_id
+            WHERE m.is_deleted = 0
+              AND c.is_archived = FALSE
+              AND m.id > %s
+              AND LOWER(TRIM(COALESCE(m.to_agent, ''))) = LOWER(TRIM(%s))
+              AND LOWER(TRIM(COALESCE(m.to_agent, ''))) <> '__all__'
+              AND COALESCE(m.bus_type, '') NOT IN ('HEARTBEAT', 'ACK')
+            ORDER BY m.id DESC
+            LIMIT %s
+            """,
+            (since_id, r, limit),
+        )
+        return [
+            {"id": r0[0], "channel": r0[1], "sender": r0[2], "content": r0[3]}
+            for r0 in cur.fetchall()
+        ]
+    except Exception:
+        return []
+    finally:
+        _release(conn, owned)
+
+
+def grove_own_channel_since(
+    channel_name: str,
+    *,
+    since_id: int = 0,
+    limit: int = 80,
+    conn=None,
+) -> list[dict]:
+    """Rule 1 (persistent monitor): every message in the agent-dedicated channel.
+
+    Channel name convention: lowercased sender identity (e.g. Auto → #auto).
+    Skips HEARTBEAT bus noise — text posts only.
+    """
+    ch = (channel_name or "").strip()
+    if not ch:
+        return []
+    conn, owned = _conn_ctx(conn)
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            SELECT m.id, c.name, m.sender, m.content
+              FROM grove.messages m
+              JOIN grove.channels c ON c.id = m.channel_id
+             WHERE LOWER(TRIM(c.name)) = LOWER(TRIM(%s))
+               AND m.is_deleted = 0
+               AND c.is_archived = FALSE
+               AND m.id > %s
+               AND COALESCE(m.bus_type, '') NOT IN ('HEARTBEAT', 'ACK')
+             ORDER BY m.id DESC
+             LIMIT %s
+            """,
+            (ch, since_id, limit),
+        )
+        return [
+            {"id": r[0], "channel": r[1], "sender": r[2], "content": r[3]}
+            for r in cur.fetchall()
+        ]
+    except Exception:
+        return []
+    finally:
+        _release(conn, owned)
+
+
+def grove_inbox_bundle(
+    agent: str | None = None,
+    *,
+    since_id: int = 0,
+    mention_limit: int = 60,
+    bus_limit: int = 60,
+    merge_limit: int = 35,
+    conn=None,
+) -> list[dict]:
+    """Unified pull: @mentions + bus to_agent + dedicated #<agent> inbox (rule 1).
+
+    Acquires a single pooled connection for all three sub-queries when conn=None,
+    avoiding three separate checkout/release round-trips per call.
+    """
+    who = agent.strip() if (agent and agent.strip()) else dashboard_grove_sender()
+    handles = desk_mention_handles(who)
+    inbox_name = who.strip().lower().replace(" ", "-")
+    _conn, owned = _conn_ctx(conn)
+    try:
+        mention_rows = grove_mentions_for_handles(handles, limit=mention_limit, conn=_conn)
+        bus_rows = grove_messages_bus_addressed_to(who, since_id=since_id, limit=bus_limit, conn=_conn)
+        own_rows = grove_own_channel_since(inbox_name, since_id=since_id, limit=mention_limit, conn=_conn)
+    finally:
+        _release(_conn, owned)
+    filtered_mentions = [m for m in mention_rows if int(m["id"]) > since_id]
+    return merge_attention_messages(
+        filtered_mentions, bus_rows, own_rows, limit=merge_limit,
+    )
 
 
 def grove_agents(conn=None) -> list[dict]:
@@ -174,26 +357,42 @@ def grove_messages_all_agents(
         _release(conn, owned)
 
 
-def grove_mentions(name: str, limit: int = 20, conn=None) -> list[dict]:
-    """Return recent messages that @mention name across all channels (DB query, not scan).
+def grove_mentions_for_handles(handles: list[str], limit: int = 20, conn=None) -> list[dict]:
+    """Recent messages matching @<handle> for any handle (ILIKE substring, case-folded).
 
     Each entry: {id, channel, sender, content}
     """
+    clean: list[str] = []
+    seen: set[str] = set()
+    for raw in handles:
+        h = (raw or "").strip().lstrip("@")
+        if not h:
+            continue
+        k = h.lower()
+        if k in seen:
+            continue
+        seen.add(k)
+        clean.append(h)
+    if not clean:
+        return []
     conn, owned = _conn_ctx(conn)
     try:
         cur = conn.cursor()
+        placeholders = " OR ".join(["m.content ILIKE %s"] * len(clean))
+        params = [f"%@{h}%" for h in clean]
+        params.append(limit)
         cur.execute(
-            """
+            f"""
             SELECT m.id, c.name, m.sender, m.content
             FROM grove.messages m
             JOIN grove.channels c ON c.id = m.channel_id
-            WHERE m.content ILIKE %s
+            WHERE ({placeholders})
               AND m.is_deleted = 0
               AND c.is_archived = FALSE
             ORDER BY m.id DESC
             LIMIT %s
             """,
-            (f"%@{name}%", limit),
+            params,
         )
         return [
             {"id": r[0], "channel": r[1], "sender": r[2], "content": r[3]}
@@ -203,6 +402,11 @@ def grove_mentions(name: str, limit: int = 20, conn=None) -> list[dict]:
         return []
     finally:
         _release(conn, owned)
+
+
+def grove_mentions(name: str, limit: int = 20, conn=None) -> list[dict]:
+    """Single-handle wrapper over grove_mentions_for_handles."""
+    return grove_mentions_for_handles([name], limit=limit, conn=conn)
 
 
 _ROUTING_DDL = """

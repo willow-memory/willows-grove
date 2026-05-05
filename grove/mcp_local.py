@@ -27,6 +27,7 @@ from typing import AsyncIterator
 from mcp.server.fastmcp import FastMCP
 
 import grove_db as db
+import grove_reader as _grove_reader
 
 # ── Notification state ────────────────────────────────────────────────────────
 _subscriptions: dict[int, set[asyncio.Queue]] = {}
@@ -176,14 +177,14 @@ def grove_get_history(channel_name: str, limit: int = 50, since_id: int = 0) -> 
 
 
 @mcp.tool()
-def grove_send_message(channel_name: str, content: str, sender: str = "claude-code") -> dict:
+def grove_send_message(channel_name: str, content: str, sender: str = "Auto") -> dict:
     """
     Send a message to a Grove channel. Creates the channel if it doesn't exist.
 
     Args:
         channel_name: Target channel name.
         content: Message body.
-        sender: Display name for the sender (default: claude-code).
+        sender: Display name for the sender (default: Auto — matches public.agents / dashboard).
     """
     conn = db.get_connection()
     try:
@@ -589,6 +590,25 @@ def grove_heartbeat(sender: str) -> dict:
         return {"id": msg["id"], "sender": sender, "bus_type": "HEARTBEAT"}
     finally:
         db.release_connection(conn)
+
+
+@mcp.tool()
+def grove_inbox(agent: str = "", since_id: int = 0, limit: int = 35) -> list[dict]:
+    """
+    Fleet inbox for Cursor: @mentions (@Auto / @all / GROVE_DESK_MENTIONS) plus messages
+    bus-addressed directly to Auto (to_agent matches) even when the body has no @.
+
+    Poll this when coordinating from the IDE— nothing is pushed into chat automatically.
+
+    Args:
+        agent: Recipient identity as stored on to_agent; default follows
+               GROVE_SENDER/GROVE_NAME/dashboard default (Auto).
+        since_id: Only messages with id greater than this (cursor for polling).
+        limit: Merge cap after dedupe-by-id newest-first.
+    """
+    who = agent.strip() if agent.strip() else None
+    cap = max(5, min(int(limit), 80))
+    return _grove_reader.grove_inbox_bundle(who, since_id=max(0, int(since_id)), merge_limit=cap)
 
 
 @mcp.tool()

@@ -3,7 +3,6 @@ b17: WGRV1  ΔΣ=42
 """
 from __future__ import annotations
 
-import os
 from dataclasses import dataclass, field
 
 from textual import work
@@ -60,7 +59,8 @@ def render_desk(data: DeskData) -> str:
         name = ch["name"][:14]
         attn.append(f"  {_V}# {name:<14} {ch['unread']}{_E}")
     for m in data.mentions:
-        attn.append(f"  {_Y}@←{m['sender']}{_E}")
+        ch_short = str(m.get("channel", "?"))[:16]
+        attn.append(f"  {_Y}#{ch_short} ← {m['sender']}{_E}")
     if data.open_flags > 0:
         attn.append(f"  {_Y}{data.open_flags} open flags{_E}")
     if attn:
@@ -107,7 +107,7 @@ def render_desk(data: DeskData) -> str:
     return "\n".join(lines)
 
 
-def fetch_desk_data(sender_name: str) -> DeskData:
+def fetch_desk_data() -> DeskData:
     """Fetch all DeskData fields. Never raises — returns safe defaults on failure."""
     import json
     from datetime import date
@@ -131,10 +131,10 @@ def fetch_desk_data(sender_name: str) -> DeskData:
     except Exception:
         pass
 
-    # @mentions — SQL ILIKE across all channels
+    # @mentions + bus to_agent routing (fleet often pings without @ in body)
     try:
         import grove_reader
-        data.mentions = grove_reader.grove_mentions(sender_name, limit=20)
+        data.mentions = grove_reader.grove_inbox_bundle(merge_limit=20)
     except Exception:
         pass
 
@@ -195,7 +195,7 @@ class _DeskRefreshed(Message):
 
 
 class DeskPane(Container):
-    """Left column for Home — live Desk widget. Refreshes every 15s."""
+    """Left column for Home — live Desk widget. Refreshes every 5s."""
 
     DEFAULT_CSS = """
     DeskPane {
@@ -210,14 +210,6 @@ class DeskPane(Container):
     }
     """
 
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
-        self._sender = (
-            os.environ.get("GROVE_SENDER")
-            or os.environ.get("GROVE_NAME")
-            or os.environ.get("USER", "sean")
-        )
-
     def compose(self):
         yield Static("", id="desk-content", markup=True)
 
@@ -227,7 +219,7 @@ class DeskPane(Container):
 
     @work(thread=True)
     def _fetch(self) -> None:
-        data = fetch_desk_data(self._sender)
+        data = fetch_desk_data()
         self.post_message(_DeskRefreshed(data))
 
     def on__desk_refreshed(self, event: _DeskRefreshed) -> None:

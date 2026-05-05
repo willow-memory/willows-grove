@@ -312,7 +312,7 @@ class CardBuilderModal(ModalScreen):
         conn = grove_db.get_connection()
         try:
             cur = conn.cursor()
-            sender = os.environ.get("GROVE_SENDER") or os.environ.get("USER", "dashboard")
+            sender = grove_reader.dashboard_grove_sender()
             cur.execute(
                 "INSERT INTO grove.messages (channel_id, sender, content)"
                 " VALUES (%s, %s, %s)",
@@ -330,7 +330,7 @@ class CardBuilderModal(ModalScreen):
         if not body or self._channel_id is None:
             return
         event.input.value = ""
-        sender = os.environ.get("GROVE_SENDER") or os.environ.get("USER", "sean")
+        sender = grove_reader.dashboard_grove_sender()
         self._write_to_channel(self._channel_id, sender, body)
         if self._interviewer == "local":
             self._local_reply()
