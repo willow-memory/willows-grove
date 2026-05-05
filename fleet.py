@@ -36,7 +36,7 @@ if not _log.handlers:
 # It watches ~/  via inotify and is resource-heavy. Enable via Grove Settings.
 _SERVICES: dict[str, dict] = {
     "grove_serve": {
-        "cmd": [_PY, str(_GROVE_DIR / "grove_serve.py"), "--host", "0.0.0.0", "--port", "7777"],
+        "cmd": [_PY, str(_GROVE_DIR / "grove_serve.py"), "--host", "127.0.0.1", "--port", "7777"],
         "cwd": str(_GROVE_DIR),
         "env": {"WILLOW_PG_DB": "willow_19", "WILLOW_PG_USER": os.environ.get("USER", "")},
         "port": 7777,                    # GAP 1: checked before spawn

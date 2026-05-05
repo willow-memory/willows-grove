@@ -12,11 +12,11 @@ Auth: HMAC-SHA256 of the request body, signed with the shared grove token.
 Token lives at ~/.willow/grove_token (generated on first run, share with
 trusted nodes via `willow grove pair`).
 
-Grove REST endpoints (no-token GET, signed POST):
-    GET  /health                          → system health
-    GET  /grove/channels                  → list channels
-    GET  /grove/history?channel=X&limit=N → last N messages from channel X
-    POST /grove/send  {channel, content, sender} → post a message
+Grove REST endpoints (all signed):
+    GET  /health                          → system health (unsigned, no data)
+    GET  /grove/channels                  → list channels (X-Grove-Sig required)
+    GET  /grove/history?channel=X&limit=N → last N messages (X-Grove-Sig required)
+    POST /grove/send  {channel, content, sender} → post a message (X-Grove-Sig required)
 """
 import hashlib
 import hmac
@@ -68,8 +68,7 @@ def load_or_create_token() -> str:
     TOKEN_PATH.write_text(token + "\n")
     TOKEN_PATH.chmod(0o600)
     print(f"[grove-serve] Generated grove token → {TOKEN_PATH}", flush=True)
-    print(f"[grove-serve] Share this token with trusted nodes:", flush=True)
-    print(f"  {token}", flush=True)
+    print(f"[grove-serve] Share token file with trusted nodes (do not print to console).", flush=True)
     return token
 
 
@@ -127,11 +126,17 @@ class GroveHandler(http.server.BaseHTTPRequestHandler):
             self._send_json(200, {"status": "ok", "service": "grove-serve"})
 
         elif parsed.path == "/grove/channels":
+            sig = self.headers.get("X-Grove-Sig", "")
+            if not _valid_sig(self.path.encode(), sig):
+                self._send_json(401, {"error": "invalid signature"})
+                return
             try:
                 import grove_db
                 conn = grove_db.get_connection()
-                channels = grove_db.list_channels(conn)
-                grove_db._get_pool().putconn(conn)
+                try:
+                    channels = grove_db.list_channels(conn)
+                finally:
+                    grove_db.release_connection(conn)
                 self._send_json(200, {"channels": [
                     {"id": c["id"], "name": c["name"], "type": c["channel_type"]}
                     for c in channels
@@ -140,23 +145,28 @@ class GroveHandler(http.server.BaseHTTPRequestHandler):
                 self._send_json(500, {"error": str(e)})
 
         elif parsed.path == "/grove/history":
+            sig = self.headers.get("X-Grove-Sig", "")
+            if not _valid_sig(self.path.encode(), sig):
+                self._send_json(401, {"error": "invalid signature"})
+                return
             channel_name = params.get("channel", ["general"])[0]
             limit = min(int(params.get("limit", [50])[0]), 200)
             try:
                 import grove_db
                 conn = grove_db.get_connection()
-                cur = conn.cursor()
-                cur.execute(
-                    "SELECT id FROM grove.channels WHERE name = %s", (channel_name,)
-                )
-                row = cur.fetchone()
-                if not row:
-                    grove_db._get_pool().putconn(conn)
-                    self._send_json(404, {"error": f"channel '{channel_name}' not found"})
-                    return
-                channel_id = row[0]
-                msgs = grove_db.get_history(conn, channel_id, limit=limit)
-                grove_db._get_pool().putconn(conn)
+                try:
+                    cur = conn.cursor()
+                    cur.execute(
+                        "SELECT id FROM grove.channels WHERE name = %s", (channel_name,)
+                    )
+                    row = cur.fetchone()
+                    if not row:
+                        self._send_json(404, {"error": f"channel '{channel_name}' not found"})
+                        return
+                    channel_id = row[0]
+                    msgs = grove_db.get_history(conn, channel_id, limit=limit)
+                finally:
+                    grove_db.release_connection(conn)
                 self._send_json(200, {"channel": channel_name, "messages": [
                     {
                         "id": m["id"],
@@ -196,21 +206,26 @@ class GroveHandler(http.server.BaseHTTPRequestHandler):
             try:
                 import grove_db
                 conn = grove_db.get_connection()
-                cur = conn.cursor()
-                cur.execute(
-                    "SELECT id FROM grove.channels WHERE name = %s", (channel_name,)
-                )
-                row = cur.fetchone()
-                if not row:
+                try:
+                    cur = conn.cursor()
                     cur.execute(
-                        "INSERT INTO grove.channels (name, channel_type) VALUES (%s, 'group') RETURNING id",
-                        (channel_name,)
+                        "SELECT id FROM grove.channels WHERE name = %s", (channel_name,)
                     )
                     row = cur.fetchone()
-                    conn.commit()
-                channel_id = row[0]
-                msg = grove_db.send_message(conn, channel_id=channel_id, sender=sender, content=content)
-                grove_db._get_pool().putconn(conn)
+                    if not row:
+                        cur.execute(
+                            "INSERT INTO grove.channels (name, channel_type) VALUES (%s, 'group') RETURNING id",
+                            (channel_name,)
+                        )
+                        row = cur.fetchone()
+                        conn.commit()
+                    channel_id = row[0]
+                    msg = grove_db.send_message(conn, channel_id=channel_id, sender=sender, content=content)
+                except Exception:
+                    conn.rollback()
+                    raise
+                finally:
+                    grove_db.release_connection(conn)
                 self._send_json(200, {"ok": True, "id": msg["id"], "channel": channel_name})
             except Exception as e:
                 self._send_json(500, {"error": str(e)})
@@ -277,11 +292,11 @@ def _kb_context(prompt: str, limit: int = 3) -> str:
         conn = psycopg2.connect(dbname=_WILLOW_PG_DB, user=_WILLOW_PG_USER)
         try:
             cur = conn.cursor()
-            words = [w for w in re.split(r'\W+', prompt.lower()) if len(w) > 3]
+            words = [w for w in re.split(r'\W+', prompt.lower()) if len(w) > 3][:6]
             if not words:
                 return ""
             ilike_clause = " OR ".join(["summary ILIKE %s"] * len(words))
-            params = [f"%{w}%" for w in words[:6]]
+            params = [f"%{w}%" for w in words]
             cur.execute(
                 f"SELECT title, summary FROM willow.knowledge WHERE domain='willow' AND ({ilike_clause}) LIMIT %s",
                 params + [limit],
@@ -555,7 +570,7 @@ def _u2u_listen_thread() -> None:
         print(f"[u2u] listener error: {e}", flush=True)
 
 
-def serve(host: str = "0.0.0.0", port: int = DEFAULT_PORT) -> None:
+def serve(host: str = "127.0.0.1", port: int = DEFAULT_PORT) -> None:
     global _TOKEN
     _TOKEN = load_or_create_token()
 
@@ -579,6 +594,6 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="Willow Grove command server")
     parser.add_argument("--port", type=int, default=DEFAULT_PORT)
-    parser.add_argument("--host", default="0.0.0.0")
+    parser.add_argument("--host", default="127.0.0.1")
     args = parser.parse_args()
     serve(args.host, args.port)
