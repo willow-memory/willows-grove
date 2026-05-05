@@ -75,10 +75,12 @@ class ASServer:
     Passes each event to on_event(event: dict) coroutine.
     """
 
+    _SEEN_MAX = 2048
+
     def __init__(self, hs_token: str, on_event):
         self._hs_token  = hs_token
         self._on_event  = on_event
-        self._seen: set[str] = set()
+        self._seen: dict[str, None] = {}  # insertion-ordered dict as bounded LRU
 
     def build_app(self) -> web.Application:
         app = web.Application()
@@ -93,7 +95,9 @@ class ASServer:
         txn_id = request.match_info["txn_id"]
         if txn_id in self._seen:
             return web.json_response({})
-        self._seen.add(txn_id)
+        self._seen[txn_id] = None
+        if len(self._seen) > self._SEEN_MAX:
+            self._seen.pop(next(iter(self._seen)))
 
         body = await request.json()
         for event in body.get("events", []):

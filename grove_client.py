@@ -16,6 +16,7 @@ import json
 import os
 import sys
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -36,6 +37,55 @@ def load_token(path: Path = TOKEN_PATH) -> str:
 
 def sign(body: bytes, token: str) -> str:
     return hmac.new(token.encode(), body, hashlib.sha256).hexdigest()
+
+
+def _sign_get(path: str, token: str) -> str:
+    """Sign a GET request path (including query string) for X-Grove-Sig."""
+    return hmac.new(token.encode(), path.encode(), hashlib.sha256).hexdigest()
+
+
+def get_channels(host_port: str, token: str, timeout: int = 10) -> dict:
+    if not host_port.startswith("http"):
+        host_port = f"http://{host_port}"
+    path = "/grove/channels"
+    sig  = _sign_get(path, token)
+    req  = urllib.request.Request(
+        f"{host_port.rstrip('/')}{path}",
+        headers={"X-Grove-Sig": sig},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            return json.loads(resp.read())
+    except urllib.error.HTTPError as e:
+        body = e.read().decode()
+        try:
+            return json.loads(body)
+        except Exception:
+            return {"error": f"HTTP {e.code}: {body}"}
+    except Exception as e:
+        return {"error": str(e)}
+
+
+def get_history(host_port: str, channel: str, token: str, limit: int = 50, timeout: int = 10) -> dict:
+    if not host_port.startswith("http"):
+        host_port = f"http://{host_port}"
+    path = f"/grove/history?channel={urllib.parse.quote(channel)}&limit={limit}"
+    sig  = _sign_get(path, token)
+    req  = urllib.request.Request(
+        f"{host_port.rstrip('/')}{path}",
+        headers={"X-Grove-Sig": sig},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            return json.loads(resp.read())
+    except urllib.error.HTTPError as e:
+        body = e.read().decode()
+        try:
+            return json.loads(body)
+        except Exception:
+            return {"error": f"HTTP {e.code}: {body}"}
+    except Exception as e:
+        return {"error": str(e)}
 
 
 def send_command(host_port: str, cmd: str, token: str, timeout: int = 30) -> dict:

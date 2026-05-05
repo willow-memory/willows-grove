@@ -148,7 +148,12 @@ def _spawn(cmd_type: str, cmd: str, env: dict, allow_net: bool = False) -> subpr
     return proc
 
 
+_SHELL_METACHAR_RE = re.compile(r'[;&|$()\\`><]')
+
+
 def _validate_shell_cmd(cmd: str) -> bool:
+    if _SHELL_METACHAR_RE.search(cmd):
+        return False
     cmd_lower = cmd.strip().lower()
     return any(cmd_lower.startswith(s) for s in _SHELL_STARTERS)
 

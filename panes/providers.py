@@ -3,9 +3,13 @@ b17: WGRV1  ΔΣ=42
 """
 import json
 import os
+import re
 import sqlite3
+import subprocess
 import urllib.request
 from pathlib import Path
+
+_PROVIDER_NAME_RE = re.compile(r'^[a-zA-Z0-9_-]{1,64}$')
 
 from textual.binding import Binding
 from textual.containers import Container
@@ -103,7 +107,10 @@ class ProvidersPane(Container):
         if row < 0:
             return
         name = str(table.get_cell_at((row, 0)))
-        os.system(f"willow providers enable {name} &")
+        if not _PROVIDER_NAME_RE.match(name):
+            self.app.notify(f"Invalid provider name: {name}", severity="error")
+            return
+        subprocess.Popen(["willow", "providers", "enable", name])
         self.refresh_data()
 
     def action_disable_selected(self) -> None:
@@ -115,7 +122,10 @@ class ProvidersPane(Container):
         if name == "ollama":
             self.app.notify("Ollama cannot be disabled — it's the default provider.", severity="warning")
             return
-        os.system(f"willow providers disable {name} &")
+        if not _PROVIDER_NAME_RE.match(name):
+            self.app.notify(f"Invalid provider name: {name}", severity="error")
+            return
+        subprocess.Popen(["willow", "providers", "disable", name])
         self.refresh_data()
 
     def select_provider(self, name: str) -> None:
