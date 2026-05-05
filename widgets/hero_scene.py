@@ -7,7 +7,6 @@ import random
 import shutil
 from datetime import datetime
 
-from rich.markup import escape
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.widgets import Static
@@ -109,11 +108,11 @@ def _sysinfo() -> dict:
 
 # ── Info panel ────────────────────────────────────────────────────────────────
 
-# WILLOW wordmark — single backslashes, escape() prevents Rich from reprocessing them
+# Sean's WILLOW wordmark from dashboard sketch — escaped for Rich markup
 _WILLOW_ART = [
     r"_  _  _  __ __  __    _  _  _  _",
-    r"\ \ \ || ||  ||  / o\ \ \ \ ",
-    r" \/ \// || |_] |_} \__/  \/ \//",
+    r"\\ \\ \\ || ||  ||  / o\ \\ \\ \\ ",  # trailing space prevents \[/] markup escape
+    r" \\/ \// || |_] |_} \__/  \\/ \//",
 ]
 
 
@@ -147,7 +146,7 @@ class HeroInfo(Static):
         d    = now.strftime("%a %b %-d")
         s    = self._sys
         temp = f"{s['temp']}°C" if s["temp"] else "n/a"
-        art  = "\n".join(f"[bold #58a6ff]{escape(l)}[/]" for l in _WILLOW_ART)
+        art  = "\n".join(f"[bold #58a6ff]{l}[/]" for l in _WILLOW_ART)
         self.update(
             f"{art}\n"
             "\n"
