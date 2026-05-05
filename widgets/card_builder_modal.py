@@ -108,21 +108,25 @@ class CardBuilderModal(ModalScreen):
             (a["age_secs"] for a in agents if a["sender"] == "heimdallr"), None
         )
         heimdallr_online = heimdallr_age is not None and heimdallr_age < 1800
+        self._interviewer = "heimdallr" if heimdallr_online else "local"
 
         msgs = grove_reader.grove_messages("card-builder", limit=20)
         self.app.call_from_thread(self._load_history, msgs)
 
         if not msgs:
             if heimdallr_online:
-                self._interviewer = "heimdallr"
                 self._dispatch_intro(channel_id, to="heimdallr")
             else:
-                self._interviewer = "local"
                 self.app.call_from_thread(
-                    self._set_status,
-                    "[dim]local model is conducting the interview[/]"
+                    self._set_status, "[dim]local model is conducting the interview[/]"
                 )
                 self._local_intro(channel_id)
+        elif not heimdallr_online:
+            # Existing conversation, Heimdallr offline — local picks up
+            self.app.call_from_thread(
+                self._set_status, "[dim]local model continuing the interview[/]"
+            )
+            self._local_reply()
 
         self._start_listener()
 
