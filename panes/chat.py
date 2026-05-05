@@ -174,7 +174,7 @@ class ChannelList(Vertical):
         lst.clear()
         current_group = -1
         for ch in channels:
-            grp, _ = _channel_group(ch["name"])
+            grp, *_ = _channel_group(ch["name"])
             if grp != current_group:
                 current_group = grp
                 lst.append(SectionHeader(_GROUP_LABELS[grp]))
@@ -451,7 +451,6 @@ class ChatPane(Container):
             except NoMatches:
                 pass
             self._dispatch_to_agent(self._active_agent, body, self._active_channel)
-        self._load_messages(self._active_channel)
 
     def on_unmount(self) -> None:
         self._listening = False
