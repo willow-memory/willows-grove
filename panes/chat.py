@@ -19,7 +19,9 @@ import grove_reader
 
 _SENDER_COLORS = ["cyan", "magenta", "yellow", "bright_green",
                   "bright_blue", "bright_red", "bright_cyan"]
-_CHANNEL_ORDER = ["general", "architecture", "handoffs", "readme"]
+_AGENT_CHANNELS = {"auto", "hanuman", "loki", "heimdallr", "vishwakarma"}
+_COORD_CHANNELS = {"fleet", "architecture", "handoffs", "general"}
+_GROUP_LABELS   = {0: "AGENTS", 1: "COORDINATION", 2: "PROJECT"}
 
 
 def sender_color(name: str) -> str:
@@ -52,9 +54,16 @@ def format_ts(ts) -> str:
     return s[11:16] if len(s) >= 16 else s[:5]
 
 
+def _channel_group(name: str) -> tuple[int, str]:
+    if name in _AGENT_CHANNELS:
+        return (0, name)
+    if name in _COORD_CHANNELS:
+        return (1, name)
+    return (2, name)
+
+
 def sort_channels(channels: list[dict]) -> list[dict]:
-    order = {n: i for i, n in enumerate(_CHANNEL_ORDER)}
-    return sorted(channels, key=lambda c: (order.get(c["name"], 99), c["name"]))
+    return sorted(channels, key=lambda c: _channel_group(c["name"]))
 
 
 def _build_channel_label(ch: dict) -> str:
@@ -92,6 +101,16 @@ class ChannelItem(ListItem):
         yield Label(_build_channel_label(self.channel), markup=True)
 
 
+class SectionHeader(ListItem):
+    """Non-selectable group divider in the channel list."""
+    def __init__(self, title: str) -> None:
+        super().__init__(disabled=True)
+        self._title = title
+
+    def compose(self):
+        yield Label(f"[dim]{self._title}[/]", markup=True)
+
+
 class ChannelList(Vertical):
     """Standalone channel list widget — usable by ContextPanel independently of ChatPane."""
 
@@ -105,6 +124,15 @@ class ChannelList(Vertical):
         padding: 1 1 0 1;
         color: $text-muted;
         text-style: bold;
+    }
+    ChannelList SectionHeader {
+        background: $panel;
+        padding: 1 1 0 1;
+        color: $text-muted;
+        text-style: bold;
+    }
+    ChannelList SectionHeader:hover {
+        background: $panel;
     }
     """
 
@@ -143,7 +171,12 @@ class ChannelList(Vertical):
     def _rebuild_list(self, channels: list) -> None:
         lst = self.query_one("#cl-channel-list", ListView)
         lst.clear()
+        current_group = -1
         for ch in channels:
+            grp, _ = _channel_group(ch["name"])
+            if grp != current_group:
+                current_group = grp
+                lst.append(SectionHeader(_GROUP_LABELS[grp]))
             lst.append(ChannelItem(ch))
 
     @on(ListView.Selected, "#cl-channel-list")
@@ -323,7 +356,7 @@ class ChatPane(Container):
                 cur.execute(
                     "INSERT INTO grove.messages (channel_id, sender, content)"
                     " VALUES (%s, %s, %s)",
-                    (row[0], "dashboard", payload),
+                    (row[0], grove_reader.dashboard_grove_sender(), payload),
                 )
                 conn.commit()
         except Exception:
@@ -331,20 +364,28 @@ class ChatPane(Container):
         finally:
             grove_db.release_connection(conn)
 
+    @work(thread=True)
     def _load_messages(self, channel: str) -> None:
         try:
-            log = self.query_one("#msg-log", RichLog)
             since = self._cursors.get(channel, 0)
             if since == 0:
-                # First open: full history, clear first
                 msgs = grove_reader.grove_messages(channel, limit=100)
-                log.clear()
-                for m in msgs:
-                    self._write_msg(log, m)
+                self.app.call_from_thread(self._render_messages, channel, msgs, True)
             else:
                 msgs = grove_reader.grove_messages(channel, limit=200, since_id=since)
-                for m in msgs:
-                    self._write_msg(log, m)
+                self.app.call_from_thread(self._render_messages, channel, msgs, False)
+        except Exception:
+            pass
+
+    def _render_messages(self, channel: str, msgs: list, clear: bool) -> None:
+        if channel != self._active_channel:
+            return  # stale result — user switched channels while fetch was in flight
+        try:
+            log = self.query_one("#msg-log", RichLog)
+            if clear:
+                log.clear()
+            for m in msgs:
+                self._write_msg(log, m)
             if msgs:
                 self._cursors[channel] = msgs[-1]["id"]
                 self.post_message(CursorAdvanced(channel, msgs[-1]["id"]))
@@ -389,10 +430,7 @@ class ChatPane(Container):
             )
             row = cur.fetchone()
             if row:
-                sender = os.environ.get(
-                    "GROVE_SENDER",
-                    os.environ.get("GROVE_NAME", os.environ.get("USER", "sean")),
-                )
+                sender = grove_reader.dashboard_grove_sender()
                 cur.execute(
                     "INSERT INTO grove.messages (channel_id, sender, content)"
                     " VALUES (%s, %s, %s)",
