@@ -357,9 +357,9 @@ class ResumeSessionScreen(ModalScreen):
     }
     ResumeSessionScreen #rs-dialog {
         width: 52;
-        height: 10;
-        background: $surface;
-        border: solid $primary;
+        height: 12;
+        background: #161b22;
+        border: solid #30363d;
         padding: 1 2;
     }
     ResumeSessionScreen #rs-title {
@@ -373,10 +373,11 @@ class ResumeSessionScreen(ModalScreen):
     }
     ResumeSessionScreen #rs-buttons {
         layout: horizontal;
-        height: 3;
+        height: 5;
         align: right middle;
     }
-    ResumeSessionScreen Button { margin-left: 1; }
+    ResumeSessionScreen #rs-no  { margin-left: 1; background: #30363d !important; color: #c9d1d9 !important; }
+    ResumeSessionScreen #rs-yes { margin-left: 1; background: #3fb950 !important; color: #ffffff !important; }
     """
 
     BINDINGS = [Binding("escape", "dismiss(False)", "No", show=False)]
@@ -397,7 +398,7 @@ class ResumeSessionScreen(ModalScreen):
             )
             with Horizontal(id="rs-buttons"):
                 yield Button("Start fresh", variant="default", id="rs-no")
-                yield Button("Resume",      variant="primary",  id="rs-yes")
+                yield Button("Resume",      variant="success",  id="rs-yes")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         self.dismiss(event.button.id == "rs-yes")

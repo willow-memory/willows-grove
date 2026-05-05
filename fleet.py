@@ -21,12 +21,13 @@ _PY          = str(_VENV_PYTHON) if _VENV_PYTHON.exists() else _SYS_PYTHON
 _LOG_FILE    = Path.home() / ".willow" / "fleet.log"
 _PID_FILE    = Path.home() / ".willow" / "grove.pid"
 
-logging.basicConfig(
-    filename=_LOG_FILE,
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)s fleet: %(message)s",
-)
 _log = logging.getLogger("fleet")
+_log.setLevel(logging.INFO)
+if not _log.handlers:
+    _fh = logging.FileHandler(_LOG_FILE)
+    _fh.setFormatter(logging.Formatter("%(asctime)s %(levelname)s fleet: %(message)s"))
+    _log.addHandler(_fh)
+    _log.propagate = False
 
 # corpus_watcher is intentionally excluded from the automatic fleet.
 # Governance note in corpus-watcher.py: "Must be started by human action only."
