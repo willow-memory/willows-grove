@@ -75,6 +75,14 @@ class ChannelOpened(Message):
         self.name = name
 
 
+class CursorAdvanced(Message):
+    """Posted by ChatPane when it advances a channel cursor (marks messages read)."""
+    def __init__(self, channel: str, last_id: int) -> None:
+        super().__init__()
+        self.channel = channel
+        self.last_id = last_id
+
+
 class ChannelItem(ListItem):
     def __init__(self, channel: dict):
         super().__init__()
@@ -142,6 +150,10 @@ class ChannelList(Vertical):
     def _channel_clicked(self, event: ListView.Selected) -> None:
         if isinstance(event.item, ChannelItem):
             self.post_message(ChannelOpened(event.item.channel["name"]))
+
+    def on_cursor_advanced(self, event: CursorAdvanced) -> None:
+        """Sync our unread cursor when ChatPane marks a channel as read."""
+        self._cursors[event.channel] = event.last_id
 
 
 class ChatPane(Container):
@@ -335,6 +347,7 @@ class ChatPane(Container):
                     self._write_msg(log, m)
             if msgs:
                 self._cursors[channel] = msgs[-1]["id"]
+                self.post_message(CursorAdvanced(channel, msgs[-1]["id"]))
                 try:
                     import soil as _soil
                     _soil.put("willow-dashboard/cursors", channel, {"last_id": msgs[-1]["id"]})
