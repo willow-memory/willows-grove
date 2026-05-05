@@ -21,6 +21,7 @@ _SENDER_COLORS = ["cyan", "magenta", "yellow", "bright_green",
                   "bright_blue", "bright_red", "bright_cyan"]
 _AGENT_CHANNELS = {"auto", "hanuman", "loki", "heimdallr", "vishwakarma"}
 _COORD_CHANNELS = {"fleet", "architecture", "handoffs", "general"}
+_COORD_ORDER    = {"general": 0, "architecture": 1, "handoffs": 2, "fleet": 3}
 _GROUP_LABELS   = {0: "AGENTS", 1: "COORDINATION", 2: "PROJECT"}
 
 
@@ -54,12 +55,12 @@ def format_ts(ts) -> str:
     return s[11:16] if len(s) >= 16 else s[:5]
 
 
-def _channel_group(name: str) -> tuple[int, str]:
+def _channel_group(name: str) -> tuple[int, int, str]:
     if name in _AGENT_CHANNELS:
-        return (0, name)
+        return (0, 0, name)
     if name in _COORD_CHANNELS:
-        return (1, name)
-    return (2, name)
+        return (1, _COORD_ORDER.get(name, 99), name)
+    return (2, 0, name)
 
 
 def sort_channels(channels: list[dict]) -> list[dict]:
