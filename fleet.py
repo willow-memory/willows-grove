@@ -6,6 +6,7 @@ Spawns fleet services on Grove open, terminates them on close.
 Restart policy: silent ×2, alert callback on 3rd failure.
 """
 import os
+import signal
 import subprocess
 import threading
 import time
@@ -61,6 +62,18 @@ class FleetManager:
             self._failures[name] = 0
             self._spawn(name, cfg)
         self._monitor.start()
+        # Clean up fleet on SIGTERM/SIGHUP (terminal close)
+        for sig in (signal.SIGTERM, signal.SIGHUP):
+            try:
+                signal.signal(sig, self._handle_signal)
+            except (OSError, ValueError):
+                pass
+
+    def _handle_signal(self, signum: int, frame) -> None:
+        import grove_session as _gs
+        _gs.mark_closed()
+        self.stop()
+        raise SystemExit(0)
 
     def stop(self) -> None:
         self._running = False
