@@ -468,12 +468,102 @@ def _willow_watch_loop() -> None:
         time.sleep(_GROVE_POLL_INTERVAL)
 
 
+_U2U_PORT    = int(os.getenv("GROVE_U2U_PORT", "8550"))
+_U2U_CHANNEL = "u2u-inbox"
+
+
+def _get_or_create_u2u_channel() -> int:
+    """Return channel_id for u2u-inbox, creating it if it doesn't exist."""
+    import grove_db
+    conn = grove_db.get_connection()
+    try:
+        channels = grove_db.list_channels(conn)
+        for ch in channels:
+            if ch["name"] == _U2U_CHANNEL:
+                return ch["id"]
+        ch = grove_db.create_channel(
+            conn,
+            name=_U2U_CHANNEL,
+            channel_type="direct",
+            description="Cross-instance u2u messages from other Willow nodes",
+        )
+        conn.commit()
+        return ch["id"]
+    finally:
+        grove_db.release_connection(conn)
+
+
+def _u2u_listen_thread() -> None:
+    """Run the u2u TCP listener; post incoming NOTEs to the u2u-inbox Grove channel."""
+    import asyncio
+
+    try:
+        from u2u.identity import Identity
+        from u2u.contacts import ContactStore
+        from u2u.consent import ConsentGate
+        from u2u.listener import U2UListener
+        from u2u.packets import PacketType
+        from u2u import dispatcher
+    except ImportError as e:
+        print(f"[u2u] import error — u2u bridge disabled: {e}", flush=True)
+        return
+
+    identity_path = Path.home() / ".willow" / "u2u_identity.json"
+    contacts_path = Path.home() / ".willow" / "u2u_contacts.json"
+    identity = Identity.load_or_generate(identity_path)
+    store    = ContactStore(contacts_path)
+    gate     = ConsentGate(store)
+
+    try:
+        channel_id = _get_or_create_u2u_channel()
+    except Exception as e:
+        print(f"[u2u] channel init error: {e}", flush=True)
+        return
+
+    def _on_note(packet: dict) -> None:
+        header  = packet.get("header", {})
+        payload = packet.get("payload", {})
+        sender  = header.get("from", "unknown")
+        subject = payload.get("subject", "")
+        body    = payload.get("body", "")
+        content = f"[u2u from {sender}] {subject}: {body}" if subject else f"[u2u from {sender}] {body}"
+        _grove_post_by_channel_id(channel_id, content, sender=sender)
+
+    def _on_knock(packet: dict) -> None:
+        header  = packet.get("header", {})
+        sender  = header.get("from", "unknown")
+        content = f"[u2u KNOCK] {sender} wants to connect. Run: python -m u2u consent {sender}"
+        _grove_post_by_channel_id(channel_id, content, sender="u2u")
+
+    dispatcher.register(PacketType.NOTE,  _on_note)
+    dispatcher.register(PacketType.KNOCK, _on_knock)
+
+    async def _run() -> None:
+        listener = U2UListener(
+            host="0.0.0.0",
+            port=_U2U_PORT,
+            identity=identity,
+            consent=gate,
+        )
+        async with listener.serve():
+            print(f"[u2u] listening on 0.0.0.0:{_U2U_PORT}", flush=True)
+            await asyncio.Event().wait()
+
+    try:
+        asyncio.run(_run())
+    except Exception as e:
+        print(f"[u2u] listener error: {e}", flush=True)
+
+
 def serve(host: str = "0.0.0.0", port: int = DEFAULT_PORT) -> None:
     global _TOKEN
     _TOKEN = load_or_create_token()
 
     watcher = threading.Thread(target=_willow_watch_loop, daemon=True, name="willow-watch")
     watcher.start()
+
+    u2u = threading.Thread(target=_u2u_listen_thread, daemon=True, name="u2u-bridge")
+    u2u.start()
 
     server = http.server.HTTPServer((host, port), GroveHandler)
     print(f"[grove-serve] Listening on {host}:{port}", flush=True)
