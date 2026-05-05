@@ -67,9 +67,7 @@ def load_or_create_token() -> str:
     TOKEN_PATH.parent.mkdir(parents=True, exist_ok=True)
     TOKEN_PATH.write_text(token + "\n")
     TOKEN_PATH.chmod(0o600)
-    print(f"[grove-serve] Generated grove token → {TOKEN_PATH}", flush=True)
-    print(f"[grove-serve] Share this token with trusted nodes:", flush=True)
-    print(f"  {token}", flush=True)
+    print(f"[grove-serve] Generated grove token → {TOKEN_PATH} (read file to retrieve value)", flush=True)
     return token
 
 
@@ -172,10 +170,15 @@ class GroveHandler(http.server.BaseHTTPRequestHandler):
         else:
             self._send_json(404, {"error": "not found"})
 
+    _MAX_BODY = 65_536  # 64 KB hard cap — protects against memory/CPU DoS
+
     def do_POST(self):
         parsed = urllib.parse.urlparse(self.path)
         length = int(self.headers.get("Content-Length", 0))
-        body = self.rfile.read(length)
+        if length > self._MAX_BODY:
+            self._send_json(413, {"error": "request too large"})
+            return
+        body = self.rfile.read(min(length, self._MAX_BODY))
         sig  = self.headers.get("X-Grove-Sig", "")
 
         if parsed.path == "/grove/send":
