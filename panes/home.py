@@ -3,6 +3,7 @@ b17: WGRV1  ΔΣ=42
 """
 from __future__ import annotations
 
+import select
 from dataclasses import dataclass, field
 
 from textual import work
@@ -110,78 +111,97 @@ def render_desk(data: DeskData) -> str:
 def fetch_desk_data() -> DeskData:
     """Fetch all DeskData fields. Never raises — returns safe defaults on failure."""
     import json
+    from concurrent.futures import ThreadPoolExecutor
     from datetime import date
     from pathlib import Path
 
     data = DeskData()
 
-    # unread channels — load persisted read cursors so ATTENTION clears when Sean reads
-    try:
-        import grove_reader
-        import soil as _soil
-        cursor_records = _soil.all_records("willow-dashboard/cursors")
-        last_seen_ids = {r["_id"]: r.get("last_id", 0) for r in cursor_records}
-        active_rec = _soil.get("willow-dashboard/active", "channel")
-        active_channel = active_rec.get("name", "") if active_rec else ""
-        all_ch = grove_reader.grove_channels(last_seen_ids=last_seen_ids)
-        data.unread_channels = [
-            c for c in all_ch
-            if c.get("unread", 0) > 0 and c["name"] != active_channel
-        ]
-    except Exception:
-        pass
+    def _fetch_unread():
+        try:
+            import grove_reader
+            import soil as _soil
+            cursor_records = _soil.all_records("willow-dashboard/cursors")
+            last_seen_ids = {r["_id"]: r.get("last_id", 0) for r in cursor_records}
+            active_rec = _soil.get("willow-dashboard/active", "channel")
+            active_channel = active_rec.get("name", "") if active_rec else ""
+            all_ch = grove_reader.grove_channels(last_seen_ids=last_seen_ids)
+            return [
+                c for c in all_ch
+                if c.get("unread", 0) > 0 and c["name"] != active_channel
+            ]
+        except Exception:
+            return []
 
-    # @mentions + bus to_agent routing (fleet often pings without @ in body)
-    try:
-        import grove_reader
-        data.mentions = grove_reader.grove_inbox_bundle(merge_limit=20)
-    except Exception:
-        pass
+    def _fetch_mentions():
+        try:
+            import grove_reader
+            return grove_reader.grove_inbox_bundle(merge_limit=20)
+        except Exception:
+            return []
 
-    # open flags from session anchor
-    try:
-        anchor = json.loads(
-            (Path.home() / ".willow" / "session_anchor.json").read_text()
-        )
-        data.open_flags = anchor.get("open_flags", 0)
-    except Exception:
-        pass
+    def _fetch_flags():
+        try:
+            anchor = json.loads(
+                (Path.home() / ".willow" / "session_anchor.json").read_text()
+            )
+            return anchor.get("open_flags", 0)
+        except Exception:
+            return 0
 
-    # kart task counts + done today
-    try:
-        from panes.tasks import fetch_tasks
-        tasks = fetch_tasks()
-        data.running_tasks = tasks.get("running", 0)
-        data.pending_tasks = tasks.get("pending", 0)
-        today = date.today().isoformat()
-        data.done_today = sum(
-            1 for r in tasks.get("rows", [])
-            if r.get("status", "").lower() in ("complete", "completed")
-            and r.get("ts", "").startswith(today)
-        )
-    except Exception:
-        pass
+    def _fetch_tasks():
+        try:
+            from panes.tasks import fetch_tasks
+            tasks = fetch_tasks()
+            running = tasks.get("running", 0)
+            pending = tasks.get("pending", 0)
+            today = date.today().isoformat()
+            done_today = sum(
+                1 for r in tasks.get("rows", [])
+                if r.get("status", "").lower() in ("complete", "completed")
+                and r.get("ts", "").startswith(today)
+            )
+            return running, pending, done_today
+        except Exception:
+            return 0, 0, 0
 
-    # backfill progress
-    try:
-        from panes.tasks import fetch_backfill_progress
-        data.backfill = fetch_backfill_progress()
-    except Exception:
-        pass
+    def _fetch_backfill():
+        try:
+            from panes.tasks import fetch_backfill_progress
+            return fetch_backfill_progress()
+        except Exception:
+            return None
 
-    # active agents
-    try:
-        import grove_reader
-        data.agents = grove_reader.grove_agents()
-    except Exception:
-        pass
+    def _fetch_agents():
+        try:
+            import grove_reader
+            return grove_reader.grove_agents()
+        except Exception:
+            return []
 
-    # sysinfo
-    try:
-        from panes.overview import fetch_sysinfo
-        data.sysinfo = fetch_sysinfo()
-    except Exception:
-        pass
+    def _fetch_sysinfo():
+        try:
+            from panes.overview import fetch_sysinfo
+            return fetch_sysinfo()
+        except Exception:
+            return {"cpu": 0, "mem": 0, "disk": 0, "temp": 0}
+
+    with ThreadPoolExecutor(max_workers=7) as pool:
+        f_unread   = pool.submit(_fetch_unread)
+        f_mentions = pool.submit(_fetch_mentions)
+        f_flags    = pool.submit(_fetch_flags)
+        f_tasks    = pool.submit(_fetch_tasks)
+        f_backfill = pool.submit(_fetch_backfill)
+        f_agents   = pool.submit(_fetch_agents)
+        f_sysinfo  = pool.submit(_fetch_sysinfo)
+
+    data.unread_channels          = f_unread.result()
+    data.mentions                 = f_mentions.result()
+    data.open_flags               = f_flags.result()
+    data.running_tasks, data.pending_tasks, data.done_today = f_tasks.result()
+    data.backfill                 = f_backfill.result()
+    data.agents                   = f_agents.result()
+    data.sysinfo                  = f_sysinfo.result()
 
     return data
 
@@ -195,7 +215,7 @@ class _DeskRefreshed(Message):
 
 
 class DeskPane(Container):
-    """Left column for Home — live Desk widget. Refreshes every 5s."""
+    """Left column for Home — live Desk widget. Refreshes every 5s + on NOTIFY."""
 
     DEFAULT_CSS = """
     DeskPane {
@@ -210,17 +230,43 @@ class DeskPane(Container):
     }
     """
 
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self._listening = False
+
     def compose(self):
         yield Static("", id="desk-content", markup=True)
 
     def on_mount(self) -> None:
         self._fetch()
         self.set_interval(5, self._fetch)
+        self._start_notify_listener()
 
     @work(thread=True)
     def _fetch(self) -> None:
         data = fetch_desk_data()
         self.post_message(_DeskRefreshed(data))
+
+    @work(thread=True)
+    def _start_notify_listener(self) -> None:
+        import grove_db
+        self._listening = True
+        try:
+            conn = grove_db.listen_connection()
+            cur  = conn.cursor()
+            cur.execute("LISTEN grove_channel")
+            while self._listening:
+                if select.select([conn], [], [], 1.0)[0]:
+                    conn.poll()
+                    if conn.notifies:
+                        while conn.notifies:
+                            conn.notifies.pop(0)
+                        self._fetch()
+        except Exception:
+            pass
+
+    def on_unmount(self) -> None:
+        self._listening = False
 
     def on__desk_refreshed(self, event: _DeskRefreshed) -> None:
         try:
