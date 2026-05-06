@@ -1,0 +1,9 @@
+{
+  "env": {
+    "WILLOW_AGENT_NAME": "heimdallr"
+  },
+  "enabledPlugins": {
+    "superpowers@claude-plugins-official": false,
+    "code-simplifier@claude-plugins-official": false
+  }
+}
