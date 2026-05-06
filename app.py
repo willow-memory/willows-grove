@@ -235,7 +235,7 @@ _CONTENT_PANES: dict[str, str] = {
 _INTERNAL_PANES: list[str] = [
     "#pane-tasks", "#pane-agents", "#pane-routing",
     "#pane-skills", "#pane-logs", "#pane-secrets", "#pane-mcp",
-    "#pane-git", "#pane-prs",
+    "#pane-git", "#pane-prs", "#pane-knowledge", "#pane-providers",
 ]
 
 
