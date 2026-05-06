@@ -437,7 +437,7 @@ class WillowGrove(App):
     #pane-settings, #pane-help, #pane-tasks, #pane-agents,
     #pane-routing, #pane-skills, #pane-logs, #pane-secrets,
     #pane-mcp, #pane-git, #pane-prs, #pane-todos, #pane-my-projects,
-    #pane-binder {
+    #pane-binder, #pane-run-ledger {
         display: none;
     }
 
