@@ -1,6 +1,7 @@
-"""panes/tasks.py — Kart task queue pane.
+"""panes/tasks.py — Kart task queue pane + SOIL open-flags panel.
 b17: WGRV1  ΔΣ=42
 """
+import os
 import sys
 from pathlib import Path
 
@@ -11,6 +12,8 @@ from textual.widgets import DataTable, Label
 
 import grove_db
 from widgets.status_row import StatusRow
+
+_SEVERITY_COLOR = {"critical": "red", "high": "yellow", "medium": "cyan", "low": "dim"}
 
 
 def status_color(status: str) -> str:
@@ -55,9 +58,24 @@ def fetch_tasks() -> dict:
     return result
 
 
+def fetch_flags() -> list[dict]:
+    """Return open flags from hanuman/flags SOIL collection, sorted critical→low."""
+    _SEVERITY_ORDER = {"critical": 0, "high": 1, "medium": 2, "low": 3}
+    try:
+        willow_root = os.environ.get("WILLOW_ROOT", str(Path.home() / "github" / "willow-1.9"))
+        sys.path.insert(0, willow_root)
+        from core.willow_store import WillowStore
+        store = WillowStore()
+        records = store.list("hanuman/flags")
+        open_flags = [r for r in records if r.get("flag_state") == "open"]
+        open_flags.sort(key=lambda r: _SEVERITY_ORDER.get(r.get("severity", "low"), 9))
+        return open_flags
+    except Exception:
+        return []
+
+
 def fetch_backfill_progress() -> dict | None:
     try:
-        import os
         willow_root = os.environ.get("WILLOW_ROOT", str(Path.home() / "github" / "willow-1.9"))
         sys.path.insert(0, willow_root)
         from core.willow_store import WillowStore
@@ -76,6 +94,10 @@ class TasksPane(Container):
         table = DataTable(id="tasks-table", cursor_type="row")
         table.add_columns("ID", "Status", "Command", "Time")
         yield table
+        yield Label("  Open Flags", id="flags-title")
+        flags_table = DataTable(id="flags-table", cursor_type="row")
+        flags_table.add_columns("Sev", "ID", "Title", "Atom")
+        yield flags_table
 
     def on_mount(self) -> None:
         self.set_interval(10, self.refresh_data)
@@ -83,11 +105,12 @@ class TasksPane(Container):
 
     @work(thread=True, exit_on_error=False)
     def refresh_data(self) -> None:
-        data = fetch_tasks()
-        bp   = fetch_backfill_progress()
-        self.app.call_from_thread(self._apply_data, data, bp)
+        data  = fetch_tasks()
+        bp    = fetch_backfill_progress()
+        flags = fetch_flags()
+        self.app.call_from_thread(self._apply_data, data, bp, flags)
 
-    def _apply_data(self, data: dict, bp: dict | None) -> None:
+    def _apply_data(self, data: dict, bp: dict | None, flags: list[dict]) -> None:
         table = self.query_one("#tasks-table", DataTable)
         table.clear()
         self.query_one("#stat-running", StatusRow).set_status(None,               str(data["running"]))
@@ -110,6 +133,18 @@ class TasksPane(Container):
             table.add_row(
                 str(row["id"]),
                 f"[{color}]{_e(row['status'])}[/]",
-                row["cmd"][:60],
+                _e(row["cmd"][:60]),
                 row["ts"],
+            )
+
+        flags_table = self.query_one("#flags-table", DataTable)
+        flags_table.clear()
+        for flag in flags:
+            sev   = flag.get("severity", "low")
+            color = _SEVERITY_COLOR.get(sev, "dim")
+            flags_table.add_row(
+                f"[{color}]{_e(sev)}[/]",
+                _e(str(flag.get("id", ""))[:20]),
+                _e(str(flag.get("title", ""))[:55]),
+                _e(str(flag.get("atom_id", ""))[:16]),
             )
