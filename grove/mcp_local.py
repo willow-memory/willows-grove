@@ -639,6 +639,13 @@ if _SERVE_MODE and _auth_provider is not None:
     from starlette.requests import Request
     from starlette.responses import HTMLResponse, RedirectResponse
 
+    @mcp.custom_route("/", methods=["GET", "POST", "DELETE", "PUT"])
+    async def root_redirect(request: Request) -> RedirectResponse:
+        """Redirect bare-root MCP calls to /mcp for clients that drop the path."""
+        url = str(request.url).replace(str(request.base_url).rstrip("/"), "", 1)
+        target = "/mcp" + (url if url and url != "/" else "")
+        return RedirectResponse(target, status_code=307)
+
     @mcp.custom_route("/grove-approve", methods=["GET", "POST"])
     async def grove_approve(request: Request) -> HTMLResponse | RedirectResponse:
         """Single-user OAuth approval page. Sean opens this to authorize claude.ai."""
@@ -686,7 +693,7 @@ button{{padding:12px 24px;font-size:16px;cursor:pointer;margin:8px}}
 def main():
     if "--serve" in sys.argv:
         print(f"[grove-mcp] serving on http://127.0.0.1:{_PORT}/mcp  (OAuth: {'enabled' if _SERVE_MODE else 'disabled'})", flush=True)
-        mcp.run(transport="streamable-http")
+        mcp.run(transport="streamable-http", mount_path="/")
     else:
         mcp.run(transport="stdio")
 
