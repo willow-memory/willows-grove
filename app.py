@@ -710,7 +710,7 @@ class WillowGrove(App):
 
     def on_card_activated(self, event: CardActivated) -> None:
         target = event.nav_target
-        if not target:
+        if not target or target == "+":
             return
         if target.startswith("#"):
             self._show_internal_pane(target)

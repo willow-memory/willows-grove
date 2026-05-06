@@ -302,6 +302,7 @@ class HomeGrid(Container):
     def on_card_activated(self, event) -> None:
         if getattr(event, "nav_target", None) == "+":
             from widgets.card_builder_modal import CardBuilderModal
+            event.stop()
             self.app.push_screen(CardBuilderModal())
 
     def refresh_cards(self) -> None:
