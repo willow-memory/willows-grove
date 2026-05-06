@@ -111,5 +111,7 @@ def main() -> None:
 if __name__ == "__main__":
     try:
         main()
-    except Exception:
+    except Exception as e:
+        print(f"[grove_followup] FATAL: {e.__class__.__name__}: {e}", file=sys.stderr)
+        sys.stderr.flush()
         _emit({})

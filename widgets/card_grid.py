@@ -3,9 +3,12 @@ b17: WGRV1  ΔΣ=42
 """
 from __future__ import annotations
 
+import logging
 import os
 
 import grove_db
+
+_log = logging.getLogger("card_grid")
 from textual import work
 from textual.app import ComposeResult
 from textual.message import Message
@@ -91,8 +94,8 @@ def fetch_runtime_card_values() -> dict[str, dict]:
         )
         today = cur.fetchone()[0]
         out["knowledge"] = {"value": str(total), "sub": f"{today} today", "state": "blue"}
-    except Exception:
-        pass
+    except Exception as e:
+        _log.warning("card_grid knowledge fetch: %s", e)
     finally:
         if conn is not None:
             grove_db.release_connection(conn)
@@ -117,8 +120,8 @@ def fetch_runtime_card_values() -> dict[str, dict]:
         else:
             sub, state = "none", "dim"
         out["agents"] = {"value": str(count), "sub": sub, "state": state}
-    except Exception:
-        pass
+    except Exception as e:
+        _log.warning("card_grid agents fetch: %s", e)
 
     # Secrets — key count from ~/.willow/secrets.json
     try:
