@@ -31,7 +31,7 @@ from textual.widgets import Button, Footer, Input, Label, Rule, Select, Static
 
 from rich.markup import escape as _e
 
-from panes.chat      import ChatPane, ChannelList, ChannelOpened, sender_color
+from panes.chat      import ChatPane, ChannelList, ChannelOpened, CursorAdvanced, sender_color
 from widgets.projects_nav    import ProjectsNav
 from widgets.knowledge_nav  import KnowledgeAtomSelected, KnowledgeNav
 from widgets.providers_nav  import ProviderRowSelected, ProvidersNav
@@ -784,6 +784,13 @@ class WillowGrove(App):
             self._show_internal_pane(target)
         else:
             self.action_nav(target)
+
+    def on_cursor_advanced(self, event: CursorAdvanced) -> None:
+        """Relay to ChannelList — lives in a sibling branch, can't receive the bubble."""
+        with suppress(NoMatches):
+            cl = self.query_one(ChannelList)
+            cl._cursors[event.channel] = event.last_id
+            cl._poll()
 
     def action_create_channel(self) -> None:
         def _on_result(result: dict | None) -> None:
