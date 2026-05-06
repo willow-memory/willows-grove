@@ -291,7 +291,7 @@ _WILLOW_PG_USER = os.environ.get("WILLOW_PG_USER", os.environ.get("USER", ""))
 
 
 def _kb_context(prompt: str, limit: int = 3) -> str:
-    """Return relevant KB atoms from willow.knowledge as a context block."""
+    """Return relevant KB atoms from knowledge as a context block."""
     try:
         import psycopg2
         conn = psycopg2.connect(dbname=_WILLOW_PG_DB, user=_WILLOW_PG_USER)
@@ -303,7 +303,7 @@ def _kb_context(prompt: str, limit: int = 3) -> str:
             ilike_clause = " OR ".join(["summary ILIKE %s"] * len(words))
             params = [f"%{w}%" for w in words]
             cur.execute(
-                f"SELECT title, summary FROM willow.knowledge WHERE domain='willow' AND ({ilike_clause}) LIMIT %s",
+                f"SELECT title, summary FROM knowledge WHERE ({ilike_clause}) LIMIT %s",
                 params + [limit],
             )
             rows = cur.fetchall()

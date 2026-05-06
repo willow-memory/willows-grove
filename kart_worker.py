@@ -6,7 +6,7 @@ Ported from willow-1.7/kart_worker.py. Runs as a daemon thread inside
 the dashboard process — no separate SAP gate check needed since the dashboard
 is already an authorized context.
 
-Polls kart_task_queue every 5s, claims and executes pending tasks via bwrap sandbox.
+Polls public.tasks every 5s, claims and executes pending tasks via bwrap sandbox.
 """
 import json
 import logging

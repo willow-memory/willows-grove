@@ -61,6 +61,7 @@ import grove_db
 import grove_reader
 from fleet import FleetManager, already_running
 import grove_session
+from kart_worker import kart_loop
 
 WILLOW_ROOT = Path(os.environ.get("WILLOW_ROOT", Path.home() / "github" / "willow-1.9"))
 
@@ -581,6 +582,10 @@ class WillowGrove(App):
         self._fleet = FleetManager(on_alert=self._on_fleet_alert)
         self._fleet.start()
         atexit.register(self._fleet.stop)
+
+        # Kart daemon — claim and execute queued tasks
+        import threading
+        threading.Thread(target=kart_loop, daemon=True, name="kart-daemon").start()
 
         self._hide_all_content_panes()
         self._show_content_pane("home")
