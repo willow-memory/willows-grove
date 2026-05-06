@@ -28,7 +28,7 @@ _STATE_COLORS: dict[str, str] = {
 
 _CARD_NAV: dict[str, str] = {
     "todos":      "#pane-todos",
-    "projects":   "#pane-projects",
+    "projects":   "#pane-my-projects",
     "kart":       "#pane-tasks",
     "knowledge":  "#pane-knowledge",
     "yggdrasil":  "#pane-providers",

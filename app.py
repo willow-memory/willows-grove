@@ -239,7 +239,7 @@ _INTERNAL_PANES: list[str] = [
     "#pane-tasks", "#pane-agents", "#pane-routing",
     "#pane-skills", "#pane-logs", "#pane-secrets", "#pane-mcp",
     "#pane-git", "#pane-prs", "#pane-knowledge", "#pane-providers",
-    "#pane-binder", "#pane-run-ledger", "#pane-todos", "#pane-projects",
+    "#pane-binder", "#pane-run-ledger", "#pane-todos", "#pane-my-projects",
 ]
 
 
@@ -607,7 +607,7 @@ class WillowGrove(App):
                 yield GitStatusPane(id="pane-git")
                 yield OpenPRsPane(id="pane-prs")
                 yield TodosPane(id="pane-todos")
-                yield ProjectsPane(id="pane-projects")
+                yield ProjectsPane(id="pane-my-projects")
             yield GroveRightPanel(id="right-panel")
         yield ChatStrip(id="chat-strip")
         yield VitalsBar(id="vitals-source")
@@ -860,4 +860,9 @@ class WillowGrove(App):
 
 
 if __name__ == "__main__":
-    WillowGrove().run()
+    import traceback
+    try:
+        WillowGrove().run()
+    except Exception:
+        logging.error("WillowGrove startup crash:\n%s", traceback.format_exc())
+        raise

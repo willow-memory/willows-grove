@@ -9,7 +9,7 @@ COLLECTION = "willow-dashboard/cards"
 
 _CATALOG: list[dict] = [
     {"id": "todos",      "label": "To-Do List", "category": "personal", "nav_target": "#pane-todos", "order": 10},
-    {"id": "projects",   "label": "Projects",   "category": "personal", "nav_target": "#pane-projects", "order": 11},
+    {"id": "projects",   "label": "Projects",   "category": "personal", "nav_target": "#pane-my-projects", "order": 11},
     {"id": "git-status", "label": "Git Status", "category": "dev",      "nav_target": "#pane-git",  "order": 100},
     {"id": "open-prs",   "label": "Open PRs",   "category": "dev",      "nav_target": "#pane-prs",  "order": 101},
 ]
