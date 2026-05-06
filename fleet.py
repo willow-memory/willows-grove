@@ -177,6 +177,11 @@ class FleetManager:
                 if proc is None or proc.poll() is not None:
                     rc = proc.returncode if proc is not None else None
 
+                    # If port is still held by another instance, don't count as failure
+                    port = cfg.get("port")
+                    if port and _port_in_use(port):
+                        continue
+
                     # GAP 2: respect restart_policy — don't respawn clean exits
                     policy = cfg.get("restart_policy", "always")
                     if policy == "on_failure" and rc == 0:
