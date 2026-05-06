@@ -5,6 +5,9 @@
 -- All statements are idempotent (IF NOT EXISTS / OR REPLACE).
 -- Safe to re-run against an existing database.
 
+-- pg_trgm enables GIN trigram index for ILIKE mention queries
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
 -- ────────────────────────────────────────────────────────────
 -- Grove schema — messaging bus
 -- ────────────────────────────────────────────────────────────
@@ -68,6 +71,9 @@ CREATE INDEX IF NOT EXISTS idx_messages_priority         ON messages (priority);
 CREATE INDEX IF NOT EXISTS idx_messages_correlation      ON messages (correlation_id) WHERE correlation_id IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_flags_message             ON message_flags (message_id);
 CREATE INDEX IF NOT EXISTS idx_flags_flag                ON message_flags (flag);
+-- GIN trigram index — accelerates ILIKE '%@handle%' mention queries
+CREATE INDEX IF NOT EXISTS idx_messages_content_trgm
+    ON messages USING GIN (content gin_trgm_ops);
 
 -- LISTEN/NOTIFY trigger — fires on every new message
 CREATE OR REPLACE FUNCTION grove_notify_message()
