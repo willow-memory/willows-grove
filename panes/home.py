@@ -307,6 +307,7 @@ class HomeGrid(Container):
             return
         if nav_target == "+":
             from widgets.card_builder_modal import CardBuilderModal
+            event.stop()
             self.app.push_screen(CardBuilderModal())
         elif nav_target.startswith("#"):
             self.app._show_internal_pane(nav_target)
