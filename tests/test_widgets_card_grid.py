@@ -20,8 +20,8 @@ def test_card_nav_covers_all_builtin_ids():
     for cid in builtin_ids:
         assert cid in _CARD_NAV
 
-def test_builtin_cards_has_seven():
-    assert len(BUILTIN_CARDS) == 7
+def test_builtin_cards_has_nine():
+    assert len(BUILTIN_CARDS) == 9
 
 def test_launcher_cards_has_seven():
     assert len(LAUNCHER_CARDS) == 7

@@ -53,6 +53,8 @@ from panes.mcp       import MCPPane
 from panes.run_ledger import RunLedgerPane
 from panes.binder    import BinderPane
 from panes.home      import DeskPane, HomeGrid, ProjectsGrid
+from panes.todos     import TodosPane
+from panes.projects  import ProjectsPane
 
 from widgets.nav_bar        import NavBar, NavChanged, NAV_TARGETS
 from widgets.hero_scene     import HeroScene
@@ -237,7 +239,7 @@ _INTERNAL_PANES: list[str] = [
     "#pane-tasks", "#pane-agents", "#pane-routing",
     "#pane-skills", "#pane-logs", "#pane-secrets", "#pane-mcp",
     "#pane-git", "#pane-prs", "#pane-knowledge", "#pane-providers",
-    "#pane-binder", "#pane-run-ledger",
+    "#pane-binder", "#pane-run-ledger", "#pane-todos", "#pane-projects",
 ]
 
 
@@ -604,6 +606,8 @@ class WillowGrove(App):
                 yield BinderPane(id="pane-binder")
                 yield GitStatusPane(id="pane-git")
                 yield OpenPRsPane(id="pane-prs")
+                yield TodosPane(id="pane-todos")
+                yield ProjectsPane(id="pane-projects")
             yield GroveRightPanel(id="right-panel")
         yield ChatStrip(id="chat-strip")
         yield VitalsBar(id="vitals-source")
