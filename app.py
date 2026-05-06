@@ -587,7 +587,7 @@ class WillowGrove(App):
             from kart_worker import kart_loop as _kart_loop
             threading.Thread(target=_kart_loop, daemon=True, name="kart-daemon").start()
         except Exception:
-            pass
+            logging.exception("kart daemon failed to start")
 
         self._hide_all_content_panes()
         self._show_content_pane("home")

@@ -348,6 +348,13 @@ class CardGrid(Widget):
             state_q = card.get("state_query")
             if not value_q and not state_q:
                 continue
+            # Only SELECT queries — SOIL records are local but defense-in-depth matters.
+            if value_q and not value_q.strip().upper().startswith("SELECT"):
+                value_q = None
+            if state_q and not state_q.strip().upper().startswith("SELECT"):
+                state_q = None
+            if not value_q and not state_q:
+                continue
             entry = data.get(cid, {"value": "—", "sub": "", "state": ""})
             if value_q or state_q:
                 conn = None

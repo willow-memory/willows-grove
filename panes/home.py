@@ -259,8 +259,7 @@ class DeskPane(Container):
                 if select.select([conn], [], [], 1.0)[0]:
                     conn.poll()
                     if conn.notifies:
-                        while conn.notifies:
-                            conn.notifies.pop(0)
+                        conn.notifies.clear()
                         self._fetch()
         except Exception:
             pass
