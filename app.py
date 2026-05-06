@@ -48,6 +48,7 @@ from panes.skills    import SkillsPane
 from panes.logs      import LogsPane
 from panes.secrets   import SecretsPane
 from panes.mcp       import MCPPane
+from panes.run_ledger import RunLedgerPane
 from panes.home      import DeskPane, HomeGrid, ProjectsGrid
 
 from widgets.nav_bar        import NavBar, NavChanged, NAV_TARGETS
@@ -458,8 +459,24 @@ class WillowGrove(App):
         text-style: bold;
     }
 
-    #pane-settings, #pane-help {
+    #pane-settings, #pane-help, #pane-run-ledger {
         padding: 2;
+        color: #8b949e;
+    }
+
+    #run-ledger-title {
+        color: #58a6ff;
+        text-style: bold;
+        margin: 0 0 1 0;
+    }
+
+    #run-ledger-status {
+        margin: 0 0 1 0;
+        height: auto;
+    }
+
+    #run-ledger-status Static {
+        width: 1fr;
         color: #8b949e;
     }
 
@@ -552,6 +569,7 @@ class WillowGrove(App):
                 yield LogsPane(id="pane-logs")
                 yield SecretsPane(id="pane-secrets")
                 yield MCPPane(id="pane-mcp")
+                yield RunLedgerPane(id="pane-run-ledger")
                 yield GitStatusPane(id="pane-git")
                 yield OpenPRsPane(id="pane-prs")
             yield GroveRightPanel(id="right-panel")
