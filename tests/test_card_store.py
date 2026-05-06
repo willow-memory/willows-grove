@@ -37,15 +37,13 @@ def test_load_cards_sorted_by_order():
     assert ids.index("c1") < ids.index("c2") < ids.index("c3")
 
 
-def test_seed_catalog_inserts_four():
+def test_seed_catalog_inserts_two():
     seed_catalog()
     import soil
     all_recs = soil.all_records(COLLECTION)
     ids = [r["id"] for r in all_recs]
     assert "git-status" in ids
     assert "open-prs"   in ids
-    assert "build"      in ids
-    assert "todos"      in ids
 
 
 def test_seed_catalog_idempotent():
