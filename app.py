@@ -9,6 +9,7 @@ import atexit
 import json
 import logging
 import os
+import threading
 from contextlib import suppress
 from pathlib import Path
 
@@ -582,6 +583,12 @@ class WillowGrove(App):
         self._fleet.start()
         atexit.register(self._fleet.stop)
 
+        try:
+            from kart_worker import kart_loop as _kart_loop
+            threading.Thread(target=_kart_loop, daemon=True, name="kart-daemon").start()
+        except Exception:
+            logging.exception("kart daemon failed to start")
+
         self._hide_all_content_panes()
         self._show_content_pane("home")
         self._do_refresh()
@@ -676,6 +683,10 @@ class WillowGrove(App):
         try:
             self.query_one(ChatPane)._open_channel(event.name)
         except NoMatches:
+            pass
+        try:
+            self.query_one("#chat-strip", ChatStrip).update_channel(event.name)
+        except Exception:
             pass
         grove_session.save_state(pane="chat", channel=event.name)
 

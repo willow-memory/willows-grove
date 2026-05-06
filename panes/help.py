@@ -23,8 +23,7 @@ _NAVIGATION = """\
 [bold]Projects[/]   Active projects and task queues
 [bold]Knowledge[/]  Search and browse the knowledge base
 [bold]Providers[/]  AI model providers — enable/disable
-[bold]Health[/]     Subsystem status — pg, ollama, kart, SOIL
-[bold]Settings[/]   Consent and security controls
+[bold]Settings[/]   Consent, security controls, and subsystem health
 [bold]Help[/]       This panel\
 """
 
@@ -33,8 +32,8 @@ _SHORTCUTS = """\
 
 [bold]q[/]       Quit
 [bold]r[/]       Refresh
-[bold]1–8[/]     Navigate to Home / Chat / Projects / Knowledge /
-            Providers / Health / Settings / Help
+[bold]1–7[/]     Navigate to Home / Chat / Projects / Knowledge /
+            Providers / Settings / Help
 [bold]e[/]       Enable selected provider (Providers pane)
 [bold]d[/]       Disable selected provider (Providers pane)
 [bold]Enter[/]   Confirm selection / toggle (nav rows, settings)

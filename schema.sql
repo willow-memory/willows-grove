@@ -128,12 +128,7 @@ CREATE TABLE IF NOT EXISTS public.tasks (
 
 CREATE INDEX IF NOT EXISTS idx_tasks_status ON public.tasks (status);
 
-CREATE TABLE IF NOT EXISTS public.knowledge (
-    id         BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    domain     TEXT,
-    title      TEXT,
-    body       TEXT,
-    tags       TEXT[],
-    created_at TIMESTAMPTZ DEFAULT now(),
-    updated_at TIMESTAMPTZ DEFAULT now()
-);
+-- public.knowledge is owned by willow-1.9/core/pg_bridge.py (_SCHEMA).
+-- Do NOT define it here — this file's stale DDL (BIGINT id, body, domain)
+-- does not match the live schema (TEXT id, summary, project, weight, etc.)
+-- and would silently break dashboard queries if applied before pg_bridge connects.

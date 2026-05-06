@@ -2,10 +2,13 @@
 b17: WDASH  ΔΣ=42
 """
 import hashlib
+import logging
 import os
 from datetime import datetime, timezone
 
 import grove_db
+
+_log = logging.getLogger("grove_reader")
 
 # ── Color hash palette (ANSI 16, maps to curses color pair numbers 11-17) ────
 _HASH_PAIRS = [11, 12, 13, 14, 15, 16, 17]
@@ -131,7 +134,8 @@ def grove_messages_bus_addressed_to(
             {"id": r0[0], "channel": r0[1], "sender": r0[2], "content": r0[3]}
             for r0 in cur.fetchall()
         ]
-    except Exception:
+    except Exception as e:
+        _log.warning("grove_reader.grove_messages_bus_addressed_to: %s", e)
         return []
     finally:
         _release(conn, owned)
@@ -174,7 +178,8 @@ def grove_own_channel_since(
             {"id": r[0], "channel": r[1], "sender": r[2], "content": r[3]}
             for r in cur.fetchall()
         ]
-    except Exception:
+    except Exception as e:
+        _log.warning("grove_reader.grove_own_channel_since: %s", e)
         return []
     finally:
         _release(conn, owned)
@@ -227,7 +232,8 @@ def grove_agents(conn=None) -> list[dict]:
                 ORDER BY last_seen DESC
                 LIMIT 20
             """)
-        except Exception:
+        except Exception as e:
+            _log.debug("grove_reader.grove_agents: bus_type column absent, falling back: %s", e)
             conn.rollback()
             cur.execute("""
                 SELECT sender, MAX(created_at) AS last_seen
@@ -245,7 +251,8 @@ def grove_agents(conn=None) -> list[dict]:
             age_secs = int((now - last_seen).total_seconds())
             rows.append({"sender": sender, "last_seen_at": last_seen, "age_secs": age_secs})
         return rows
-    except Exception:
+    except Exception as e:
+        _log.warning("grove_reader.grove_agents: %s", e)
         return []
     finally:
         _release(conn, owned)
@@ -266,7 +273,8 @@ def grove_channels(conn=None, last_seen_ids: dict | None = None) -> list[dict]:
                 "WHERE is_archived = FALSE ORDER BY id"
             )
             channels = [(r[0], r[1], r[2]) for r in cur.fetchall()]
-        except Exception:
+        except Exception as e:
+            _log.debug("grove_reader.grove_channels: agent_name column absent, falling back: %s", e)
             conn.rollback()
             cur = conn.cursor()
             cur.execute(
@@ -288,7 +296,8 @@ def grove_channels(conn=None, last_seen_ids: dict | None = None) -> list[dict]:
             result.append({"id": ch_id, "name": name, "unread": unread,
                            "max_id": max_id, "agent_name": agent_name})
         return result
-    except Exception:
+    except Exception as e:
+        _log.warning("grove_reader.grove_channels: %s", e)
         return []
     finally:
         _release(conn, owned)
@@ -324,7 +333,8 @@ def grove_messages(channel_name: str, conn=None, limit: int = 50,
             msgs.append({"id": mid, "sender": sender,
                          "content": content, "created_at": created_at})
         return list(reversed(msgs))
-    except Exception:
+    except Exception as e:
+        _log.warning("grove_reader.grove_messages: %s", e)
         return []
     finally:
         _release(conn, owned)
@@ -351,7 +361,8 @@ def grove_messages_all_agents(
             {"id": r[0], "sender": r[1], "content": r[2], "created_at": r[3]}
             for r in reversed(rows)
         ]
-    except Exception:
+    except Exception as e:
+        _log.warning("grove_reader.grove_messages_all_agents: %s", e)
         return []
     finally:
         _release(conn, owned)
@@ -398,7 +409,8 @@ def grove_mentions_for_handles(handles: list[str], limit: int = 20, conn=None) -
             {"id": r[0], "channel": r[1], "sender": r[2], "content": r[3]}
             for r in cur.fetchall()
         ]
-    except Exception:
+    except Exception as e:
+        _log.warning("grove_reader.grove_mentions_for_handles: %s", e)
         return []
     finally:
         _release(conn, owned)
@@ -442,7 +454,8 @@ def routing_decisions(conn=None, limit: int = 8) -> list[dict]:
                 """,
                 (limit,),
             )
-        except Exception:
+        except Exception as e:
+            _log.debug("grove_reader.routing_decisions: table absent, auto-creating: %s", e)
             conn.rollback()
             cur.execute(_ROUTING_DDL)
             conn.commit()
@@ -458,7 +471,8 @@ def routing_decisions(conn=None, limit: int = 8) -> list[dict]:
                 "latency_ms": latency_ms,
             })
         return rows
-    except Exception:
+    except Exception as e:
+        _log.warning("grove_reader.routing_decisions: %s", e)
         return []
     finally:
         _release(conn, owned)

@@ -61,7 +61,7 @@ def test_fetch_fleet_counts_key_vars(monkeypatch):
     monkeypatch.setenv("WILLOW_OPENAI_KEY", "sk-test-2")
     result = fetch_runtime_card_values()
     assert int(result["fleet"]["value"]) >= 2
-    assert result["fleet"]["sub"] == "providers"
+    assert result["fleet"]["sub"] == "api keys"
 
 def test_fetch_secrets_missing_file(tmp_path, monkeypatch):
     monkeypatch.setattr("pathlib.Path.home", lambda: tmp_path)
