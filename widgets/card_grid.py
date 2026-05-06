@@ -56,6 +56,7 @@ LAUNCHER_CARDS: list[tuple[str, str, str]] = [
     ("routing", "Routing", "#pane-routing"),
     ("skills",  "Skills",  "#pane-skills"),
     ("logs",    "Logs",    "#pane-logs"),
+    ("binder",  "Binder",  "#pane-binder"),
 ]
 
 

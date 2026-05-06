@@ -51,6 +51,7 @@ from panes.logs      import LogsPane
 from panes.secrets   import SecretsPane
 from panes.mcp       import MCPPane
 from panes.run_ledger import RunLedgerPane
+from panes.binder    import BinderPane
 from panes.home      import DeskPane, HomeGrid, ProjectsGrid
 
 from widgets.nav_bar        import NavBar, NavChanged, NAV_TARGETS
@@ -236,6 +237,7 @@ _INTERNAL_PANES: list[str] = [
     "#pane-tasks", "#pane-agents", "#pane-routing",
     "#pane-skills", "#pane-logs", "#pane-secrets", "#pane-mcp",
     "#pane-git", "#pane-prs", "#pane-knowledge", "#pane-providers",
+    "#pane-binder",
 ]
 
 
@@ -432,7 +434,8 @@ class WillowGrove(App):
     #pane-chat, #pane-projects, #pane-knowledge, #pane-providers,
     #pane-settings, #pane-help, #pane-tasks, #pane-agents,
     #pane-routing, #pane-skills, #pane-logs, #pane-secrets,
-    #pane-mcp, #pane-git, #pane-prs, #pane-todos, #pane-my-projects {
+    #pane-mcp, #pane-git, #pane-prs, #pane-todos, #pane-my-projects,
+    #pane-binder {
         display: none;
     }
 
@@ -598,6 +601,7 @@ class WillowGrove(App):
                 yield SecretsPane(id="pane-secrets")
                 yield MCPPane(id="pane-mcp")
                 yield RunLedgerPane(id="pane-run-ledger")
+                yield BinderPane(id="pane-binder")
                 yield GitStatusPane(id="pane-git")
                 yield OpenPRsPane(id="pane-prs")
             yield GroveRightPanel(id="right-panel")
@@ -711,6 +715,7 @@ class WillowGrove(App):
             ("#pane-providers", ProvidersPane),
             ("#pane-skills",    SkillsPane),
             ("#pane-logs",      LogsPane),
+            ("#pane-binder",    BinderPane),
         ]:
             try:
                 self.query_one(pane_id, pane_cls).refresh_data()
