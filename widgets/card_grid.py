@@ -344,7 +344,13 @@ class CardGrid(Widget):
             (c["id"], c["label"], c.get("nav_target") or "")
             for c in card_store.load_cards()
         ]
-        builtin    = [(cid, lbl, _CARD_NAV.get(cid, "")) for cid, lbl in BUILTIN_CARDS]
+        soil_ids = {cid for cid, _, _ in soil_cards}
+        # Skip builtins already covered by an enabled SOIL record to avoid duplicates.
+        builtin = [
+            (cid, lbl, _CARD_NAV.get(cid, ""))
+            for cid, lbl in BUILTIN_CARDS
+            if cid not in soil_ids
+        ]
         all_entries = soil_cards + builtin + [("+", "+ Add Card", "+")]
 
         self._cards     = [(cid, lbl) for cid, lbl, _ in all_entries]
