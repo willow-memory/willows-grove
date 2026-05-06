@@ -349,27 +349,25 @@ class CardGrid(Widget):
             if not value_q and not state_q:
                 continue
             entry = data.get(cid, {"value": "—", "sub": "", "state": ""})
-            if value_q:
+            if value_q or state_q:
                 conn = None
                 try:
                     conn = grove_db.get_connection()
                     cur  = conn.cursor()
-                    cur.execute(value_q)
-                    row = cur.fetchone()
-                    entry["value"] = str(row[0]) if row else "—"
-                except Exception:
-                    pass
-                finally:
-                    if conn is not None:
-                        grove_db.release_connection(conn)
-            if state_q:
-                conn = None
-                try:
-                    conn = grove_db.get_connection()
-                    cur  = conn.cursor()
-                    cur.execute(state_q)
-                    row = cur.fetchone()
-                    entry["state"] = str(row[0]) if row else ""
+                    if value_q:
+                        try:
+                            cur.execute(value_q)
+                            row = cur.fetchone()
+                            entry["value"] = str(row[0]) if row else "—"
+                        except Exception:
+                            pass
+                    if state_q:
+                        try:
+                            cur.execute(state_q)
+                            row = cur.fetchone()
+                            entry["state"] = str(row[0]) if row else ""
+                        except Exception:
+                            pass
                 except Exception:
                     pass
                 finally:
