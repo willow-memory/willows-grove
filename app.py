@@ -571,7 +571,7 @@ class WillowGrove(App):
                 severity="error",
                 timeout=0,
             )
-            self.call_after_refresh(self.action_quit)
+            self.call_after_refresh(self.exit)
             return
 
         # Session state — mark open, get prior state for resume check
@@ -630,7 +630,7 @@ class WillowGrove(App):
         fleet = getattr(self, "_fleet", None)
         if fleet:
             fleet.stop()
-        super().action_quit()
+        self.exit()
 
     def _hide_all_content_panes(self) -> None:
         for pane_id in list(_CONTENT_PANES.values()) + _INTERNAL_PANES:
