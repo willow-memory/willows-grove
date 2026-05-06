@@ -42,7 +42,7 @@ BUILTIN_CARDS: list[tuple[str, str]] = [
     ("yggdrasil", "Yggdrasil"),
     ("agents",    "Agents"),
     ("secrets",   "Secrets"),
-    ("fleet",     "Fleet"),
+    ("fleet",     "Keys"),
     ("mcp",       "MCP Servers"),
 ]
 
@@ -138,7 +138,7 @@ def fetch_runtime_card_values() -> dict[str, dict]:
             1 for k, v in os.environ.items()
             if k.startswith("WILLOW_") and k.endswith("_KEY") and v
         )
-        out["fleet"] = {"value": str(count), "sub": "providers", "state": "dim"}
+        out["fleet"] = {"value": str(count), "sub": "api keys", "state": "dim"}
     except Exception:
         pass
 
@@ -331,6 +331,52 @@ class CardGrid(Widget):
     @work(thread=True)
     def _fetch(self) -> None:
         data = fetch_runtime_card_values()
+
+        # Execute value_query / state_query for non-builtin SOIL cards.
+        builtin_ids = {cid for cid, _ in BUILTIN_CARDS}
+        try:
+            from widgets import card_store
+            soil_cards = card_store.load_cards()
+        except Exception:
+            soil_cards = []
+
+        for card in soil_cards:
+            cid = card.get("id")
+            if not cid or cid in builtin_ids:
+                continue
+            value_q = card.get("value_query")
+            state_q = card.get("state_query")
+            if not value_q and not state_q:
+                continue
+            entry = data.get(cid, {"value": "—", "sub": "", "state": ""})
+            if value_q:
+                conn = None
+                try:
+                    conn = grove_db.get_connection()
+                    cur  = conn.cursor()
+                    cur.execute(value_q)
+                    row = cur.fetchone()
+                    entry["value"] = str(row[0]) if row else "—"
+                except Exception:
+                    pass
+                finally:
+                    if conn is not None:
+                        grove_db.release_connection(conn)
+            if state_q:
+                conn = None
+                try:
+                    conn = grove_db.get_connection()
+                    cur  = conn.cursor()
+                    cur.execute(state_q)
+                    row = cur.fetchone()
+                    entry["state"] = str(row[0]) if row else ""
+                except Exception:
+                    pass
+                finally:
+                    if conn is not None:
+                        grove_db.release_connection(conn)
+            data[cid] = entry
+
         self.post_message(_CardsRefreshed(data))
 
     def on__cards_refreshed(self, event: _CardsRefreshed) -> None:

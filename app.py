@@ -677,6 +677,10 @@ class WillowGrove(App):
             self.query_one(ChatPane)._open_channel(event.name)
         except NoMatches:
             pass
+        try:
+            self.query_one("#chat-strip", ChatStrip).update_channel(event.name)
+        except Exception:
+            pass
         grove_session.save_state(pane="chat", channel=event.name)
 
     def on_knowledge_atom_selected(self, event: KnowledgeAtomSelected) -> None:
