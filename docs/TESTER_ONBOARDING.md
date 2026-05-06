@@ -51,6 +51,19 @@ Add these to your shell profile (`~/.bashrc` or `~/.zshrc`) to make them permane
 
 ---
 
+## Optional: DB sanity checks (verifiable “is it working?”)
+
+If you want an objective test that your Grove DB is alive and has the right tables, run:
+
+```bash
+psql -d "$WILLOW_PG_DB" -c "SELECT COUNT(*) AS channels FROM grove.channels;"
+psql -d "$WILLOW_PG_DB" -c "SELECT COUNT(*) AS messages FROM grove.messages WHERE is_deleted = 0;"
+```
+
+If the schema is loaded, both commands print a single row with counts (often `messages=0` on first run).
+
+---
+
 ## 5. Run
 
 ```bash
@@ -58,6 +71,31 @@ python3 app.py
 ```
 
 The dashboard opens in your terminal. Use arrow keys to navigate, Enter to select.
+
+---
+
+## Optional: MCP (Claude Code / agents) and `GROVE_MCP_URL` (ngrok)
+
+You can run Grove **without** any MCP setup. MCP only matters if you’re wiring this repo into an agent runtime (e.g. Claude Code) so the agent can call `grove_*` tools.
+
+### Default (recommended): local stdio MCP (no ngrok)
+
+Grove’s MCP server supports a **local stdio mode** (no web listener, no OAuth). This is the default when you run:
+
+- `python3 -m grove.mcp_local`
+
+In this mode, you **do not** need `GROVE_MCP_URL`.
+
+### Serve mode (advanced): streamable-HTTP MCP (OAuth) behind a public URL
+
+Grove’s MCP server also supports a **serve mode** (`--serve`) which runs a persistent HTTP server (OAuth 2.0 PKCE). If you use this mode, you must provide a public base URL via `GROVE_MCP_URL` (often an ngrok tunnel), and point your MCP client at a URL like `https://<tunnel>/mcp`.
+
+This is **optional** and is usually only needed when:
+
+- Your MCP client can’t run the server as a local process, or
+- You’re testing the OAuth + push notification flow.
+
+If you don’t know what this means, skip it.
 
 ---
 

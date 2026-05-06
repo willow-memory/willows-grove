@@ -1,0 +1,33 @@
+# Optional: regenerate Grove doc artifacts when Postgres is available.
+# Set repo secret WILLOW_DB_URL for scheduled runs; otherwise use workflow_dispatch locally with secrets.
+# b17: GHAOC  ΔΣ=42
+name: grove-docs-refresh
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 11 * * 1" # Mondays 11:00 UTC — adjust as needed
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: pip install psycopg2-binary
+
+      - name: Regenerate Grove docs
+        env:
+          WILLOW_DB_URL: ${{ secrets.WILLOW_DB_URL }}
+        run: |
+          if [ -z "${WILLOW_DB_URL:-}" ]; then
+            echo "WILLOW_DB_URL not set — skipping regeneration"
+            exit 0
+          fi
+          python3 scripts/grove_docs_extract.py --limit 10000 --out docs/generated all
+          git diff --stat docs/generated || true
