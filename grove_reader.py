@@ -368,6 +368,30 @@ def grove_messages_all_agents(
         _release(conn, owned)
 
 
+_mention_index_ensured = False
+
+_MENTION_INDEX_DDL = """
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+CREATE INDEX IF NOT EXISTS idx_messages_content_trgm
+    ON grove.messages USING GIN (content gin_trgm_ops);
+"""
+
+
+def _ensure_mention_index(cur) -> None:
+    """Create pg_trgm extension + GIN index on first call. No-op if already present."""
+    global _mention_index_ensured
+    if _mention_index_ensured:
+        return
+    try:
+        for stmt in _MENTION_INDEX_DDL.strip().split(";"):
+            stmt = stmt.strip()
+            if stmt:
+                cur.execute(stmt)
+        _mention_index_ensured = True
+    except Exception as e:
+        _log.warning("grove_reader._ensure_mention_index: %s", e)
+
+
 def grove_mentions_for_handles(handles: list[str], limit: int = 20, conn=None) -> list[dict]:
     """Recent messages matching @<handle> for any handle (ILIKE substring, case-folded).
 
@@ -389,6 +413,7 @@ def grove_mentions_for_handles(handles: list[str], limit: int = 20, conn=None) -
     conn, owned = _conn_ctx(conn)
     try:
         cur = conn.cursor()
+        _ensure_mention_index(cur)
         placeholders = " OR ".join(["m.content ILIKE %s"] * len(clean))
         params = [f"%@{h}%" for h in clean]
         params.append(limit)
