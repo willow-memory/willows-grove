@@ -114,7 +114,11 @@ def render_atom(atom: dict) -> str:
     content = atom.get("content", "")
     if content:
         lines.append(f"{_D}CONTENT{_E}")
-        lines.append(content)
+        # Stringify content if it's a dict (e.g., from Grove messages)
+        if isinstance(content, dict):
+            lines.append(str(content))
+        else:
+            lines.append(content)
 
     return "\n".join(lines)
 
