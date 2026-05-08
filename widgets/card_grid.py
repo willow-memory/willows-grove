@@ -120,17 +120,23 @@ def fetch_runtime_card_values() -> dict[str, dict]:
     except Exception:
         pass
 
-    # Secrets — key count from ~/.willow/secrets.json
+    # Secrets — key count from Vault (encrypted vault.db)
     try:
-        secrets_path = Path.home() / ".willow" / "secrets.json"
-        if secrets_path.exists():
-            data = json.loads(secrets_path.read_text())
-            count = len(data) if isinstance(data, dict) else 0
-            out["secrets"] = {"value": str(count), "sub": "vault", "state": "dim"}
-        else:
-            out["secrets"] = {"value": "—", "sub": "vault", "state": "dim"}
+        import sys
+        willow_root = os.environ.get("WILLOW_ROOT", str(Path.home() / "github" / "willow-1.9"))
+        if willow_root not in sys.path:
+            sys.path.insert(0, willow_root)
+        from core.vault import Vault
+
+        vault = Vault()
+        keys = vault.list_keys()
+        set_count = sum(1 for k in keys if vault.read(k))
+        total_count = len(keys)
+        state = "green" if set_count > 0 else "dim"
+        sub = f"{set_count}/{total_count}"
+        out["secrets"] = {"value": str(total_count), "sub": sub, "state": state}
     except Exception:
-        pass
+        out["secrets"] = {"value": "—", "sub": "vault", "state": "dim"}
 
     # Fleet — count non-empty WILLOW_*_KEY env vars
     try:

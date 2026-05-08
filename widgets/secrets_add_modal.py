@@ -96,15 +96,15 @@ class SecretsAddModal(ModalScreen):
 
     def compose(self) -> ComposeResult:
         with Vertical(id="sam-dialog"):
-            yield Static("Add a secret to the vault", id="sam-message", markup=False)
+            yield Static("What key are we adding?", id="sam-message", markup=False)
             yield Input(
-                placeholder="Key name (e.g., API_KEY, DB_PASSWORD)",
+                placeholder="e.g. anthropic_api_key",
                 id="sam-input"
             )
             with Horizontal(id="sam-buttons"):
-                yield Button("Cancel", id="sam-cancel", variant="error")
-                yield Button("Confirm", id="sam-confirm", variant="success")
-            yield Static("Must be uppercase alphanumeric + underscore", id="sam-status", markup=False)
+                yield Button("store", id="sam-confirm", variant="success")
+                yield Button("back out", id="sam-cancel", variant="error")
+            yield Static("", id="sam-status", markup=False)
 
     def on_mount(self) -> None:
         self._load_vault()
@@ -145,7 +145,7 @@ class SecretsAddModal(ModalScreen):
     def _handle_key_input(self, key: str) -> None:
         """Validate and store key name."""
         if not key:
-            self._set_status("[red]Key name cannot be empty[/]")
+            self._set_status("[red]Needs a name.[/]")
             return
 
         # Check if it looks like a secret key
@@ -162,7 +162,7 @@ class SecretsAddModal(ModalScreen):
             if normalized and _ENV_VAR_RE.match(normalized):
                 self._set_status(f"[dim]i'll file this as: [bold]{normalized}[/bold][/]")
             else:
-                self._set_status("[red]Must start with letter/underscore, use only A-Z, 0-9, _[/]")
+                self._set_status("[red]Letters, numbers, underscores. Starts with a letter or underscore.[/]")
             return
 
         # Check if key already exists
@@ -177,23 +177,23 @@ class SecretsAddModal(ModalScreen):
 
         self._key_name = key
         self._stage = 1
-        self._set_message(f"Paste the value for `{key}`")
-        self._set_status("[dim]Press Enter to confirm[/]")
+        self._set_message(f"Paste the value for {key}. I'll take it from here.")
+        self._set_status("")
         inp = self.query_one("#sam-input", Input)
         inp.value = ""
-        inp.placeholder = "Paste secret value here"
+        inp.placeholder = "(hidden)"
         inp.focus()
 
     def _handle_value_input(self, value: str) -> None:
         """Store value and move to confirmation."""
         if not value:
-            self._set_status("[red]Value cannot be empty[/]")
+            self._set_status("[red]Empty. Try again, or Esc to back out.[/]")
             return
 
         self._value = value
         self._stage = 2
-        self._set_message(f"Store `{self._key_name}`?")
-        self._set_status("[dim]Click to confirm or cancel[/]")
+        self._set_message(f"Store {self._key_name}. Sure?")
+        self._set_status("")
         self._show_buttons()
 
     def _handle_confirm(self, response: str = None) -> None:
@@ -228,8 +228,8 @@ class SecretsAddModal(ModalScreen):
     def action_cancel_stage2(self) -> None:
         """Action for cancel button at stage 2."""
         self._stage = 1
-        self._set_message(f"Paste the value for `{self._key_name}`")
-        self._set_status("[dim]Press Enter to confirm[/]")
+        self._set_message(f"Paste the value for {self._key_name}. I'll take it from here.")
+        self._set_status("")
         self.query_one("#sam-input", Input).focus()
         self._hide_buttons()
 
