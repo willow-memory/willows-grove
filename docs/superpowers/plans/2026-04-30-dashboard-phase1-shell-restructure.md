@@ -6,7 +6,7 @@
 
 **Architecture:** Five new widget files provide self-contained building blocks; `app.py` is rewritten to compose them into the new layout. `panes/chat.py` gains a standalone `ChannelList` widget that `ContextPanel` uses alongside the unchanged `ChatPane`. `TabbedContent` is removed entirely. All panes mount once and toggle `display` on `NavChanged`.
 
-**Tech Stack:** Python 3.10+, Textual (existing version in repo), psycopg2, pytest
+**Tech Stack:** Python 3.11+, Textual (existing version in repo), psycopg2, pytest
 
 ---
 

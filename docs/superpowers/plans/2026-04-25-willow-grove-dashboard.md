@@ -6,7 +6,7 @@
 
 **Architecture:** Split the current monolith (`app.py`) into `panes/` (one file per tab) and `widgets/` (shared components). `app.py` becomes a thin wire — imports panes, composes the app, owns the refresh loop. Each pane owns its own data fetch. `grove_reader.py` is the read-only data layer; `grove_db.py` is used for writes (chat send).
 
-**Tech Stack:** Python 3.13, Textual ≥0.61, psycopg2-binary (Postgres + LISTEN/NOTIFY), stdlib (urllib, threading, select, pathlib)
+**Tech Stack:** Python 3.11+, Textual ≥0.61, psycopg2-binary (Postgres + LISTEN/NOTIFY), stdlib (urllib, threading, select, pathlib)
 
 **Spec refs:** `docs/superpowers/specs/2026-04-24-grove-os-design.md`, `docs/superpowers/specs/2026-04-24-grove-skins-beauty.md`, `docs/superpowers/specs/2026-04-22-dashboard-design.md`
 

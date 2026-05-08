@@ -40,6 +40,8 @@ cp .env.example .env
 
 The only required environment is a reachable Postgres database. Everything else degrades gracefully.
 
+Docs index: `docs/INDEX.md`
+
 ### 4. Run
 
 ```bash
