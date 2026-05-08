@@ -14,9 +14,11 @@ from textual.widgets import Input, Static
 class KnowledgeAtomSelected(Message):
     """Posted when the user confirms a result row in KnowledgeNav."""
 
-    def __init__(self, atom_id: int) -> None:
+    def __init__(self, atom_id: int, title: str = "", summary: str = "") -> None:
         super().__init__()
         self.atom_id = atom_id
+        self.title   = title
+        self.summary = summary
 
 
 class _KnowledgeSearchDone(Message):
@@ -103,8 +105,15 @@ class KnowledgeNav(Widget):
 
     def action_confirm(self) -> None:
         if 0 <= self._cursor < len(self._rows):
-            atom_id = self._rows[self._cursor]["id"]
-            self.post_message(KnowledgeAtomSelected(atom_id))
+            row = self._rows[self._cursor]
+            atom_id = row["id"]
+            self.post_message(
+                KnowledgeAtomSelected(
+                    atom_id,
+                    title=str(row.get("title", "") or ""),
+                    summary=str(row.get("summary", "") or ""),
+                )
+            )
 
     def _render_results(self) -> None:
         from textual.css.query import NoMatches

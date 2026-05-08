@@ -22,7 +22,7 @@ logging.captureWarnings(True)
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.containers import Container, Horizontal, Vertical
+from textual.containers import Container, Horizontal, Vertical, VerticalScroll
 from textual.css.query import NoMatches
 from textual.screen import ModalScreen
 from textual import work
@@ -44,7 +44,7 @@ from panes.agents    import AgentsPane
 from panes.routing   import RoutingPane
 from panes.git       import GitStatusPane
 from panes.prs       import OpenPRsPane
-from panes.knowledge import KnowledgePane
+from panes.knowledge import KnowledgePane, KnowledgeRailPreview, truncate_text
 from panes.providers import ProvidersPane
 from panes.skills    import SkillsPane
 from panes.logs      import LogsPane
@@ -129,6 +129,10 @@ class GroveRightPanel(Container):
         yield Label("AGENTS", id="rp-agents-label")
         yield Static("", id="rp-agents-list")
         yield Rule()
+        yield Label("KNOWLEDGE", id="rp-knowledge-label")
+        with VerticalScroll(id="rp-knowledge-scroll"):
+            yield Static("(no atom selected)", id="rp-knowledge-preview", markup=False)
+        yield Rule()
         yield Label("THOUGHTS", id="rp-thoughts-label")
         yield ThoughtStream(id="rp-thought-stream")
         yield SessionStats(id="rp-session-stats")
@@ -166,6 +170,13 @@ class GroveRightPanel(Container):
             self.query_one(selector, Static).update(text)
         except NoMatches:
             pass
+
+    def set_knowledge_preview(self, atom_id: int, title: str, excerpt: str) -> None:
+        tid = atom_id if atom_id else "—"
+        t = (title or "").strip() or "(untitled)"
+        ex = (excerpt or "").strip() or "…"
+        block = f"{t}\n#{tid}\n\n{ex}"
+        self._safe_update("#rp-knowledge-preview", block)
 
 
 class ContextPanel(Vertical):
@@ -447,6 +458,7 @@ class WillowGrove(App):
 
     GroveRightPanel #rp-tasks-label,
     GroveRightPanel #rp-agents-label,
+    GroveRightPanel #rp-knowledge-label,
     GroveRightPanel #rp-thoughts-label {
         color: #58a6ff;
         text-style: bold;
@@ -454,12 +466,17 @@ class WillowGrove(App):
     }
 
     GroveRightPanel #rp-task-counts,
-    GroveRightPanel #rp-agents-list {
+    GroveRightPanel #rp-agents-list,
+    GroveRightPanel #rp-knowledge-preview {
         padding: 0 0 0 1;
         color: #8b949e;
     }
 
     GroveRightPanel #rp-agents-list { height: auto; }
+
+    GroveRightPanel #rp-knowledge-scroll {
+        height: 9;
+    }
 
     Rule { margin: 1 0; color: #30363d; }
 
@@ -722,6 +739,28 @@ class WillowGrove(App):
     def on_knowledge_atom_selected(self, event: KnowledgeAtomSelected) -> None:
         try:
             self.query_one(KnowledgePane).display_atom(event.atom_id)
+        except NoMatches:
+            pass
+        try:
+            title = getattr(event, "title", "") or ""
+            teaser = truncate_text((getattr(event, "summary", "") or "").strip(), 320)
+            if not teaser.strip():
+                teaser = "Loading full text…"
+            self.query_one(GroveRightPanel).set_knowledge_preview(
+                event.atom_id,
+                title,
+                teaser,
+            )
+        except NoMatches:
+            pass
+
+    def on_knowledge_rail_preview(self, event: KnowledgeRailPreview) -> None:
+        try:
+            self.query_one(GroveRightPanel).set_knowledge_preview(
+                event.atom_id,
+                event.title,
+                event.excerpt,
+            )
         except NoMatches:
             pass
 

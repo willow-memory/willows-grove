@@ -10,6 +10,15 @@ from widgets.knowledge_nav import KnowledgeAtomSelected, KnowledgeNav
 def test_atom_selected_stores_id():
     msg = KnowledgeAtomSelected(42)
     assert msg.atom_id == 42
+    assert msg.title == ""
+    assert msg.summary == ""
+
+
+def test_atom_selected_optional_teaser_fields():
+    msg = KnowledgeAtomSelected(7, title="Hello", summary="World")
+    assert msg.atom_id == 7
+    assert msg.title == "Hello"
+    assert msg.summary == "World"
 
 
 def test_knowledge_nav_constructs():
