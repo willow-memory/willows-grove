@@ -1,34 +1,45 @@
 """panes/secrets.py — Secrets vault viewer (key names only, never values).
 b17: WGRV1  ΔΣ=42
 """
-import json
+import os
 from pathlib import Path
 
 from textual import work
+from textual.binding import Binding
 from textual.containers import Container
 from textual.message import Message
 from textual.widgets import DataTable, Label
 
-_SECRETS_PATH = Path.home() / ".willow" / "secrets.json"
+from widgets.secrets_add_modal import SecretsAddModal, SecretAdded
 
 
 def _read_secrets() -> list[dict]:
-    """Return list of {key, hint} — never exposes values."""
+    """Return list of {key, status, hint} — never exposes values."""
     try:
-        raw = json.loads(_SECRETS_PATH.read_text())
-        if not isinstance(raw, dict):
-            return []
+        willow_root = os.environ.get("WILLOW_ROOT", str(Path.home() / "github" / "willow-1.9"))
+        import sys
+        if willow_root not in sys.path:
+            sys.path.insert(0, willow_root)
+        from core.vault import Vault
+
+        vault = Vault()
+        keys = vault.list_keys()
         out = []
-        for k, v in raw.items():
-            hint = ""
-            if isinstance(v, str) and len(v) >= 8:
-                hint = v[:4] + "…"
-            out.append({"key": k, "hint": hint})
+        for k in keys:
+            try:
+                v = vault.read(k)
+                hint = ""
+                if isinstance(v, str) and len(v) >= 8:
+                    hint = v[:8] + "…"
+                    is_set = True
+                else:
+                    is_set = bool(v)
+                out.append({"key": k, "hint": hint, "is_set": is_set})
+            except Exception:
+                out.append({"key": k, "hint": "(error reading)", "is_set": False})
         return out
-    except FileNotFoundError:
-        return []
     except Exception as e:
-        return [{"key": f"(error: {e})", "hint": ""}]
+        return [{"key": f"(vault error: {e})", "hint": "", "is_set": False}]
 
 
 class _SecretsFetched(Message):
@@ -39,9 +50,9 @@ class _SecretsFetched(Message):
 
 class SecretsPane(Container):
     def compose(self):
-        yield Label("  Secrets — ~/.willow/secrets.json (keys only)", id="secrets-title")
+        yield Label("  Secrets — ~/.willow/vault.db (names only, redacted prefixes)", id="secrets-title")
         table = DataTable(id="secrets-table", cursor_type="row")
-        table.add_columns("Key", "Prefix")
+        table.add_columns("Key", "Status", "Prefix")
         yield table
 
     def on_mount(self) -> None:
@@ -62,7 +73,9 @@ class SecretsPane(Container):
             return
         table.clear()
         if not event.secrets:
-            table.add_row("[dim]no secrets found[/]", "")
+            table.add_row("[dim]no secrets found[/]", "", "")
             return
         for s in event.secrets:
-            table.add_row(s["key"], f"[dim]{s['hint']}[/]" if s["hint"] else "")
+            status = "[green]●[/]" if s.get("is_set") else "[dim]○[/]"
+            hint = f"[dim]{s['hint']}[/]" if s["hint"] else ""
+            table.add_row(s["key"], status, hint)
