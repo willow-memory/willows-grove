@@ -1,6 +1,7 @@
 """panes/knowledge.py — Knowledge base search pane.
 b17: WGRV1  ΔΣ=42
 """
+from rich.markup import escape
 from textual import work
 from textual.containers import Container
 from textual.message import Message
@@ -102,23 +103,22 @@ def render_atom(atom: dict) -> str:
 
     title = atom.get("title", "")
     if title:
-        lines.append(f"[bold]{title}[/]")
+        lines.append(f"[bold]{escape(title)}[/]")
         lines.append("")
 
     summary = atom.get("summary", "")
     if summary:
         lines.append(f"{_D}SUMMARY{_E}")
-        lines.append(summary)
+        lines.append(escape(summary))
         lines.append("")
 
     content = atom.get("content", "")
     if content:
         lines.append(f"{_D}CONTENT{_E}")
-        # Stringify content if it's a dict (e.g., from Grove messages)
         if isinstance(content, dict):
-            lines.append(str(content))
+            lines.append(escape(str(content)))
         else:
-            lines.append(content)
+            lines.append(escape(content))
 
     return "\n".join(lines)
 
