@@ -10,10 +10,10 @@ from pathlib import Path
 
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Vertical
+from textual.containers import Vertical, Horizontal
 from textual.message import Message
 from textual.screen import ModalScreen
-from textual.widgets import Input, Label, Static
+from textual.widgets import Input, Label, Static, Button
 
 
 _ENV_VAR_RE = re.compile(r"^[A-Z_][A-Z0-9_]*$")
@@ -64,6 +64,14 @@ class SecretsAddModal(ModalScreen):
     SecretsAddModal #sam-input:focus {
         border: tall #58a6ff;
     }
+    SecretsAddModal #sam-buttons {
+        height: auto;
+        display: none;
+        margin: 1 2;
+    }
+    SecretsAddModal #sam-buttons.show {
+        display: block;
+    }
     SecretsAddModal #sam-status {
         height: auto;
         padding: 0 2 1 2;
@@ -89,6 +97,9 @@ class SecretsAddModal(ModalScreen):
                 placeholder="Key name (e.g., API_KEY, DB_PASSWORD)",
                 id="sam-input"
             )
+            with Horizontal(id="sam-buttons"):
+                yield Button("Cancel", id="sam-cancel", variant="error")
+                yield Button("Confirm", id="sam-confirm", variant="success")
             yield Static("Must be uppercase alphanumeric + underscore", id="sam-status", markup=False)
 
     def on_mount(self) -> None:
@@ -178,15 +189,12 @@ class SecretsAddModal(ModalScreen):
         self._value = value
         self._stage = 2
         self._set_message(f"Store `{self._key_name}`?")
-        self._set_status("[dim]Type 'yes' to confirm, or press Escape to cancel[/]")
-        inp = self.query_one("#sam-input", Input)
-        inp.value = ""
-        inp.placeholder = "Type 'yes' to confirm"
-        inp.focus()
+        self._set_status("[dim]Click to confirm or cancel[/]")
+        self._show_buttons()
 
-    def _handle_confirm(self, response: str) -> None:
+    def _handle_confirm(self, response: str = None) -> None:
         """Write secret to vault on confirmation."""
-        if response != "yes":
+        if response is not None and response != "yes":
             self._set_status("[dim]Cancelled[/]")
             return
 
@@ -208,3 +216,50 @@ class SecretsAddModal(ModalScreen):
         except Exception as e:
             self._set_message(f"[red]Error storing secret: {e}[/]")
             self._set_status("[dim]Press Escape to close[/]")
+
+    def action_confirm(self) -> None:
+        """Action for confirm button."""
+        self._handle_confirm()
+
+    def action_cancel_stage2(self) -> None:
+        """Action for cancel button at stage 2."""
+        self._stage = 1
+        self._set_message(f"Paste the value for `{self._key_name}`")
+        self._set_status("[dim]Press Enter to confirm[/]")
+        self.query_one("#sam-input", Input).focus()
+        self._hide_buttons()
+
+    def _show_buttons(self) -> None:
+        """Show confirmation buttons and hide input."""
+        from textual.css.query import NoMatches
+        try:
+            inp = self.query_one("#sam-input", Input)
+            inp.styles.display = "none"
+        except NoMatches:
+            pass
+        try:
+            buttons = self.query_one("#sam-buttons", Horizontal)
+            buttons.add_class("show")
+        except NoMatches:
+            pass
+
+    def _hide_buttons(self) -> None:
+        """Hide confirmation buttons and show input."""
+        from textual.css.query import NoMatches
+        try:
+            inp = self.query_one("#sam-input", Input)
+            inp.styles.display = "block"
+        except NoMatches:
+            pass
+        try:
+            buttons = self.query_one("#sam-buttons", Horizontal)
+            buttons.remove_class("show")
+        except NoMatches:
+            pass
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Handle button presses."""
+        if event.button.id == "sam-confirm":
+            self.action_confirm()
+        elif event.button.id == "sam-cancel":
+            self.action_cancel_stage2()
