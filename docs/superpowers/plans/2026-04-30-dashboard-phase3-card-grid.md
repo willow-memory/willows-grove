@@ -6,7 +6,7 @@
 
 **Architecture:** `widgets/card_grid.py` provides `CardCell` (focusable tile), `CardGrid` (grid container with background worker), `CardActivated` (navigation message), and `fetch_runtime_card_values()` (pure data function for all 7 built-in cards). `HomeGrid` and `ProjectsGrid` in `panes/home.py` become Containers that compose these widgets. `app.py` handles `CardActivated` to switch panes.
 
-**Tech Stack:** Python 3.10+, Textual (existing version), psycopg2, pytest, `panes.tasks.fetch_tasks`, `grove_reader.grove_agents`.
+**Tech Stack:** Python 3.11+, Textual (existing version), psycopg2, pytest, `panes.tasks.fetch_tasks`, `grove_reader.grove_agents`.
 
 ---
 
