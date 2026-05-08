@@ -48,21 +48,25 @@ class SecretsAddModal(ModalScreen):
     SecretsAddModal #sam-dialog {
         width: 60;
         height: 20;
-        background: #0d1117;
-        border: solid #30363d;
+        background: #faf8f3;
+        border: solid #2d5016;
     }
     SecretsAddModal #sam-message {
         height: auto;
         padding: 1 2;
         text-align: center;
+        color: #2d5016;
     }
     SecretsAddModal #sam-input {
         height: 3;
         margin: 1 2;
-        border: tall #30363d;
+        border: tall #6ba82e;
+        background: #ffffff;
+        color: #2d5016;
     }
     SecretsAddModal #sam-input:focus {
-        border: tall #58a6ff;
+        border: tall #8bc34a;
+        background: #fef9f0;
     }
     SecretsAddModal #sam-buttons {
         height: auto;
@@ -75,7 +79,7 @@ class SecretsAddModal(ModalScreen):
     SecretsAddModal #sam-status {
         height: auto;
         padding: 0 2 1 2;
-        color: #8b949e;
+        color: #556b2f;
         text-align: center;
     }
     """
