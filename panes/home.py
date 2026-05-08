@@ -301,10 +301,17 @@ class HomeGrid(Container):
             pass
 
     def on_card_activated(self, event) -> None:
-        if getattr(event, "nav_target", None) == "+":
+        event.stop()
+        nav_target = getattr(event, "nav_target", None)
+        if not nav_target:
+            return
+        if nav_target == "+":
             from widgets.card_builder_modal import CardBuilderModal
-            event.stop()
             self.app.push_screen(CardBuilderModal())
+        elif nav_target.startswith("#"):
+            self.app._show_internal_pane(nav_target)
+        else:
+            self.app.action_nav(nav_target)
 
     def refresh_cards(self) -> None:
         from widgets.card_grid import CardGrid

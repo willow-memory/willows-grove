@@ -31,7 +31,7 @@ from textual.widgets import Button, Footer, Input, Label, Rule, Select, Static
 
 from rich.markup import escape as _e
 
-from panes.chat      import ChatPane, ChannelList, ChannelOpened, sender_color
+from panes.chat      import ChatPane, ChannelList, ChannelOpened, CursorAdvanced, sender_color
 from widgets.projects_nav    import ProjectsNav
 from widgets.knowledge_nav  import KnowledgeAtomSelected, KnowledgeNav
 from widgets.providers_nav  import ProviderRowSelected, ProvidersNav
@@ -51,6 +51,7 @@ from panes.logs      import LogsPane
 from panes.secrets   import SecretsPane
 from panes.mcp       import MCPPane
 from panes.run_ledger import RunLedgerPane
+from panes.binder    import BinderPane
 from panes.home      import DeskPane, HomeGrid, ProjectsGrid
 
 from widgets.nav_bar        import NavBar, NavChanged, NAV_TARGETS
@@ -235,7 +236,8 @@ _CONTENT_PANES: dict[str, str] = {
 _INTERNAL_PANES: list[str] = [
     "#pane-tasks", "#pane-agents", "#pane-routing",
     "#pane-skills", "#pane-logs", "#pane-secrets", "#pane-mcp",
-    "#pane-git", "#pane-prs",
+    "#pane-git", "#pane-prs", "#pane-knowledge", "#pane-providers",
+    "#pane-binder", "#pane-run-ledger",
 ]
 
 
@@ -432,7 +434,8 @@ class WillowGrove(App):
     #pane-chat, #pane-projects, #pane-knowledge, #pane-providers,
     #pane-settings, #pane-help, #pane-tasks, #pane-agents,
     #pane-routing, #pane-skills, #pane-logs, #pane-secrets,
-    #pane-mcp, #pane-git, #pane-prs, #pane-todos, #pane-my-projects {
+    #pane-mcp, #pane-git, #pane-prs, #pane-todos, #pane-my-projects,
+    #pane-binder {
         display: none;
     }
 
@@ -598,6 +601,7 @@ class WillowGrove(App):
                 yield SecretsPane(id="pane-secrets")
                 yield MCPPane(id="pane-mcp")
                 yield RunLedgerPane(id="pane-run-ledger")
+                yield BinderPane(id="pane-binder")
                 yield GitStatusPane(id="pane-git")
                 yield OpenPRsPane(id="pane-prs")
             yield GroveRightPanel(id="right-panel")
@@ -711,6 +715,7 @@ class WillowGrove(App):
             ("#pane-providers", ProvidersPane),
             ("#pane-skills",    SkillsPane),
             ("#pane-logs",      LogsPane),
+            ("#pane-binder",    BinderPane),
         ]:
             try:
                 self.query_one(pane_id, pane_cls).refresh_data()
@@ -784,6 +789,13 @@ class WillowGrove(App):
             self._show_internal_pane(target)
         else:
             self.action_nav(target)
+
+    def on_cursor_advanced(self, event: CursorAdvanced) -> None:
+        """Relay to ChannelList — lives in a sibling branch, can't receive the bubble."""
+        with suppress(NoMatches):
+            cl = self.query_one(ChannelList)
+            cl._cursors[event.channel] = event.last_id
+            cl._poll()
 
     def action_create_channel(self) -> None:
         def _on_result(result: dict | None) -> None:

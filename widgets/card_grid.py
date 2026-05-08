@@ -28,8 +28,8 @@ _STATE_COLORS: dict[str, str] = {
 
 _CARD_NAV: dict[str, str] = {
     "kart":       "#pane-tasks",
-    "knowledge":  "knowledge",
-    "yggdrasil":  "providers",
+    "knowledge":  "#pane-knowledge",
+    "yggdrasil":  "#pane-providers",
     "agents":     "#pane-agents",
     "secrets":    "#pane-secrets",
     "fleet":      "#pane-agents",
@@ -51,11 +51,13 @@ BUILTIN_CARDS: list[tuple[str, str]] = [
 
 # (card_id, label, nav_target)
 LAUNCHER_CARDS: list[tuple[str, str, str]] = [
-    ("tasks",   "Tasks",   "#pane-tasks"),
-    ("agents",  "Agents",  "#pane-agents"),
-    ("routing", "Routing", "#pane-routing"),
-    ("skills",  "Skills",  "#pane-skills"),
-    ("logs",    "Logs",    "#pane-logs"),
+    ("tasks",      "Tasks",      "#pane-tasks"),
+    ("agents",     "Agents",     "#pane-agents"),
+    ("routing",    "Routing",    "#pane-routing"),
+    ("skills",     "Skills",     "#pane-skills"),
+    ("logs",       "Logs",       "#pane-logs"),
+    ("binder",     "Binder",     "#pane-binder"),
+    ("run-ledger", "Run Ledger", "#pane-run-ledger"),
 ]
 
 

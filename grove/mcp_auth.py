@@ -7,7 +7,7 @@ Flow:
   1. claude.ai hits /authorize → provider redirects to /grove-approve?pending=<key>
   2. Sean opens that URL in a browser, clicks Allow
   3. Provider issues an auth code → client exchanges for access + refresh tokens
-  4. Tokens stored in token_path JSON file; access tokens expire in 1 hour
+  4. Tokens stored in token_path JSON file; access tokens expire in 30 days
 
 State is in-memory for pending codes (lost on restart, which just means
 claude.ai re-auths). Tokens are persisted to token_path so reconnects work.

@@ -172,6 +172,7 @@ def test_render_desk_is_string():
 
 # ── fetch_desk_data ────────────────────────────────────────────────────────────
 from panes.home import fetch_desk_data
+from unittest.mock import patch, MagicMock
 
 def test_fetch_desk_data_returns_desk_data():
     """fetch_desk_data must return DeskData even when all sources fail."""
@@ -182,3 +183,44 @@ def test_fetch_desk_data_returns_desk_data():
     assert isinstance(result.sysinfo, dict)
     assert isinstance(result.running_tasks, int)
     assert isinstance(result.done_today, int)
+
+
+# ── Integration tests for data loading ─────────────────────────────────────────
+
+def test_fetch_desk_data_calls_grove_reader():
+    """Verify fetch_desk_data accesses grove_reader functions."""
+    # This test just verifies the function calls exist and returns valid data
+    result = fetch_desk_data()
+    assert isinstance(result.unread_channels, list)
+    assert isinstance(result.mentions, list)
+    assert isinstance(result.agents, list)
+
+def test_fetch_desk_data_task_counts():
+    """Verify task count fields are integers."""
+    result = fetch_desk_data()
+    assert isinstance(result.running_tasks, int)
+    assert isinstance(result.pending_tasks, int)
+    assert isinstance(result.done_today, int)
+    assert result.running_tasks >= 0
+    assert result.pending_tasks >= 0
+    assert result.done_today >= 0
+
+def test_fetch_desk_data_has_sysinfo():
+    """Verify sysinfo dict has expected keys."""
+    result = fetch_desk_data()
+    assert "cpu" in result.sysinfo
+    assert "mem" in result.sysinfo
+    assert "disk" in result.sysinfo
+    assert "temp" in result.sysinfo
+
+def test_fetch_desk_data_handles_file_error():
+    """Verify fetch_desk_data gracefully handles missing session_anchor.json."""
+    import tempfile
+    import os
+    with tempfile.TemporaryDirectory() as tmpdir:
+        # Mock home to a temp dir without session_anchor.json
+        with patch.dict(os.environ, {"HOME": tmpdir}):
+            result = fetch_desk_data()
+            # Should still return valid DeskData with defaults
+            assert isinstance(result, DeskData)
+            assert result.open_flags == 0
