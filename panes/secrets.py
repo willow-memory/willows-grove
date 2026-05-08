@@ -6,9 +6,9 @@ from pathlib import Path
 
 from textual import work
 from textual.binding import Binding
-from textual.containers import Container
+from textual.containers import Container, Vertical
 from textual.message import Message
-from textual.widgets import DataTable, Label
+from textual.widgets import DataTable, Label, Static
 
 from widgets.secrets_add_modal import SecretsAddModal, SecretAdded
 
@@ -49,11 +49,30 @@ class _SecretsFetched(Message):
 
 
 class SecretsPane(Container):
+    DEFAULT_CSS = """
+    SecretsPane {
+        layout: vertical;
+    }
+    SecretsPane #secrets-title {
+        height: auto;
+    }
+    SecretsPane #secrets-table {
+        height: 1fr;
+    }
+    SecretsPane #secrets-witness {
+        height: auto;
+        text-align: right;
+        color: #6b7280;
+        margin: 0 1;
+    }
+    """
+
     def compose(self):
         yield Label("  Secrets — ~/.willow/vault.db (names only, redacted prefixes)", id="secrets-title")
         table = DataTable(id="secrets-table", cursor_type="row")
         table.add_columns("Key", "Status", "Prefix")
         yield table
+        yield Static("ΔΣ=42", id="secrets-witness", markup=False)
 
     def on_mount(self) -> None:
         self._fetch()
