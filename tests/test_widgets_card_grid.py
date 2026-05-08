@@ -23,8 +23,8 @@ def test_card_nav_covers_all_builtin_ids():
 def test_builtin_cards_has_seven():
     assert len(BUILTIN_CARDS) == 7
 
-def test_launcher_cards_has_five():
-    assert len(LAUNCHER_CARDS) == 5
+def test_launcher_cards_has_seven():
+    assert len(LAUNCHER_CARDS) == 7
 
 def test_launcher_cards_all_have_nav():
     for _, _, nav in LAUNCHER_CARDS:
