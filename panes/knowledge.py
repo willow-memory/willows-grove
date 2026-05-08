@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 
+
 from textual import work
 from textual.containers import VerticalScroll
 from textual.message import Message
@@ -251,6 +252,7 @@ def atom_header_markup(atom: dict) -> str:
             lines.append(escape(str(content)))
         else:
             lines.append(escape(content))
+
 
 
     return "\n".join(lines)
