@@ -146,10 +146,15 @@ class KnowledgePane(Container):
     def display_atom(self, atom_id: int) -> None:
         self._fetch(atom_id)
 
-    @work(thread=True)
+    @work(thread=True, exit_on_error=False)
     def _fetch(self, atom_id: int) -> None:
-        atom = fetch_atom(atom_id)
-        self.post_message(_AtomFetched(atom))
+        import logging
+        try:
+            atom = fetch_atom(atom_id)
+            self.post_message(_AtomFetched(atom))
+        except Exception:
+            logging.exception("KnowledgePane._fetch failed for atom %s", atom_id)
+            self.post_message(_AtomFetched(None))
 
     def on__atom_fetched(self, event: _AtomFetched) -> None:
         from textual.css.query import NoMatches

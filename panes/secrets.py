@@ -4,6 +4,7 @@ b17: WGRV1  ΔΣ=42
 import json
 from pathlib import Path
 
+from rich.markup import escape as _e
 from textual import work
 from textual.containers import Container
 from textual.message import Message
@@ -50,7 +51,7 @@ class SecretsPane(Container):
     def refresh_data(self) -> None:
         self._fetch()
 
-    @work(thread=True)
+    @work(thread=True, exit_on_error=False)
     def _fetch(self) -> None:
         self.post_message(_SecretsFetched(_read_secrets()))
 
@@ -65,4 +66,4 @@ class SecretsPane(Container):
             table.add_row("[dim]no secrets found[/]", "")
             return
         for s in event.secrets:
-            table.add_row(s["key"], f"[dim]{s['hint']}[/]" if s["hint"] else "")
+            table.add_row(s["key"], f"[dim]{_e(s['hint'])}[/]" if s["hint"] else "")

@@ -57,7 +57,7 @@ class ChatStrip(Static):
         self.set_interval(10, self._fetch)
         self._fetch()
 
-    @work(thread=True)
+    @work(thread=True, exit_on_error=False)
     def _fetch(self) -> None:
         try:
             channels = grove_reader.grove_channels()

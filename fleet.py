@@ -21,7 +21,7 @@ _AGENTS_BIN  = Path.home() / "agents" / "hanuman" / "bin"
 _GROVE_DIR   = Path(__file__).parent
 _PY          = str(_VENV_PYTHON) if _VENV_PYTHON.exists() else _SYS_PYTHON
 _LOG_FILE    = Path.home() / ".willow" / "fleet.log"
-_PID_FILE    = Path.home() / ".willow" / "grove.pid"
+_PID_FILE    = Path(os.environ.get("GROVE_PID_FILE", str(Path.home() / ".willow" / "grove.pid")))
 
 _log = logging.getLogger("fleet")
 _log.setLevel(logging.INFO)
@@ -176,6 +176,11 @@ class FleetManager:
                 proc = self._procs.get(name)
                 if proc is None or proc.poll() is not None:
                     rc = proc.returncode if proc is not None else None
+
+                    # If port is still held by another instance, don't count as failure
+                    port = cfg.get("port")
+                    if port and _port_in_use(port):
+                        continue
 
                     # GAP 2: respect restart_policy — don't respawn clean exits
                     policy = cfg.get("restart_policy", "always")

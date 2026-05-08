@@ -175,7 +175,7 @@ class ProjectsNav(Widget):
         self._fetch()
         self.set_interval(10, self._fetch)
 
-    @work(thread=True)
+    @work(thread=True, exit_on_error=False)
     def _fetch(self) -> None:
         data = _fetch_nav_counts()
         self.post_message(_NavRefreshed(data))

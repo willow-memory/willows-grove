@@ -6,6 +6,7 @@ from __future__ import annotations
 import select
 from dataclasses import dataclass, field
 
+from rich.markup import escape as _e
 from textual import work
 from textual.containers import Container
 from textual.message import Message
@@ -61,7 +62,7 @@ def render_desk(data: DeskData) -> str:
         attn.append(f"  {_V}# {name:<14} {ch['unread']}{_E}")
     for m in data.mentions:
         ch_short = str(m.get("channel", "?"))[:16]
-        attn.append(f"  {_Y}#{ch_short} ← {m['sender']}{_E}")
+        attn.append(f"  {_Y}#{_e(ch_short)} ← {_e(m['sender'])}{_E}")
     if data.open_flags > 0:
         attn.append(f"  {_Y}{data.open_flags} open flags{_E}")
     if attn:
@@ -97,7 +98,7 @@ def render_desk(data: DeskData) -> str:
             dot     = agent_dot(a.get("age_secs", 9999))
             sender  = a["sender"][:12]
             age_str = format_age(a.get("age_secs", 0))
-            lines.append(f"  {dot} {_V}{sender:<12}{_E} {_D}{age_str}{_E}")
+            lines.append(f"  {dot} {_V}{_e(sender):<12}{_E} {_D}{age_str}{_E}")
     cpu = data.sysinfo.get("cpu", 0)
     mem = data.sysinfo.get("mem", 0)
     lines.append(f"  {_D}cpu {cpu}%  mem {mem}%{_E}")
@@ -242,12 +243,12 @@ class DeskPane(Container):
         self.set_interval(5, self._fetch)
         self._start_notify_listener()
 
-    @work(thread=True)
+    @work(thread=True, exit_on_error=False)
     def _fetch(self) -> None:
         data = fetch_desk_data()
         self.post_message(_DeskRefreshed(data))
 
-    @work(thread=True)
+    @work(thread=True, exit_on_error=False)
     def _start_notify_listener(self) -> None:
         import grove_db
         self._listening = True
@@ -302,6 +303,7 @@ class HomeGrid(Container):
     def on_card_activated(self, event) -> None:
         if getattr(event, "nav_target", None) == "+":
             from widgets.card_builder_modal import CardBuilderModal
+            event.stop()
             self.app.push_screen(CardBuilderModal())
 
     def refresh_cards(self) -> None:

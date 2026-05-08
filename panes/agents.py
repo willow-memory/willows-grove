@@ -1,6 +1,7 @@
 """panes/agents.py — Active agent monitor pane.
 b17: WGRV1  ΔΣ=42
 """
+from rich.markup import escape as _e
 from textual import work
 from textual.containers import Container
 from textual.message import Message
@@ -40,7 +41,7 @@ class AgentsPane(Container):
         self.set_interval(15, self._fetch)
         self._fetch()
 
-    @work(thread=True)
+    @work(thread=True, exit_on_error=False)
     def _fetch(self) -> None:
         agents = grove_reader.grove_agents()
         self.post_message(_AgentsFetched(agents))
@@ -58,7 +59,7 @@ class AgentsPane(Container):
             state, state_color = agent_state(age_secs)
             color = sender_color(sender)
             table.add_row(
-                f"[{color} bold]{sender}[/]",
-                f"[{state_color}]{state}[/]",
+                f"[{color} bold]{_e(sender)}[/]",
+                f"[{state_color}]{_e(state)}[/]",
                 age_str(age_secs),
             )

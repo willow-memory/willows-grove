@@ -29,6 +29,8 @@ from textual import work
 from textual.message import Message
 from textual.widgets import Button, Footer, Input, Label, Rule, Select, Static
 
+from rich.markup import escape as _e
+
 from panes.chat      import ChatPane, ChannelList, ChannelOpened, sender_color
 from widgets.projects_nav    import ProjectsNav
 from widgets.knowledge_nav  import KnowledgeAtomSelected, KnowledgeNav
@@ -48,6 +50,7 @@ from panes.skills    import SkillsPane
 from panes.logs      import LogsPane
 from panes.secrets   import SecretsPane
 from panes.mcp       import MCPPane
+from panes.run_ledger import RunLedgerPane
 from panes.home      import DeskPane, HomeGrid, ProjectsGrid
 
 from widgets.nav_bar        import NavBar, NavChanged, NAV_TARGETS
@@ -91,7 +94,7 @@ class VitalsBar(Static):
         self.set_interval(15, self._fetch)
         self._fetch()
 
-    @work(thread=True)
+    @work(thread=True, exit_on_error=False)
     def _fetch(self) -> None:
         pg    = "[green]pg:up[/]" if _pg_ok() else "[red]pg:down[/]"
         bp    = fetch_backfill_progress()
@@ -134,7 +137,7 @@ class GroveRightPanel(Container):
         self.set_interval(10, self._fetch)
         self._fetch()
 
-    @work(thread=True)
+    @work(thread=True, exit_on_error=False)
     def _fetch(self) -> None:
         data = fetch_tasks()
         task_text = (
@@ -149,7 +152,7 @@ class GroveRightPanel(Container):
                 age_secs = a.get("age_secs", 9999)
                 dot = "[green]●[/]" if age_secs < 120 else "[yellow]●[/]" if age_secs < 900 else "[dim]●[/]"
                 color = sender_color(sender)
-                lines.append(f"{dot} [{color}]{sender}[/]")
+                lines.append(f"{dot} [{color}]{_e(sender)}[/]")
         except Exception:
             pass
         self.post_message(_RightPanelData(task_text, "\n".join(lines) or "[dim]no agents[/]"))
@@ -413,6 +416,15 @@ class WillowGrove(App):
 
     #vitals-source { display: none; }
 
+    /* All content panes hidden by default — Python toggles them on/off.
+       This is the authoritative default; on_mount is belt-and-suspenders. */
+    #pane-chat, #pane-projects, #pane-knowledge, #pane-providers,
+    #pane-settings, #pane-help, #pane-tasks, #pane-agents,
+    #pane-routing, #pane-skills, #pane-logs, #pane-secrets,
+    #pane-mcp, #pane-git, #pane-prs, #pane-todos, #pane-my-projects {
+        display: none;
+    }
+
     #main-area { height: 1fr; }
 
     ContextPanel {
@@ -458,8 +470,24 @@ class WillowGrove(App):
         text-style: bold;
     }
 
-    #pane-settings, #pane-help {
+    #pane-settings, #pane-help, #pane-run-ledger {
         padding: 2;
+        color: #8b949e;
+    }
+
+    #run-ledger-title {
+        color: #58a6ff;
+        text-style: bold;
+        margin: 0 0 1 0;
+    }
+
+    #run-ledger-status {
+        margin: 0 0 1 0;
+        height: auto;
+    }
+
+    #run-ledger-status Static {
+        width: 1fr;
         color: #8b949e;
     }
 
@@ -552,6 +580,7 @@ class WillowGrove(App):
                 yield LogsPane(id="pane-logs")
                 yield SecretsPane(id="pane-secrets")
                 yield MCPPane(id="pane-mcp")
+                yield RunLedgerPane(id="pane-run-ledger")
                 yield GitStatusPane(id="pane-git")
                 yield OpenPRsPane(id="pane-prs")
             yield GroveRightPanel(id="right-panel")
@@ -571,7 +600,7 @@ class WillowGrove(App):
                 severity="error",
                 timeout=0,
             )
-            self.call_after_refresh(self.action_quit)
+            self.call_after_refresh(self.exit)
             return
 
         # Session state — mark open, get prior state for resume check
@@ -630,7 +659,7 @@ class WillowGrove(App):
         fleet = getattr(self, "_fleet", None)
         if fleet:
             fleet.stop()
-        super().action_quit()
+        self.exit()
 
     def _hide_all_content_panes(self) -> None:
         for pane_id in list(_CONTENT_PANES.values()) + _INTERNAL_PANES:
@@ -710,7 +739,7 @@ class WillowGrove(App):
 
     def on_card_activated(self, event: CardActivated) -> None:
         target = event.nav_target
-        if not target:
+        if not target or target == "+":
             return
         if target.startswith("#"):
             self._show_internal_pane(target)

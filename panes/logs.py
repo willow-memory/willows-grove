@@ -40,7 +40,7 @@ class LogsPane(Container):
     def refresh_data(self) -> None:
         self._fetch()
 
-    @work(thread=True)
+    @work(thread=True, exit_on_error=False)
     def _fetch(self) -> None:
         self.post_message(_LogsFetched(_tail_log(80)))
 

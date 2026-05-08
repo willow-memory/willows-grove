@@ -41,7 +41,7 @@ class SettingsNav(Widget):
         self._fetch()
         self.set_interval(15, self._fetch)
 
-    @work(thread=True)
+    @work(thread=True, exit_on_error=False)
     def _fetch(self) -> None:
         from panes.settings import _read_consent
         consent = _read_consent()

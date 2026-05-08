@@ -3,6 +3,7 @@ b17: WGRV1  ΔΣ=42
 """
 from __future__ import annotations
 
+from rich.markup import escape as _e
 from textual import on, work
 from textual.app import ComposeResult
 from textual.message import Message
@@ -66,11 +67,16 @@ class KnowledgeNav(Widget):
         self._last_query = query
         self._search(query)
 
-    @work(thread=True)
+    @work(thread=True, exit_on_error=False)
     def _search(self, query: str) -> None:
-        from panes.knowledge import search_kb
-        rows = search_kb(query, limit=20)
-        self.post_message(_KnowledgeSearchDone(rows))
+        import logging
+        try:
+            from panes.knowledge import search_kb
+            rows = search_kb(query, limit=20)
+            self.post_message(_KnowledgeSearchDone(rows))
+        except Exception:
+            logging.exception("KnowledgeNav._search failed")
+            self.post_message(_KnowledgeSearchDone([]))
 
     def on__knowledge_search_done(self, event: _KnowledgeSearchDone) -> None:
         self._rows = event.rows
@@ -110,9 +116,9 @@ class KnowledgeNav(Widget):
                 title = (row.get("title", "") or "—")[:16]
                 atom_id = row.get("id", "?")
                 if i == self._cursor:
-                    lines.append(f"[reverse] {i + 1:2}. {atom_id} {title}  ↵[/]")
+                    lines.append(f"[reverse] {i + 1:2}. {_e(str(atom_id))} {_e(title)}  ↵[/]")
                 else:
-                    lines.append(f"[dim] {i + 1:2}.[/] [#58a6ff]{atom_id}[/] {title}")
+                    lines.append(f"[dim] {i + 1:2}.[/] [#58a6ff]{_e(str(atom_id))}[/] {_e(title)}")
             text = "\n".join(lines)
         try:
             self.query_one("#kn-results", Static).update(text)

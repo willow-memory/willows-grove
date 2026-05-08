@@ -1,6 +1,7 @@
 """panes/routing.py — Live routing decision feed pane.
 b17: WGRV1  ΔΣ=42
 """
+from rich.markup import escape as _e
 from textual import work
 from textual.containers import Container
 from textual.message import Message
@@ -40,7 +41,7 @@ class RoutingPane(Container):
         self.set_interval(5, self._fetch)
         self._fetch()
 
-    @work(thread=True)
+    @work(thread=True, exit_on_error=False)
     def _fetch(self) -> None:
         self.post_message(_RoutingFetched(fetch_routing(limit=20)))
 
@@ -62,6 +63,6 @@ class RoutingPane(Container):
             table.add_row(
                 ts_str,
                 snippet,
-                f"[{color} bold]{target}[/]",
+                f"[{color} bold]{_e(target)}[/]",
                 f"[{c_color}]{conf:.0%}[/]",
             )

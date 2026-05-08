@@ -238,13 +238,18 @@ class CardCell(Widget):
         self._safe_id = _re.sub(r"[^a-zA-Z0-9_-]", "-", card_id).strip("-") or "card"
 
     def compose(self) -> ComposeResult:
-        yield Static(self._label, classes="card-label", markup=False)
-        v = Static(self._value, id=f"cv-{self._safe_id}", classes="card-value", markup=False)
+        label = Static(self._label, classes="card-label", markup=False, expand=False)
+        label.can_focus = False
+        yield label
+        v = Static(self._value, id=f"cv-{self._safe_id}", classes="card-value", markup=False, expand=True)
+        v.can_focus = False
         v.styles.color      = _STATE_COLORS.get(self._state, "#8b949e")
         v.styles.text_style = "bold"
         v.styles.height     = "auto"
         yield v
-        yield Static(self._sub, id=f"cs-{self._safe_id}", classes="card-sub", markup=False)
+        sub = Static(self._sub, id=f"cs-{self._safe_id}", classes="card-sub", markup=False, expand=False)
+        sub.can_focus = False
+        yield sub
 
     def update_card(self, value: str, sub: str, state: str) -> None:
         """Update the displayed value, sub-text, and state color."""
@@ -331,7 +336,7 @@ class CardGrid(Widget):
         self.mount(*cells)
         self._fetch()
 
-    @work(thread=True)
+    @work(thread=True, exit_on_error=False)
     def _fetch(self) -> None:
         data = fetch_runtime_card_values()
 

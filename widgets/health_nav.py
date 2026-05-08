@@ -94,7 +94,7 @@ class HealthNav(Widget):
         self._fetch()
         self.set_interval(15, self._fetch)
 
-    @work(thread=True)
+    @work(thread=True, exit_on_error=False)
     def _fetch(self) -> None:
         health = _fetch_health_status()
         self.post_message(_HealthStatusFetched(health))

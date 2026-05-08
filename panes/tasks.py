@@ -4,6 +4,7 @@ b17: WGRV1  ΔΣ=42
 import sys
 from pathlib import Path
 
+from rich.markup import escape as _e
 from textual import work
 from textual.containers import Container
 from textual.widgets import DataTable, Label
@@ -80,7 +81,7 @@ class TasksPane(Container):
         self.set_interval(10, self.refresh_data)
         self.refresh_data()
 
-    @work(thread=True)
+    @work(thread=True, exit_on_error=False)
     def refresh_data(self) -> None:
         data = fetch_tasks()
         bp   = fetch_backfill_progress()
@@ -108,7 +109,7 @@ class TasksPane(Container):
             color = status_color(row["status"])
             table.add_row(
                 str(row["id"]),
-                f"[{color}]{row['status']}[/]",
+                f"[{color}]{_e(row['status'])}[/]",
                 row["cmd"][:60],
                 row["ts"],
             )

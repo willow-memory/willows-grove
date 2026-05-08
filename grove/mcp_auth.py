@@ -28,7 +28,7 @@ from mcp.server.auth.provider import (
 )
 from mcp.shared.auth import OAuthClientInformationFull, OAuthToken
 
-_ACCESS_TTL  = 3600        # 1 hour
+_ACCESS_TTL  = 30 * 86400  # 30 days (single-user local; claude.ai doesn't auto-refresh)
 _CODE_TTL    = 300         # 5 minutes
 _REFRESH_TTL = 30 * 86400  # 30 days
 
