@@ -72,16 +72,27 @@ class GroundStrip(Static):
 
 # ── System info ───────────────────────────────────────────────────────────────
 
-def _sysinfo() -> dict:
-    r: dict = {"cpu": 0, "mem": 0, "disk": 0, "temp": 0}
+def _read_cpu_ticks() -> tuple[int, int]:
+    """Return (idle_ticks, total_ticks) from /proc/stat."""
     try:
         with open("/proc/stat") as f:
             parts = f.readline().split()
         vals = [int(x) for x in parts[1:]]
-        idle = vals[3] + (vals[4] if len(vals) > 4 else 0)
-        r["cpu"] = max(0, min(100, int((1 - idle / max(sum(vals), 1)) * 100)))
+        idle = vals[3] + (vals[4] if len(vals) > 4 else 0)  # idle + iowait
+        return idle, sum(vals)
     except Exception:
-        pass
+        return 0, 1
+
+
+def _sysinfo(prev_cpu: tuple[int, int]) -> tuple[dict, tuple[int, int]]:
+    """Return (metrics_dict, new_cpu_snapshot) — CPU is a delta against prev_cpu."""
+    r: dict = {"cpu": 0, "mem": 0, "disk": 0, "temp": 0}
+    cur_idle, cur_total = _read_cpu_ticks()
+    delta_total = cur_total - prev_cpu[1]
+    delta_idle  = cur_idle  - prev_cpu[0]
+    if delta_total > 0:
+        r["cpu"] = max(0, min(100, int((1 - delta_idle / delta_total) * 100)))
+    try:
     try:
         mem: dict[str, int] = {}
         with open("/proc/meminfo") as f:
@@ -103,7 +114,7 @@ def _sysinfo() -> dict:
             r["temp"] = int(f.read().strip()) // 1000
     except Exception:
         pass
-    return r
+    return r, (cur_idle, cur_total)
 
 
 # ── Info panel ────────────────────────────────────────────────────────────────
@@ -131,13 +142,14 @@ class HeroInfo(Static):
     def __init__(self, **kwargs) -> None:
         super().__init__("", **kwargs)
         self._sys: dict = {"cpu": 0, "mem": 0, "disk": 0, "temp": 0}
+        self._prev_cpu: tuple[int, int] = _read_cpu_ticks()
 
     def on_mount(self) -> None:
         self.set_interval(1.0, self._tick)
         self._tick()
 
     def _tick(self) -> None:
-        self._sys = _sysinfo()
+        self._sys, self._prev_cpu = _sysinfo(self._prev_cpu)
         self._redraw()
 
     def _redraw(self) -> None:
