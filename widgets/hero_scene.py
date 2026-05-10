@@ -12,34 +12,53 @@ from textual.containers import Horizontal, Vertical
 from textual.widgets import Static
 
 from .hero import WillowHero
+from ._hero_state import get_meadow_wind
 
 
 # ── Ground strip ─────────────────────────────────────────────────────────────
 
 _BLOOMS = ["✿", "✾", "❀", "⚘"]
-_GRASS  = [",", ".", " ,", ", ", ".,", ", "]
+
+# Grass fill strings per wind direction — calm, leaning left, leaning right
+_GRASS: dict[str, list[str]] = {
+    "C": [",", ".", " ,", ", ", ".,", ", "],
+    "L": ["\\", ".\\", " \\", ",\\", ".,", "\\,"],
+    "R": ["/", "./", " /", ",/", ".,", "/,"],
+}
+
+# Ground line chars — slightly varied so it feels alive
+_GROUND = ["~", "~", "~", "≈", "~", "~", "~", "~", "≈", "~"]
 
 
-def _make_meadow(frame: int, width: int) -> str:
-    """Sparse meadow — grass fills gaps, flowers appear occasionally."""
-    rng   = random.Random(frame * 7919)
+
+def _make_meadow(frame: int, width: int, wind: str = "C") -> str:
+    """Sparse meadow — stable layout, blooms cycle independently per position."""
+    # Layout seed changes slowly (every 10 ticks) so grass doesn't flicker
+    layout_rng = random.Random((frame // 10) * 7919)
+    grass_opts = _GRASS.get(wind, _GRASS["C"])
     cells = []
     x     = 0
     while x < width - 1:
-        gap  = rng.randint(8, 18)
-        gstr = _GRASS[rng.randint(0, len(_GRASS) - 1)]
-        # fill gap with repeating grass, truncated to gap length
+        gap  = layout_rng.randint(8, 18)
+        gstr = grass_opts[layout_rng.randint(0, len(grass_opts) - 1)]
         fill = (gstr * (gap // len(gstr) + 1))[:gap]
         cells.append(fill[:max(0, width - x - 1)])
         x += gap
         if x < width - 1:
-            cells.append(_BLOOMS[(frame + x) % len(_BLOOMS)])
+            # each bloom cycles at its own pace — staggered by x position
+            bloom_idx = (frame + x * 3) % (len(_BLOOMS) * 4) // 4
+            cells.append(_BLOOMS[bloom_idx % len(_BLOOMS)])
             x += 1
     return "".join(cells)[:width]
 
 
+def _make_ground(frame: int, width: int) -> str:
+    """Ground line — mostly tildes with occasional ≈ ripple."""
+    return "".join(_GROUND[(frame + i) % len(_GROUND)] for i in range(width))
+
+
 class GroundStrip(Static):
-    """Full-width meadow — sparse flowers, full-width tilde ground."""
+    """Full-width meadow — sparse flowers, wind-reactive grass, rippling ground."""
 
     DEFAULT_CSS = """
     GroundStrip {
@@ -60,13 +79,13 @@ class GroundStrip(Static):
         self._redraw()
 
     def _tick(self) -> None:
-        self._frame = (self._frame + 1) % len(_BLOOMS)
+        self._frame += 1  # unbounded — unique layout every ~12s
         self._redraw()
 
     def _redraw(self) -> None:
-        w = max(20, self.size.width or 120)
-        meadow = _make_meadow(self._frame, w)
-        ground = "~" * w
+        w      = max(20, self.size.width or 120)
+        meadow = _make_meadow(self._frame, w, get_meadow_wind())
+        ground = _make_ground(self._frame, w)
         self.update(f"\n{meadow}\n{ground}")
 
 
