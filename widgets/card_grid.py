@@ -189,6 +189,23 @@ def fetch_runtime_card_values() -> dict[str, dict]:
     except Exception:
         pass
 
+    # Projects — active/overdue counts from SOIL projects/items
+    try:
+        import soil as _soil
+        from datetime import date as _date
+        items = _soil.all_records("projects/items")
+        active = sum(1 for r in items if r.get("status") == "active")
+        overdue = sum(
+            1 for r in items
+            if r.get("status") == "active" and r.get("due_date")
+            and str(r["due_date"]) < str(_date.today())
+        )
+        state = "amber" if overdue > 0 else "green" if active > 0 else "dim"
+        sub = f"{overdue} overdue" if overdue > 0 else f"{active} active"
+        out["projects"] = {"value": str(active), "sub": sub, "state": state}
+    except Exception:
+        pass
+
     return out
 
 
