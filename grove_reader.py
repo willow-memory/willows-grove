@@ -259,7 +259,7 @@ def coordinator_heartbeat(conn=None) -> dict | None:
         cur = conn.cursor()
         cur.execute("""
             SELECT content FROM grove.messages
-            WHERE sender = 'willow-coordinator' AND bus_type = 'HEARTBEAT'
+            WHERE sender = 'willow' AND bus_type = 'HEARTBEAT'
               AND is_deleted = 0
             ORDER BY created_at DESC LIMIT 1
         """)

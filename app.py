@@ -150,7 +150,7 @@ class GroveRightPanel(Container):
                 dot = "[green]●[/]" if age_secs < 120 else "[yellow]●[/]" if age_secs < 900 else "[dim]●[/]"
                 color = sender_color(sender)
                 lines.append(f"{dot} [{color}]{sender}[/]")
-                if sender == "willow-coordinator" and hb:
+                if sender == "willow" and hb:
                     sig = hb.get("last_signal", "—")
                     ts  = hb.get("ts", "")[:16].replace("T", " ")
                     lines.append(f"  [dim]{sig}  {ts}[/]")
