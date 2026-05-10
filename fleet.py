@@ -177,6 +177,13 @@ class FleetManager:
                 if proc is None or proc.poll() is not None:
                     rc = proc.returncode if proc is not None else None
 
+                    # If proc was never spawned because the port is externally occupied,
+                    # the service is running fine — don't count it as a failure.
+                    port = cfg.get("port")
+                    if proc is None and port and _port_in_use(port):
+                        self._failures[name] = 0
+                        continue
+
                     # GAP 2: respect restart_policy — don't respawn clean exits
                     policy = cfg.get("restart_policy", "always")
                     if policy == "on_failure" and rc == 0:
