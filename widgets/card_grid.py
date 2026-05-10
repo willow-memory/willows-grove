@@ -97,14 +97,18 @@ def fetch_runtime_card_values() -> dict[str, dict]:
         if conn is not None:
             grove_db.release_connection(conn)
 
-    # Yggdrasil — active model from env
+    # Yggdrasil — query Ollama for yggdrasil model availability
     try:
-        model = (
-            os.environ.get("WILLOW_MODEL")
-            or os.environ.get("WILLOW_COORDINATOR_MODEL")
-            or "yggdrasil:v9"
+        import urllib.request
+        with urllib.request.urlopen("http://localhost:11434/api/tags", timeout=2) as r:
+            tags = json.loads(r.read())
+        ygv = sorted(
+            m["name"] for m in tags.get("models", []) if "yggdrasil" in m["name"]
         )
-        out["yggdrasil"] = {"value": model, "sub": "active model", "state": "dim"}
+        if ygv:
+            out["yggdrasil"] = {"value": ygv[-1], "sub": "local model", "state": "green"}
+        else:
+            out["yggdrasil"] = {"value": "—", "sub": "not in Ollama", "state": "dim"}
     except Exception:
         pass
 
@@ -324,7 +328,12 @@ class CardGrid(Widget):
             for c in card_store.load_cards()
             if c["id"] not in _builtin_ids
         ]
-        builtin    = [(cid, lbl, _CARD_NAV.get(cid, "")) for cid, lbl in BUILTIN_CARDS]
+        soil_ids   = {cid for cid, _, _ in soil_cards}
+        builtin    = [
+            (cid, lbl, _CARD_NAV.get(cid, ""))
+            for cid, lbl in BUILTIN_CARDS
+            if cid not in soil_ids
+        ]
         all_entries = soil_cards + builtin + [("+", "+ Add Card", "+")]
 
         self._cards     = [(cid, lbl) for cid, lbl, _ in all_entries]
