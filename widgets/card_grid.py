@@ -99,7 +99,11 @@ def fetch_runtime_card_values() -> dict[str, dict]:
 
     # Yggdrasil — active model from env
     try:
-        model = os.environ.get("WILLOW_MODEL", "—")
+        model = (
+            os.environ.get("WILLOW_MODEL")
+            or os.environ.get("WILLOW_COORDINATOR_MODEL")
+            or "yggdrasil:v9"
+        )
         out["yggdrasil"] = {"value": model, "sub": "active model", "state": "dim"}
     except Exception:
         pass
@@ -314,9 +318,11 @@ class CardGrid(Widget):
         on__cards_refreshed iterates query(CardCell) instead.
         """
         from widgets import card_store
+        _builtin_ids = {cid for cid, _ in BUILTIN_CARDS}
         soil_cards = [
             (c["id"], c["label"], c.get("nav_target") or "")
             for c in card_store.load_cards()
+            if c["id"] not in _builtin_ids
         ]
         builtin    = [(cid, lbl, _CARD_NAV.get(cid, "")) for cid, lbl in BUILTIN_CARDS]
         all_entries = soil_cards + builtin + [("+", "+ Add Card", "+")]
