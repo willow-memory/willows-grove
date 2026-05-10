@@ -49,6 +49,10 @@ class _SecretsFetched(Message):
 
 
 class SecretsPane(Container):
+    BINDINGS = [
+        Binding("a", "add_secret", "Add secret"),
+    ]
+
     DEFAULT_CSS = """
     SecretsPane {
         layout: vertical;
@@ -79,6 +83,12 @@ class SecretsPane(Container):
 
     def refresh_data(self) -> None:
         self._fetch()
+
+    def action_add_secret(self) -> None:
+        self.app.push_screen(SecretsAddModal())
+
+    def on_secret_added(self, event: SecretAdded) -> None:
+        self.refresh_data()
 
     @work(thread=True)
     def _fetch(self) -> None:
