@@ -3,6 +3,7 @@ b17: WGRV1  ΔΣ=42
 """
 import json
 import shutil
+import subprocess
 import urllib.request
 from pathlib import Path
 
@@ -64,6 +65,14 @@ def _open_tasks() -> int:
             grove_db.release_connection(conn)
 
 
+def _coordinator_status() -> bool:
+    try:
+        r = subprocess.run(["pgrep", "-f", "willow.coordinator"], capture_output=True)
+        return r.returncode == 0
+    except Exception:
+        return False
+
+
 def _last_handoff() -> str:
     try:
         data = json.loads(SESSION_ANCHOR.read_text())
@@ -120,6 +129,7 @@ class OverviewPane(Container):
         yield StatusRow("Postgres     ", id="stat-pg")
         yield StatusRow("Ollama       ", id="stat-ollama")
         yield StatusRow("LiteLLM      ", id="stat-litellm")
+        yield StatusRow("Coordinator  ", id="stat-coordinator")
         yield StatusRow("Open tasks   ", id="stat-tasks")
         yield StatusRow("Last handoff ", id="stat-handoff")
         yield Rule()
@@ -141,6 +151,10 @@ class OverviewPane(Container):
         lt_up = _litellm_status()
         self.query_one("#stat-litellm", StatusRow).set_status(
             lt_up, "localhost:4000" if lt_up else "not running"
+        )
+        coord_up = _coordinator_status()
+        self.query_one("#stat-coordinator", StatusRow).set_status(
+            coord_up, "running" if coord_up else "not running"
         )
         tasks = _open_tasks()
         self.query_one("#stat-tasks", StatusRow).set_status(tasks == 0, str(tasks))

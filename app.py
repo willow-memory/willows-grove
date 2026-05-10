@@ -143,12 +143,17 @@ class GroveRightPanel(Container):
         )
         lines = []
         try:
+            hb = grove_reader.coordinator_heartbeat()
             for a in grove_reader.grove_agents():
                 sender   = a["sender"]
                 age_secs = a.get("age_secs", 9999)
                 dot = "[green]●[/]" if age_secs < 120 else "[yellow]●[/]" if age_secs < 900 else "[dim]●[/]"
                 color = sender_color(sender)
                 lines.append(f"{dot} [{color}]{sender}[/]")
+                if sender == "willow" and hb:
+                    sig = hb.get("last_signal", "—")
+                    ts  = hb.get("ts", "")[:16].replace("T", " ")
+                    lines.append(f"  [dim]{sig}  {ts}[/]")
         except Exception:
             pass
         self.post_message(_RightPanelData(task_text, "\n".join(lines) or "[dim]no agents[/]"))

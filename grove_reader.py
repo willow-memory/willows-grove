@@ -2,6 +2,7 @@
 b17: WDASH  ΔΣ=42
 """
 import hashlib
+import json
 import os
 from datetime import datetime, timezone
 
@@ -247,6 +248,25 @@ def grove_agents(conn=None) -> list[dict]:
         return rows
     except Exception:
         return []
+    finally:
+        _release(conn, owned)
+
+
+def coordinator_heartbeat(conn=None) -> dict | None:
+    """Return parsed HEARTBEAT content from willow-coordinator, or None."""
+    conn, owned = _conn_ctx(conn)
+    try:
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT content FROM grove.messages
+            WHERE sender = 'willow' AND bus_type = 'HEARTBEAT'
+              AND is_deleted = 0
+            ORDER BY created_at DESC LIMIT 1
+        """)
+        row = cur.fetchone()
+        return json.loads(row[0]) if row else None
+    except Exception:
+        return None
     finally:
         _release(conn, owned)
 
