@@ -255,9 +255,17 @@ class HomeGrid(Container):
             pass
 
     def on_card_activated(self, event) -> None:
-        if getattr(event, "nav_target", None) == "+":
+        event.stop()
+        nav = getattr(event, "nav_target", None) or ""
+        if nav == "+":
             from widgets.card_builder_modal import CardBuilderModal
             self.app.push_screen(CardBuilderModal())
+        else:
+            from widgets.card_expand_modal import CardExpandModal
+            import cards as card_defs
+            card = next((c for c in card_defs.CARD_SEEDS if c.id == event.card_id), None)
+            label = card.label if card else event.card_id
+            self.app.push_screen(CardExpandModal(event.card_id, label))
 
     def refresh_cards(self) -> None:
         from widgets.card_grid import CardGrid

@@ -290,8 +290,7 @@ class CardCell(Widget):
             pass
 
     def action_activate(self) -> None:
-        if self._nav_target:
-            self.post_message(CardActivated(self._card_id, self._nav_target))
+        self.post_message(CardActivated(self._card_id, self._nav_target))
 
     def on_click(self) -> None:
         self.action_activate()
