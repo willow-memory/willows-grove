@@ -1,6 +1,7 @@
 """panes/routing.py — Live routing decision feed pane.
 b17: WGRV1  ΔΣ=42
 """
+from rich.markup import escape as _e
 from textual import work
 from textual.containers import Container
 from textual.message import Message
