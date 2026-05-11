@@ -335,6 +335,32 @@ def _complete_task(conn, task_id: str, result: dict, steps: int = 0) -> None:
     cur.close()
 
 
+def _willow_repo_root() -> Path | None:
+    """Resolve willow-1.9 checkout for Run Ledger imports (never rely on sibling-path guesses alone)."""
+    env = (os.environ.get("WILLOW_ROOT") or "").strip()
+    candidates: list[Path] = []
+    if env:
+        candidates.append(Path(env).expanduser().resolve())
+    candidates.append((Path.home() / "github" / "willow-1.9").resolve())
+    for base in candidates:
+        try:
+            if (base / "core" / "run_ledger.py").is_file():
+                return base
+        except OSError:
+            continue
+    return None
+
+
+def _ensure_willow_on_path() -> Path | None:
+    root = _willow_repo_root()
+    if root is None:
+        return None
+    key = str(root)
+    if key not in sys.path:
+        sys.path.insert(0, key)
+    return root
+
+
 def _fail_task(conn, task_id: str, error: str) -> None:
     cur = conn.cursor()
     cur.execute("""
@@ -348,9 +374,12 @@ def _fail_task(conn, task_id: str, error: str) -> None:
 
 def _kart_run_open(task_id: str, task_text: str, submitted_by: str) -> None:
     """Open a child Run Ledger record for this Kart task. Best-effort."""
+    if _ensure_willow_on_path() is None:
+        logger.debug("run_ledger open skipped: WILLOW_ROOT / ~/github/willow-1.9 not found")
+        return
     try:
-        sys.path.insert(0, str(Path(__file__).parent.parent / "willow-1.9"))
         from core.run_ledger import open_run, current_run_id
+
         parent = current_run_id()
         open_run(
             purpose=f"kart:{task_id[:8]} {task_text[:60]}",
@@ -362,8 +391,11 @@ def _kart_run_open(task_id: str, task_text: str, submitted_by: str) -> None:
 
 def _kart_run_close(task_id: str, status: str) -> None:
     """Close the child run opened for this Kart task. Best-effort."""
+    if _ensure_willow_on_path() is None:
+        return
     try:
         from core.run_ledger import close_run
+
         close_run(status=status)
     except Exception as e:
         logger.debug("run_ledger close skipped: %s", e)

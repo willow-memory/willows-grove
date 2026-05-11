@@ -10,7 +10,8 @@ Modes:
                      Set GROVE_MCP_URL to the public base URL (e.g. ngrok tunnel).
                      .mcp.json: {"url": "https://<tunnel>/mcp"}
                      Postgres LISTEN/NOTIFY → send_resource_updated pushed to all subscribers.
-                     --watch: auto-restart on grove/*.py file changes (dev mode).
+                     --watch: supervise a **child** serve process; restart it when
+                     `grove/*.py` changes (parent polls mtimes — works because `mcp.run` blocks).
 
 Auth in serve mode: OAuth 2.0 PKCE (dynamic client registration, single-user approval page).
 Auth in stdio mode: implicit (local process, trusted user) — no OAuth.
@@ -691,34 +692,74 @@ button{{padding:12px 24px;font-size:16px;cursor:pointer;margin:8px}}
         return RedirectResponse(redirect_url, status_code=302)
 
 
-def _watch_and_run(fn):
-    """Wrapper for --watch mode: restarts fn() on grove/*.py file changes."""
+def _snapshot_grove_mtimes(grove_dir: Path) -> dict[Path, float]:
+    return {p: p.stat().st_mtime for p in grove_dir.glob("*.py")}
+
+
+def _watch_serve_supervisor() -> None:
+    """Reload dev mode: run `--serve` in a subprocess and restart on `grove/*.py` changes.
+
+    Calling `mcp.run()` in-process blocks forever, so an outer poll loop cannot run.
+    Supervising a child fixes that without requiring uvicorn reload internals.
+    """
+    import subprocess
     import time
+
     grove_dir = Path(__file__).parent
-    mtimes = {p: p.stat().st_mtime for p in grove_dir.glob("*.py")}
-    print(f"[grove-mcp] watch mode: monitoring {grove_dir} for changes", flush=True)
+    mtimes = _snapshot_grove_mtimes(grove_dir)
 
-    while True:
-        try:
-            fn()
-        except KeyboardInterrupt:
-            print("[grove-mcp] watch: interrupted", flush=True)
-            break
-        except Exception as e:
-            print(f"[grove-mcp] watch: error in main(): {e}", flush=True)
+    def child_argv() -> list[str]:
+        args = [sys.executable, "-m", "grove.mcp_local"]
+        for a in sys.argv[1:]:
+            if a == "--watch":
+                continue
+            args.append(a)
+        return args
 
-        # Poll for file changes
-        time.sleep(0.5)
-        changed = False
-        for p in grove_dir.glob("*.py"):
-            if p not in mtimes or p.stat().st_mtime != mtimes[p]:
-                print(f"[grove-mcp] watch: {p.name} changed, restarting...", flush=True)
-                mtimes = {p: p.stat().st_mtime for p in grove_dir.glob("*.py")}
-                changed = True
-                break
-
-        if not changed:
-            time.sleep(1)
+    proc: subprocess.Popen | None = None
+    print(f"[grove-mcp] watch: supervising child; grove dir={grove_dir}", flush=True)
+    try:
+        while True:
+            cmd = child_argv()
+            print(f"[grove-mcp] watch: spawn: {' '.join(cmd)}", flush=True)
+            proc = subprocess.Popen(cmd)
+            reload_requested = False
+            while proc.poll() is None:
+                time.sleep(0.5)
+                for p in grove_dir.glob("*.py"):
+                    try:
+                        cur = p.stat().st_mtime
+                    except OSError:
+                        continue
+                    old = mtimes.get(p)
+                    if old is None or cur != old:
+                        reload_requested = True
+                        break
+                if reload_requested:
+                    print("[grove-mcp] watch: source changed — restarting child", flush=True)
+                    proc.terminate()
+                    try:
+                        proc.wait(timeout=15)
+                    except subprocess.TimeoutExpired:
+                        proc.kill()
+                    mtimes = _snapshot_grove_mtimes(grove_dir)
+                    break
+            else:
+                rc = proc.returncode if proc is not None else -1
+                if rc == 0:
+                    print("[grove-mcp] watch: child exited cleanly — supervisor done", flush=True)
+                    return
+                print(f"[grove-mcp] watch: child exited {rc}; retry in 2s", flush=True)
+                time.sleep(2)
+                mtimes = _snapshot_grove_mtimes(grove_dir)
+    except KeyboardInterrupt:
+        print("[grove-mcp] watch: interrupted", flush=True)
+        if proc is not None and proc.poll() is None:
+            proc.terminate()
+            try:
+                proc.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                proc.kill()
 
 
 def main():
@@ -731,6 +772,9 @@ def main():
 
 if __name__ == "__main__":
     if "--watch" in sys.argv:
-        _watch_and_run(main)
+        if "--serve" not in sys.argv:
+            print("[grove-mcp] error: --watch requires --serve", file=sys.stderr)
+            sys.exit(2)
+        _watch_serve_supervisor()
     else:
         main()
