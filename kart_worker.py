@@ -372,8 +372,17 @@ def _fail_task(conn, task_id: str, error: str) -> None:
     cur.close()
 
 
+# Kart child run IDs — keyed by task_id. Never written to the shared /tmp run file
+# so kart tasks cannot clobber the parent session's current_run_id pointer.
+_KART_RUN_IDS: dict[str, str] = {}
+
+
 def _kart_run_open(task_id: str, task_text: str, submitted_by: str) -> None:
-    """Open a child Run Ledger record for this Kart task. Best-effort."""
+    """Open a child Run Ledger record for this Kart task. Best-effort.
+
+    Uses write_tmp=False so the parent session's /tmp/willow-run-{AGENT}.json
+    is never overwritten by a Kart child run.
+    """
     if _ensure_willow_on_path() is None:
         logger.debug("run_ledger open skipped: WILLOW_ROOT / ~/github/willow-1.9 not found")
         return
@@ -381,22 +390,36 @@ def _kart_run_open(task_id: str, task_text: str, submitted_by: str) -> None:
         from core.run_ledger import open_run, current_run_id
 
         parent = current_run_id()
-        open_run(
+        run_id = open_run(
             purpose=f"kart:{task_id[:8]} {task_text[:60]}",
             parent_run_id=parent,
+            write_tmp=False,
         )
+        if run_id:
+            _KART_RUN_IDS[task_id] = run_id
     except Exception as e:
         logger.debug("run_ledger open skipped: %s", e)
 
 
 def _kart_run_close(task_id: str, status: str) -> None:
-    """Close the child run opened for this Kart task. Best-effort."""
-    if _ensure_willow_on_path() is None:
+    """Close the child run opened for this Kart task. Best-effort.
+
+    Closes directly via DB using the stored run_id — never calls close_run()
+    which would clear the parent session's tmp file.
+    """
+    run_id = _KART_RUN_IDS.pop(task_id, None)
+    if not run_id or _ensure_willow_on_path() is None:
         return
     try:
-        from core.run_ledger import close_run
-
-        close_run(status=status)
+        from core.run_ledger import _connect
+        conn = _connect()
+        conn.autocommit = True
+        cur = conn.cursor()
+        cur.execute(
+            "UPDATE willow.runs SET status=%s, ended_at=now() WHERE id=%s AND status='running'",
+            (status, run_id),
+        )
+        conn.close()
     except Exception as e:
         logger.debug("run_ledger close skipped: %s", e)
 
