@@ -26,6 +26,7 @@ Enterprise doc spine for **Grove** (comms + dashboard) and how it meets the **Wi
 |-------|-----|
 | `grove.*` tables | [`db/GROVE_SCHEMA.md`](db/GROVE_SCHEMA.md) |
 | Message envelope & bus fields | [`contracts/MESSAGE_ENVELOPE.md`](contracts/MESSAGE_ENVELOPE.md) |
+| Routing: `willow.*` vs `public.routing_decisions` | [`verify/ROUTING_OBSERVABILITY.md`](verify/ROUTING_OBSERVABILITY.md) |
 
 ## Decisions (ADRs)
 
