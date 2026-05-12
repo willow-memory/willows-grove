@@ -9,6 +9,7 @@ import atexit
 import json
 import logging
 import os
+import threading
 from contextlib import suppress
 from pathlib import Path
 
@@ -47,6 +48,7 @@ from panes.skills    import SkillsPane
 from panes.logs      import LogsPane
 from panes.secrets   import SecretsPane
 from panes.mcp       import MCPPane
+from panes.run_ledger import RunLedgerPane
 from panes.home      import DeskPane, HomeGrid, ProjectsGrid
 
 from widgets.nav_bar        import NavBar, NavChanged, NAV_TARGETS
@@ -462,8 +464,24 @@ class WillowGrove(App):
         text-style: bold;
     }
 
-    #pane-settings, #pane-help {
+    #pane-settings, #pane-help, #pane-run-ledger {
         padding: 2;
+        color: #8b949e;
+    }
+
+    #run-ledger-title {
+        color: #58a6ff;
+        text-style: bold;
+        margin: 0 0 1 0;
+    }
+
+    #run-ledger-status {
+        margin: 0 0 1 0;
+        height: auto;
+    }
+
+    #run-ledger-status Static {
+        width: 1fr;
         color: #8b949e;
     }
 
@@ -556,6 +574,7 @@ class WillowGrove(App):
                 yield LogsPane(id="pane-logs")
                 yield SecretsPane(id="pane-secrets")
                 yield MCPPane(id="pane-mcp")
+                yield RunLedgerPane(id="pane-run-ledger")
                 yield GitStatusPane(id="pane-git")
                 yield OpenPRsPane(id="pane-prs")
             yield GroveRightPanel(id="right-panel")
@@ -575,7 +594,7 @@ class WillowGrove(App):
                 severity="error",
                 timeout=0,
             )
-            self.call_after_refresh(self.action_quit)
+            self.call_after_refresh(self.exit)
             return
 
         # Session state — mark open, get prior state for resume check
@@ -586,6 +605,12 @@ class WillowGrove(App):
         self._fleet = FleetManager(on_alert=self._on_fleet_alert)
         self._fleet.start()
         atexit.register(self._fleet.stop)
+
+        try:
+            from kart_worker import kart_loop as _kart_loop
+            threading.Thread(target=_kart_loop, daemon=True, name="kart-daemon").start()
+        except Exception:
+            logging.exception("kart daemon failed to start")
 
         self._hide_all_content_panes()
         self._show_content_pane("home")
@@ -628,7 +653,7 @@ class WillowGrove(App):
         fleet = getattr(self, "_fleet", None)
         if fleet:
             fleet.stop()
-        super().action_quit()
+        self.exit()
 
     def _hide_all_content_panes(self) -> None:
         for pane_id in list(_CONTENT_PANES.values()) + _INTERNAL_PANES:
@@ -682,6 +707,10 @@ class WillowGrove(App):
             self.query_one(ChatPane)._open_channel(event.name)
         except NoMatches:
             pass
+        try:
+            self.query_one("#chat-strip", ChatStrip).update_channel(event.name)
+        except Exception:
+            pass
         grove_session.save_state(pane="chat", channel=event.name)
 
     def on_knowledge_atom_selected(self, event: KnowledgeAtomSelected) -> None:
@@ -704,7 +733,7 @@ class WillowGrove(App):
 
     def on_card_activated(self, event: CardActivated) -> None:
         target = event.nav_target
-        if not target:
+        if not target or target == "+":
             return
         if target.startswith("#"):
             self._show_internal_pane(target)

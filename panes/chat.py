@@ -10,9 +10,9 @@ from datetime import datetime
 
 from rich.markup import escape as _e
 from textual import on, work
-from textual.containers import Container, Vertical
+from textual.containers import Container, Vertical, VerticalScroll
 from textual.message import Message
-from textual.widgets import Input, Label, ListItem, ListView, RichLog, Static
+from textual.widgets import Input, Label, ListItem, ListView, Static
 
 import grove_db
 import grove_reader
@@ -65,6 +65,56 @@ def _channel_group(name: str) -> tuple[int, int, str]:
 
 def sort_channels(channels: list[dict]) -> list[dict]:
     return sorted(channels, key=lambda c: _channel_group(c["name"]))
+
+
+class MessageRow(Static):
+    """One message line — Rich markup colors, click to copy plain text."""
+
+    DEFAULT_CSS = """
+    MessageRow {
+        height: auto;
+        padding: 0 1;
+    }
+    MessageRow:hover {
+        background: #161b22;
+    }
+    MessageRow.-copied {
+        background: #1a2f1a;
+    }
+    """
+
+    def __init__(self, plain: str, markup: str, **kwargs) -> None:
+        super().__init__(markup, markup=True, **kwargs)
+        self._plain = plain
+
+    def on_click(self) -> None:
+        self.app.copy_to_clipboard(self._plain)
+        self.add_class("-copied")
+        self.set_timer(0.4, lambda: self.remove_class("-copied"))
+
+
+class MessageLog(VerticalScroll):
+    """Scrollable list of MessageRow widgets — colors + click-to-copy."""
+
+    DEFAULT_CSS = """
+    MessageLog {
+        height: 1fr;
+        background: #0d1117;
+        padding: 1 2;
+    }
+    """
+
+    def load_messages(self, rows: list[tuple[str, str]]) -> None:
+        """Replace all rows — full channel load."""
+        self.remove_children()
+        if rows:
+            self.mount(*[MessageRow(plain, markup) for plain, markup in rows])
+        self.scroll_end(animate=False)
+
+    def append_message(self, plain: str, markup: str) -> None:
+        """Append a single row — used for notify-driven incremental updates."""
+        self.mount(MessageRow(plain, markup))
+        self.scroll_end(animate=False)
 
 
 def _build_channel_label(ch: dict) -> str:
@@ -204,9 +254,8 @@ class ChatPane(Container):
         text-style: bold;
         border-bottom: solid $primary-darken-3;
     }
-    ChatPane RichLog {
+    ChatPane MessageLog {
         height: 1fr;
-        padding: 1 2;
     }
     ChatPane #msg-input {
         height: 3;
@@ -235,7 +284,7 @@ class ChatPane(Container):
     def compose(self):
         yield Static("Select a channel", id="channel-title")
         yield Static("", id="agent-status", markup=True)
-        yield RichLog(id="msg-log", highlight=False, markup=True, wrap=True)
+        yield MessageLog(id="msg-log")
         yield Input(placeholder="Message…", id="msg-input")
 
     def on_mount(self) -> None:
@@ -382,11 +431,14 @@ class ChatPane(Container):
         if channel != self._active_channel:
             return  # stale result — user switched channels while fetch was in flight
         try:
-            log = self.query_one("#msg-log", RichLog)
+            log = self.query_one("#msg-log", MessageLog)
             if clear:
-                log.clear()
-            for m in msgs:
-                self._write_msg(log, m)
+                rows = [self._fmt_msg(m) for m in msgs]
+                log.load_messages(rows)
+            else:
+                for m in msgs:
+                    plain, markup = self._fmt_msg(m)
+                    log.append_message(plain, markup)
             if msgs:
                 self._cursors[channel] = msgs[-1]["id"]
                 self.post_message(CursorAdvanced(channel, msgs[-1]["id"]))
@@ -403,15 +455,15 @@ class ChatPane(Container):
         except Exception:
             pass
 
-    def _write_msg(self, log: RichLog, m: dict) -> None:
+    def _fmt_msg(self, m: dict) -> tuple[str, str]:
         sender  = m.get("sender", "?")
         content = m.get("content", "")
         ts      = format_ts(m.get("created_at"))
         color   = sender_color(sender)
         name    = (sender[:13] + "…") if len(sender) > 14 else f"{sender:<14}"
-        log.write(
-            f"[dim]{ts}[/dim]  [{color} bold]{name}[/{color} bold]  {_e(render_content(content))}"
-        )
+        plain   = f"{ts}  {name}  {content}"
+        markup  = f"[dim]{ts}[/dim]  [{color} bold]{name}[/{color} bold]  {_e(render_content(content))}"
+        return plain, markup
 
     def on_channel_opened(self, event: ChannelOpened) -> None:
         self._open_channel(event.name)

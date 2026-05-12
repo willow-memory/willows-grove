@@ -15,6 +15,8 @@ import time
 from pathlib import Path
 from typing import Callable
 
+_LOG_LOCK = threading.Lock()
+
 _VENV_PYTHON = Path.home() / ".willow-venv" / "bin" / "python3"
 _SYS_PYTHON  = "/usr/bin/python3"
 _AGENTS_BIN  = Path.home() / "agents" / "hanuman" / "bin"
@@ -56,7 +58,8 @@ _SERVICES: dict[str, dict] = {
     },
 }
 
-_MAX_SILENT_RESTARTS = 2
+_MAX_SILENT_RESTARTS = 2      # Alert after 3 failures (once per service)
+_CIRCUIT_BREAKER_THRESHOLD = 10  # Stop retrying after this many failures (GAP 1: prevent infinite crash loops)
 _BACKOFF_BASE_SECS   = 5
 _BACKOFF_MAX_SECS    = 120
 
@@ -110,7 +113,8 @@ class FleetManager:
             self._next_retry_at[name] = 0.0
             self._spawn(name, cfg)
         self._monitor.start()
-        _log.info("FleetManager started. Services: %s", list(_SERVICES))
+        with _LOG_LOCK:
+            _log.info("FleetManager started. Services: %s", list(_SERVICES))
 
     def stop(self) -> None:
         self._running = False
@@ -141,6 +145,14 @@ class FleetManager:
         return result
 
     def _spawn(self, name: str, cfg: dict) -> None:
+        # GAP 1: circuit breaker — stop trying if too many failures
+        if self._failures.get(name, 0) >= _CIRCUIT_BREAKER_THRESHOLD:
+            _log.error(
+                "Circuit breaker open for %s — %d failures. Manual restart required.",
+                name, self._failures[name],
+            )
+            return
+
         # GAP 1: refuse to spawn if the service's port is already bound
         port = cfg.get("port")
         if port and _port_in_use(port):
@@ -158,10 +170,11 @@ class FleetManager:
                 cwd=cfg.get("cwd"),
                 env=env,
                 stdout=log_fh,
-                stderr=log_fh,
+                stderr=subprocess.STDOUT,  # Combine stderr with stdout for unified logging
             )
             self._procs[name] = proc
-            _log.info("Spawned %s PID %d", name, proc.pid)
+            with _LOG_LOCK:
+                _log.info("Spawned %s PID %d", name, proc.pid)
         except Exception as exc:
             _log.error("Failed to spawn %s: %s", name, exc)
             self._failures[name] = self._failures.get(name, 0) + 1
@@ -188,13 +201,15 @@ class FleetManager:
                     policy = cfg.get("restart_policy", "always")
                     if policy == "on_failure" and rc == 0:
                         self._failures[name] = 0
-                        _log.info("%s exited cleanly (rc=0) — not respawning (restart_policy=on_failure)", name)
+                        with _LOG_LOCK:
+                            _log.info("%s exited cleanly (rc=0) — not respawning (restart_policy=on_failure)", name)
                         continue
 
                     self._failures[name] = self._failures.get(name, 0) + 1
                     count = self._failures[name]
                     # GAP 7: log the actual exit code so we know WHY it died
-                    _log.warning("%s exited (rc=%s, failure #%d)", name, rc, count)
+                    with _LOG_LOCK:
+                        _log.warning("%s exited (rc=%s, failure #%d)", name, rc, count)
 
                     # GAP 1: backoff — skip if we're not due for a retry yet
                     if now < self._next_retry_at.get(name, 0.0):
@@ -210,4 +225,5 @@ class FleetManager:
                     delay = min(_BACKOFF_BASE_SECS * (2 ** (count - 1)), _BACKOFF_MAX_SECS)
                     self._next_retry_at[name] = now + delay
                     if count > 1:
-                        _log.info("%s backoff: next retry in %.0fs", name, delay)
+                        with _LOG_LOCK:
+                            _log.info("%s backoff: next retry in %.0fs (failure #%d)", name, delay, count)

@@ -6,7 +6,7 @@ Ported from willow-1.7/kart_worker.py. Runs as a daemon thread inside
 the dashboard process — no separate SAP gate check needed since the dashboard
 is already an authorized context.
 
-Polls kart_task_queue every 5s, claims and executes pending tasks via bwrap sandbox.
+Polls public.tasks every 5s, claims and executes pending tasks via bwrap sandbox.
 """
 import json
 import logging
@@ -346,6 +346,29 @@ def _fail_task(conn, task_id: str, error: str) -> None:
     cur.close()
 
 
+def _kart_run_open(task_id: str, task_text: str, submitted_by: str) -> None:
+    """Open a child Run Ledger record for this Kart task. Best-effort."""
+    try:
+        sys.path.insert(0, str(Path(__file__).parent.parent / "willow-1.9"))
+        from core.run_ledger import open_run, current_run_id
+        parent = current_run_id()
+        open_run(
+            purpose=f"kart:{task_id[:8]} {task_text[:60]}",
+            parent_run_id=parent,
+        )
+    except Exception as e:
+        logger.debug("run_ledger open skipped: %s", e)
+
+
+def _kart_run_close(task_id: str, status: str) -> None:
+    """Close the child run opened for this Kart task. Best-effort."""
+    try:
+        from core.run_ledger import close_run
+        close_run(status=status)
+    except Exception as e:
+        logger.debug("run_ledger close skipped: %s", e)
+
+
 def kart_loop(interval: int = 5) -> None:
     """Daemon loop — claim and execute one task at a time, poll every interval seconds."""
     logger.info("kart daemon started (dashboard-integrated, poll=%ds)", interval)
@@ -361,12 +384,15 @@ def kart_loop(interval: int = 5) -> None:
             task_id = task["task_id"]
             task_text = task["task"]
             logger.info("kart claimed %s (by %s): %s", task_id, task.get("submitted_by", "?"), task_text[:60])
+            _kart_run_open(task_id, task_text, task.get("submitted_by", ""))
             result = execute_task(task_text)
             if result.get("success"):
                 _complete_task(conn, task_id, result, steps=result.get("steps", 0))
+                _kart_run_close(task_id, "completed")
                 logger.info("kart complete %s (%d steps)", task_id, result.get("steps", 0))
             else:
                 _fail_task(conn, task_id, result.get("error", "unknown"))
+                _kart_run_close(task_id, "crashed")
                 logger.warning("kart failed %s: %s", task_id, result.get("error", "?"))
         except Exception as e:
             logger.error("kart loop error: %s", e)

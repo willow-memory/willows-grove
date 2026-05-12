@@ -1,15 +1,16 @@
 # grove/mcp_local.py — Grove MCP for Claude Code.
 # b17: GRMLC  ΔΣ=42
 """
-Two modes:
+Modes:
   stdio (default):   python3 -m grove.mcp_local
                      .mcp.json: {"command": "python3", "args": ["-m", "grove.mcp_local"]}
 
-  serve (push):      python3 -m grove.mcp_local --serve  [--port 8765]
+  serve (push):      python3 -m grove.mcp_local --serve  [--port 8765] [--watch]
                      Runs as a persistent streamable-HTTP server with OAuth.
                      Set GROVE_MCP_URL to the public base URL (e.g. ngrok tunnel).
                      .mcp.json: {"url": "https://<tunnel>/mcp"}
                      Postgres LISTEN/NOTIFY → send_resource_updated pushed to all subscribers.
+                     --watch: auto-restart on grove/*.py file changes (dev mode).
 
 Auth in serve mode: OAuth 2.0 PKCE (dynamic client registration, single-user approval page).
 Auth in stdio mode: implicit (local process, trusted user) — no OAuth.
@@ -639,6 +640,13 @@ if _SERVE_MODE and _auth_provider is not None:
     from starlette.requests import Request
     from starlette.responses import HTMLResponse, RedirectResponse
 
+    @mcp.custom_route("/", methods=["GET", "POST", "DELETE", "PUT"])
+    async def root_redirect(request: Request) -> RedirectResponse:
+        """Redirect bare-root MCP calls to /mcp for clients that drop the path."""
+        url = str(request.url).replace(str(request.base_url).rstrip("/"), "", 1)
+        target = "/mcp" + (url if url and url != "/" else "")
+        return RedirectResponse(target, status_code=307)
+
     @mcp.custom_route("/grove-approve", methods=["GET", "POST"])
     async def grove_approve(request: Request) -> HTMLResponse | RedirectResponse:
         """Single-user OAuth approval page. Sean opens this to authorize claude.ai."""
@@ -683,13 +691,46 @@ button{{padding:12px 24px;font-size:16px;cursor:pointer;margin:8px}}
         return RedirectResponse(redirect_url, status_code=302)
 
 
+def _watch_and_run(fn):
+    """Wrapper for --watch mode: restarts fn() on grove/*.py file changes."""
+    import time
+    grove_dir = Path(__file__).parent
+    mtimes = {p: p.stat().st_mtime for p in grove_dir.glob("*.py")}
+    print(f"[grove-mcp] watch mode: monitoring {grove_dir} for changes", flush=True)
+
+    while True:
+        try:
+            fn()
+        except KeyboardInterrupt:
+            print("[grove-mcp] watch: interrupted", flush=True)
+            break
+        except Exception as e:
+            print(f"[grove-mcp] watch: error in main(): {e}", flush=True)
+
+        # Poll for file changes
+        time.sleep(0.5)
+        changed = False
+        for p in grove_dir.glob("*.py"):
+            if p not in mtimes or p.stat().st_mtime != mtimes[p]:
+                print(f"[grove-mcp] watch: {p.name} changed, restarting...", flush=True)
+                mtimes = {p: p.stat().st_mtime for p in grove_dir.glob("*.py")}
+                changed = True
+                break
+
+        if not changed:
+            time.sleep(1)
+
+
 def main():
     if "--serve" in sys.argv:
         print(f"[grove-mcp] serving on http://127.0.0.1:{_PORT}/mcp  (OAuth: {'enabled' if _SERVE_MODE else 'disabled'})", flush=True)
-        mcp.run(transport="streamable-http")
+        mcp.run(transport="streamable-http", mount_path="/")
     else:
         mcp.run(transport="stdio")
 
 
 if __name__ == "__main__":
-    main()
+    if "--watch" in sys.argv:
+        _watch_and_run(main)
+    else:
+        main()

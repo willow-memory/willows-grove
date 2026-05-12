@@ -55,5 +55,9 @@
       "mcp__willow__store_audit"
     ],
     "defaultMode": "default"
+  },
+  "enabledPlugins": {
+    "superpowers@claude-plugins-official": false,
+    "code-simplifier@claude-plugins-official": false
   }
 }

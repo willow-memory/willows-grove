@@ -77,3 +77,32 @@ For claude.ai: add this under **Settings → Integrations → MCP servers**.
 - `GROVE_MCP_URL` is read by `grove/mcp_local.py` at startup. If unset, the server starts but won't advertise a public URL.
 - Each user sets their own tunnel URL — there is no shared/default public URL.
 - The systemd drop-in is per-user (`~/.config/systemd/user/grove-mcp.service.d/override.conf`) and is not committed to git.
+
+---
+
+## Messaging protocol
+
+**b17:** RBGRV · ΔΣ=42
+
+### NOTIFY path
+
+On insert into `grove.messages`, trigger fires `pg_notify('grove_channel', channel_id)`. Dashboard/MCP subscribers filter by channel id.
+
+### Verify message pipeline
+
+```sql
+SET search_path = grove, public;
+SELECT id, name FROM channels ORDER BY id LIMIT 20;
+SELECT MAX(id) AS newest_message_id FROM messages;
+```
+
+### Search / retention
+
+- Full-text search specifics live in app code (`grove_reader`/dashboard filters) — not duplicated here.
+- Long-term retention policy is an open decision; track via ADR if policy is set.
+
+### Incident patterns
+
+Correlate operational notes with **[INCIDENT]** candidates under [`../generated/`](../generated/README.md).
+
+Curated entry points (with receipts): [`INCIDENT_INDEX.md`](INCIDENT_INDEX.md).
