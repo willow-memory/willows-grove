@@ -14,11 +14,12 @@ from textual.widgets import Label, Rule, Static
 
 # (card_id, label, nav_target)
 _NAV_ROWS: list[tuple[str, str, str]] = [
-    ("tasks",   "Tasks",   "#pane-tasks"),
-    ("agents",  "Agents",  "#pane-agents"),
-    ("routing", "Routing", "#pane-routing"),
-    ("skills",  "Skills",  "#pane-skills"),
-    ("logs",    "Logs",    "#pane-logs"),
+    ("guide",   "Project Guide", "#pane-guide"),
+    ("tasks",   "Tasks",         "#pane-tasks"),
+    ("agents",  "Agents",        "#pane-agents"),
+    ("routing", "Routing",       "#pane-routing"),
+    ("skills",  "Skills",        "#pane-skills"),
+    ("logs",    "Logs",          "#pane-logs"),
 ]
 
 _ROW_COLORS: dict[str, str] = {

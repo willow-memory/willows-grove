@@ -51,10 +51,11 @@ from panes.logs      import LogsPane
 from panes.secrets   import SecretsPane
 from panes.mcp       import MCPPane
 from panes.run_ledger import RunLedgerPane
-from panes.binder    import BinderPane
-from panes.home      import DeskPane, HomeGrid, ProjectsGrid
-from panes.todos     import TodosPane
-from panes.projects  import ProjectsPane
+from panes.binder        import BinderPane
+from panes.project_guide import ProjectGuidePane
+from panes.home          import DeskPane, HomeGrid, ProjectsGrid
+from panes.todos         import TodosPane
+from panes.projects      import ProjectsPane
 
 from widgets.nav_bar        import NavBar, NavChanged, NAV_TARGETS
 from widgets.hero_scene     import HeroScene
@@ -442,7 +443,7 @@ class WillowGrove(App):
     #pane-settings, #pane-help, #pane-tasks, #pane-agents,
     #pane-routing, #pane-skills, #pane-logs, #pane-secrets,
     #pane-mcp, #pane-git, #pane-prs, #pane-todos, #pane-my-projects,
-    #pane-binder, #pane-run-ledger {
+    #pane-binder, #pane-run-ledger, #pane-guide {
         display: none;
     }
 
@@ -609,6 +610,7 @@ class WillowGrove(App):
                 yield MCPPane(id="pane-mcp")
                 yield RunLedgerPane(id="pane-run-ledger")
                 yield BinderPane(id="pane-binder")
+                yield ProjectGuidePane(id="pane-guide")
                 yield GitStatusPane(id="pane-git")
                 yield OpenPRsPane(id="pane-prs")
                 yield TodosPane(id="pane-todos")
