@@ -8,6 +8,7 @@
 |------|------------|------|
 | **stdio** (default) | `python3 -m grove.mcp_local` | Implicit local trust |
 | **serve** | `python3 -m grove.mcp_local --serve` | OAuth 2.0 PKCE |
+| **serve + reload (dev)** | `python3 -m grove.mcp_local --serve --watch` | Same — parent **supervises a child** `--serve` process and restarts it when `grove/*.py` changes (`mcp.run` blocks in-process, so a subprocess is required). |
 
 Set **`GROVE_MCP_URL`** to the public base URL when using serve mode (tunnel/ngrok). Source: [`grove/mcp_local.py`](../../grove/mcp_local.py) module docstring.
 

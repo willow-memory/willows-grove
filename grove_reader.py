@@ -485,6 +485,10 @@ CREATE INDEX IF NOT EXISTS idx_routing_decisions_ts
 
 def routing_decisions(conn=None, limit: int = 8) -> list[dict]:
     """Return recent routing decisions. Auto-creates table on first call.
+
+    Reads **only** `willow.routing_decisions` (oracle-shaped rows). MCP also logs JSON decisions
+    to `public.routing_decisions`; see ``docs/verify/ROUTING_OBSERVABILITY.md``.
+
     Each entry: {ts, prompt_snippet, routed_to, rule_matched, confidence, latency_ms}
     """
     conn, owned = _conn_ctx(conn)
