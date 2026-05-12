@@ -67,8 +67,8 @@ Add these to your shell profile (`~/.bashrc` or `~/.zshrc`) to make them permane
 If you want an objective test that your Grove DB is alive and has the right tables, run:
 
 ```bash
-psql -d "$WILLOW_PG_DB" -c "SELECT COUNT(*) AS channels FROM grove.channels;"
-psql -d "$WILLOW_PG_DB" -c "SELECT COUNT(*) AS messages FROM grove.messages WHERE is_deleted = 0;"
+psql -d “$WILLOW_PG_DB” -c “SELECT COUNT(*) AS channels FROM grove.channels;”
+psql -d “$WILLOW_PG_DB” -c “SELECT COUNT(*) AS messages FROM grove.messages WHERE is_deleted = 0;”
 ```
 
 If the schema is loaded, both commands print a single row with counts (often `messages=0` on first run).
