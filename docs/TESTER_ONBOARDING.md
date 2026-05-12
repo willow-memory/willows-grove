@@ -27,13 +27,19 @@ cd safe-app-willow-grove
 pip install -r requirements.txt
 ```
 
+If you prefer using a `.env` file instead of exports, copy:
+
+```bash
+cp .env.example .env
+```
+
 ---
 
 ## 3. Create your local database
 
 ```bash
-createdb grove_local
-psql -d grove_local -f schema.sql
+createdb willow_19
+psql -d willow_19 -f schema.sql
 ```
 
 This creates all tables. Safe to re-run if something goes wrong.
@@ -43,11 +49,29 @@ This creates all tables. Safe to re-run if something goes wrong.
 ## 4. Set your name
 
 ```bash
-export WILLOW_PG_DB=grove_local
 export GROVE_SENDER=yourname
 ```
 
-Add these to your shell profile (`~/.bashrc` or `~/.zshrc`) to make them permanent.
+Optional: if you used a different database name, set it here:
+
+```bash
+export WILLOW_PG_DB=your_db_name
+```
+
+Add these to your shell profile (`~/.bashrc` or `~/.zshrc`) to make them permanent, or copy `.env.example` → `.env`.
+
+---
+
+## Optional: DB sanity checks (verifiable “is it working?”)
+
+If you want an objective test that your Grove DB is alive and has the right tables, run:
+
+```bash
+psql -d "$WILLOW_PG_DB" -c "SELECT COUNT(*) AS channels FROM grove.channels;"
+psql -d "$WILLOW_PG_DB" -c "SELECT COUNT(*) AS messages FROM grove.messages WHERE is_deleted = 0;"
+```
+
+If the schema is loaded, both commands print a single row with counts (often `messages=0` on first run).
 
 ---
 

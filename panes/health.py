@@ -5,6 +5,7 @@ import os
 import subprocess
 from pathlib import Path
 
+from rich.markup import escape as _e
 from textual.binding import Binding
 from textual.containers import Container
 from textual.widgets import Label, RichLog
@@ -34,4 +35,4 @@ class HealthPane(Container):
             for line in (result.stdout + result.stderr).splitlines():
                 log.write(line)
         except Exception as e:
-            log.write(f"[red]Error: {e}[/]")
+            log.write(f"[red]Error: {_e(str(e))}[/]")

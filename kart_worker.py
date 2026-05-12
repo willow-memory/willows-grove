@@ -29,7 +29,7 @@ _ALLOW_NET_DIRECTIVE = "# allow_net"
 _SHELL_STARTERS = (
     'cp ', 'rsync ', 'python3 ', 'python ',
     'mkdir ', 'chmod ', 'find ', 'grep ', 'curl ', 'echo ',
-    'mv ', 'rm ', 'ls ', 'cat ', 'psql ', 'git ', 'bash ',
+    'mv ', 'rm ', 'ls ', 'cat ', 'git ', 'bash ',
     'ollama ', 'jupyter ', 'kaggle ',
     str(Path.home()) + os.sep,
     '/usr/', '/opt/',
@@ -81,10 +81,10 @@ def _bwrap_prefix(allow_net: bool = False) -> list[str]:
         args += ["--ro-bind", ashokoa, ashokoa]
     desktop = os.path.join(home, "Desktop")
     if os.path.exists(desktop):
-        args += ["--bind", desktop, desktop]
+        args += ["--ro-bind", desktop, desktop]
     github_dir = os.path.join(home, "github")
     if os.path.exists(github_dir):
-        args += ["--bind", github_dir, github_dir]
+        args += ["--ro-bind", github_dir, github_dir]
     local_dir = os.path.join(home, ".local")
     if os.path.exists(local_dir):
         args += ["--ro-bind", local_dir, local_dir]
@@ -190,7 +190,7 @@ def execute_task(task_text: str) -> dict:
                     break
 
         for m in re.finditer(
-            r'^\s*((?:cp|rsync|python3?|mkdir|chmod|find|grep|curl|mv|rm|git|psql|ollama)\s+.+)$',
+            r'^\s*((?:cp|rsync|python3?|mkdir|chmod|find|grep|curl|mv|rm|git|ollama)\s+.+)$',
             task_text, re.MULTILINE
         ):
             cmd = m.group(1).strip()

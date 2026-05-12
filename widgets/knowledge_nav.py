@@ -3,6 +3,7 @@ b17: WGRV1  ΔΣ=42
 """
 from __future__ import annotations
 
+from rich.markup import escape as _e
 from textual import on, work
 from textual.app import ComposeResult
 from textual.message import Message
@@ -13,9 +14,11 @@ from textual.widgets import Input, Static
 class KnowledgeAtomSelected(Message):
     """Posted when the user confirms a result row in KnowledgeNav."""
 
-    def __init__(self, atom_id: int) -> None:
+    def __init__(self, atom_id: int, title: str = "", summary: str = "") -> None:
         super().__init__()
         self.atom_id = atom_id
+        self.title   = title
+        self.summary = summary
 
 
 class _KnowledgeSearchDone(Message):
@@ -66,11 +69,16 @@ class KnowledgeNav(Widget):
         self._last_query = query
         self._search(query)
 
-    @work(thread=True)
+    @work(thread=True, exit_on_error=False)
     def _search(self, query: str) -> None:
-        from panes.knowledge import search_kb
-        rows = search_kb(query, limit=20)
-        self.post_message(_KnowledgeSearchDone(rows))
+        import logging
+        try:
+            from panes.knowledge import search_kb
+            rows = search_kb(query, limit=20)
+            self.post_message(_KnowledgeSearchDone(rows))
+        except Exception:
+            logging.exception("KnowledgeNav._search failed")
+            self.post_message(_KnowledgeSearchDone([]))
 
     def on__knowledge_search_done(self, event: _KnowledgeSearchDone) -> None:
         self._rows = event.rows
@@ -97,8 +105,15 @@ class KnowledgeNav(Widget):
 
     def action_confirm(self) -> None:
         if 0 <= self._cursor < len(self._rows):
-            atom_id = self._rows[self._cursor]["id"]
-            self.post_message(KnowledgeAtomSelected(atom_id))
+            row = self._rows[self._cursor]
+            atom_id = row["id"]
+            self.post_message(
+                KnowledgeAtomSelected(
+                    atom_id,
+                    title=str(row.get("title", "") or ""),
+                    summary=str(row.get("summary", "") or ""),
+                )
+            )
 
     def _render_results(self) -> None:
         from textual.css.query import NoMatches
@@ -110,9 +125,9 @@ class KnowledgeNav(Widget):
                 title = (row.get("title", "") or "—")[:16]
                 atom_id = row.get("id", "?")
                 if i == self._cursor:
-                    lines.append(f"[reverse] {i + 1:2}. {atom_id} {title}  ↵[/]")
+                    lines.append(f"[reverse] {i + 1:2}. {_e(str(atom_id))} {_e(title)}  ↵[/]")
                 else:
-                    lines.append(f"[dim] {i + 1:2}.[/] [#58a6ff]{atom_id}[/] {title}")
+                    lines.append(f"[dim] {i + 1:2}.[/] [#58a6ff]{_e(str(atom_id))}[/] {_e(title)}")
             text = "\n".join(lines)
         try:
             self.query_one("#kn-results", Static).update(text)

@@ -6,7 +6,7 @@
 
 **Architecture:** `DeskData` dataclass holds all fetched values. `render_desk(data)` is a pure function (string in, string out) that builds the Rich markup — fully unit-testable without a running app. `DeskPane` becomes a `Container` with a `@work(thread=True)` worker that fetches data and posts `_DeskRefreshed` to trigger a redraw on the main thread.
 
-**Tech Stack:** Python 3.10+, Textual (existing version), psycopg2, pytest. Reuses `grove_reader.py`, `panes/tasks.py`, `panes/overview.py` as read-only dependencies.
+**Tech Stack:** Python 3.11+, Textual (existing version), psycopg2, pytest. Reuses `grove_reader.py`, `panes/tasks.py`, `panes/overview.py` as read-only dependencies.
 
 ---
 

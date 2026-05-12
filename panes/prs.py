@@ -56,7 +56,7 @@ class OpenPRsPane(Container):
     def refresh_data(self) -> None:
         self._fetch()
 
-    @work(thread=True)
+    @work(thread=True, exit_on_error=False)
     def _fetch(self) -> None:
         self.post_message(_PRsFetched(fetch_open_prs()))
 

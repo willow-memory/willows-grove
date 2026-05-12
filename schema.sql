@@ -128,6 +128,41 @@ CREATE TABLE IF NOT EXISTS public.tasks (
 
 CREATE INDEX IF NOT EXISTS idx_tasks_status ON public.tasks (status);
 
+-- ────────────────────────────────────────────────────────────
+-- Binder schema — proposed edges and filed JSONLs
+-- ────────────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS public.binder_edges (
+    id              BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    agent           TEXT NOT NULL,
+    source_atom     TEXT NOT NULL,
+    target_atom     TEXT NOT NULL,
+    edge_type       TEXT NOT NULL,
+    status          TEXT NOT NULL DEFAULT 'proposed'
+                        CHECK (status IN ('proposed','filed','rejected')),
+    proposed_at     TIMESTAMPTZ DEFAULT now(),
+    filed_at        TIMESTAMPTZ,
+    created_at      TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.binder_files (
+    id              BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    agent           TEXT NOT NULL,
+    jsonl_id        TEXT NOT NULL,
+    dest_path       TEXT NOT NULL,
+    status          TEXT NOT NULL DEFAULT 'filed'
+                        CHECK (status IN ('filed','archived')),
+    filed_at        TIMESTAMPTZ DEFAULT now(),
+    created_at      TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_binder_edges_status ON public.binder_edges (status);
+CREATE INDEX IF NOT EXISTS idx_binder_edges_agent ON public.binder_edges (agent);
+CREATE INDEX IF NOT EXISTS idx_binder_edges_proposed ON public.binder_edges (proposed_at DESC) WHERE status = 'proposed';
+CREATE INDEX IF NOT EXISTS idx_binder_files_status ON public.binder_files (status);
+CREATE INDEX IF NOT EXISTS idx_binder_files_agent ON public.binder_files (agent);
+CREATE INDEX IF NOT EXISTS idx_binder_files_filed ON public.binder_files (filed_at DESC) WHERE status = 'filed';
+
 -- public.knowledge is owned by willow-1.9/core/pg_bridge.py (_SCHEMA).
 -- Do NOT define it here — this file's stale DDL (BIGINT id, body, domain)
 -- does not match the live schema (TEXT id, summary, project, weight, etc.)

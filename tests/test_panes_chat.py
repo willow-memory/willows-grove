@@ -33,3 +33,30 @@ def test_sort_channels_pinned_first():
     names = [c["name"] for c in sort_channels(channels)]
     assert names.index("general") < names.index("zebra")
     assert names.index("architecture") < names.index("zebra")
+
+
+# ── Integration tests for chat pane ────────────────────────────────────────────
+from unittest.mock import patch, MagicMock
+from panes.chat import render_content
+
+def test_render_content_detects_image_prefix():
+    """Verify content rendering recognizes typed content prefixes."""
+    result = render_content("[image: /tmp/test.png]")
+    assert "IMAGE" in result
+    assert "/tmp/test.png" in result
+
+def test_render_content_detects_file_prefix():
+    """Verify content rendering recognizes file prefixes."""
+    result = render_content("[file: /home/user/doc.pdf]")
+    assert "FILE" in result
+
+def test_render_content_passes_through_normal():
+    """Verify normal message content passes through unchanged."""
+    msg = "Hello from @hanuman"
+    result = render_content(msg)
+    assert result == msg
+
+def test_render_content_handles_missing_file():
+    """Verify content rendering shows 'not found' for missing files."""
+    result = render_content("[image: /nonexistent/file.png]")
+    assert "not found" in result

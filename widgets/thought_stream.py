@@ -8,6 +8,7 @@ import os
 from datetime import datetime, timezone
 from pathlib import Path
 
+from rich.markup import escape as _e
 from textual import work
 from textual.message import Message
 from textual.widgets import RichLog, Static
@@ -91,11 +92,11 @@ class ThoughtStream(RichLog):
         self.set_interval(10,  self._fetch)
         self.set_interval(60,  self._refresh_agents)
 
-    @work(thread=True)
+    @work(thread=True, exit_on_error=False)
     def _refresh_agents(self) -> None:
         self.post_message(_AgentsRefreshed(_load_known_agents()))
 
-    @work(thread=True)
+    @work(thread=True, exit_on_error=False)
     def _fetch(self) -> None:
         if not self._known_agents:
             return
@@ -120,7 +121,7 @@ class ThoughtStream(RichLog):
             content = m.get("content", "")
             if len(content) > 60:
                 content = content[:59] + "…"
-            self.write(f"[dim cyan]{sender}[/]  {content}")
+            self.write(f"[dim cyan]{_e(sender)}[/]  {_e(content)}")
             self._last_id = max(self._last_id, m.get("id", 0))
 
 

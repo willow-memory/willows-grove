@@ -7,7 +7,7 @@ Flow:
   1. claude.ai hits /authorize → provider redirects to /grove-approve?pending=<key>
   2. Sean opens that URL in a browser, clicks Allow
   3. Provider issues an auth code → client exchanges for access + refresh tokens
-  4. Tokens stored in token_path JSON file; access tokens expire in 1 hour
+  4. Tokens stored in token_path JSON file; access tokens expire in 30 days
 
 State is in-memory for pending codes (lost on restart, which just means
 claude.ai re-auths). Tokens are persisted to token_path so reconnects work.
@@ -28,7 +28,7 @@ from mcp.server.auth.provider import (
 )
 from mcp.shared.auth import OAuthClientInformationFull, OAuthToken
 
-_ACCESS_TTL  = 3600        # 1 hour
+_ACCESS_TTL  = 30 * 86400  # 30 days (single-user local; claude.ai doesn't auto-refresh)
 _CODE_TTL    = 300         # 5 minutes
 _REFRESH_TTL = 30 * 86400  # 30 days
 

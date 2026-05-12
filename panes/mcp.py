@@ -4,6 +4,7 @@ b17: WGRV1  ΔΣ=42
 import json
 from pathlib import Path
 
+from rich.markup import escape as _e
 from textual import work
 from textual.containers import Container
 from textual.message import Message
@@ -52,7 +53,7 @@ class MCPPane(Container):
     def refresh_data(self) -> None:
         self._fetch()
 
-    @work(thread=True)
+    @work(thread=True, exit_on_error=False)
     def _fetch(self) -> None:
         self.post_message(_MCPFetched(_read_mcp_servers()))
 
@@ -68,4 +69,4 @@ class MCPPane(Container):
             return
         for s in event.servers:
             cmd = s["command"][:60] + "…" if len(s["command"]) > 60 else s["command"]
-            table.add_row(s["name"], f"[dim]{cmd}[/]")
+            table.add_row(s["name"], f"[dim]{_e(cmd)}[/]")

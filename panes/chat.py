@@ -122,7 +122,7 @@ def _build_channel_label(ch: dict) -> str:
     name        = ch["name"]
     unread      = ch.get("unread", 0)
     agent_name  = ch.get("agent_name")
-    agent_part  = f"  [dim]{agent_name}[/]" if agent_name else ""
+    agent_part  = f"  [dim]{_e(agent_name)}[/]" if agent_name else ""
     unread_part = f"  [yellow bold]{unread}[/]" if unread else ""
     return f"# {name}{agent_part}{unread_part}"
 
@@ -201,7 +201,7 @@ class ChannelList(Vertical):
         self.set_interval(5, self._poll)
         self._poll()
 
-    @work(thread=True)
+    @work(thread=True, exit_on_error=False)
     def _poll(self) -> None:
         try:
             channels = grove_reader.grove_channels(last_seen_ids=self._cursors)
@@ -292,7 +292,7 @@ class ChatPane(Container):
         self._poll()
         self._start_listener()
 
-    @work(thread=True)
+    @work(thread=True, exit_on_error=False)
     def _poll(self) -> None:
         try:
             channels = grove_reader.grove_channels(last_seen_ids=self._cursors)
@@ -322,7 +322,7 @@ class ChatPane(Container):
     def _rebuild_channel_list(self, channels: list) -> None:
         pass  # channel list lives in ContextPanel's ChannelList widget
 
-    @work(thread=True)
+    @work(thread=True, exit_on_error=False)
     def _start_listener(self) -> None:
         self._listening = True
         try:
@@ -374,9 +374,9 @@ class ChatPane(Container):
         ch = next((c for c in self._channels if c["name"] == name), {})
         self._active_agent = ch.get("agent_name") or ""
         if self._active_agent:
-            title = f"# {name}  [dim]· {self._active_agent}[/]"
+            title = f"# {_e(name)}  [dim]· {_e(self._active_agent)}[/]"
         else:
-            title = f"# {name}"
+            title = f"# {_e(name)}"
         self.query_one("#channel-title", Static).update(title)
         self._clear_agent_status()
         try:
@@ -386,7 +386,7 @@ class ChatPane(Container):
             pass
         self._load_messages(name)
 
-    @work(thread=True)
+    @work(thread=True, exit_on_error=False)
     def _dispatch_to_agent(self, agent: str, message: str, channel: str) -> None:
         """Post a dispatch request to #dispatch grove channel."""
         import json as _json
@@ -414,7 +414,7 @@ class ChatPane(Container):
         finally:
             grove_db.release_connection(conn)
 
-    @work(thread=True)
+    @work(thread=True, exit_on_error=False)
     def _load_messages(self, channel: str) -> None:
         try:
             since = self._cursors.get(channel, 0)
@@ -498,7 +498,7 @@ class ChatPane(Container):
             from textual.css.query import NoMatches
             try:
                 self.query_one("#agent-status", Static).update(
-                    f"[dim]● waiting for {self._active_agent}…[/]"
+                    f"[dim]● waiting for {_e(self._active_agent)}…[/]"
                 )
             except NoMatches:
                 pass

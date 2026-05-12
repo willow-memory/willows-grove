@@ -5,7 +5,13 @@ import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from unittest.mock import MagicMock, patch
-from panes.knowledge import fetch_atom, render_atom, search_kb, truncate_text
+from panes.knowledge import (
+    fetch_atom,
+    humanize_content,
+    render_atom,
+    search_kb,
+    truncate_text,
+)
 
 
 # ── truncate_text ─────────────────────────────────────────────────────────────
@@ -18,6 +24,28 @@ def test_truncate_long():
     result = truncate_text("hello world", 5)
     assert result == "hello…"
     assert len(result) == 6
+
+
+# ── humanize_content ─────────────────────────────────────────────────────────
+
+
+def test_humanize_plain_returns_stripped():
+    assert humanize_content("  hello  ") == "hello"
+
+
+def test_humanize_json_object_body_key():
+    raw = '{"body": "The answer is 42.", "meta": 1}'
+    out = humanize_content(raw)
+    assert "answer" in out
+    assert "meta: 1" in out
+
+
+def test_humanize_json_array_strings():
+    import json
+
+    raw = json.dumps(["a", "b", "c"])
+    out = humanize_content(raw)
+    assert "a" in out and "b" in out
 
 
 # ── render_atom ───────────────────────────────────────────────────────────────

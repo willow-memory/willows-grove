@@ -3,9 +3,12 @@ b17: WGRV1  ΔΣ=42
 """
 from __future__ import annotations
 
+import logging
 import os
 
 import grove_db
+
+_log = logging.getLogger("card_grid")
 from textual import work
 from textual.app import ComposeResult
 from textual.message import Message
@@ -25,8 +28,8 @@ _STATE_COLORS: dict[str, str] = {
 
 _CARD_NAV: dict[str, str] = {
     "kart":       "#pane-tasks",
-    "knowledge":  "knowledge",
-    "yggdrasil":  "providers",
+    "knowledge":  "#pane-knowledge",
+    "yggdrasil":  "#pane-providers",
     "agents":     "#pane-agents",
     "secrets":    "#pane-secrets",
     "fleet":      "#pane-agents",
@@ -48,11 +51,13 @@ BUILTIN_CARDS: list[tuple[str, str]] = [
 
 # (card_id, label, nav_target)
 LAUNCHER_CARDS: list[tuple[str, str, str]] = [
-    ("tasks",   "Tasks",   "#pane-tasks"),
-    ("agents",  "Agents",  "#pane-agents"),
-    ("routing", "Routing", "#pane-routing"),
-    ("skills",  "Skills",  "#pane-skills"),
-    ("logs",    "Logs",    "#pane-logs"),
+    ("tasks",      "Tasks",      "#pane-tasks"),
+    ("agents",     "Agents",     "#pane-agents"),
+    ("routing",    "Routing",    "#pane-routing"),
+    ("skills",     "Skills",     "#pane-skills"),
+    ("logs",       "Logs",       "#pane-logs"),
+    ("binder",     "Binder",     "#pane-binder"),
+    ("run-ledger", "Run Ledger", "#pane-run-ledger"),
 ]
 
 
@@ -91,8 +96,8 @@ def fetch_runtime_card_values() -> dict[str, dict]:
         )
         today = cur.fetchone()[0]
         out["knowledge"] = {"value": str(total), "sub": f"{today} today", "state": "blue"}
-    except Exception:
-        pass
+    except Exception as e:
+        _log.warning("card_grid knowledge fetch: %s", e)
     finally:
         if conn is not None:
             grove_db.release_connection(conn)
@@ -125,8 +130,8 @@ def fetch_runtime_card_values() -> dict[str, dict]:
         else:
             sub, state = "none", "dim"
         out["agents"] = {"value": str(count), "sub": sub, "state": state}
-    except Exception:
-        pass
+    except Exception as e:
+        _log.warning("card_grid agents fetch: %s", e)
 
     # Secrets — key count from Vault (encrypted vault.db)
     try:
@@ -266,13 +271,18 @@ class CardCell(Widget):
         self._safe_id = _re.sub(r"[^a-zA-Z0-9_-]", "-", card_id).strip("-") or "card"
 
     def compose(self) -> ComposeResult:
-        yield Static(self._label, classes="card-label", markup=False)
-        v = Static(self._value, id=f"cv-{self._safe_id}", classes="card-value", markup=False)
+        label = Static(self._label, classes="card-label", markup=False, expand=False)
+        label.can_focus = False
+        yield label
+        v = Static(self._value, id=f"cv-{self._safe_id}", classes="card-value", markup=False, expand=True)
+        v.can_focus = False
         v.styles.color      = _STATE_COLORS.get(self._state, "#8b949e")
         v.styles.text_style = "bold"
         v.styles.height     = "auto"
         yield v
-        yield Static(self._sub, id=f"cs-{self._safe_id}", classes="card-sub", markup=False)
+        sub = Static(self._sub, id=f"cs-{self._safe_id}", classes="card-sub", markup=False, expand=False)
+        sub.can_focus = False
+        yield sub
 
     def update_card(self, value: str, sub: str, state: str) -> None:
         """Update the displayed value, sub-text, and state color."""
@@ -365,7 +375,7 @@ class CardGrid(Widget):
         self.mount(*cells)
         self._fetch()
 
-    @work(thread=True)
+    @work(thread=True, exit_on_error=False)
     def _fetch(self) -> None:
         data = fetch_runtime_card_values()
 

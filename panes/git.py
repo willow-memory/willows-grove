@@ -4,6 +4,7 @@ b17: WGRV1  ΔΣ=42
 import subprocess
 from pathlib import Path
 
+from rich.markup import escape as _e
 from textual import work
 from textual.containers import Container
 from textual.message import Message
@@ -45,7 +46,7 @@ class GitStatusPane(Container):
     def refresh_data(self) -> None:
         self._fetch()
 
-    @work(thread=True)
+    @work(thread=True, exit_on_error=False)
     def _fetch(self) -> None:
         self.post_message(_GitFetched(fetch_git_status()))
 
@@ -57,13 +58,13 @@ class GitStatusPane(Container):
             return
         log.clear()
         d = event.data
-        log.write(f"[bold #58a6ff]branch:[/] {d['branch']}")
+        log.write(f"[bold #58a6ff]branch:[/] {_e(d['branch'])}")
         log.write("")
         if d["short"] and d["short"] != "(no output)":
             log.write("[bold]working tree:[/]")
             for line in d["short"].splitlines():
                 color = "red" if line[:2].strip() else "yellow"
-                log.write(f"  [{color}]{line}[/]")
+                log.write(f"  [{color}]{_e(line)}[/]")
         else:
             log.write("[dim]working tree clean[/]")
         log.write("")
@@ -71,6 +72,6 @@ class GitStatusPane(Container):
         for line in d["log"].splitlines():
             parts = line.split(" ", 1)
             if len(parts) == 2:
-                log.write(f"  [dim]{parts[0]}[/] {parts[1]}")
+                log.write(f"  [dim]{_e(parts[0])}[/] {_e(parts[1])}")
             else:
-                log.write(f"  {line}")
+                log.write(f"  {_e(line)}")

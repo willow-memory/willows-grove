@@ -4,6 +4,7 @@ b17: WGRV1  ΔΣ=42
 import os
 from pathlib import Path
 
+from rich.markup import escape as _e
 from textual.containers import Container
 from textual.widgets import DataTable, Label, Static
 
@@ -62,5 +63,5 @@ class SkillsPane(Container):
             except Exception:
                 content = "(unreadable)"
             self.query_one("#skill-detail", Static).update(
-                f"\n[bold]{skill['name']}[/]\n{skill['description']}\n\n{content}"
+                f"\n[bold]{_e(skill['name'])}[/]\n{_e(skill['description'])}\n\n{_e(content)}"
             )

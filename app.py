@@ -22,14 +22,16 @@ logging.captureWarnings(True)
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.containers import Container, Horizontal, Vertical
+from textual.containers import Container, Horizontal, Vertical, VerticalScroll
 from textual.css.query import NoMatches
 from textual.screen import ModalScreen
 from textual import work
 from textual.message import Message
 from textual.widgets import Button, Footer, Input, Label, Rule, Select, Static
 
-from panes.chat      import ChatPane, ChannelList, ChannelOpened, sender_color
+from rich.markup import escape as _e
+
+from panes.chat      import ChatPane, ChannelList, ChannelOpened, CursorAdvanced, sender_color
 from widgets.projects_nav    import ProjectsNav
 from widgets.knowledge_nav  import KnowledgeAtomSelected, KnowledgeNav
 from widgets.providers_nav  import ProviderRowSelected, ProvidersNav
@@ -42,13 +44,14 @@ from panes.agents    import AgentsPane
 from panes.routing   import RoutingPane
 from panes.git       import GitStatusPane
 from panes.prs       import OpenPRsPane
-from panes.knowledge import KnowledgePane
+from panes.knowledge import KnowledgePane, KnowledgeRailPreview, truncate_text
 from panes.providers import ProvidersPane
 from panes.skills    import SkillsPane
 from panes.logs      import LogsPane
 from panes.secrets   import SecretsPane
 from panes.mcp       import MCPPane
 from panes.run_ledger import RunLedgerPane
+from panes.binder    import BinderPane
 from panes.home      import DeskPane, HomeGrid, ProjectsGrid
 
 from widgets.nav_bar        import NavBar, NavChanged, NAV_TARGETS
@@ -92,7 +95,7 @@ class VitalsBar(Static):
         self.set_interval(15, self._fetch)
         self._fetch()
 
-    @work(thread=True)
+    @work(thread=True, exit_on_error=False)
     def _fetch(self) -> None:
         pg    = "[green]pg:up[/]" if _pg_ok() else "[red]pg:down[/]"
         bp    = fetch_backfill_progress()
@@ -127,6 +130,10 @@ class GroveRightPanel(Container):
         yield Label("AGENTS", id="rp-agents-label")
         yield Static("", id="rp-agents-list")
         yield Rule()
+        yield Label("KNOWLEDGE", id="rp-knowledge-label")
+        with VerticalScroll(id="rp-knowledge-scroll"):
+            yield Static("(no atom selected)", id="rp-knowledge-preview", markup=False)
+        yield Rule()
         yield Label("THOUGHTS", id="rp-thoughts-label")
         yield ThoughtStream(id="rp-thought-stream")
         yield SessionStats(id="rp-session-stats")
@@ -135,7 +142,7 @@ class GroveRightPanel(Container):
         self.set_interval(10, self._fetch)
         self._fetch()
 
-    @work(thread=True)
+    @work(thread=True, exit_on_error=False)
     def _fetch(self) -> None:
         data = fetch_tasks()
         task_text = (
@@ -151,7 +158,7 @@ class GroveRightPanel(Container):
                 age_secs = a.get("age_secs", 9999)
                 dot = "[green]●[/]" if age_secs < 120 else "[yellow]●[/]" if age_secs < 900 else "[dim]●[/]"
                 color = sender_color(sender)
-                lines.append(f"{dot} [{color}]{sender}[/]")
+                lines.append(f"{dot} [{color}]{_e(sender)}[/]")
                 if sender == "willow" and hb:
                     sig = hb.get("last_signal", "—")
                     ts  = hb.get("ts", "")[:16].replace("T", " ")
@@ -169,6 +176,13 @@ class GroveRightPanel(Container):
             self.query_one(selector, Static).update(text)
         except NoMatches:
             pass
+
+    def set_knowledge_preview(self, atom_id: int, title: str, excerpt: str) -> None:
+        tid = atom_id if atom_id else "—"
+        t = (title or "").strip() or "(untitled)"
+        ex = (excerpt or "").strip() or "…"
+        block = f"{t}\n#{tid}\n\n{ex}"
+        self._safe_update("#rp-knowledge-preview", block)
 
 
 class ContextPanel(Vertical):
@@ -227,7 +241,8 @@ _CONTENT_PANES: dict[str, str] = {
 _INTERNAL_PANES: list[str] = [
     "#pane-tasks", "#pane-agents", "#pane-routing",
     "#pane-skills", "#pane-logs", "#pane-secrets", "#pane-mcp",
-    "#pane-git", "#pane-prs",
+    "#pane-git", "#pane-prs", "#pane-knowledge", "#pane-providers",
+    "#pane-binder", "#pane-run-ledger",
 ]
 
 
@@ -419,6 +434,16 @@ class WillowGrove(App):
 
     #vitals-source { display: none; }
 
+    /* All content panes hidden by default — Python toggles them on/off.
+       This is the authoritative default; on_mount is belt-and-suspenders. */
+    #pane-chat, #pane-projects, #pane-knowledge, #pane-providers,
+    #pane-settings, #pane-help, #pane-tasks, #pane-agents,
+    #pane-routing, #pane-skills, #pane-logs, #pane-secrets,
+    #pane-mcp, #pane-git, #pane-prs, #pane-todos, #pane-my-projects,
+    #pane-binder {
+        display: none;
+    }
+
     #main-area { height: 1fr; }
 
     ContextPanel {
@@ -441,6 +466,7 @@ class WillowGrove(App):
 
     GroveRightPanel #rp-tasks-label,
     GroveRightPanel #rp-agents-label,
+    GroveRightPanel #rp-knowledge-label,
     GroveRightPanel #rp-thoughts-label {
         color: #58a6ff;
         text-style: bold;
@@ -448,12 +474,17 @@ class WillowGrove(App):
     }
 
     GroveRightPanel #rp-task-counts,
-    GroveRightPanel #rp-agents-list {
+    GroveRightPanel #rp-agents-list,
+    GroveRightPanel #rp-knowledge-preview {
         padding: 0 0 0 1;
         color: #8b949e;
     }
 
     GroveRightPanel #rp-agents-list { height: auto; }
+
+    GroveRightPanel #rp-knowledge-scroll {
+        height: 9;
+    }
 
     Rule { margin: 1 0; color: #30363d; }
 
@@ -575,6 +606,7 @@ class WillowGrove(App):
                 yield SecretsPane(id="pane-secrets")
                 yield MCPPane(id="pane-mcp")
                 yield RunLedgerPane(id="pane-run-ledger")
+                yield BinderPane(id="pane-binder")
                 yield GitStatusPane(id="pane-git")
                 yield OpenPRsPane(id="pane-prs")
             yield GroveRightPanel(id="right-panel")
@@ -688,6 +720,7 @@ class WillowGrove(App):
             ("#pane-providers", ProvidersPane),
             ("#pane-skills",    SkillsPane),
             ("#pane-logs",      LogsPane),
+            ("#pane-binder",    BinderPane),
         ]:
             try:
                 self.query_one(pane_id, pane_cls).refresh_data()
@@ -718,6 +751,28 @@ class WillowGrove(App):
             self.query_one(KnowledgePane).display_atom(event.atom_id)
         except NoMatches:
             pass
+        try:
+            title = getattr(event, "title", "") or ""
+            teaser = truncate_text((getattr(event, "summary", "") or "").strip(), 320)
+            if not teaser.strip():
+                teaser = "Loading full text…"
+            self.query_one(GroveRightPanel).set_knowledge_preview(
+                event.atom_id,
+                title,
+                teaser,
+            )
+        except NoMatches:
+            pass
+
+    def on_knowledge_rail_preview(self, event: KnowledgeRailPreview) -> None:
+        try:
+            self.query_one(GroveRightPanel).set_knowledge_preview(
+                event.atom_id,
+                event.title,
+                event.excerpt,
+            )
+        except NoMatches:
+            pass
 
     def on_provider_row_selected(self, event: ProviderRowSelected) -> None:
         try:
@@ -739,6 +794,13 @@ class WillowGrove(App):
             self._show_internal_pane(target)
         else:
             self.action_nav(target)
+
+    def on_cursor_advanced(self, event: CursorAdvanced) -> None:
+        """Relay to ChannelList — lives in a sibling branch, can't receive the bubble."""
+        with suppress(NoMatches):
+            cl = self.query_one(ChannelList)
+            cl._cursors[event.channel] = event.last_id
+            cl._poll()
 
     def action_create_channel(self) -> None:
         def _on_result(result: dict | None) -> None:

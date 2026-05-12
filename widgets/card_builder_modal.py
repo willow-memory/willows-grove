@@ -16,6 +16,8 @@ from textual.message import Message
 from textual.screen import ModalScreen
 from textual.widgets import Input, RichLog, Static
 
+from rich.markup import escape as _e
+
 import grove_db
 import grove_reader
 
@@ -90,7 +92,7 @@ class CardBuilderModal(ModalScreen):
     def on_mount(self) -> None:
         self._setup()
 
-    @work(thread=True)
+    @work(thread=True, exit_on_error=False)
     def _setup(self) -> None:
         channel_id = self._get_or_create_channel()
 
@@ -191,7 +193,7 @@ class CardBuilderModal(ModalScreen):
         if reply:
             self._write_to_channel(channel_id, "willow", reply)
 
-    @work(thread=True)
+    @work(thread=True, exit_on_error=False)
     def _local_reply(self) -> None:
         if self._channel_id is None:
             return
@@ -245,7 +247,7 @@ class CardBuilderModal(ModalScreen):
         color   = sender_color(sender)
         log = self.query_one("#cb-log", RichLog)
         log.write(
-            f"[dim]{ts}[/dim]  [{color} bold]{sender:<14}[/{color} bold]  {render_content(content)}"
+            f"[dim]{ts}[/dim]  [{color} bold]{_e(sender):<14}[/{color} bold]  {_e(render_content(content))}"
         )
 
     def _set_status(self, text: str) -> None:
@@ -255,7 +257,7 @@ class CardBuilderModal(ModalScreen):
         except NoMatches:
             pass
 
-    @work(thread=True)
+    @work(thread=True, exit_on_error=False)
     def _start_listener(self) -> None:
         self._listening = True
         try:
@@ -303,7 +305,7 @@ class CardBuilderModal(ModalScreen):
         save_card(card)
         self._card_saved = True
         self._post_confirmation(card["label"])
-        self._set_status(f"[green]Card '{card['label']}' saved.[/] Press Esc to close or continue.")
+        self._set_status(f"[green]Card '{_e(card['label'])}' saved.[/] Press Esc to close or continue.")
         self.post_message(CardDefDetected(card))
 
     def _post_confirmation(self, label: str) -> None:
