@@ -27,6 +27,8 @@ _STATE_COLORS: dict[str, str] = {
 }
 
 _CARD_NAV: dict[str, str] = {
+    "todos":      "#pane-todos",
+    "projects":   "#pane-my-projects",
     "kart":       "#pane-tasks",
     "knowledge":  "#pane-knowledge",
     "yggdrasil":  "#pane-providers",
@@ -40,6 +42,8 @@ _CARD_NAV: dict[str, str] = {
 
 # (card_id, label) — order controls grid position
 BUILTIN_CARDS: list[tuple[str, str]] = [
+    ("todos",     "To-Do List"),
+    ("projects",  "Projects"),
     ("kart",      "Kart Queue"),
     ("knowledge", "Knowledge"),
     ("yggdrasil", "Yggdrasil"),
@@ -71,6 +75,24 @@ def fetch_runtime_card_values() -> dict[str, dict]:
     from pathlib import Path
 
     out: dict[str, dict] = {cid: {"value": "—", "sub": "", "state": ""} for cid, _ in BUILTIN_CARDS}
+
+    # To-Do List — open item count
+    try:
+        from panes.todos import todos_open_count
+        open_count = todos_open_count()
+        state = "green" if open_count == 0 else "amber"
+        sub   = "all done" if open_count == 0 else "open"
+        out["todos"] = {"value": str(open_count), "sub": sub, "state": state}
+    except Exception:
+        pass
+
+    # Projects — active project count
+    try:
+        from panes.projects import projects_active_count
+        active = projects_active_count()
+        out["projects"] = {"value": str(active), "sub": "active", "state": "blue" if active > 0 else "dim"}
+    except Exception:
+        pass
 
     # Kart Queue — pending/running counts from Kart task queue
     try:

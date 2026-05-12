@@ -336,6 +336,7 @@ class KnowledgePane(Widget):
             self.post_message(_AtomFetched(None))
 
     def on__atom_fetched(self, event: _AtomFetched) -> None:
+        import logging
         from textual.css.query import NoMatches
 
         atom = event.atom
@@ -364,4 +365,3 @@ class KnowledgePane(Widget):
         ex_src = atom_body_plain(atom).replace("\n", " ").strip()
         excerpt = truncate_text(ex_src, 420)
         self.post_message(KnowledgeRailPreview(atom["id"], title, excerpt))
-
