@@ -85,6 +85,86 @@ def test_routing_decisions_returns_rows():
     assert result[0]["confidence"] == 0.95
 
 
+def test_ui_state_running():
+    assert grove_reader._ui_state(30, None) == "running"
+
+
+def test_ui_state_idle():
+    assert grove_reader._ui_state(300, None) == "idle"
+
+
+def test_ui_state_stale():
+    assert grove_reader._ui_state(1000, None) == "stale"
+
+
+def test_ui_state_unknown():
+    assert grove_reader._ui_state(None, None) == "unknown"
+
+
+def test_ui_state_blocked_via_heartbeat():
+    assert grove_reader._ui_state(30, "[AGENT_VIEW] status=blocked reason=waiting") == "blocked"
+
+
+def test_grove_latest_message_for_sender_found():
+    conn = _mock_conn([[(42, "hello world", "corr-1", None)]])
+    result = grove_reader.grove_latest_message_for_sender("hanuman", conn=conn)
+    assert result is not None
+    assert result["id"] == 42
+    assert result["content"] == "hello world"
+    assert result["correlation_id"] == "corr-1"
+
+
+def test_grove_latest_message_for_sender_none():
+    conn = _mock_conn([[]])
+    result = grove_reader.grove_latest_message_for_sender("nobody", conn=conn)
+    assert result is None
+
+
+def test_grove_agent_fleet_rows_running():
+    now = datetime.now(timezone.utc)
+    hb = [("hanuman", now - timedelta(seconds=30), None)]
+    peek = [("hanuman", 99, "working on FAV", "corr-x", False)]
+    conn = _mock_conn([hb, peek])
+    rows = grove_reader.grove_agent_fleet_rows(conn=conn)
+    assert len(rows) == 1
+    r = rows[0]
+    assert r["sender"] == "hanuman"
+    assert r["ui_state"] == "running"
+    assert r["blocked"] is False
+    assert r["peek"] == "working on FAV"
+    assert r["correlation_id"] == "corr-x"
+
+
+def test_grove_agent_fleet_rows_blocked_by_flag():
+    now = datetime.now(timezone.utc)
+    hb = [("hanuman", now - timedelta(seconds=30), None)]
+    peek = [("hanuman", 99, "need approval", "corr-x", True)]
+    conn = _mock_conn([hb, peek])
+    rows = grove_reader.grove_agent_fleet_rows(conn=conn)
+    r = rows[0]
+    assert r["ui_state"] == "blocked"
+    assert r["blocked"] is True
+    assert r["reply_to_message_id"] == 99
+
+
+def test_grove_agent_fleet_rows_blocked_by_heartbeat():
+    now = datetime.now(timezone.utc)
+    hb = [("hanuman", now - timedelta(seconds=30), "[AGENT_VIEW] status=blocked reason=waiting")]
+    peek = [("hanuman", 99, "last msg", None, False)]
+    conn = _mock_conn([hb, peek])
+    rows = grove_reader.grove_agent_fleet_rows(conn=conn)
+    r = rows[0]
+    assert r["ui_state"] == "blocked"
+    assert r["blocked"] is True
+    assert r["reply_to_message_id"] is None
+
+
+def test_grove_agent_fleet_rows_empty():
+    conn = _mock_conn([[]])
+    rows = grove_reader.grove_agent_fleet_rows(conn=conn)
+    assert rows == []
+
+
 def test_color_for_sender_stable():
     c1 = grove_reader.color_for_sender("hanuman")
     c2 = grove_reader.color_for_sender("hanuman")

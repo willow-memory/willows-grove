@@ -259,6 +259,141 @@ def grove_agents(conn=None) -> list[dict]:
         _release(conn, owned)
 
 
+def _ui_state(age_secs: int | None, hb_content: str | None) -> str:
+    if hb_content and hb_content.lstrip().startswith("[AGENT_VIEW] status=blocked"):
+        return "blocked"
+    if age_secs is None:
+        return "unknown"
+    if age_secs < 120:
+        return "running"
+    if age_secs < 900:
+        return "idle"
+    return "stale"
+
+
+def grove_latest_message_for_sender(
+    sender: str,
+    exclude_bus_types: tuple = ("HEARTBEAT",),
+    conn=None,
+) -> dict | None:
+    """Return the latest non-HEARTBEAT message for sender, or None."""
+    conn, owned = _conn_ctx(conn)
+    try:
+        cur = conn.cursor()
+        placeholders = ",".join(["%s"] * len(exclude_bus_types))
+        cur.execute(
+            f"""
+            SELECT id, content, correlation_id, reply_to_id
+            FROM grove.messages
+            WHERE sender = %s
+              AND bus_type NOT IN ({placeholders})
+              AND is_deleted = 0
+            ORDER BY id DESC LIMIT 1
+            """,
+            (sender, *exclude_bus_types),
+        )
+        row = cur.fetchone()
+        if not row:
+            return None
+        return {
+            "id": row[0],
+            "content": row[1],
+            "correlation_id": row[2],
+            "reply_to_id": row[3],
+        }
+    except Exception as e:
+        _log.warning("grove_reader.grove_latest_message_for_sender: %s", e)
+        return None
+    finally:
+        _release(conn, owned)
+
+
+def grove_agent_fleet_rows(limit: int = 50, conn=None) -> list[dict]:
+    """Return fleet rows for the AgentsPane.
+
+    Each row: sender, last_seen_at, age_secs, ui_state, peek,
+              blocked, reply_to_message_id, correlation_id.
+    Two round-trips max per §7 (Phase 0).
+    """
+    conn, owned = _conn_ctx(conn)
+    try:
+        cur = conn.cursor()
+
+        # Round 1: latest HEARTBEAT per sender + structured heartbeat content
+        cur.execute(
+            """
+            SELECT m.sender, m.created_at, m.content
+            FROM grove.messages m
+            JOIN (
+                SELECT sender, MAX(id) AS hb_id
+                FROM grove.messages
+                WHERE bus_type = 'HEARTBEAT' AND is_deleted = 0
+                GROUP BY sender
+            ) latest ON m.id = latest.hb_id
+            ORDER BY m.created_at DESC
+            LIMIT %s
+            """,
+            (limit,),
+        )
+        hb_rows = cur.fetchall()
+
+        now = datetime.now(timezone.utc)
+        senders = [r[0] for r in hb_rows]
+
+        # Round 2: latest non-HEARTBEAT + needs-reply flag per sender (batch)
+        peek_by_sender: dict = {}
+        if senders:
+            cur.execute(
+                """
+                SELECT DISTINCT ON (m.sender)
+                    m.sender, m.id, m.content, m.correlation_id,
+                    (mf.message_id IS NOT NULL) AS needs_reply
+                FROM grove.messages m
+                LEFT JOIN grove.message_flags mf
+                       ON mf.message_id = m.id AND mf.flag = 'needs-reply'
+                WHERE m.sender = ANY(%s)
+                  AND m.bus_type != 'HEARTBEAT'
+                  AND m.is_deleted = 0
+                ORDER BY m.sender, m.id DESC
+                """,
+                (senders,),
+            )
+            for row in cur.fetchall():
+                peek_by_sender[row[0]] = {
+                    "peek_id": row[1],
+                    "peek": (row[2] or "")[:200],
+                    "correlation_id": row[3],
+                    "needs_reply": bool(row[4]),
+                }
+
+        rows = []
+        for sender, last_seen, hb_content in hb_rows:
+            if last_seen.tzinfo is None:
+                last_seen = last_seen.replace(tzinfo=timezone.utc)
+            age_secs = int((now - last_seen).total_seconds())
+            peek_data = peek_by_sender.get(sender, {})
+            needs_reply = peek_data.get("needs_reply", False)
+            state = _ui_state(age_secs, hb_content)
+            if needs_reply and state != "blocked":
+                state = "blocked"
+            rows.append({
+                "sender": sender,
+                "last_seen_at": last_seen,
+                "age_secs": age_secs,
+                "ui_state": state,
+                "peek": peek_data.get("peek", ""),
+                "blocked": needs_reply or state == "blocked",
+                "reply_to_message_id": peek_data.get("peek_id") if needs_reply else None,
+                "correlation_id": peek_data.get("correlation_id"),
+            })
+        return rows
+    except Exception as e:
+        _log.warning("grove_reader.grove_agent_fleet_rows: %s", e)
+        return []
+    finally:
+        _release(conn, owned)
+
+
 def coordinator_heartbeat(conn=None) -> dict | None:
     """Return parsed HEARTBEAT content from willow-coordinator, or None."""
     conn, owned = _conn_ctx(conn)
