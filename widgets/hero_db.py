@@ -45,6 +45,13 @@ def init_db() -> None:
             );
 
             CREATE INDEX IF NOT EXISTS egg_log_ts ON egg_log(ts);
+
+            CREATE TABLE IF NOT EXISTS kb (
+                id        TEXT PRIMARY KEY,
+                title     TEXT NOT NULL,
+                body      TEXT NOT NULL,
+                created   REAL NOT NULL
+            );
         """)
 
 
@@ -107,6 +114,14 @@ def get_counter(key: str) -> int:
     return row["value"] if row else 0
 
 
+def set_counter(key: str, value: int) -> None:
+    with _conn() as con:
+        con.execute("""
+            INSERT INTO counters (key, value) VALUES (?, ?)
+            ON CONFLICT(key) DO UPDATE SET value = ?
+        """, (key, value, value))
+
+
 def achievements() -> list[dict]:
     """Return all eggs that have ever fired, ordered by first_fired."""
     with _conn() as con:
@@ -130,3 +145,19 @@ def recent_log(n: int = 20) -> list[dict]:
             LIMIT ?
         """, (n,)).fetchall()
     return [dict(r) for r in rows]
+
+
+def kb_put(kb_id: str, title: str, body: str) -> None:
+    """Upsert a project-local knowledge note."""
+    with _conn() as con:
+        con.execute("""
+            INSERT INTO kb (id, title, body, created)
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT(id) DO UPDATE SET title=excluded.title, body=excluded.body
+        """, (kb_id, title, body, time.time()))
+
+
+def kb_get(kb_id: str) -> dict | None:
+    with _conn() as con:
+        row = con.execute("SELECT * FROM kb WHERE id=?", (kb_id,)).fetchone()
+    return dict(row) if row else None
