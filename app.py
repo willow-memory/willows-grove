@@ -868,6 +868,9 @@ class WillowGrove(App):
 
 if __name__ == "__main__":
     import traceback
+    from widgets.hero_db import init_db
+
+    init_db()
     try:
         WillowGrove().run()
     except Exception:
