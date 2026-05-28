@@ -50,11 +50,22 @@ def test_fetch_does_not_raise():
     result = fetch_runtime_card_values()
     assert isinstance(result, dict)
 
-def test_fetch_yggdrasil_reads_env(monkeypatch):
-    monkeypatch.setenv("WILLOW_MODEL", "claude-test-model")
+def test_fetch_yggdrasil_reads_ollama(monkeypatch):
+    """Yggdrasil card queries Ollama /api/tags for local yggdrasil models."""
+    import json
+    from unittest.mock import MagicMock
+
+    mock_resp = MagicMock()
+    mock_resp.read.return_value = json.dumps(
+        {"models": [{"name": "llama3.1:8b"}, {"name": "yggdrasil:v9"}]}
+    ).encode()
+    mock_resp.__enter__ = lambda s: s
+    mock_resp.__exit__ = MagicMock(return_value=False)
+
+    monkeypatch.setattr("urllib.request.urlopen", lambda url, timeout=2: mock_resp)
     result = fetch_runtime_card_values()
-    assert result["yggdrasil"]["value"] == "claude-test-model"
-    assert result["yggdrasil"]["sub"] == "active model"
+    assert result["yggdrasil"]["value"] == "yggdrasil:v9"
+    assert result["yggdrasil"]["sub"] == "local model"
 
 def test_fetch_fleet_counts_key_vars(monkeypatch):
     monkeypatch.setenv("WILLOW_ANTHROPIC_KEY", "sk-test-1")
