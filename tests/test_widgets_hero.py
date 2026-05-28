@@ -28,7 +28,8 @@ def test_advance_frame_full_cycle_returns_to_L(monkeypatch):
     assert pose == "L"
     assert frame == 0
 
-def test_render_frame_returns_string():
-    text = render_frame("C", 4)
-    assert isinstance(text, str)
-    assert len(text) > 0
+def test_render_frame_returns_string_tuple():
+    parts = render_frame("C", 4)
+    assert isinstance(parts, tuple)
+    assert len(parts) == 6
+    assert all(isinstance(p, str) and len(p) > 0 for p in parts)
