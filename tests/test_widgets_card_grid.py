@@ -76,8 +76,16 @@ def test_fetch_fleet_counts_key_vars(monkeypatch):
 
 def test_fetch_secrets_missing_vault(monkeypatch):
     """When Vault is unavailable, secrets card shows dim fallback."""
-    monkeypatch.delenv("WILLOW_ROOT", raising=False)
-    monkeypatch.setitem(sys.modules, "core.vault", None)  # force import error path
+    import types
+
+    class BrokenVault:
+        def __init__(self, *a, **k):
+            raise RuntimeError("no vault")
+
+    fake_mod = types.ModuleType("core.vault")
+    fake_mod.Vault = BrokenVault
+    monkeypatch.setitem(sys.modules, "core.vault", fake_mod)
+    monkeypatch.setenv("WILLOW_ROOT", "/tmp/willow-test-root")
     result = fetch_runtime_card_values()
     assert result["secrets"]["value"] == "—"
     assert result["secrets"]["sub"] == "vault"

@@ -12,14 +12,16 @@ def test_each_pose_has_10_frames():
     for key, frames in POSES.items():
         assert len(frames) == 10, f"pose {key} has {len(frames)} frames"
 
-def test_advance_frame_cycles():
+def test_advance_frame_cycles(monkeypatch):
+    monkeypatch.setattr("widgets.hero.random.random", lambda: 1.0)  # no 15% reverse
     pose, frame = "L", 0
     for _ in range(10):
         pose, frame = advance_frame(pose, frame)
     assert pose == "C"
     assert frame == 0
 
-def test_advance_frame_full_cycle_returns_to_L():
+def test_advance_frame_full_cycle_returns_to_L(monkeypatch):
+    monkeypatch.setattr("widgets.hero.random.random", lambda: 1.0)
     pose, frame = "L", 0
     for _ in range(30):
         pose, frame = advance_frame(pose, frame)
