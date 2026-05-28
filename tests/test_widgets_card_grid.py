@@ -74,19 +74,31 @@ def test_fetch_fleet_counts_key_vars(monkeypatch):
     assert int(result["fleet"]["value"]) >= 2
     assert result["fleet"]["sub"] == "api keys"
 
-def test_fetch_secrets_missing_file(tmp_path, monkeypatch):
-    monkeypatch.setattr("pathlib.Path.home", lambda: tmp_path)
+def test_fetch_secrets_missing_vault(monkeypatch):
+    """When Vault is unavailable, secrets card shows dim fallback."""
+    monkeypatch.delenv("WILLOW_ROOT", raising=False)
+    monkeypatch.setitem(sys.modules, "core.vault", None)  # force import error path
     result = fetch_runtime_card_values()
     assert result["secrets"]["value"] == "—"
     assert result["secrets"]["sub"] == "vault"
 
-def test_fetch_secrets_reads_file(tmp_path, monkeypatch):
-    monkeypatch.setattr("pathlib.Path.home", lambda: tmp_path)
-    willow_dir = tmp_path / ".willow"
-    willow_dir.mkdir()
-    (willow_dir / "secrets.json").write_text('{"KEY_A": "val1", "KEY_B": "val2"}')
+def test_fetch_secrets_reads_vault(monkeypatch):
+    import types
+
+    class FakeVault:
+        def list_keys(self):
+            return ["KEY_A", "KEY_B"]
+
+        def read(self, k):
+            return "val" if k == "KEY_A" else None
+
+    fake_mod = types.ModuleType("core.vault")
+    fake_mod.Vault = FakeVault
+    monkeypatch.setitem(sys.modules, "core.vault", fake_mod)
+    monkeypatch.setenv("WILLOW_ROOT", "/tmp/willow-test-root")
     result = fetch_runtime_card_values()
     assert result["secrets"]["value"] == "2"
+    assert result["secrets"]["sub"] == "1/2"
 
 def test_fetch_mcp_reads_file(tmp_path, monkeypatch):
     monkeypatch.setattr("pathlib.Path.home", lambda: tmp_path)
