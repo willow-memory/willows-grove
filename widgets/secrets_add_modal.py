@@ -20,9 +20,9 @@ _ENV_VAR_RE = re.compile(r"^[A-Z_][A-Z0-9_]*$")
 
 
 def _load_secret_detection():
-    """Load the secret detection function from willow-1.9."""
+    """Load the secret detection function from willow-2.0."""
     try:
-        willow_root = os.environ.get("WILLOW_ROOT", str(Path.home() / "github" / "willow-1.9"))
+        willow_root = os.environ.get("WILLOW_ROOT", str(Path.home() / "willow-2.0"))
         if willow_root not in sys.path:
             sys.path.insert(0, willow_root)
         from core.secret_prefixes import detect_secret
@@ -113,7 +113,7 @@ class SecretsAddModal(ModalScreen):
     def _load_vault(self) -> None:
         """Load the Vault instance — never raises."""
         try:
-            willow_root = os.environ.get("WILLOW_ROOT", str(Path.home() / "github" / "willow-1.9"))
+            willow_root = os.environ.get("WILLOW_ROOT", str(Path.home() / "willow-2.0"))
             import sys
             if willow_root not in sys.path:
                 sys.path.insert(0, willow_root)

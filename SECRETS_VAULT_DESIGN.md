@@ -22,8 +22,8 @@
 
 ### What needs fixing
 - **panes/secrets.py line 18**: reads `~/.willow/secrets.json` as plain JSON
-- **Problem**: secrets.json is Fernet-encrypted (by willow-1.9/core/vault.py)
-- **Fix**: Import Vault class from willow-1.9, decrypt before parsing
+- **Problem**: secrets.json is Fernet-encrypted (by willow-2.0/core/vault.py)
+- **Fix**: Import Vault class from willow-2.0, decrypt before parsing
 
 ---
 
@@ -35,7 +35,7 @@
 ```
 ~/.willow/vault.db
     ↓ (SQLite, Fernet-encrypted)
-Vault.list_keys() + Vault.read(key) [from willow-1.9/core/vault.py]
+Vault.list_keys() + Vault.read(key) [from willow-2.0/core/vault.py]
     ↓ (decrypted values)
 _read_secrets() → [{"key": str, "hint": str, "set": bool}]
     ↓
@@ -45,7 +45,7 @@ SecretsPane renders
 ```
 
 ### Implementation
-1. **sys.path setup** — Add willow-1.9 to sys.path at app startup
+1. **sys.path setup** — Add willow-2.0 to sys.path at app startup
 2. **Import Vault** from core.vault
 3. **Decrypt secrets** using Vault.list_keys() (list all keys) + Vault.read(key) for each
 4. **Enrich metadata**:
@@ -58,8 +58,8 @@ SecretsPane renders
    - "Prefix" (e.g., "sk-an…" redacted)
 
 ### Blocking Questions
-- **sys.path approach**: Add willow-1.9 to sys.path in app.py (or in panes/secrets.py)? Or import via environment variable / alternate path?
-- **Lazy import**: Should Vault be imported at pane mount time (lazy) or at app startup (eager)? Lazy is safer if willow-1.9 is unavailable.
+- **sys.path approach**: Add willow-2.0 to sys.path in app.py (or in panes/secrets.py)? Or import via environment variable / alternate path?
+- **Lazy import**: Should Vault be imported at pane mount time (lazy) or at app startup (eager)? Lazy is safer if willow-2.0 is unavailable.
 
 ---
 
@@ -117,7 +117,7 @@ SecretsPane renders
 | `widgets/secrets_add_modal.py` | Create new | Interview-style form |
 | `app.py` | Register modal; handle modal close | Wiring |
 | `cards.py` | Add value/state_query runtime logic | Dashboard card display |
-| `willow-1.9/core/vault.py` | Read (no changes) | Dependency for encryption/decryption |
+| `willow-2.0/core/vault.py` | Read (no changes) | Dependency for encryption/decryption |
 
 ---
 

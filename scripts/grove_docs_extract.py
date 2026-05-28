@@ -61,7 +61,7 @@ def get_dsn() -> str:
     dsn = os.getenv("WILLOW_DB_URL", "")
     if dsn:
         return dsn
-    pg_db = os.getenv("WILLOW_PG_DB", "willow_19")
+    pg_db = os.getenv("WILLOW_PG_DB", "willow_20")
     pg_user = os.getenv("WILLOW_PG_USER", os.environ.get("USER", ""))
     return f"dbname={pg_db} user={pg_user}"
 

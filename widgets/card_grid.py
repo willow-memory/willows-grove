@@ -158,7 +158,7 @@ def fetch_runtime_card_values() -> dict[str, dict]:
     # Secrets — key count from Vault (encrypted vault.db)
     try:
         import sys
-        willow_root = os.environ.get("WILLOW_ROOT", str(Path.home() / "github" / "willow-1.9"))
+        willow_root = os.environ.get("WILLOW_ROOT", str(Path.home() / "willow-2.0"))
         if willow_root not in sys.path:
             sys.path.insert(0, willow_root)
         from core.vault import Vault

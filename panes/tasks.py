@@ -62,7 +62,7 @@ def fetch_flags() -> list[dict]:
     """Return open flags from hanuman/flags SOIL collection, sorted critical→low."""
     _SEVERITY_ORDER = {"critical": 0, "high": 1, "medium": 2, "low": 3}
     try:
-        willow_root = os.environ.get("WILLOW_ROOT", str(Path.home() / "github" / "willow-1.9"))
+        willow_root = os.environ.get("WILLOW_ROOT", str(Path.home() / "willow-2.0"))
         sys.path.insert(0, willow_root)
         from core.willow_store import WillowStore
         store = WillowStore()
@@ -76,7 +76,7 @@ def fetch_flags() -> list[dict]:
 
 def fetch_backfill_progress() -> dict | None:
     try:
-        willow_root = os.environ.get("WILLOW_ROOT", str(Path.home() / "github" / "willow-1.9"))
+        willow_root = os.environ.get("WILLOW_ROOT", str(Path.home() / "willow-2.0"))
         sys.path.insert(0, willow_root)
         from core.willow_store import WillowStore
         store = WillowStore()

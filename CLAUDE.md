@@ -42,7 +42,7 @@ Willow Grove is the unified human+agent surface for the Willow system. Dashboard
 This repo consolidates:
 - `willow-dashboard` — Textual dashboard (dashboard2.py → app.py) + curses TUI (grove/)
 - `safe-app-grove` — u2u encrypted DM transport, Matrix bridge, grove_db.py
-- `willow-1.9/core` — grove_serve.py, grove_client.py, grove_coordination.py
+- `willow-2.0/core` — grove_serve.py, grove_client.py, grove_coordination.py
 
 ## Entry Points
 
@@ -73,7 +73,7 @@ This repo consolidates:
 
 | Component | How Grove connects |
 |-----------|-------------------|
-| Postgres `willow_19` | `grove.channels`, `grove.messages`, `grove.agents`, `willow.routing_decisions`, `public.knowledge`, `public.tasks` |
+| Postgres `willow_20` | `grove.channels`, `grove.messages`, `grove.agents`, `willow.routing_decisions`, `public.knowledge`, `public.tasks` |
 | Ollama | `http://localhost:11434` — model list, active model |
 | SOIL | `~/.willow/store` — cursors, config, active model |
 | Kart | `public.tasks` table — task queue |

@@ -8,7 +8,7 @@ from rich.markup import escape as _e
 from textual.containers import Container
 from textual.widgets import DataTable, Label, Static
 
-WILLOW_ROOT = Path(os.environ.get("WILLOW_ROOT", Path.home() / "github" / "willow-1.9"))
+WILLOW_ROOT = Path(os.environ.get("WILLOW_ROOT", Path.home() / "willow-2.0"))
 SKILLS_DIR  = WILLOW_ROOT / "willow" / "fylgja" / "skills"
 
 

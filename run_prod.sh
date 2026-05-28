@@ -4,7 +4,7 @@
 #
 # Usage: ./run_prod.sh
 #
-# Willow KB context still comes from willow_19 via the MCP server.
+# Willow KB context still comes from willow_20 via the MCP server.
 # Only the Grove messages/channels DB is different.
 
 set -e

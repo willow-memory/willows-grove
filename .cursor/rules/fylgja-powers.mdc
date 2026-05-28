@@ -5,7 +5,7 @@ alwaysApply: true
 
 # Fylgja powers
 
-**Roots:** `WILLOW_FYLGJA_ROOT` if set, else `~/github/willow-1.9/willow/fylgja` (sibling of this repo is fine).
+**Roots:** `WILLOW_FYLGJA_ROOT` if set, else `~/github/willow-2.0/willow/fylgja` (sibling of this repo is fine).
 
 1. `Read` `{ROOT}/powers/registry.json` (catalog only).
 2. Pick the single best `powers[].id` by `description` for the user task.
