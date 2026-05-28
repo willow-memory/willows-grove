@@ -109,7 +109,7 @@ class CardExpandModal(ModalScreen):
 
     def _pg_rows(self, query: str, cols: list[str]) -> tuple[list[dict], list[str]]:
         import psycopg2, os
-        db   = os.environ.get("WILLOW_PG_DB",   "willow_19")
+        db   = os.environ.get("WILLOW_PG_DB",   "willow_20")
         user = os.environ.get("WILLOW_PG_USER", os.environ.get("USER", ""))
         conn = psycopg2.connect(dbname=db, user=user)
         with conn.cursor() as cur:

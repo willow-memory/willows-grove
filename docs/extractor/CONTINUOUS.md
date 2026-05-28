@@ -9,7 +9,7 @@ Use `scripts/grove_docs_refresh.sh` from repo root. It runs `python3 scripts/gro
 Example **weekly** cron (adjust paths):
 
 ```cron
-0 6 * * 1 cd /home/you/github/safe-app-willow-grove && WILLOW_DB_URL=postgresql:///willow_19 ./scripts/grove_docs_refresh.sh >> /tmp/grove-docs.log 2>&1
+0 6 * * 1 cd /home/you/github/safe-app-willow-grove && WILLOW_DB_URL=postgresql:///willow_20 ./scripts/grove_docs_refresh.sh >> /tmp/grove-docs.log 2>&1
 ```
 
 ## Makefile

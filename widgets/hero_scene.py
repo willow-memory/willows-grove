@@ -78,16 +78,25 @@ def _colorize_trunk(line: str) -> str:
 
 
 def _colorize_meadow(line: str) -> str:
-    """Colorize meadow: bloom colors, pigeon body colors, escaped backslashes."""
-    out = []
+    """Colorize meadow: blooms/pigeon per-char; batch plain grass so \\ never prefixes a tag."""
+    out: list[str] = []
+    plain: list[str] = []
+
+    def flush_plain() -> None:
+        if plain:
+            out.append(f"[{SECONDARY}]{rich_escape(''.join(plain))}[/]")
+            plain.clear()
+
     for ch in line:
         if ch in _BLOOM_COLORS:
+            flush_plain()
             out.append(f"[bold {_BLOOM_COLORS[ch]}]{ch}[/]")
         elif ch in _PIGEON_COLORS:
+            flush_plain()
             out.append(f"[{_PIGEON_COLORS[ch]}]{ch}[/]")
         else:
-            # escape \ so it doesn't swallow the next [ in markup
-            out.append("\\\\" if ch == "\\" else ch)
+            plain.append(ch)
+    flush_plain()
     return "".join(out)
 
 

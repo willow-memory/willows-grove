@@ -38,8 +38,8 @@ cp .env.example .env
 ## 3. Create your local database
 
 ```bash
-createdb willow_19
-psql -d willow_19 -f schema.sql
+createdb willow_20
+psql -d willow_20 -f schema.sql
 ```
 
 This creates all tables. Safe to re-run if something goes wrong.

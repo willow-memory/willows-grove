@@ -10,7 +10,7 @@ from textual.binding import Binding
 from textual.containers import Container
 from textual.widgets import Label, RichLog
 
-WILLOW_ROOT = Path(os.environ.get("WILLOW_ROOT", Path.home() / "github" / "willow-1.9"))
+WILLOW_ROOT = Path(os.environ.get("WILLOW_ROOT", Path.home() / "willow-2.0"))
 
 
 class HealthPane(Container):

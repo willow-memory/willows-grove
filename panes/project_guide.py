@@ -171,7 +171,7 @@ class ProjectGuidePane(Container):
     def _ask(self, prompt: str) -> None:
         import sys
         import os
-        willow_root = os.environ.get("WILLOW_ROOT", str(Path.home() / "github" / "willow-1.9"))
+        willow_root = os.environ.get("WILLOW_ROOT", str(Path.home() / "willow-2.0"))
         if willow_root not in sys.path:
             sys.path.insert(0, willow_root)
         # ganas_client lives alongside app.py in the Grove root

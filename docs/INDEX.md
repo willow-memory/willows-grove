@@ -7,7 +7,7 @@ Enterprise doc spine for **Grove** (comms + dashboard) and how it meets the **Wi
 | Doc | Purpose |
 |-----|---------|
 | [`ARCHITECTURE.md`](ARCHITECTURE.md) | Canonical Architecture Reference (CAR) — components, ownership, interfaces |
-| [`CROSS_REPO_BRIDGE.md`](CROSS_REPO_BRIDGE.md) | Boundaries between this repo and `willow-1.9` |
+| [`CROSS_REPO_BRIDGE.md`](CROSS_REPO_BRIDGE.md) | Boundaries between this repo and `willow-2.0` |
 | [`extractor/GROVE_DOCS_EXTRACTOR_SPEC.md`](extractor/GROVE_DOCS_EXTRACTOR_SPEC.md) | Grove → docs pipeline (tags, receipts, refs-not-blobs) |
 | [`extractor/CONTINUOUS.md`](extractor/CONTINUOUS.md) | Cron / Makefile / CI refresh |
 

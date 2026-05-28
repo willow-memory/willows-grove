@@ -26,6 +26,12 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import AsyncIterator
 
+# Ensure the grove repo root (parent of this file's package) is on sys.path
+# so that `import u2u` resolves regardless of how the server is launched.
+_GROVE_ROOT = Path(__file__).parent.parent
+if str(_GROVE_ROOT) not in sys.path:
+    sys.path.insert(0, str(_GROVE_ROOT))
+
 from mcp.server.fastmcp import FastMCP
 
 import grove_db as db
@@ -43,7 +49,7 @@ def _pg_notify_thread() -> None:
 
     dsn = os.getenv("WILLOW_DB_URL", "")
     if not dsn:
-        pg_db   = os.getenv("WILLOW_PG_DB", "willow_19")
+        pg_db   = os.getenv("WILLOW_PG_DB", "willow_20")
         pg_user = os.getenv("WILLOW_PG_USER", os.environ.get("USER", ""))
         dsn = f"dbname={pg_db} user={pg_user}"
 
@@ -87,7 +93,7 @@ async def _lifespan(server: FastMCP) -> AsyncIterator[None]:
 
 _PORT = int(os.getenv("GROVE_MCP_PORT", "8765"))
 _SERVE_MODE = "--serve" in sys.argv
-_BASE_URL = os.getenv("GROVE_MCP_URL", "")  # required in serve mode — set GROVE_MCP_URL to your tunnel URL
+_BASE_URL = os.getenv("GROVE_MCP_URL", f"http://127.0.0.1:{_PORT}")
 
 _common_kwargs = dict(
     instructions=(

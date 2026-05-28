@@ -70,14 +70,14 @@ import grove_reader
 from fleet import FleetManager, already_running
 import grove_session
 
-WILLOW_ROOT = Path(os.environ.get("WILLOW_ROOT", Path.home() / "github" / "willow-1.9"))
+WILLOW_ROOT = Path(os.environ.get("WILLOW_ROOT", Path.home() / "willow-2.0"))
 
 
 def _pg_ok() -> bool:
     try:
         import psycopg2
         conn = psycopg2.connect(
-            dbname=os.environ.get("WILLOW_PG_DB", "willow_19"),
+            dbname=os.environ.get("WILLOW_PG_DB", "willow_20"),
             user=os.environ.get("WILLOW_PG_USER", os.environ.get("USER", "")),
             connect_timeout=2,
         )
