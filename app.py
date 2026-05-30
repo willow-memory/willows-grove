@@ -645,8 +645,21 @@ class WillowGrove(App):
         atexit.register(self._fleet.stop)
 
         try:
-            from kart_worker import kart_loop as _kart_loop
-            threading.Thread(target=_kart_loop, daemon=True, name="kart-daemon").start()
+            if os.environ.get("WILLOW_KART_EMBEDDED", "").strip().lower() in (
+                "1",
+                "true",
+                "yes",
+            ):
+                import sys
+
+                root = str(WILLOW_ROOT)
+                if root not in sys.path:
+                    sys.path.insert(0, root)
+                from core.kart_worker import kart_loop as _kart_loop
+
+                threading.Thread(
+                    target=_kart_loop, daemon=True, name="kart-daemon"
+                ).start()
         except Exception:
             logging.exception("kart daemon failed to start")
 
