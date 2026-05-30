@@ -10,9 +10,13 @@ import time
 import traceback
 from datetime import datetime
 
+from rich.markup import escape as rich_escape
+
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.widgets import Static
+
+from grove.theme_textual import SECONDARY
 
 from .hero import WillowHero
 from ._hero_state import (
