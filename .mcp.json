@@ -7,7 +7,9 @@
         "/home/sean-campbell/github/willow-2.0/sap/unified_mcp.sh"
       ],
       "env": {
-        "WILLOW_AGENT_NAME": "hanuman",
+        "WILLOW_AGENT_NAME": "heimdallr",
+        "GROVE_SENDER": "heimdallr",
+        "GROVE_NAME": "heimdallr",
         "WILLOW_GROVE_ROOT": "/home/sean-campbell/github/safe-app-willow-grove",
         "WILLOW_PG_DB": "willow_20",
         "WILLOW_PG_USER": "sean-campbell",
@@ -15,19 +17,7 @@
         "WILLOW_STORE_ROOT": "/home/sean-campbell/github/.willow/store",
         "WILLOW_SAFE_ROOT": "/home/sean-campbell/github/SAFE/Applications",
         "WILLOW_AGENTS_ROOT": "/home/sean-campbell/github/SAFE/Agents",
-        "WILLOW_HANDOFF_DB": "/home/sean-campbell/Ashokoa/agents/hanuman/index/haumana_handoffs/handoffs.db",
         "WILLOW_DEV_SAFE_ROOT": "/home/sean-campbell/github"
-      }
-    },
-    "grove": {
-      "command": "/usr/bin/python3",
-      "args": ["-m", "grove.mcp_local"],
-      "env": {
-        "PYTHONPATH": "/home/sean-campbell/github/safe-app-willow-grove",
-        "WILLOW_PG_DB": "willow_20",
-        "WILLOW_PG_USER": "sean-campbell",
-        "WILLOW_ROOT": "/home/sean-campbell/github/willow-2.0",
-        "GROVE_MCP_URL": "https://prelaunch-bonus-effective.ngrok-free.dev"
       }
     }
   }
