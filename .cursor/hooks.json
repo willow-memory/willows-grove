@@ -1,11 +1,34 @@
 {
   "version": 1,
   "hooks": {
+    "sessionStart": [
+      {
+        "command": "/home/sean-campbell/github/willow-2.0/willow/fylgja/bin/fylgja-hook cursor session_start",
+        "timeout": 15
+      }
+    ],
+    "beforeSubmitPrompt": [
+      {
+        "command": "/home/sean-campbell/github/willow-2.0/willow/fylgja/bin/fylgja-hook cursor prompt_submit",
+        "timeout": 10
+      }
+    ],
+    "beforeShellExecution": [
+      {
+        "command": "/home/sean-campbell/github/willow-2.0/willow/fylgja/bin/fylgja-hook cursor pre_tool",
+        "timeout": 5
+      }
+    ],
+    "beforeMCPExecution": [
+      {
+        "command": "/home/sean-campbell/github/willow-2.0/willow/fylgja/bin/fylgja-hook cursor pre_tool",
+        "timeout": 5
+      }
+    ],
     "stop": [
       {
-        "command": ".cursor/hooks/run_grove_followup.sh",
-        "timeout": 8,
-        "loop_limit": 25
+        "command": "/home/sean-campbell/github/willow-2.0/willow/fylgja/bin/fylgja-hook cursor stop",
+        "timeout": 30
       }
     ]
   }
