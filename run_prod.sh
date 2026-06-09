@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # run_prod.sh — launch Willow Grove against the prod DB (grove_prod)
-# Sean's personal instance, isolated from fleet dev writes.
+# USER's personal instance, isolated from fleet dev writes.
 #
 # Usage: ./run_prod.sh
 #

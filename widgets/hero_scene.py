@@ -324,7 +324,7 @@ def _sysinfo(prev_cpu: tuple[int, int]) -> tuple[dict, tuple[int, int]]:
 
 # ── Info panel ────────────────────────────────────────────────────────────────
 
-# Sean's WILLOW wordmark from dashboard sketch — escaped for Rich markup
+# USER's WILLOW wordmark from dashboard sketch — escaped for Rich markup
 _WILLOW_ART = [
     r"_  _  _  __ __  __    _  _  _  _",
     r"\\ \\ \\ || ||  ||  / o\ \\ \\ \\ ",  # trailing space prevents \[/] markup escape

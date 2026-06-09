@@ -1,7 +1,7 @@
 # Willow Grove Dashboard — Phase 1: Shell Restructure
-**Date:** 2026-04-30  
-**Author:** Heimdallr  
-**Status:** Draft — pending Sean review  
+**Date:** 2026-04-30
+**Author:** Heimdallr
+**Status:** Draft — pending USER review
 b17: WGRV1  ΔΣ=42
 
 ---

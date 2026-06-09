@@ -101,7 +101,7 @@ Two columns. Left sidebar owns navigation. Right owns content.
 │    ○ jeles           │ │  Message #architecture...                                │
 │                      │ ╰──────────────────────────────────────────────────────────╯
 ├──────────────────────┤
-│ ● Sean               │
+│ ● USER               │
 ╰──────────────────────╯
 ```
 

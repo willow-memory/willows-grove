@@ -6,7 +6,7 @@
   "b17": "WGRV1",
   "agent_type": "infra",
   "description": "Sovereign workspace — unified dashboard, messaging, and agent coordination for the Willow system",
-  "author": "Sean Campbell",
+  "author": "USER",
   "local": true,
   "surfaces": ["tui"],
   "sap_scope": "user-{uuid}/willow-grove/**",

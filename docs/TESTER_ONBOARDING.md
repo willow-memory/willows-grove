@@ -135,21 +135,21 @@ If you don’t know what this means, skip it.
 
 ---
 
-## Chat directly with Sean
+## Chat directly with USER
 
-Sean runs a separate peer-to-peer node. To connect:
+USER runs a separate peer-to-peer node. To connect:
 
 **You:**
 ```bash
 python3 grove_standalone.py
 ```
 
-Press `F1` to see your address (looks like `yourname@192.168.x.x:8550`). Share it with Sean so he can knock you back.
+Press `F1` to see your address (looks like `yourname@192.168.x.x:8550`). Share it with USER so he can knock you back.
 
-**Connect to Sean:**
-In the sidebar, enter Sean's address in the "knock" input and press Enter. Sean will approve the connection. Once approved, select him from your contacts list and start typing.
+**Connect to USER:**
+In the sidebar, enter USER's address in the "knock" input and press Enter. USER will approve the connection. Once approved, select him from your contacts list and start typing.
 
-> Sean's address will be shared before the session. If it changes, press F1 on his end to get the updated one.
+> USER's address will be shared before the session. If it changes, press F1 on his end to get the updated one.
 
 ---
 
@@ -171,4 +171,4 @@ In the sidebar, enter Sean's address in the "knock" input and press Enter. Sean 
 
 ---
 
-Questions? Message Sean in the Grove or open an issue on GitHub.
+Questions? Message USER in the Grove or open an issue on GitHub.

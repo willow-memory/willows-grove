@@ -154,7 +154,7 @@ ANSI 16 only. No 256-color, no RGB.
 | Nuke placard | `red` on `default` |
 | Sender/agent hash | `cyan, magenta, yellow, bright_green, bright_blue, bright_red, bright_cyan` |
 
-Glyphs: Unicode BMP only. `●`, `○`, `·`, `•`, `→`, `←`, `↑`, `↓`. No emoji. Single exception: `🍊` when Sean explicitly types it (CMB atom surfacing).
+Glyphs: Unicode BMP only. `●`, `○`, `·`, `•`, `→`, `←`, `↑`, `↓`. No emoji. Single exception: `🍊` when USER explicitly types it (CMB atom surfacing).
 
 ## 6. Keyboard
 
@@ -253,9 +253,9 @@ When `n` is pressed — or any code path invokes the nuke flow — the dashboard
 - [ ] No dependencies beyond stdlib.
 - [ ] Terminal min 80×24. Below that: single message *"terminal too small — resize to 80×24 or larger"*, clean exit on `q`.
 
-## 11. Open questions for Sean
+## 11. Open questions for USER
 
-1. **Routing feed prompt snippet redaction:** prompts can contain PSR names, credentials, ledger keys. Redact in region 3 when intent is flagged sensitive? Default: no — Sean is the only operator. Revisit if ever multi-user on one machine.
+1. **Routing feed prompt snippet redaction:** prompts can contain PSR names, credentials, ledger keys. Redact in region 3 when intent is flagged sensitive? Default: no — USER is the only operator. Revisit if ever multi-user on one machine.
 
 2. **Agent color stability:** palette is 7 colors; >7 agents means collisions. Acceptable (each agent's color still stable, muscle memory works), or extend to deterministic 16-color?
 

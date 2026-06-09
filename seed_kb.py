@@ -45,7 +45,7 @@ DURATION + METRIC COMBO:
   #5  Soup (session>2h AND cpu<20%)
   #27 They're both good kids (session>90min)
   #16 I would very much like (60min idle + no Grove + low cpu)
-  #6  Sean was trying to rest (uptime>18h + Grove traffic)
+  #6  USER was trying to rest (uptime>18h + Grove traffic)
 
 EXTERNAL EVENT:
   #11 Pigeon's question (Grove agent message while rendering)
@@ -109,7 +109,7 @@ TEXT IN WILLOW LEAVES (fade in/out):
   #27 They're both good kids, #33 Goodnight Ru Goodnight Opal, #35 Rest those eyes
 
 SLOW LETTERPRESS ACROSS TRUNK:
-  #6 Sean was trying to rest, #34 dream those wonderful dreams
+  #6 USER was trying to rest, #34 dream those wonderful dreams
 
 WIDGET SPEAKS ONCE:
   #5 Soup, #11 Pigeon's question, #37 see you on the other side
@@ -149,7 +149,7 @@ TIER 8 — Persistent conditional symbol:
 
 LOW COST after infrastructure exists (trigger + reuse display):
   #3 Rooster, #10 Oakenscroll, #20 slug, #24 MEGA TRUCK,
-  #26 Ray kick, #27 both good kids, #6 Sean was trying to rest
+  #26 Ray kick, #27 both good kids, #6 USER was trying to rest
 """.strip())
 
 kb_put("session-state", "Hero widget session state (last updated 2026-05-10 session 2)", """
