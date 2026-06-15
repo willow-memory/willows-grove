@@ -25,6 +25,7 @@ from mcp.server.auth.provider import (
     AuthorizeError,
     RefreshToken,
     TokenError,
+    construct_redirect_uri,
 )
 from mcp.shared.auth import OAuthClientInformationFull, OAuthToken
 
@@ -108,9 +109,17 @@ class GroveOAuthProvider:
         client: OAuthClientInformationFull,
         params: AuthorizationParams,
     ) -> str:
-        key = secrets.token_urlsafe(16)
-        self._pending[key] = (client, params)
-        return f"{self._base_url}/grove-approve?pending={key}"
+        """Return redirect URL for the OAuth client (claude.ai callback).
+
+        Single-user fleet: auto-approve so claude.ai Connect completes without
+        a manual /grove-approve click. Use /grove-approve only for debugging.
+        """
+        code = self.issue_code(client, params)
+        return construct_redirect_uri(
+            str(params.redirect_uri),
+            code=code,
+            state=params.state,
+        )
 
     async def load_authorization_code(
         self,

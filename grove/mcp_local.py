@@ -25,6 +25,7 @@ import asyncio
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import AsyncIterator
+from urllib.parse import urlparse
 
 # Ensure the grove repo root (parent of this file's package) is on sys.path
 # so that `import u2u` resolves regardless of how the server is launched.
@@ -95,6 +96,28 @@ _PORT = int(os.getenv("GROVE_MCP_PORT", "8765"))
 _SERVE_MODE = "--serve" in sys.argv
 _BASE_URL = os.getenv("GROVE_MCP_URL", f"http://127.0.0.1:{_PORT}")
 
+
+def _transport_security():
+    """DNS rebinding — disabled behind ngrok (edge may forward Host: 127.0.0.1:8765)."""
+    from mcp.server.transport_security import TransportSecuritySettings
+
+    if _BASE_URL.startswith("https://"):
+        return TransportSecuritySettings(enable_dns_rebinding_protection=False)
+    hosts = ["127.0.0.1:*", "localhost:*", "[::1]:*"]
+    origins = ["http://127.0.0.1:*", "http://localhost:*", "http://[::1]:*"]
+    return TransportSecuritySettings(
+        enable_dns_rebinding_protection=True,
+        allowed_hosts=hosts,
+        allowed_origins=origins,
+    )
+
+
+def _public_mcp_url() -> str:
+    """RFC 9728 resource URL — must match the connector URL (…/mcp)."""
+    base = _BASE_URL.rstrip("/")
+    return base if base.endswith("/mcp") else f"{base}/mcp"
+
+
 _common_kwargs = dict(
     instructions=(
         "Grove sovereign workspace messaging. "
@@ -116,10 +139,11 @@ if _SERVE_MODE:
     mcp = FastMCP(
         "grove",
         **_common_kwargs,
+        transport_security=_transport_security(),
         auth_server_provider=_auth_provider,
         auth=AuthSettings(
-            issuer_url=_BASE_URL + "/",
-            resource_server_url=_BASE_URL + "/",
+            issuer_url=_BASE_URL.rstrip("/") + "/",
+            resource_server_url=_public_mcp_url(),
             client_registration_options=ClientRegistrationOptions(
                 enabled=True,
                 valid_scopes=["grove"],
