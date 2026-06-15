@@ -15,14 +15,18 @@ from textual.message import Message
 from textual.widgets import DataTable, Input, Label, Static
 from textual.widgets.data_table import RowKey
 
+from grove.apps import mcp_catalog
 from grove.apps.mcp_client import call_tool, format_tool_result, list_tools
 from grove.apps.mcp_process import restart_serve, serve_status, start_serve, stop_serve
 from grove.apps.mcp_registry import get_server, mcp_summary
 from grove.theme_textual import ACCENT, DEGRADED, HEALTHY, IDLE, PRIMARY, SECONDARY
 
 _HELP = (
-    "s start serve  x stop  R restart  p probe  t tools  Enter call  r refresh  Tab switch"
+    "s start  x stop  R restart  p probe  t tools  v all-tiers  Enter call  r refresh"
 )
+
+# Tools at or below this rank show by default; extended (rank 3) hides until 'v'.
+_DEFAULT_MAX_RANK = mcp_catalog.TIER_RANK["standard"]
 
 
 class _McpFetched(Message):
@@ -84,6 +88,7 @@ class MCPPane(Container):
         Binding("R", "restart_serve", "Restart"),
         Binding("p", "probe_server", "Probe"),
         Binding("t", "load_tools", "Tools"),
+        Binding("v", "toggle_tiers", "All tiers"),
         Binding("enter", "call_tool", "Call", show=False),
         Binding("tab", "focus_next", "Next", show=False),
     ]
@@ -153,6 +158,8 @@ class MCPPane(Container):
         self._selected_tool: str | None = None
         self._server_keys: dict[str, RowKey] = {}
         self._tool_keys: dict[str, RowKey] = {}
+        self._show_all_tiers: bool = False
+        self._drift: dict = {}
 
     def compose(self):
         yield Label("MCP", id="mcp-title")
@@ -172,6 +179,8 @@ class MCPPane(Container):
                 tools = DataTable(id="mcp-tools", cursor_type="row")
                 tools.add_columns(
                     ("Tool", "tool"),
+                    ("Group", "group"),
+                    ("Tr", "tier"),
                     ("Description", "desc"),
                 )
                 yield tools
@@ -316,33 +325,76 @@ class MCPPane(Container):
         if event.error:
             self._set_result(f"[{DEGRADED}]tools error[/]: {_e(event.error)}")
             return
-        self._tools = event.tools
-        try:
-            table = self.query_one("#mcp-tools", DataTable)
-        except NoMatches:
-            return
-        table.clear()
-        self._tool_keys.clear()
-        for tool in self._tools:
-            key = table.add_row(
-                tool.get("name", ""),
-                _truncate(tool.get("description", ""), 56),
-            )
-            self._tool_keys[tool["name"]] = key
-        self._set_result(
-            f"[{PRIMARY}]{len(self._tools)} tools[/] on [bold]{_e(event.server)}[/]"
-        )
+        # Enrich live tools with registry group/tier; compute drift vs the registry.
+        self._tools = mcp_catalog.annotate(event.tools)
+        self._drift = mcp_catalog.drift([t.get("name", "") for t in self._tools])
         for s in self._servers:
             if s["name"] == event.server:
                 s["alive"] = True
                 break
         self._refresh_server_tool_counts()
         self._refresh_server_status_dot(event.server)
-        if self._tools:
-            self._selected_tool = self._tools[0]["name"]
+        self._render_tools(event.server)
+
+    def _visible_tools(self) -> list[dict]:
+        """Tier-filtered, sorted tools: by tier rank, then group, then name."""
+        tools = self._tools
+        if not self._show_all_tiers:
+            tools = [
+                t for t in tools
+                if t.get("tier_rank", _DEFAULT_MAX_RANK) <= _DEFAULT_MAX_RANK
+            ]
+        return sorted(
+            tools,
+            key=lambda t: (t.get("tier_rank", 9), t.get("group", ""), t.get("name", "")),
+        )
+
+    def _render_tools(self, server: str) -> None:
+        try:
+            table = self.query_one("#mcp-tools", DataTable)
+        except NoMatches:
+            return
+        table.clear()
+        self._tool_keys.clear()
+        visible = self._visible_tools()
+        for tool in visible:
+            mark = "" if tool.get("documented", True) else "·"  # undocumented (drift)
+            key = table.add_row(
+                tool.get("name", ""),
+                _truncate(tool.get("group", ""), 14),
+                f"{(tool.get('tier') or '')[:3]}{mark}",
+                _truncate(tool.get("description", ""), 48),
+            )
+            self._tool_keys[tool["name"]] = key
+        self._set_result(self._tools_summary(server, len(visible)))
+        if visible:
+            first = visible[0]["name"]
+            self._selected_tool = first
             with suppress(Exception):
-                table.move_cursor(row=self._tool_keys[self._selected_tool])
-            self._show_tool_detail(self._tools[0])
+                table.move_cursor(row=self._tool_keys[first])
+            self._show_tool_detail(visible[0])
+
+    def _tools_summary(self, server: str, shown: int) -> str:
+        d = self._drift or {}
+        hidden = len(self._tools) - shown
+        if self._show_all_tiers or hidden <= 0:
+            tier_note = ""
+        else:
+            tier_note = f"  [dim](+{hidden} extended — v)[/]"
+        drift_note = ""
+        if d:
+            ro, lo = len(d.get("registry_only", [])), len(d.get("live_only", []))
+            if ro or lo:
+                drift_note = (
+                    f"  [dim]drift:[/] [{DEGRADED}]{lo} undocumented[/]"
+                    f" · [{SECONDARY}]{ro} stale-doc[/]"
+                )
+            else:
+                drift_note = f"  [{HEALTHY}]registry ✓[/]"
+        return (
+            f"[{PRIMARY}]{len(self._tools)} tools[/] on [bold]{_e(server)}[/]"
+            f"{tier_note}{drift_note}"
+        )
 
     def on__mcp_call_done(self, event: _McpCallDone) -> None:
         if event.error:
@@ -422,6 +474,12 @@ class MCPPane(Container):
 
     def action_refresh(self) -> None:
         self.refresh_data()
+
+    def action_toggle_tiers(self) -> None:
+        """Show/hide extended-tier tools (the long tail)."""
+        self._show_all_tiers = not self._show_all_tiers
+        if self._selected_server and self._tools:
+            self._render_tools(self._selected_server)
 
     def action_start_serve(self) -> None:
         self._set_result(f"[dim {SECONDARY}]starting grove serve…[/]")
