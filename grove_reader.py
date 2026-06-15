@@ -1175,3 +1175,37 @@ def _routing_decisions_public(conn=None, limit: int = 8) -> list[dict]:
         return []
     finally:
         _release(conn, owned)
+
+
+def human_required_queue(conn=None, limit: int = 30, open_only: bool = True) -> list[dict]:
+    """Items from public.human_required_queue — work that pauses automation until a
+    human acts (consent, attestation, review, onboarding). Priority-first, newest-first.
+
+    Each entry: {id, kind, title, summary, status, priority, source_agent,
+                 source_ref, assignee, created_at}
+    """
+    conn, owned = _conn_ctx(conn)
+    try:
+        cur = conn.cursor()
+        where = "WHERE status = 'open'" if open_only else ""
+        cur.execute(
+            f"""
+            SELECT id, kind, title, summary, status, priority,
+                   source_agent, source_ref, assignee, created_at
+            FROM public.human_required_queue
+            {where}
+            ORDER BY
+                CASE priority WHEN 'critical' THEN 0 WHEN 'high' THEN 1
+                              WHEN 'normal' THEN 2 WHEN 'low' THEN 3 ELSE 4 END,
+                created_at DESC
+            LIMIT %s
+            """,
+            (limit,),
+        )
+        cols = [d[0] for d in cur.description]
+        return [dict(zip(cols, r)) for r in cur.fetchall()]
+    except Exception as e:
+        _log.warning("grove_reader.human_required_queue: %s", e)
+        return []
+    finally:
+        _release(conn, owned)

@@ -13,6 +13,16 @@ PLUS_CARD_ID = "add-card"
 
 BUILTIN_CARDS: list[dict] = [
     {
+        "id": "human",
+        "label": "Human",
+        "subtitle": "consent · attestation · review",
+        "category": "work",
+        "nav_target": "#pane-human",
+        "built_in": True,
+        "enabled": True,
+        "order": 0,
+    },
+    {
         "id": "user-todos",
         "label": "My Desk",
         "subtitle": "todos · projects · deadlines",
@@ -20,7 +30,7 @@ BUILTIN_CARDS: list[dict] = [
         "nav_target": "#pane-user-todos",
         "built_in": True,
         "enabled": True,
-        "order": 0,
+        "order": 1,
     },
     {
         "id": "tasks",
@@ -30,7 +40,7 @@ BUILTIN_CARDS: list[dict] = [
         "nav_target": "#pane-tasks",
         "built_in": True,
         "enabled": True,
-        "order": 1,
+        "order": 2,
     },
     {
         "id": "agents",
@@ -40,7 +50,7 @@ BUILTIN_CARDS: list[dict] = [
         "nav_target": "#pane-agents",
         "built_in": True,
         "enabled": True,
-        "order": 2,
+        "order": 3,
     },
     {
         "id": "routing",
@@ -50,7 +60,7 @@ BUILTIN_CARDS: list[dict] = [
         "nav_target": "#pane-routing",
         "built_in": True,
         "enabled": True,
-        "order": 3,
+        "order": 4,
     },
     {
         "id": "knowledge",
@@ -60,7 +70,7 @@ BUILTIN_CARDS: list[dict] = [
         "nav_target": "knowledge",
         "built_in": True,
         "enabled": True,
-        "order": 4,
+        "order": 5,
     },
     {
         "id": "think-map",
@@ -70,7 +80,7 @@ BUILTIN_CARDS: list[dict] = [
         "nav_target": "#pane-think-map",
         "built_in": True,
         "enabled": True,
-        "order": 5,
+        "order": 6,
     },
     {
         "id": "mcp",
@@ -80,7 +90,7 @@ BUILTIN_CARDS: list[dict] = [
         "nav_target": "#pane-mcp",
         "built_in": True,
         "enabled": True,
-        "order": 6,
+        "order": 7,
     },
     {
         "id": "git",
@@ -90,7 +100,7 @@ BUILTIN_CARDS: list[dict] = [
         "nav_target": "#pane-git",
         "built_in": True,
         "enabled": True,
-        "order": 7,
+        "order": 8,
     },
     {
         "id": "prs",
@@ -100,7 +110,7 @@ BUILTIN_CARDS: list[dict] = [
         "nav_target": "#pane-prs",
         "built_in": True,
         "enabled": True,
-        "order": 8,
+        "order": 9,
     },
 ]
 

@@ -15,6 +15,7 @@ from panes.chat import ChatPane
 from panes.git import GitStatusPane
 from panes.help import HelpPane
 from panes.home import HomeGrid
+from panes.human import HumanPane
 from panes.knowledge import KnowledgePane
 from panes.mcp import MCPPane
 from panes.prs import OpenPRsPane
@@ -41,6 +42,7 @@ _INTERNAL_PANES: dict[str, type[Widget]] = {
     "#pane-agents": AgentsPane,
     "#pane-routing": RoutingPane,
     "#pane-mcp": MCPPane,
+    "#pane-human": HumanPane,
     "#pane-git": GitStatusPane,
     "#pane-prs": OpenPRsPane,
     "#pane-upstream": UpstreamPane,
@@ -70,6 +72,7 @@ class ContentArea(Container):
         yield AgentsPane(id="pane-agents")
         yield RoutingPane(id="pane-routing")
         yield MCPPane(id="pane-mcp")
+        yield HumanPane(id="pane-human")
         yield GitStatusPane(id="pane-git")
         yield OpenPRsPane(id="pane-prs")
         yield UpstreamPane(id="pane-upstream")
