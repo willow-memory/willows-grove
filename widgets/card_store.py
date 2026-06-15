@@ -289,6 +289,20 @@ def seed_catalog() -> None:
     reconcile_duplicates()
 
 
+def enable_dev_cards() -> None:
+    """Turn on git-status and open-prs cards for local dashboard dev (idempotent)."""
+    seed_catalog()
+    for cid in ("git-status", "open-prs"):
+        records = [r for r in soil.all_records(COLLECTION) if _card_id(r) == cid]
+        if not records:
+            continue
+        card = dict(records[0])
+        if card.get("enabled"):
+            continue
+        card["enabled"] = True
+        save_card(card)
+
+
 def validate_card_def(raw: dict) -> dict | None:
     """Validate and normalize a card dict. Returns normalized dict or None."""
     card_id = raw.get("id") or raw.get("_id")

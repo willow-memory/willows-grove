@@ -1078,14 +1078,27 @@ CREATE INDEX IF NOT EXISTS idx_routing_decisions_ts
 """
 
 
-def routing_decisions(conn=None, limit: int = 8) -> list[dict]:
-    """Return recent routing decisions. Auto-creates table on first call.
+_MIN_TS = datetime.min.replace(tzinfo=timezone.utc)
 
-    Reads **only** `willow.routing_decisions` (oracle-shaped rows). MCP also logs JSON decisions
-    to `public.routing_decisions`; see ``docs/verify/ROUTING_OBSERVABILITY.md``.
+
+def routing_decisions(conn=None, limit: int = 8) -> list[dict]:
+    """Return recent routing decisions, merged from willow + public tables by time.
+
+    Reads `willow.routing_decisions` (oracle-shaped rows, auto-created on first call)
+    and `public.routing_decisions` (MCP JSONB decisions), merged newest-first. See
+    ``docs/verify/ROUTING_OBSERVABILITY.md``.
 
     Each entry: {ts, prompt_snippet, routed_to, rule_matched, confidence, latency_ms}
     """
+    willow_rows = _routing_decisions_willow(conn, limit=limit * 2)
+    public_rows = _routing_decisions_public(conn, limit=limit * 2)
+    merged = willow_rows + public_rows
+    merged.sort(key=lambda r: r.get("ts") or _MIN_TS, reverse=True)
+    return merged[:limit]
+
+
+def _routing_decisions_willow(conn=None, limit: int = 8) -> list[dict]:
+    """Oracle-shaped rows from willow.routing_decisions. Auto-creates table on first call."""
     conn, owned = _conn_ctx(conn)
     try:
         cur = conn.cursor()
@@ -1116,7 +1129,49 @@ def routing_decisions(conn=None, limit: int = 8) -> list[dict]:
             })
         return rows
     except Exception as e:
-        _log.warning("grove_reader.routing_decisions: %s", e)
+        _log.warning("grove_reader.routing_decisions (willow): %s", e)
+        return []
+    finally:
+        _release(conn, owned)
+
+
+def _routing_decisions_public(conn=None, limit: int = 8) -> list[dict]:
+    """MCP JSONB rows from public.routing_decisions."""
+    conn, owned = _conn_ctx(conn)
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            SELECT created_at, prompt_hash, decision
+            FROM public.routing_decisions
+            ORDER BY created_at DESC LIMIT %s
+            """,
+            (limit,),
+        )
+        rows = []
+        for created_at, prompt_hash, decision in cur.fetchall():
+            dec = decision
+            if isinstance(dec, str):
+                try:
+                    dec = json.loads(dec)
+                except json.JSONDecodeError:
+                    dec = {}
+            if not isinstance(dec, dict):
+                dec = {}
+            snippet = (dec.get("prompt_snippet") or "").strip()
+            if not snippet and prompt_hash:
+                snippet = f"[hash:{str(prompt_hash)[:12]}]"
+            rows.append({
+                "ts": created_at,
+                "prompt_snippet": snippet,
+                "routed_to": dec.get("routed_to") or "?",
+                "rule_matched": dec.get("rule_matched") or "—",
+                "confidence": float(dec.get("confidence") or 0.0),
+                "latency_ms": dec.get("latency_ms"),
+            })
+        return rows
+    except Exception as e:
+        _log.warning("grove_reader.routing_decisions (public): %s", e)
         return []
     finally:
         _release(conn, owned)
