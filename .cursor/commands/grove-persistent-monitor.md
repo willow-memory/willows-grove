@@ -18,7 +18,7 @@ Before launching, look up your channel's numeric ID. It does not change after cr
 ```python
 import os, psycopg2
 conn = psycopg2.connect(
-    dbname=os.environ.get("WILLOW_PG_DB", "willow_19"),
+    dbname=os.environ.get("WILLOW_PG_DB", "willow_20"),
     user=os.environ.get("WILLOW_PG_USER", os.environ["USER"]),
 )
 cur = conn.cursor()
@@ -37,7 +37,7 @@ Uses `grove.*` tables explicitly (no reliance on session `search_path`).
 python3 - << 'PYEOF'
 import os, select, psycopg2
 
-DB           = os.environ.get("WILLOW_PG_DB", "willow_19")
+DB           = os.environ.get("WILLOW_PG_DB", "willow_20")
 USER         = os.environ.get("WILLOW_PG_USER", os.environ.get("USER", ""))
 AGENT        = "Auto"
 MY_CHANNEL_ID = 44

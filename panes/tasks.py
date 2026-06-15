@@ -1,27 +1,30 @@
-"""panes/tasks.py — Kart task queue pane + SOIL open-flags panel.
+"""panes/tasks.py — Kart task queue from Postgres.
 b17: WGRV1  ΔΣ=42
 """
-import os
-import sys
-from pathlib import Path
+from __future__ import annotations
+
+from contextlib import suppress
 
 from rich.markup import escape as _e
 from textual import work
+from textual.binding import Binding
 from textual.containers import Container
-from textual.widgets import DataTable, Label
+from textual.message import Message
+from textual.widgets import DataTable, Label, Static
 
 import grove_db
-from widgets.status_row import StatusRow
-
-_SEVERITY_COLOR = {"critical": "red", "high": "yellow", "medium": "cyan", "low": "dim"}
+from grove.theme_textual import ACCENT, DEGRADED, HEALTHY, IDLE, PRIMARY, SECONDARY
 
 
 def status_color(status: str) -> str:
     s = status.lower()
-    if s in ("complete", "completed"):  return "green"
-    if s == "running":                  return "yellow"
-    if s in ("failed", "error"):        return "red"
-    return "dim"
+    if s in ("complete", "completed"):
+        return HEALTHY
+    if s == "running":
+        return DEGRADED
+    if s in ("failed", "error"):
+        return "red"
+    return SECONDARY
 
 
 def fetch_tasks() -> dict:
@@ -32,22 +35,27 @@ def fetch_tasks() -> dict:
         cur = conn.cursor()
         cur.execute("""
             SELECT
-                COUNT(*) FILTER (WHERE status IN ('pending','queued'))                       AS pending,
-                COUNT(*) FILTER (WHERE status = 'running')                                   AS running,
-                COUNT(*) FILTER (WHERE status IN ('complete','completed','failed','error'))   AS done
+                COUNT(*) FILTER (WHERE status IN ('pending','queued')) AS pending,
+                COUNT(*) FILTER (WHERE status = 'running') AS running,
+                COUNT(*) FILTER (WHERE status IN ('complete','completed','failed','error')) AS done
             FROM public.tasks
         """)
         row = cur.fetchone()
         result["pending"] = row[0] or 0
         result["running"] = row[1] or 0
-        result["done"]    = row[2] or 0
+        result["done"] = row[2] or 0
         cur.execute("""
             SELECT id, status, cmd, created_at
             FROM public.tasks
             ORDER BY id DESC LIMIT 50
         """)
         result["rows"] = [
-            {"id": r[0], "status": r[1], "cmd": r[2] or "", "ts": str(r[3])[:16]}
+            {
+                "id": r[0],
+                "status": r[1],
+                "cmd": r[2] or "",
+                "ts": str(r[3])[:16],
+            }
             for r in cur.fetchall()
         ]
     except Exception:
@@ -58,76 +66,77 @@ def fetch_tasks() -> dict:
     return result
 
 
-def fetch_flags() -> list[dict]:
-    """Return open flags from hanuman/flags SOIL collection, sorted critical→low."""
-    _SEVERITY_ORDER = {"critical": 0, "high": 1, "medium": 2, "low": 3}
-    try:
-        willow_root = os.environ.get("WILLOW_ROOT", str(Path.home() / "github" / "willow-1.9"))
-        sys.path.insert(0, willow_root)
-        from core.willow_store import WillowStore
-        store = WillowStore()
-        records = store.list("hanuman/flags")
-        open_flags = [r for r in records if r.get("flag_state") == "open"]
-        open_flags.sort(key=lambda r: _SEVERITY_ORDER.get(r.get("severity", "low"), 9))
-        return open_flags
-    except Exception:
-        return []
-
-
-def fetch_backfill_progress() -> dict | None:
-    try:
-        willow_root = os.environ.get("WILLOW_ROOT", str(Path.home() / "github" / "willow-1.9"))
-        sys.path.insert(0, willow_root)
-        from core.willow_store import WillowStore
-        store = WillowStore()
-        return store.get("hanuman/tasks", "embed_backfill_progress")
-    except Exception:
-        return None
+class _TasksFetched(Message):
+    def __init__(self, data: dict) -> None:
+        super().__init__()
+        self.data = data
 
 
 class TasksPane(Container):
+    BINDINGS = [Binding("r", "refresh_data", "Refresh")]
+
+    DEFAULT_CSS = f"""
+    TasksPane {{
+        height: 1fr;
+        padding: 0 1;
+    }}
+    TasksPane #tasks-title {{
+        color: {ACCENT};
+        text-style: bold;
+        margin-bottom: 1;
+    }}
+    TasksPane #tasks-stats {{
+        height: 1;
+        margin-bottom: 1;
+    }}
+    TasksPane #tasks-table {{
+        height: 1fr;
+    }}
+    """
+
     def compose(self):
-        yield Label("  Tasks", id="tasks-title")
-        yield StatusRow("Running", id="stat-running")
-        yield StatusRow("Pending", id="stat-pending")
-        yield StatusRow("Done   ", id="stat-done")
+        yield Label("  Tasks — Kart queue", id="tasks-title")
+        yield Static("", id="tasks-stats", markup=True)
         table = DataTable(id="tasks-table", cursor_type="row")
-        table.add_columns("ID", "Status", "Command", "Time")
+        table.add_columns(
+            ("ID", "id"),
+            ("Status", "status"),
+            ("Command", "cmd"),
+            ("Time", "time"),
+        )
         yield table
-        yield Label("  Open Flags", id="flags-title")
-        flags_table = DataTable(id="flags-table", cursor_type="row")
-        flags_table.add_columns("Sev", "ID", "Title", "Atom")
-        yield flags_table
 
     def on_mount(self) -> None:
-        self.set_interval(10, self.refresh_data)
         self.refresh_data()
 
-    @work(thread=True, exit_on_error=False)
     def refresh_data(self) -> None:
-        data  = fetch_tasks()
-        bp    = fetch_backfill_progress()
-        flags = fetch_flags()
-        self.app.call_from_thread(self._apply_data, data, bp, flags)
+        self._fetch()
 
-    def _apply_data(self, data: dict, bp: dict | None, flags: list[dict]) -> None:
+    @work(thread=True, exit_on_error=False)
+    def _fetch(self) -> None:
+        self.post_message(_TasksFetched(fetch_tasks()))
+
+    def on__tasks_fetched(self, event: _TasksFetched) -> None:
+        try:
+            self._apply(event.data)
+        except Exception as exc:
+            with suppress(Exception):
+                self.query_one("#tasks-stats", Static).update(
+                    f"[red]{_e(str(exc))}[/]"
+                )
+
+    def _apply(self, data: dict) -> None:
+        stats = (
+            f"[{PRIMARY}]{data['running']}[/] running  "
+            f"[{DEGRADED}]{data['pending']}[/] pending  "
+            f"[{IDLE}]{data['done']}[/] done"
+        )
+        self.query_one("#tasks-stats", Static).update(stats)
         table = self.query_one("#tasks-table", DataTable)
         table.clear()
-        self.query_one("#stat-running", StatusRow).set_status(None,               str(data["running"]))
-        self.query_one("#stat-pending", StatusRow).set_status(data["pending"] == 0, str(data["pending"]))
-        self.query_one("#stat-done",    StatusRow).set_status(None,               str(data["done"]))
-
-        # Backfill progress as a synthetic running row at the top
-        if bp and bp.get("table") != "done":
-            pct     = bp.get("pct", 0)
-            done    = bp.get("atoms_done", 0)
-            total   = bp.get("total", 0)
-            eta     = bp.get("eta_human", "?")
-            rate    = bp.get("rate_recent") or bp.get("rate_per_sec", 0)
-            updated = str(bp.get("updated_at", ""))[:16]
-            cmd = f"embed_backfill  {pct:.1f}%  {done:,}/{total:,}  {rate:.2f}/s  ETA {eta}"
-            table.add_row("BACKFILL", "[yellow]running[/]", cmd, updated)
-
+        if not data["rows"]:
+            table.add_row("", "idle", "no tasks in queue", "")
+            return
         for row in data["rows"]:
             color = status_color(row["status"])
             table.add_row(
@@ -135,16 +144,4 @@ class TasksPane(Container):
                 f"[{color}]{_e(row['status'])}[/]",
                 _e(row["cmd"][:60]),
                 row["ts"],
-            )
-
-        flags_table = self.query_one("#flags-table", DataTable)
-        flags_table.clear()
-        for flag in flags:
-            sev   = flag.get("severity", "low")
-            color = _SEVERITY_COLOR.get(sev, "dim")
-            flags_table.add_row(
-                f"[{color}]{_e(sev)}[/]",
-                _e(str(flag.get("id", ""))[:20]),
-                _e(str(flag.get("title", ""))[:55]),
-                _e(str(flag.get("atom_id", ""))[:16]),
             )

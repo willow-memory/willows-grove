@@ -4,7 +4,7 @@ b17: GEMWG · ΔΣ=42
 
 ## Fylgja powers
 
-Fylgja lives in the **willow-1.9** checkout. Default root: `~/github/willow-1.9/willow/fylgja` (override with `WILLOW_FYLGJA_ROOT`).
+Fylgja lives in the **willow-2.0** checkout. Default root: `~/github/willow-2.0/willow/fylgja` (override with `WILLOW_FYLGJA_ROOT`).
 
 1. Read `{ROOT}/powers/registry.json`.
 2. Pick one id (or best `description` match).

@@ -28,7 +28,7 @@ jobs:
     env:
       # Single DSN used by grove_db.py, kart_worker, and grove_serve — overrides
       # the WILLOW_PG_DB+WILLOW_PG_USER pair so password is included.
-      WILLOW_DB_URL: postgresql://postgres:postgres@localhost/willow_19_test
+      WILLOW_DB_URL: postgresql://postgres:postgres@localhost/willow_20_test
 
     steps:
       - uses: actions/checkout@v4
@@ -43,8 +43,8 @@ jobs:
 
       - name: Bootstrap database
         run: |
-          psql -c "CREATE DATABASE willow_19_test;"
-          psql -d willow_19_test -f schema.sql
+          psql -c "CREATE DATABASE willow_20_test;"
+          psql -d willow_20_test -f schema.sql
         env:
           PGHOST: localhost
           PGPORT: 5432

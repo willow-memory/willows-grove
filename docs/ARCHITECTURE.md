@@ -8,7 +8,7 @@ This document is the **canonical architecture reference (CAR)** for the **Grove 
 
 **In scope:** Grove messaging schema (`grove.*`), dashboard/TUI entrypoints, MCP transport modes for Grove tools, environment contracts (`WILLOW_DB_URL`), LISTEN/NOTIFY behaviour for live UI updates.
 
-**Out of scope:** Full Willow KB/task pipelines owned by `willow-1.9/core/pg_bridge.py`; duplicate DDL for `public.knowledge` — see [`schema.sql`](../schema.sql) commentary and [`willow-1.9/docs/db/WILLOW_SCHEMA.md`](../../willow-1.9/docs/db/WILLOW_SCHEMA.md) in the sibling repo.
+**Out of scope:** Full Willow KB/task pipelines owned by `willow-2.0/core/pg_bridge.py`; duplicate DDL for `public.knowledge` — see [`schema.sql`](../schema.sql) commentary and [`willow-2.0/docs/db/WILLOW_SCHEMA.md`](../../willow-2.0/docs/db/WILLOW_SCHEMA.md) in the sibling repo.
 
 ## Receipts
 
@@ -47,7 +47,7 @@ Operators / agents
 ## How to verify
 
 ```sql
--- Message volume and newest ids (run in psql against willow_19)
+-- Message volume and newest ids (run in psql against willow_20)
 SET search_path = grove, public;
 SELECT COUNT(*) AS message_count FROM messages;
 SELECT MAX(id) AS latest_message_id FROM messages;

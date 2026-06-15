@@ -1,20 +1,20 @@
-"""panes/knowledge.py — Knowledge base search pane.
+"""panes/knowledge.py — KB search + atom detail from Postgres.
 b17: WGRV1  ΔΣ=42
 """
 from __future__ import annotations
 
 import json
-
-
-from textual import work
-from textual.containers import VerticalScroll
-from textual.message import Message
-from textual.widget import Widget
-from textual.widgets import Static
-
-import grove_db
+from contextlib import suppress
 
 from rich.markup import escape
+from textual import on, work
+from textual.binding import Binding
+from textual.containers import Container, Horizontal, VerticalScroll
+from textual.message import Message
+from textual.widgets import DataTable, Input, Static
+
+import grove_db
+from grove.theme_textual import ACCENT, PRIMARY, SECONDARY, markup_bold_accent, markup_dim
 
 
 def truncate_text(text: str, max_len: int) -> str:
@@ -23,134 +23,21 @@ def truncate_text(text: str, max_len: int) -> str:
     return text[:max_len] + "…"
 
 
-_BODY_FIRST_KEYS: frozenset[str] = frozenset(
-    {
-        "body",
-        "text",
-        "content",
-        "message",
-        "description",
-        "summary",
-        "notes",
-        "details",
-        "markdown",
-        "md",
-        "plaintext",
-        "statement",
-        "answer",
-        "result",
-        "insight",
-    }
-)
-
-
-def _try_decode_json(s: str):
-    """Return parsed JSON or None."""
-    try:
-        return json.loads(s)
-    except Exception:
-        return None
-
-
-def _scalar_str(v: object) -> str:
-    if v is None:
-        return ""
-    if isinstance(v, bool):
-        return "yes" if v else "no"
-    return str(v)
-
-
-def _structure_to_text(obj: object, depth: int = 0) -> str:
-    """Flatten JSON-like structures into readable lines."""
-    if depth > 14:
-        return "…"
-    pad = "  " * depth
-    if isinstance(obj, str):
-        t = obj.strip()
-        if not t:
-            return ""
-        if len(t) > 2:
-            decoded = None
-            if (t.startswith("{") and t.endswith("}")) or (t.startswith("[") and t.endswith("]")):
-                decoded = _try_decode_json(t)
-            elif t.startswith('"') and t.endswith('"'):
-                decoded = _try_decode_json(t)
-            if decoded is not None:
-                return _structure_to_text(decoded, depth)
-        return obj
-
-    if isinstance(obj, (int, float)) and not isinstance(obj, bool):
-        return _scalar_str(obj)
-
-    if isinstance(obj, bool):
-        return _scalar_str(obj)
-
-    if obj is None:
-        return ""
-
-    if isinstance(obj, list):
-        if not obj:
-            return ""
-        chunks: list[str] = []
-        for i, item in enumerate(obj[:200]):
-            line = _structure_to_text(item, depth + (0 if isinstance(item, (dict, list)) else 0))
-            if not line.strip():
-                continue
-            if isinstance(item, (dict, list)):
-                chunks.append(line)
-            else:
-                bullets = f"{pad}• {line}" if pad else f"• {line}"
-                chunks.append(bullets)
-        return "\n".join(chunks)
-
-    if isinstance(obj, dict):
-        if not obj:
-            return ""
-
-        def _key_ord(k: object) -> tuple[int, str]:
-            ks = str(k).lower()
-            prio = 0 if ks in _BODY_FIRST_KEYS else 1
-            return prio, ks
-
-        lines_out: list[str] = []
-        for k in sorted(obj.keys(), key=_key_ord):
-            v = obj[k]
-            if v in (None, "", [], {}):
-                continue
-            key_s = _scalar_str(k)
-            if isinstance(v, (dict, list)):
-                inner = _structure_to_text(v, depth + 1)
-                if inner:
-                    lines_out.append(f"{pad}{key_s}:")
-                    lines_out.append(inner)
-                continue
-            val = _scalar_str(v).strip()
-            if not val:
-                continue
-            if "\n" in val:
-                lines_out.append(f"{pad}{key_s}:")
-                for ln in val.splitlines():
-                    lines_out.append(f"{pad}  {ln}".rstrip())
-            else:
-                lines_out.append(f"{pad}{key_s}: {val}")
-        return "\n".join(lines_out)
-
-    return _scalar_str(obj)
-
-
-def humanize_content(raw: str | None) -> str:
-    """Turn atom `content` into readable prose; safely unwrap JSON and nested payloads."""
+def humanize_content(raw: str | dict | list | None) -> str:
     if raw is None:
         return ""
-    s = raw.strip()
+    if isinstance(raw, (dict, list)):
+        return json.dumps(raw, indent=2, default=str)
+    s = str(raw).strip()
     if not s:
         return ""
-    decoded: object | None
-    decoded = _try_decode_json(s)
-    if decoded is None:
-        return s
-    text = _structure_to_text(decoded)
-    return text.strip() if text.strip() else s
+    try:
+        parsed = json.loads(s)
+        if isinstance(parsed, (dict, list)):
+            return json.dumps(parsed, indent=2, default=str)
+    except Exception:
+        pass
+    return s
 
 
 def search_kb(query: str, limit: int = 50) -> list[dict]:
@@ -160,19 +47,26 @@ def search_kb(query: str, limit: int = 50) -> list[dict]:
     try:
         conn = grove_db.get_connection()
         cur = conn.cursor()
-        cur.execute("""
+        cur.execute(
+            """
             SELECT id, title, summary, project AS domain, weight
             FROM public.knowledge
             WHERE (title ILIKE %s OR summary ILIKE %s)
               AND invalid_at IS NULL
             ORDER BY weight DESC NULLS LAST, id DESC
             LIMIT %s
-        """, (f"%{query}%", f"%{query}%", limit))
-        rows = cur.fetchall()
+            """,
+            (f"%{query}%", f"%{query}%", limit),
+        )
         return [
-            {"id": r[0], "title": r[1] or "", "summary": r[2] or "",
-             "domain": r[3] or "", "weight": r[4] or 0}
-            for r in rows
+            {
+                "id": r[0],
+                "title": r[1] or "",
+                "summary": r[2] or "",
+                "domain": r[3] or "",
+                "weight": r[4] or 0,
+            }
+            for r in cur.fetchall()
         ]
     except Exception:
         return []
@@ -181,8 +75,10 @@ def search_kb(query: str, limit: int = 50) -> list[dict]:
             grove_db.release_connection(conn)
 
 
-def fetch_atom(atom_id: int, conn=None) -> dict | None:
-    """Fetch a single knowledge atom by id. Returns None if not found or on failure."""
+def fetch_atom(atom_id: str, conn=None) -> dict | None:
+    atom_id = str(atom_id).strip()
+    if not atom_id:
+        return None
     owned = conn is None
     if owned:
         try:
@@ -197,13 +93,6 @@ def fetch_atom(atom_id: int, conn=None) -> dict | None:
                 "FROM public.knowledge WHERE id = %s",
                 (atom_id,),
             )
-            row = cur.fetchone()
-            if not row:
-                return None
-            return {
-                "id": row[0], "title": row[1] or "", "summary": row[2] or "",
-                "domain": row[3] or "", "weight": row[4] or 0, "content": row[5] or "",
-            }
         except Exception:
             conn.rollback()
             cur.execute(
@@ -211,13 +100,19 @@ def fetch_atom(atom_id: int, conn=None) -> dict | None:
                 "FROM public.knowledge WHERE id = %s",
                 (atom_id,),
             )
-            row = cur.fetchone()
-            if not row:
-                return None
-            return {
-                "id": row[0], "title": row[1] or "", "summary": row[2] or "",
-                "domain": row[3] or "", "weight": row[4] or 0,
-            }
+        row = cur.fetchone()
+        if not row:
+            return None
+        out = {
+            "id": row[0],
+            "title": row[1] or "",
+            "summary": row[2] or "",
+            "domain": row[3] or "",
+            "weight": row[4] or 0,
+        }
+        if len(row) > 5:
+            out["content"] = row[5] or ""
+        return out
     except Exception:
         return None
     finally:
@@ -226,66 +121,40 @@ def fetch_atom(atom_id: int, conn=None) -> dict | None:
 
 
 def atom_header_markup(atom: dict) -> str:
-    """Rich-text header (bounded markup — title escaped)."""
-    _H = "[bold #58a6ff]"
-    _D = "[dim]"
-    _E = "[/]"
+    _H = markup_bold_accent()
+    _D = markup_dim()
     atom_id = atom.get("id", "?")
     dom = atom.get("domain") or ""
     weight = atom.get("weight", 0)
-    lines = [f"{_H}#{atom_id}[/]  {_D}{escape(dom)}  w={weight}{_E}", ""]
+    lines = [f"{_H}#{escape(str(atom_id))}[/]  {_D}{escape(dom)}  w={weight}[/]", ""]
     title = atom.get("title") or ""
     if title:
-        lines.append(f"[bold]{escape(title)}[/]")
+        lines.append(f"[bold {PRIMARY}]{escape(title)}[/]")
         lines.append("")
-
     summary = atom.get("summary", "")
     if summary:
-        lines.append(f"{_D}SUMMARY{_E}")
+        lines.append(f"{_D}SUMMARY[/]")
         lines.append(escape(summary))
         lines.append("")
-
-    content = atom.get("content", "")
-    if content:
-        lines.append(f"{_D}CONTENT{_E}")
-        if isinstance(content, dict):
-            lines.append(escape(str(content)))
-        else:
-            lines.append(escape(content))
-
-
-
     return "\n".join(lines)
 
 
 def atom_body_plain(atom: dict) -> str:
-    """Plain-text body from summary + humanized content (no markup)."""
     summary = (atom.get("summary") or "").strip()
     raw_content = atom.get("content")
-    plain_c = humanize_content(raw_content if isinstance(raw_content, str) else "")
-
-    if summary and plain_c:
-        if plain_c.startswith(summary) or summary in plain_c[: len(summary) + 5]:
-            return plain_c
-        return summary + "\n\n" + plain_c
-    if plain_c:
-        return plain_c
-    return summary
+    if isinstance(raw_content, str):
+        content = humanize_content(raw_content)
+    else:
+        content = humanize_content(raw_content)
+    if summary and content and content != summary:
+        return summary + "\n\n" + content
+    return content or summary
 
 
-def render_atom(atom: dict) -> str:
-    """Render atom for snapshots/tests: markup header plus plain body."""
-    return atom_header_markup(atom) + "\n\n" + atom_body_plain(atom)
-
-
-class KnowledgeRailPreview(Message):
-    """Posted when an atom finishes loading — right rail can show excerpt."""
-
-    def __init__(self, atom_id: int, title: str, excerpt: str) -> None:
+class _KbSearchDone(Message):
+    def __init__(self, rows: list[dict]) -> None:
         super().__init__()
-        self.atom_id = atom_id
-        self.title   = title
-        self.excerpt = excerpt
+        self.rows = rows
 
 
 class _AtomFetched(Message):
@@ -294,74 +163,136 @@ class _AtomFetched(Message):
         self.atom = atom
 
 
-class KnowledgePane(Widget):
-    DEFAULT_CSS = """
-    KnowledgePane {
+class KnowledgePane(Container):
+    BINDINGS = [Binding("r", "refresh_search", "Search")]
+
+    DEFAULT_CSS = f"""
+    KnowledgePane {{
         height: 1fr;
-    }
-    KnowledgePane #kb-scroll {
+        padding: 0 1;
+    }}
+    KnowledgePane #kb-search {{
+        height: 3;
+        margin-bottom: 1;
+    }}
+    KnowledgePane #kb-body {{
         height: 1fr;
-        padding: 1 2;
-    }
-    KnowledgePane #kb-header {
+    }}
+    KnowledgePane #kb-results {{
+        width: 1fr;
+        height: 1fr;
+        border-right: solid {SECONDARY};
+    }}
+    KnowledgePane #kb-detail-scroll {{
+        width: 1fr;
+        height: 1fr;
+    }}
+    KnowledgePane #kb-header {{
         height: auto;
-    }
-    KnowledgePane #kb-body {
+        padding: 0 1;
+    }}
+    KnowledgePane #kb-body-text {{
         height: auto;
-        margin-top: 1;
-        color: #c9d1d9;
-    }
+        padding: 0 1;
+    }}
     """
 
-    def compose(self):
-        with VerticalScroll(id="kb-scroll"):
-            yield Static(
-                "[dim]Search knowledge in the left panel, then press Enter to view[/]",
-                id="kb-header",
-                markup=True,
-            )
-            yield Static("", id="kb-body", markup=False)
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self._rows: list[dict] = []
+        self._last_query = ""
 
-    def display_atom(self, atom_id: int) -> None:
-        self._fetch(atom_id)
+    def compose(self):
+        yield Input(placeholder="Search knowledge… press Enter", id="kb-search")
+        with Horizontal(id="kb-body"):
+            results = DataTable(id="kb-results", cursor_type="row")
+            results.add_columns(
+                ("ID", "id"),
+                ("Title", "title"),
+                ("Domain", "domain"),
+            )
+            yield results
+            with VerticalScroll(id="kb-detail-scroll"):
+                yield Static(
+                    f"[dim {SECONDARY}]Search, then select a row to view an atom.[/]",
+                    id="kb-header",
+                    markup=True,
+                )
+                yield Static("", id="kb-body-text")
+
+    def refresh_data(self) -> None:
+        query = self.query_one("#kb-search", Input).value.strip()
+        if query:
+            self._run_search(query)
+
+    def action_refresh_search(self) -> None:
+        self.refresh_data()
+
+    @on(Input.Submitted, "#kb-search")
+    def _on_search(self, event: Input.Submitted) -> None:
+        self._run_search(event.value.strip())
 
     @work(thread=True, exit_on_error=False)
-    def _fetch(self, atom_id: int) -> None:
-        import logging
+    def _run_search(self, query: str) -> None:
+        rows = search_kb(query) if query else []
+        self.post_message(_KbSearchDone(rows))
+
+    def on__kb_search_done(self, event: _KbSearchDone) -> None:
         try:
-            atom = fetch_atom(atom_id)
-            self.post_message(_AtomFetched(atom))
-        except Exception:
-            logging.exception("KnowledgePane._fetch failed for atom %s", atom_id)
-            self.post_message(_AtomFetched(None))
+            self._apply_search(event.rows)
+        except Exception as exc:
+            self._show_error(f"search UI error: {exc}")
+
+    def _apply_search(self, rows: list[dict]) -> None:
+        self._rows = rows
+        table = self.query_one("#kb-results", DataTable)
+        table.clear()
+        if not self._rows:
+            table.add_row("", "no matches", "")
+            return
+        for row in self._rows:
+            title = truncate_text(row.get("title") or "(untitled)", 28)
+            domain = truncate_text(row.get("domain") or "", 12)
+            table.add_row(str(row["id"]), title, domain)
+
+    @on(DataTable.RowHighlighted, "#kb-results")
+    def _on_row(self, event: DataTable.RowHighlighted) -> None:
+        try:
+            self._select_row(event.cursor_row)
+        except Exception as exc:
+            self._show_error(f"select error: {exc}")
+
+    def _select_row(self, row_index: int) -> None:
+        if row_index < 0 or row_index >= len(self._rows):
+            return
+        atom_id = str(self._rows[row_index].get("id") or "").strip()
+        if not atom_id:
+            return
+        self._fetch_atom(atom_id)
+
+    @work(thread=True, exit_on_error=False)
+    def _fetch_atom(self, atom_id: str) -> None:
+        self.post_message(_AtomFetched(fetch_atom(atom_id)))
 
     def on__atom_fetched(self, event: _AtomFetched) -> None:
-        import logging
-        from textual.css.query import NoMatches
-
-        atom = event.atom
-        if not atom:
-            try:
-                self.query_one("#kb-header", Static).update("[dim]Atom not found[/]")
-                self.query_one("#kb-body", Static).update("")
-            except NoMatches:
-                pass
-            return
-
-        hdr = atom_header_markup(atom)
-        body = atom_body_plain(atom).strip()
-        if not body:
-            body_plain = "(No body text for this atom.)"
-        else:
-            body_plain = body
-
         try:
-            self.query_one("#kb-header", Static).update(hdr)
-            self.query_one("#kb-body", Static).update(body_plain)
-        except NoMatches:
-            pass
+            self._apply_atom(event.atom)
+        except Exception as exc:
+            self._show_error(f"atom UI error: {exc}")
 
-        title = (atom.get("title") or "").strip() or f"Atom #{atom['id']}"
-        ex_src = atom_body_plain(atom).replace("\n", " ").strip()
-        excerpt = truncate_text(ex_src, 420)
-        self.post_message(KnowledgeRailPreview(atom["id"], title, excerpt))
+    def _apply_atom(self, atom: dict | None) -> None:
+        if not atom:
+            with suppress(Exception):
+                self.query_one("#kb-header", Static).update("[dim]Atom not found[/]")
+                self.query_one("#kb-body-text", Static).update("")
+            return
+        hdr = atom_header_markup(atom)
+        body = atom_body_plain(atom).strip() or "(No body text for this atom.)"
+        with suppress(Exception):
+            self.query_one("#kb-header", Static).update(hdr)
+            self.query_one("#kb-body-text", Static).update(body)
+
+    def _show_error(self, text: str) -> None:
+        with suppress(Exception):
+            self.query_one("#kb-header", Static).update(f"[red]{escape(text)}[/]")
+            self.query_one("#kb-body-text", Static).update("")

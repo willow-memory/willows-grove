@@ -25,8 +25,8 @@ pip install -r requirements.txt
 ### 2. Create the database
 
 ```bash
-createdb willow_19
-psql -d willow_19 -f schema.sql
+createdb willow_20
+psql -d willow_20 -f schema.sql
 ```
 
 `schema.sql` creates all schemas idempotently. Safe to re-run.
@@ -77,9 +77,9 @@ make grove-docs
 | Variable | Default | Purpose |
 |----------|---------|---------|
 | `WILLOW_DB_URL` | _(unset)_ | Full Postgres DSN — overrides PG_DB/PG_USER |
-| `WILLOW_PG_DB` | `willow_19` | Database name |
+| `WILLOW_PG_DB` | `willow_20` | Database name |
 | `WILLOW_PG_USER` | `$USER` | Database user |
-| `WILLOW_ROOT` | `~/github/willow-1.9` | Path to willow-1.9 repo (health scripts, skills) |
+| `WILLOW_ROOT` | `~/github/willow-2.0` | Path to willow-2.0 repo (health scripts, skills) |
 | `WILLOW_STORE_ROOT` | `~/.willow/store` | SOIL local key-value store |
 | `GROVE_KNOWN_AGENTS` | _(auto-discovered)_ | Comma-separated agent names for ThoughtStream |
 
@@ -106,4 +106,4 @@ make grove-docs
 
 - **No web ports.** The dashboard reads from Postgres directly. Nothing listens on a network port unless you explicitly run `grove_serve.py`.
 - **ThoughtStream** shows messages from agents discovered via HEARTBEAT messages. Set `GROVE_KNOWN_AGENTS` to pin the list.
-- `public.knowledge` and `public.tasks` in `schema.sql` are stubs for standalone setups. If you run willow-1.9, its migrations manage those tables instead.
+- `public.knowledge` and `public.tasks` in `schema.sql` are stubs for standalone setups. If you run willow-2.0, its migrations manage those tables instead.

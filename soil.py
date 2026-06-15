@@ -73,28 +73,9 @@ def all_records(collection: str) -> list[dict]:
         "SELECT id, data FROM records WHERE deleted=0 ORDER BY created_at"
     ).fetchall()
     conn.close()
-    result = []
+    result: list[dict] = []
     for rid, data in rows:
         rec = json.loads(data)
         rec["_id"] = rid
         result.append(rec)
     return result
-
-
-def query(collection: str, sql: str) -> list[tuple]:
-    """Run a raw SQL query against a SOIL collection's store.db."""
-    db = _db(collection)
-    if not db.exists():
-        return []
-    conn = sqlite3.connect(str(db))
-    try:
-        return conn.execute(sql).fetchall()
-    except Exception:
-        return []
-    finally:
-        conn.close()
-
-
-def query_one(collection: str, sql: str) -> tuple | None:
-    rows = query(collection, sql)
-    return rows[0] if rows else None

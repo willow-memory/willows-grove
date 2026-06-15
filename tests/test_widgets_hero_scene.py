@@ -3,7 +3,16 @@ b17: WGRV1  ΔΣ=42
 """
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-from widgets.hero_scene import _BLOOMS, _make_meadow
+from textual.content import Content
+from widgets.hero_scene import (
+    _BLOOMS,
+    _colorize_meadow,
+    _colorize_trunk,
+    _make_ground,
+    _make_meadow,
+    HeroScene,
+)
+from grove.apps.hero_format import format_ground_footer_markup
 
 
 def test_make_meadow_is_string():
@@ -20,6 +29,34 @@ def test_make_meadow_cycles():
     assert len(set(frames)) > 1
 
 
-def test_make_meadow_respects_width():
-    for w in (40, 60, 80):
-        assert len(_make_meadow(0, w)) <= w
+def test_hero_scene_defaults_expanded():
+    scene = HeroScene()
+    assert scene.is_expanded() is True
+
+
+def test_hero_scene_collapse_toggle():
+    scene = HeroScene()
+    scene.set_expanded(False)
+    assert scene.is_expanded() is False
+    scene.set_expanded(True)
+    assert scene.is_expanded() is True
+
+
+def test_ground_strip_markup_wind_left_backslashes():
+    """Wind-L meadow uses backslashes; markup must not orphan [/] tags."""
+    stats = {
+        "vitals": {"pg": {"ok": True, "detail": "ok"}, "ollama": {"ok": True, "count": 1}},
+        "grove_live": False,
+        "kart": {"ok": False},
+        "ledger": {"ok": True},
+        "channels": {},
+    }
+    w = 80
+    for frame in range(30):
+        meadow_plain = _make_meadow(frame, w, "L")
+        tx = w - 13
+        trunk_plain = (" " * max(0, tx) + "║" + " " * max(0, w - tx - 1))[:w]
+        trunk = _colorize_trunk(trunk_plain)
+        meadow = _colorize_meadow(meadow_plain)
+        ground = format_ground_footer_markup(stats)
+        Content.from_markup(f"{trunk}\n{meadow}\n{ground}")

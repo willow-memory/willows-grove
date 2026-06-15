@@ -49,7 +49,7 @@ def _get_pool():
             import psycopg2.pool
             dsn = os.getenv("WILLOW_DB_URL", "")
             if not dsn:
-                pg_db   = os.getenv("WILLOW_PG_DB", "willow_19")
+                pg_db   = os.getenv("WILLOW_PG_DB", "willow_20")
                 pg_user = os.getenv("WILLOW_PG_USER", os.environ.get("USER", ""))
                 dsn = f"dbname={pg_db} user={pg_user}"
             _pool = psycopg2.pool.ThreadedConnectionPool(minconn=2, maxconn=10, dsn=dsn)
@@ -96,7 +96,7 @@ def listen_connection():
     any caller that needs LISTEN/NOTIFY.
     """
     import psycopg2
-    pg_db   = os.getenv("WILLOW_PG_DB",   "willow_19")
+    pg_db   = os.getenv("WILLOW_PG_DB",   "willow_20")
     pg_user = os.getenv("WILLOW_PG_USER",  os.getenv("USER", ""))
     dsn     = os.getenv("WILLOW_DB_URL",   "") or f"dbname={pg_db} user={pg_user}"
     conn    = psycopg2.connect(dsn)
@@ -541,6 +541,25 @@ def ensure_card_builder_channel() -> None:
         cur.execute("""
             INSERT INTO grove.channels (name, channel_type, description, agent_name)
             VALUES ('card-builder', 'group', 'Heimdallr card builder interview', 'heimdallr')
+            ON CONFLICT (name) DO NOTHING
+        """)
+        conn.commit()
+    except Exception:
+        pass
+    finally:
+        if conn is not None:
+            release_connection(conn)
+
+
+def ensure_upstream_channel() -> None:
+    """Idempotent: create #upstream channel for Upstream Steward notifications."""
+    conn = None
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute("""
+            INSERT INTO grove.channels (name, channel_type, description, agent_name)
+            VALUES ('upstream', 'group', 'Upstream Steward — reply drafts', 'hanuman')
             ON CONFLICT (name) DO NOTHING
         """)
         conn.commit()

@@ -13,7 +13,7 @@ This doc records what **Auto (Cursor)** did after a deep PR + Grove assignment a
 
 ## 1. Postgres verification (blocked here)
 
-`psql` to `willow_19` failed in the agent environment (no local Postgres socket). **No row counts** were collected on-box.
+`psql` to `willow_20` failed in the agent environment (no local Postgres socket). **No row counts** were collected on-box.
 
 **Deliverable instead:** `docs/verify/ROUTING_OBSERVABILITY.md` — copy-paste SQL to compare:
 
@@ -32,15 +32,15 @@ Linked from `docs/INDEX.md`.
 
 ## 3. Kart → Run Ledger import path (layout footgun)
 
-**Problem:** `kart_worker.py` used `sys.path.insert(.../willow-1.9)` relative to repo parent — breaks with worktrees or non-sibling checkouts.
+**Problem:** `kart_worker.py` used `sys.path.insert(.../willow-2.0)` relative to repo parent — breaks with worktrees or non-sibling checkouts.
 
-**Fix:** `_willow_repo_root()` prefers **`WILLOW_ROOT`** (if `core/run_ledger.py` exists), else **`~/github/willow-1.9`**; `_ensure_willow_on_path()` before open/close; clear debug skip when neither resolves.
+**Fix:** `_willow_repo_root()` prefers **`WILLOW_ROOT`** (if `core/run_ledger.py` exists), else **`~/github/willow-2.0`**; `_ensure_willow_on_path()` before open/close; clear debug skip when neither resolves.
 
 ## 4. Dual routing tables → dashboard silence (thread closed in code)
 
 **Finding:** Oracle writes `willow.routing_decisions`; `sap_mcp.py` `willow_route` wrote **`public.routing_decisions`** only. Dashboard reads **`willow.*` only** — empty feed when routing went through MCP-only failure paths.
 
-**Fix (`willow-1.9/sap/sap_mcp.py`):** After `willow_route` builds `result`, when `pg` is available: keep existing **`public.routing_decisions`** insert when there is a message; **add** `INSERT INTO willow.routing_decisions (...)` when **`_oracle_ran_ok` is false** (empty prompt, `no-message`, `oracle-unavailable`, etc.) so the Routing pane gets rows.
+**Fix (`willow-2.0/sap/sap_mcp.py`):** After `willow_route` builds `result`, when `pg` is available: keep existing **`public.routing_decisions`** insert when there is a message; **add** `INSERT INTO willow.routing_decisions (...)` when **`_oracle_ran_ok` is false** (empty prompt, `no-message`, `oracle-unavailable`, etc.) so the Routing pane gets rows.
 
 **Doc:** `grove_reader.routing_decisions` docstring points to `docs/verify/ROUTING_OBSERVABILITY.md`.
 
@@ -48,14 +48,14 @@ Linked from `docs/INDEX.md`.
 
 **Bash tool:** Removed `shell=True`; use **`shlex.split` + `shell=False`** — reduces arbitrary-shell RCE when `--trust` is on. Tool description updated (pipes require explicit `bash -lc` if desired).
 
-**API key paths:** `_load_api_key` tries `~/.ratatosk/credentials.json`, then **`$WILLOW_ROOT/credentials.json`** (default `~/github/willow-1.9`), then legacy `willow-1.5` path.
+**API key paths:** `_load_api_key` tries `~/.ratatosk/credentials.json`, then **`$WILLOW_ROOT/credentials.json`** (default `~/github/willow-2.0`), then legacy `willow-1.5` path.
 
 ## 6. Files touched (summary)
 
 | Repo | Paths |
 |------|--------|
 | `safe-app-willow-grove` | `grove/mcp_local.py`, `kart_worker.py`, `grove_reader.py`, `docs/verify/ROUTING_OBSERVABILITY.md`, `docs/INDEX.md`, `docs/runbooks/mcp.md`, **this file** |
-| `willow-1.9` | `sap/sap_mcp.py` |
+| `willow-2.0` | `sap/sap_mcp.py` |
 | `safe-app-store` | `apps/ratatosk/ratatosk/tools.py`, `apps/ratatosk/ratatosk/crown.py` (on `feat/ratatosk`) |
 
 ## 7. Still loose (explicit)
@@ -69,6 +69,6 @@ Linked from `docs/INDEX.md`.
 1. Read: `docs/verify/ROUTING_OBSERVABILITY.md` + this file.
 2. With Postgres up: run the SQL in §1 of the verify doc.
 3. **MCP watch:** `python3 -m grove.mcp_local --serve --watch` — touch `grove/mcp_local.py` or another `grove/*.py`; child should restart (log lines from supervisor).
-4. **Kart ledger:** set `WILLOW_ROOT` if checkout is not `~/github/willow-1.9`; run a trivial Kart task and confirm `run_ledger` debug is not “path not found.”
+4. **Kart ledger:** set `WILLOW_ROOT` if checkout is not `~/github/willow-2.0`; run a trivial Kart task and confirm `run_ledger` debug is not “path not found.”
 
 ΔΣ=42 — Auto

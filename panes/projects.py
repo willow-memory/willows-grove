@@ -1,19 +1,22 @@
-"""panes/projects.py — Personal projects pane.
+"""panes/projects.py — Personal projects from SOIL.
 b17: WGRV1  ΔΣ=42
 """
+from __future__ import annotations
+
 import uuid
+from datetime import date
 
 from textual import on
 from textual.containers import Container
 from textual.widgets import DataTable, Input, Label
 
 import soil
+from grove.theme_textual import ACCENT, HEALTHY, IDLE, PRIMARY, SECONDARY
 
 _COLLECTION = "willow-dashboard/projects"
 
 
 def projects_active_count() -> int:
-    """Count of active projects — used by card grid."""
     try:
         items = soil.all_records(_COLLECTION)
         return sum(1 for r in items if r.get("status", "active") == "active")
@@ -25,8 +28,12 @@ def _load() -> list[dict]:
     return soil.all_records(_COLLECTION)
 
 
-def _add(name: str) -> None:
-    soil.put(_COLLECTION, str(uuid.uuid4()), {"name": name.strip(), "status": "active"})
+def _add(name: str, due_date: str = "") -> None:
+    soil.put(
+        _COLLECTION,
+        str(uuid.uuid4()),
+        {"name": name.strip(), "status": "active", "due_date": due_date, "notes": ""},
+    )
 
 
 def _toggle(record_id: str, current_status: str) -> None:
@@ -38,59 +45,80 @@ def _toggle(record_id: str, current_status: str) -> None:
 
 
 class ProjectsPane(Container):
-    DEFAULT_CSS = """
-    ProjectsPane {
+    """Active/done projects stored in SOIL."""
+
+    DEFAULT_CSS = f"""
+    ProjectsPane {{
         height: 1fr;
         padding: 1 2;
-    }
-    ProjectsPane #projects-title {
+    }}
+    ProjectsPane #projects-title {{
+        color: {ACCENT};
         text-style: bold;
-        color: $accent;
         margin-bottom: 1;
-    }
-    ProjectsPane #projects-table {
+    }}
+    ProjectsPane #projects-table {{
         height: 1fr;
-    }
-    ProjectsPane #projects-input {
+    }}
+    ProjectsPane #projects-input {{
         height: 3;
         margin-top: 1;
-    }
+    }}
     """
 
     def compose(self):
-        yield Label("  My Projects", id="projects-title")
+        yield Label("  My Projects  (Enter row to toggle done)", id="projects-title")
         table = DataTable(id="projects-table", cursor_type="row")
-        table.add_columns(" ", "Project")
+        table.add_columns(
+            (" ", "mark"),
+            ("Project", "name"),
+            ("Due", "due"),
+        )
         yield table
-        yield Input(placeholder="Add a project… press Enter to save", id="projects-input")
+        yield Input(placeholder="Add project: name | YYYY-MM-DD (date optional)", id="projects-input")
 
     def on_mount(self) -> None:
         self._items: list[dict] = []
-        self._refresh()
+        self.refresh_data()
 
-    def _refresh(self) -> None:
+    def refresh_data(self) -> None:
         self._items = _load()
         table = self.query_one("#projects-table", DataTable)
         table.clear()
         if not self._items:
-            table.add_row("[dim]○[/dim]", "[dim]No projects yet — type below to add one[/dim]")
+            table.add_row("", "[dim]No projects — type below to add one[/]", "")
             return
         for item in self._items:
             done = item.get("status", "active") == "done"
-            mark = "[green]✓[/green]" if done else "[blue]●[/blue]"
-            name = f"[dim strike]{item['name']}[/dim strike]" if done else item["name"]
-            table.add_row(mark, name)
+            mark = f"[{IDLE}]○[/]" if done else f"[{HEALTHY}]●[/]"
+            name = item["name"]
+            if done:
+                name = f"[dim {SECONDARY} strike]{name}[/]"
+            else:
+                name = f"[{PRIMARY}]{name}[/]"
+            due = item.get("due_date") or "—"
+            table.add_row(mark, name, due)
 
     @on(Input.Submitted, "#projects-input")
     def _on_add(self, event: Input.Submitted) -> None:
-        name = event.value.strip()
+        raw = event.value.strip()
+        if not raw:
+            return
+        parts = [p.strip() for p in raw.split("|")]
+        name = parts[0]
+        due_date = ""
+        if len(parts) > 1 and parts[1]:
+            try:
+                due_date = date.fromisoformat(parts[1][:10]).isoformat()
+            except ValueError:
+                return
         if name:
-            _add(name)
+            _add(name, due_date)
             event.input.clear()
-        self._refresh()
+        self.refresh_data()
 
     def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
         if event.cursor_row < len(self._items):
             item = self._items[event.cursor_row]
             _toggle(item["_id"], item.get("status", "active"))
-            self._refresh()
+            self.refresh_data()

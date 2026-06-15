@@ -1,341 +1,255 @@
-"""widgets/card_builder_modal.py — Heimdallr card builder interview modal.
+"""widgets/card_builder_modal.py — scripted v1 card builder wizard.
 b17: WGRV1  ΔΣ=42
 """
 from __future__ import annotations
 
-import json
-import os
-import re
-import select
-
-from textual import work
+from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Vertical
-from textual.message import Message
+from textual.containers import Container, Vertical
 from textual.screen import ModalScreen
-from textual.widgets import Input, RichLog, Static
+from textual.widgets import Button, Checkbox, Input, Label, Select, Static
 
-from rich.markup import escape as _e
-
-import grove_db
-import grove_reader
-
-_CARD_DEF_RE  = re.compile(r"```card-def\s*\n(.*?)\n```", re.DOTALL)
-_OLLAMA_URL   = os.environ.get("OLLAMA_URL", "http://localhost:11434")
-_OLLAMA_MODEL = os.environ.get("WILLOW_OLLAMA_MODEL", "yggdrasil:v9")
+from grove.apps.card_builder import wizard
+from grove.apps.card_builder.wizard import WizardMode, WizardState
+from grove.theme_textual import ACCENT, BG, BORDER, PRIMARY, SECONDARY
+from widgets.card_store import seed_catalog
 
 
-_INTRO_PROMPT = (
-    "The user wants to add a new card to their Willow Grove dashboard. "
-    "Interview them: ask what they want to track, suggest from the available "
-    "catalog (git-status, open-prs, build, todos) if relevant, then produce "
-    "a ```card-def JSON block with at minimum 'id' and 'label' fields."
-)
+class CardBuilderModal(ModalScreen[bool]):
+    """Step-through wizard: catalog enable, SOIL count, or nav link. No LLM."""
 
+    BINDINGS = [
+        Binding("escape", "cancel", "Cancel", show=False),
+    ]
 
-class CardDefDetected(Message):
-    """Posted when a valid card-def block is detected and saved to SOIL."""
-    def __init__(self, card: dict) -> None:
-        self.card = card
-        super().__init__()
-
-
-class CardBuilderModal(ModalScreen):
-    """Heimdallr interview modal — chat log + input + card-def detection."""
-
-    DEFAULT_CSS = """
-    CardBuilderModal {
+    DEFAULT_CSS = f"""
+    CardBuilderModal {{
         align: center middle;
-    }
-    CardBuilderModal #cb-dialog {
-        width: 80;
-        height: 40;
-        background: #0d1117;
-        border: solid #30363d;
-    }
-    CardBuilderModal #cb-log {
-        height: 1fr;
+    }}
+    CardBuilderModal #cb-box {{
+        width: 56;
+        height: auto;
+        max-height: 90%;
+        border: solid {BORDER};
+        background: {BG};
         padding: 1 2;
-    }
-    CardBuilderModal #cb-status {
-        height: 1;
-        padding: 0 2;
-        color: #8b949e;
-    }
-    CardBuilderModal #cb-input {
-        height: 3;
-        margin: 0 2 1 2;
-        border: tall #30363d;
-    }
-    CardBuilderModal #cb-input:focus {
-        border: tall #58a6ff;
-    }
+    }}
+    CardBuilderModal Label {{
+        color: {PRIMARY};
+        margin-bottom: 1;
+    }}
+    CardBuilderModal #cb-title {{
+        color: {ACCENT};
+        text-style: bold;
+        margin-bottom: 1;
+    }}
+    CardBuilderModal #cb-preview {{
+        color: {SECONDARY};
+        margin: 1 0;
+        min-height: 2;
+    }}
+    CardBuilderModal #cb-error {{
+        color: #c0392b;
+        margin-bottom: 1;
+    }}
+    CardBuilderModal Select {{
+        margin-bottom: 1;
+    }}
+    CardBuilderModal Input {{
+        margin-bottom: 1;
+    }}
+    CardBuilderModal #cb-actions {{
+        height: auto;
+        margin-top: 1;
+    }}
+    CardBuilderModal Button {{
+        margin-right: 1;
+    }}
     """
 
-    BINDINGS = [Binding("escape", "dismiss", "Close")]
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self._state = WizardState()
+        self._saved = False
 
-    def __init__(self) -> None:
-        super().__init__()
-        self._channel_id:  int | None = None
-        self._cursor:      int        = 0
-        self._listening:   bool       = False
-        self._card_saved:  bool       = False
-        self._interviewer: str        = "heimdallr"
+    @property
+    def card_saved(self) -> bool:
+        return self._saved
 
     def compose(self) -> ComposeResult:
-        with Vertical(id="cb-dialog"):
-            yield RichLog(id="cb-log", highlight=False, markup=True, wrap=True)
-            yield Static("[dim]Connecting…[/]", id="cb-status", markup=True)
-            yield Input(placeholder="Message…", id="cb-input")
+        with Container(id="cb-box"):
+            yield Static("Add dashboard card", id="cb-title")
+            yield Static("", id="cb-step-label")
+            with Vertical(id="cb-fields"):
+                yield Select([], id="cb-mode", prompt="Card type")
+                yield Select([], id="cb-catalog", prompt="Catalog card")
+                yield Select([], id="cb-soil", prompt="SOIL collection")
+                yield Select([], id="cb-nav", prompt="Open page")
+                yield Input(placeholder="Card label", id="cb-label")
+                yield Checkbox("Link to a page when clicked", id="cb-link-nav")
+                yield Select([], id="cb-nav-link", prompt="Link target")
+            yield Static("", id="cb-preview")
+            yield Static("", id="cb-error")
+            with Vertical(id="cb-actions"):
+                yield Button("Save", variant="primary", id="cb-save")
+                yield Button("Cancel", id="cb-cancel")
 
     def on_mount(self) -> None:
-        self._setup()
+        seed_catalog()
+        self._populate_mode_select()
+        self._apply_step()
+        self.query_one("#cb-mode", Select).focus()
 
-    @work(thread=True, exit_on_error=False)
-    def _setup(self) -> None:
-        channel_id = self._get_or_create_channel()
+    def _populate_mode_select(self) -> None:
+        mode = self.query_one("#cb-mode", Select)
+        mode.set_options(wizard.mode_choices())
 
-        if channel_id is None:
-            self.app.call_from_thread(
-                self._set_status, "[red]Could not connect to #card-builder — check grove_error.log[/]"
-            )
-            return
+    def _populate_catalog_select(self) -> None:
+        sel = self.query_one("#cb-catalog", Select)
+        choices = wizard.catalog_choices()
+        if choices:
+            sel.set_options(choices)
+            sel.value = choices[0][0]
+            self._state.catalog_id = choices[0][0]
+        else:
+            sel.set_options([("", "— none available —")])
 
-        self._channel_id = channel_id
+    def _populate_soil_select(self) -> None:
+        sel = self.query_one("#cb-soil", Select)
+        choices = wizard.soil_choices()
+        if choices:
+            sel.set_options(choices)
+            sel.value = choices[0][0]
+            self._state.collection = choices[0][0]
+        else:
+            sel.set_options([("", "— no collections found —")])
 
-        # Check if Heimdallr has heartbeated recently (within 30 minutes)
-        agents = grove_reader.grove_agents()
-        heimdallr_age = next(
-            (a["age_secs"] for a in agents if a["sender"] == "heimdallr"), None
+    def _populate_nav_select(self) -> None:
+        choices = wizard.nav_choices()
+        nav = self.query_one("#cb-nav", Select)
+        nav_link = self.query_one("#cb-nav-link", Select)
+        if choices:
+            nav.set_options(choices)
+            nav_link.set_options(choices)
+            nav.value = choices[0][0]
+            nav_link.value = choices[0][0]
+            self._state.nav_target = choices[0][0]
+        else:
+            nav.set_options([("", "— none —")])
+            nav_link.set_options([("", "— none —")])
+
+    def _apply_step(self) -> None:
+        mode = self._state.mode
+        self.query_one("#cb-step-label", Static).update(
+            "Choose what kind of card to add."
+            if mode is None
+            else f"Configure your {mode.value.replace('_', ' ')} card."
         )
-        heimdallr_online = heimdallr_age is not None and heimdallr_age < 1800
-        self._interviewer = "heimdallr" if heimdallr_online else "local"
+        self.query_one("#cb-catalog", Select).display = mode == WizardMode.CATALOG
+        self.query_one("#cb-soil", Select).display = mode == WizardMode.SOIL_COUNT
+        self.query_one("#cb-nav", Select).display = mode == WizardMode.NAV
+        label_input = self.query_one("#cb-label", Input)
+        label_input.display = mode in (WizardMode.SOIL_COUNT, WizardMode.NAV)
+        link_cb = self.query_one("#cb-link-nav", Checkbox)
+        link_cb.display = mode == WizardMode.SOIL_COUNT
+        nav_link = self.query_one("#cb-nav-link", Select)
+        nav_link.display = mode == WizardMode.SOIL_COUNT and link_cb.value
+        if mode == WizardMode.SOIL_COUNT and not label_input.value:
+            label_input.value = wizard.default_label_for_state(self._state)
+        if mode == WizardMode.NAV and not label_input.value:
+            label_input.value = wizard.default_label_for_state(self._state)
+        self._update_preview()
+        self._clear_error()
 
-        msgs = grove_reader.grove_messages("card-builder", limit=20)
-        self.app.call_from_thread(self._load_history, msgs)
+    def _update_preview(self) -> None:
+        self.query_one("#cb-preview", Static).update(wizard.preview_line(self._state))
 
-        if not msgs:
-            if heimdallr_online:
-                self._dispatch_intro(channel_id, to="heimdallr")
-            else:
-                self.app.call_from_thread(
-                    self._set_status, "[dim]local model is conducting the interview[/]"
+    def _clear_error(self) -> None:
+        self.query_one("#cb-error", Static).update("")
+
+    def _show_error(self, message: str) -> None:
+        self.query_one("#cb-error", Static).update(message)
+
+    @on(Select.Changed, "#cb-mode")
+    def _on_mode_changed(self, event: Select.Changed) -> None:
+        value = event.value
+        if not value or value is Select.BLANK:
+            self._state.mode = None
+        else:
+            self._state.mode = WizardMode(str(value))
+        if self._state.mode == WizardMode.CATALOG:
+            self._populate_catalog_select()
+        elif self._state.mode == WizardMode.SOIL_COUNT:
+            self._populate_soil_select()
+            self._populate_nav_select()
+        elif self._state.mode == WizardMode.NAV:
+            self._populate_nav_select()
+        self._apply_step()
+
+    @on(Select.Changed, "#cb-catalog")
+    def _on_catalog_changed(self, event: Select.Changed) -> None:
+        if event.value and event.value is not Select.BLANK:
+            self._state.catalog_id = str(event.value)
+        self._update_preview()
+
+    @on(Select.Changed, "#cb-soil")
+    def _on_soil_changed(self, event: Select.Changed) -> None:
+        if event.value and event.value is not Select.BLANK:
+            self._state.collection = str(event.value)
+            if not self.query_one("#cb-label", Input).value:
+                self.query_one("#cb-label", Input).value = wizard.default_label_for_state(
+                    self._state
                 )
-                self._local_intro(channel_id)
-        elif not heimdallr_online:
-            # Existing conversation, Heimdallr offline — local picks up
-            self.app.call_from_thread(
-                self._set_status, "[dim]local model continuing the interview[/]"
-            )
-            self._local_reply()
+        self._update_preview()
 
-        self._start_listener()
-
-    def _get_or_create_channel(self) -> int | None:
-        """Upsert #card-builder then return its id. Returns None on any DB error."""
-        import logging
-        conn = grove_db.get_connection()
-        try:
-            cur = conn.cursor()
-            cur.execute("""
-                INSERT INTO grove.channels (name, channel_type, description)
-                VALUES ('card-builder', 'group', 'Heimdallr card builder interview')
-                ON CONFLICT (name) DO NOTHING
-            """)
-            conn.commit()
-            cur.execute("SELECT id FROM grove.channels WHERE name = 'card-builder' LIMIT 1")
-            row = cur.fetchone()
-            return row[0] if row else None
-        except Exception as exc:
-            logging.getLogger(__name__).error("card-builder channel error: %s", exc)
-            return None
-        finally:
-            grove_db.release_connection(conn)
-
-    def _write_to_channel(self, channel_id: int, sender: str, content: str) -> None:
-        conn = grove_db.get_connection()
-        try:
-            cur = conn.cursor()
-            cur.execute(
-                "INSERT INTO grove.messages (channel_id, sender, content)"
-                " VALUES (%s, %s, %s)",
-                (channel_id, sender, content),
-            )
-            conn.commit()
-        except Exception:
-            pass
-        finally:
-            grove_db.release_connection(conn)
-
-    def _ollama_call(self, messages: list[dict]) -> str:
-        import urllib.request as _urlreq
-        try:
-            data = json.dumps({
-                "model":    _OLLAMA_MODEL,
-                "messages": messages,
-                "stream":   False,
-            }).encode()
-            req = _urlreq.Request(
-                f"{_OLLAMA_URL}/api/chat", data=data,
-                headers={"Content-Type": "application/json"},
-            )
-            with _urlreq.urlopen(req, timeout=60) as resp:
-                return json.load(resp).get("message", {}).get("content", "").strip()
-        except Exception as exc:
-            return f"(local model unavailable: {exc})"
-
-    def _local_intro(self, channel_id: int) -> None:
-        reply = self._ollama_call([
-            {"role": "system", "content": _INTRO_PROMPT},
-            {"role": "user",   "content": "begin"},
-        ])
-        if reply:
-            self._write_to_channel(channel_id, "willow", reply)
-
-    @work(thread=True, exit_on_error=False)
-    def _local_reply(self) -> None:
-        if self._channel_id is None:
-            return
-        history = grove_reader.grove_messages("card-builder", limit=30)
-        messages = [{"role": "system", "content": _INTRO_PROMPT}]
-        for m in history:
-            sender = m.get("sender", "")
-            role   = "assistant" if sender == "willow" else "user"
-            messages.append({"role": role, "content": m.get("content", "")})
-        reply = self._ollama_call(messages)
-        if reply:
-            self._write_to_channel(self._channel_id, "willow", reply)
-
-    def _dispatch_intro(self, channel_id: int, to: str = "heimdallr") -> None:
-        conn = grove_db.get_connection()
-        try:
-            cur = conn.cursor()
-            cur.execute("SELECT id FROM grove.channels WHERE name = 'dispatch' LIMIT 1")
-            row = cur.fetchone()
-            if row:
-                payload = json.dumps({
-                    "to":            to,
-                    "prompt":        _INTRO_PROMPT,
-                    "reply_channel": "card-builder",
-                })
-                cur.execute(
-                    "INSERT INTO grove.messages (channel_id, sender, content)"
-                    " VALUES (%s, %s, %s)",
-                    (row[0], "dashboard", payload),
+    @on(Select.Changed, "#cb-nav")
+    def _on_nav_changed(self, event: Select.Changed) -> None:
+        if event.value and event.value is not Select.BLANK:
+            self._state.nav_target = str(event.value)
+            if not self.query_one("#cb-label", Input).value:
+                self.query_one("#cb-label", Input).value = wizard.default_label_for_state(
+                    self._state
                 )
-                conn.commit()
-        except Exception:
-            pass
-        finally:
-            grove_db.release_connection(conn)
+        self._update_preview()
 
-    def _load_history(self, msgs: list[dict]) -> None:
-        log = self.query_one("#cb-log", RichLog)
-        log.clear()
-        for m in msgs:
-            self._append_message(m)
-        if msgs:
-            self._cursor = msgs[-1]["id"]
-        self._set_status(f"[dim]Waiting for @{self._interviewer}…[/]")
+    @on(Select.Changed, "#cb-nav-link")
+    def _on_nav_link_changed(self, event: Select.Changed) -> None:
+        if event.value and event.value is not Select.BLANK:
+            self._state.nav_target = str(event.value)
+        self._update_preview()
 
-    def _append_message(self, m: dict) -> None:
-        from panes.chat import format_ts, render_content, sender_color
-        sender  = m.get("sender", "?")
-        content = m.get("content", "")
-        ts      = format_ts(m.get("created_at"))
-        color   = sender_color(sender)
-        log = self.query_one("#cb-log", RichLog)
-        log.write(
-            f"[dim]{ts}[/dim]  [{color} bold]{_e(sender):<14}[/{color} bold]  {_e(render_content(content))}"
+    @on(Input.Changed, "#cb-label")
+    def _on_label_changed(self, event: Input.Changed) -> None:
+        self._state.label = event.value.strip()
+        self._update_preview()
+
+    @on(Checkbox.Changed, "#cb-link-nav")
+    def _on_link_nav_changed(self, event: Checkbox.Changed) -> None:
+        self._state.link_nav = bool(event.value)
+        self.query_one("#cb-nav-link", Select).display = (
+            self._state.mode == WizardMode.SOIL_COUNT and event.value
         )
+        self._update_preview()
 
-    def _set_status(self, text: str) -> None:
-        from textual.css.query import NoMatches
-        try:
-            self.query_one("#cb-status", Static).update(text)
-        except NoMatches:
-            pass
-
-    @work(thread=True, exit_on_error=False)
-    def _start_listener(self) -> None:
-        self._listening = True
-        try:
-            conn = grove_db.listen_connection()
-            cur  = conn.cursor()
-            cur.execute("LISTEN grove_channel")
-            while self._listening:
-                if select.select([conn], [], [], 1.0)[0]:
-                    conn.poll()
-                    while conn.notifies:
-                        n = conn.notifies.pop(0)
-                        try:
-                            if int(n.payload) == self._channel_id:
-                                self.app.call_from_thread(self._on_notify)
-                        except (ValueError, TypeError):
-                            pass
-        except Exception:
-            pass
-
-    def _on_notify(self) -> None:
-        msgs = grove_reader.grove_messages("card-builder", limit=50)
-        new_msgs = [m for m in msgs if m["id"] > self._cursor]
-        for m in new_msgs:
-            self._append_message(m)
-            self._scan_for_card_def(m.get("content", ""))
-        if new_msgs:
-            self._cursor = new_msgs[-1]["id"]
-
-    def _scan_for_card_def(self, body: str) -> None:
-        match = _CARD_DEF_RE.search(body)
-        if not match:
+    @on(Button.Pressed, "#cb-save")
+    def _on_save(self) -> None:
+        label_input = self.query_one("#cb-label", Input)
+        self._state.label = label_input.value.strip()
+        saved = wizard.commit_state(self._state)
+        if saved is None:
+            err = "; ".join(self._state.errors) or "Could not save card."
+            self._show_error(err)
             return
-        try:
-            raw = json.loads(match.group(1))
-        except json.JSONDecodeError:
-            self._set_status("[red]card-def block contained invalid JSON — waiting for correction…[/]")
-            return
+        self._saved = True
+        self.dismiss(True)
 
-        from widgets.card_store import validate_card_def, save_card
-        card = validate_card_def(raw)
-        if card is None:
-            self._set_status("[red]card-def missing required fields (id, label) — waiting…[/]")
-            return
+    @on(Button.Pressed, "#cb-cancel")
+    def action_cancel(self) -> None:
+        self.dismiss(False)
 
-        save_card(card)
-        self._card_saved = True
-        self._post_confirmation(card["label"])
-        self._set_status(f"[green]Card '{_e(card['label'])}' saved.[/] Press Esc to close or continue.")
-        self.post_message(CardDefDetected(card))
-
-    def _post_confirmation(self, label: str) -> None:
-        if self._channel_id is None:
-            return
-        conn = grove_db.get_connection()
-        try:
-            cur = conn.cursor()
-            sender = grove_reader.dashboard_grove_sender()
-            cur.execute(
-                "INSERT INTO grove.messages (channel_id, sender, content)"
-                " VALUES (%s, %s, %s)",
-                (self._channel_id, sender,
-                 f"Card '{label}' saved. Press Esc to close or continue the conversation."),
-            )
-            conn.commit()
-        except Exception:
-            pass
-        finally:
-            grove_db.release_connection(conn)
-
-    def on_input_submitted(self, event: Input.Submitted) -> None:
-        body = event.value.strip()
-        if not body or self._channel_id is None:
-            return
-        event.input.value = ""
-        sender = grove_reader.dashboard_grove_sender()
-        self._write_to_channel(self._channel_id, sender, body)
-        if self._interviewer == "local":
-            self._local_reply()
-
-    def on_unmount(self) -> None:
-        self._listening = False
+    def on_key(self, event) -> None:
+        if event.key == "escape":
+            self.action_cancel()
+            event.prevent_default()
+            event.stop()

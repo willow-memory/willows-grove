@@ -5,16 +5,25 @@ from __future__ import annotations
 
 import logging
 import random
-import shutil
-import time
 import traceback
 from datetime import datetime
 
+from rich.markup import escape as rich_escape
+
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
+from textual.message import Message
 from textual.widgets import Static
+from textual import work
 
 from .hero import WillowHero
+from grove.apps.hero_format import (
+    format_collapsed_strip_markup,
+    format_ground_footer_markup,
+    format_hero_info_markup,
+)
+from grove.apps.hero_stats import fetch_hero_stats
+from grove.theme_textual import ACCENT, DEGRADED, SECONDARY
 from ._hero_state import (
     get_meadow_wind, pop_pigeon_trigger,
     is_bloop, maybe_bloop, tick_bloop, trigger_bloop,
@@ -23,6 +32,23 @@ from ._hero_state import (
 )
 
 log = logging.getLogger("hero_scene")
+
+
+class HeroStatsUpdated(Message):
+    """Live Grove + host stats for hero widgets."""
+
+    def __init__(self, stats: dict) -> None:
+        super().__init__()
+        self.stats = stats
+
+
+def _hero_expanded(widget: Static) -> bool:
+    parent = widget.parent
+    while parent is not None:
+        if isinstance(parent, HeroScene):
+            return parent.is_expanded()
+        parent = getattr(parent, "parent", None)
+    return True
 
 
 # ── Ground strip ─────────────────────────────────────────────────────────────
@@ -78,16 +104,25 @@ def _colorize_trunk(line: str) -> str:
 
 
 def _colorize_meadow(line: str) -> str:
-    """Colorize meadow: bloom colors, pigeon body colors, escaped backslashes."""
-    out = []
+    """Colorize meadow: blooms/pigeon per-char; batch plain grass so \\ never prefixes a tag."""
+    out: list[str] = []
+    plain: list[str] = []
+
+    def flush_plain() -> None:
+        if plain:
+            out.append(f"[{SECONDARY}]{rich_escape(''.join(plain))}[/]")
+            plain.clear()
+
     for ch in line:
         if ch in _BLOOM_COLORS:
+            flush_plain()
             out.append(f"[bold {_BLOOM_COLORS[ch]}]{ch}[/]")
         elif ch in _PIGEON_COLORS:
+            flush_plain()
             out.append(f"[{_PIGEON_COLORS[ch]}]{ch}[/]")
         else:
-            # escape \ so it doesn't swallow the next [ in markup
-            out.append("\\\\" if ch == "\\" else ch)
+            plain.append(ch)
+    flush_plain()
     return "".join(out)
 
 
@@ -159,12 +194,23 @@ class GroundStrip(Static):
         self._frame        = 0
         self._pigeon_active = False
         self._pigeon_x     = -4.0
+        self._stats: dict | None = None
+
+    def apply_stats(self, stats: dict) -> None:
+        self._stats = stats
+        if _hero_expanded(self):
+            try:
+                self._redraw()
+            except Exception:
+                log.error("GroundStrip.apply_stats crash:\n%s", traceback.format_exc())
 
     def on_mount(self) -> None:
         self.set_interval(1.2, self._tick)
         self._redraw()
 
     def _tick(self) -> None:
+        if not _hero_expanded(self):
+            return
         # Roll the bloop die — one roller for the whole widget set
         maybe_bloop()
 
@@ -233,7 +279,7 @@ class GroundStrip(Static):
         if is_bloop():
             msg    = "Bloop bloop."
             pad    = max(0, (w - len(msg)) // 2)
-            meadow = " " * pad + f"[#8b949e]{msg}[/]" + " " * (w - pad - len(msg))
+            meadow = " " * pad + f"[{SECONDARY}]{rich_escape(msg)}[/]" + " " * (w - pad - len(msg))
             trunk  = _colorize_trunk(trunk_plain)
             ground = _colorize_ground(ground_plain)
             self.update(f"{trunk}\n{meadow}\n{ground}")
@@ -243,7 +289,7 @@ class GroundStrip(Static):
         timed = get_timed_msg()
         if timed:
             pad    = max(0, (w - len(timed)) // 2)
-            meadow = " " * pad + f"[bold #f0883e]{timed}[/]" + " " * (w - pad - len(timed))
+            meadow = " " * pad + f"[{DEGRADED} bold]{rich_escape(timed)}[/]" + " " * (w - pad - len(timed))
             trunk  = _colorize_trunk(trunk_plain)
             ground = _colorize_ground(ground_plain)
             self.update(f"{trunk}\n{meadow}\n{ground}")
@@ -258,120 +304,102 @@ class GroundStrip(Static):
 
         trunk  = _colorize_trunk(trunk_plain)
         meadow = _colorize_meadow(meadow_plain)
-        ground = _colorize_ground(ground_plain)
+        if self._stats:
+            ground = format_ground_footer_markup(self._stats)
+        else:
+            ground = _colorize_ground(ground_plain)
 
         self.update(f"{trunk}\n{meadow}\n{ground}")
 
 
-# ── System info ───────────────────────────────────────────────────────────────
-
-def _read_cpu_ticks() -> tuple[int, int]:
-    """Return (idle_ticks, total_ticks) from /proc/stat."""
-    try:
-        with open("/proc/stat") as f:
-            parts = f.readline().split()
-        vals = [int(x) for x in parts[1:]]
-        idle = vals[3] + (vals[4] if len(vals) > 4 else 0)  # idle + iowait
-        return idle, sum(vals)
-    except Exception:
-        return 0, 1
-
-
-def _sysinfo(prev_cpu: tuple[int, int]) -> tuple[dict, tuple[int, int]]:
-    """Return (metrics_dict, new_cpu_snapshot) — CPU is a delta against prev_cpu."""
-    r: dict = {"cpu": 0, "mem": 0, "disk": 0, "temp": 0}
-    cur_idle, cur_total = _read_cpu_ticks()
-    delta_total = cur_total - prev_cpu[1]
-    delta_idle  = cur_idle  - prev_cpu[0]
-    if delta_total > 0:
-        r["cpu"] = max(0, min(100, int((1 - delta_idle / delta_total) * 100)))
-    try:
-        mem: dict[str, int] = {}
-        with open("/proc/meminfo") as f:
-            for line in f:
-                k, v = line.split(":", 1)
-                mem[k.strip()] = int(v.strip().split()[0])
-        total = mem.get("MemTotal", 1)
-        avail = mem.get("MemAvailable", total)
-        r["mem"] = max(0, min(100, int((total - avail) / total * 100)))
-    except Exception:
-        pass
-    try:
-        u = shutil.disk_usage("/")
-        r["disk"] = max(0, min(100, int(u.used / u.total * 100)))
-    except Exception:
-        pass
-    try:
-        with open("/sys/class/thermal/thermal_zone0/temp") as f:
-            r["temp"] = int(f.read().strip()) // 1000
-    except Exception:
-        pass
-    return r, (cur_idle, cur_total)
-
-
 # ── Info panel ────────────────────────────────────────────────────────────────
-
-# Sean's WILLOW wordmark from dashboard sketch — escaped for Rich markup
-_WILLOW_ART = [
-    r"_  _  _  __ __  __    _  _  _  _",
-    r"\\ \\ \\ || ||  ||  / o\ \\ \\ \\ ",  # trailing space prevents \[/] markup escape
-    r" \\/ \// || |_] |_} \__/  \\/ \//",
-]
 
 
 class HeroInfo(Static):
-    """Right panel: WILLOW wordmark · sysinfo · live clock."""
+    """Right panel: WILLOW wordmark · Grove live stats · sysinfo · clock."""
 
     DEFAULT_CSS = """
     HeroInfo {
         width: 1fr;
         height: 7;
-        color: #8b949e;
         padding: 0 1 0 1;
     }
     """
 
     def __init__(self, **kwargs) -> None:
         super().__init__("", **kwargs)
-        self._sys: dict = {"cpu": 0, "mem": 0, "disk": 0, "temp": 0}
-        self._prev_cpu: tuple[int, int] = _read_cpu_ticks()
+        self._stats: dict | None = None
+
+    def apply_stats(self, stats: dict) -> None:
+        self._stats = stats
+        if _hero_expanded(self):
+            self._redraw()
 
     def on_mount(self) -> None:
-        self.set_interval(1.0, self._tick)
-        self._tick()
+        self.set_interval(1.0, self._tick_clock)
 
-    def _tick(self) -> None:
-        try:
-            if not is_bloop():
-                self._sys, self._prev_cpu = _sysinfo(self._prev_cpu)
-                self._redraw()
-        except Exception:
-            log.error("HeroInfo._tick crash:\n%s", traceback.format_exc())
+    def _tick_clock(self) -> None:
+        if not _hero_expanded(self) or not self._stats:
+            return
+        self._redraw()
 
     def _redraw(self) -> None:
         try:
-            now  = datetime.now()
-            t    = now.strftime("%H:%M")
-            d    = now.strftime("%a %b %-d")
-            s    = self._sys
-            temp = f"{s['temp']}°C" if s["temp"] else "n/a"
-            art  = "\n".join(f"[bold #f59e0b]{l}[/]" for l in _WILLOW_ART)
-            self.update(
-                f"{art}\n"
-                "\n"
-                f"[dim]v0.1[/]  [#f0883e]BETA[/]  "
-                f"[dim]cpu {s['cpu']:3d}%  mem {s['mem']:3d}%  "
-                f"disk {s['disk']:3d}%  {temp}[/]\n"
-                f"[dim]{t} · {d}[/]"
-            )
+            if self._stats:
+                self.update(format_hero_info_markup(self._stats))
+            else:
+                self.update(f"[dim {SECONDARY}]loading grove stats…[/]")
         except Exception:
             log.error("HeroInfo._redraw crash:\n%s", traceback.format_exc())
+
+
+# ── Collapsed strip (non-Home nav) ────────────────────────────────────────────
+
+class HeroCollapsedStrip(Static):
+    """One-line hero: ⬡ time · grove state · meadow tick."""
+
+    DEFAULT_CSS = """
+    HeroCollapsedStrip {
+        height: 1;
+        width: 100%;
+        padding: 0 1;
+        display: none;
+    }
+    """
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__("", **kwargs)
+        self._frame = 0
+        self._stats: dict | None = None
+
+    def apply_stats(self, stats: dict) -> None:
+        self._stats = stats
+        self._redraw()
+
+    def on_mount(self) -> None:
+        self.set_interval(2.0, self._tick)
+        self._tick()
+
+    def _tick(self) -> None:
+        if _hero_expanded(self):
+            return
+        self._frame += 1
+        self._redraw()
+
+    def _redraw(self) -> None:
+        try:
+            w = max(24, self.size.width or 80)
+            meadow = _make_meadow(self._frame, w, get_meadow_wind())
+            stats = self._stats or {"grove_live": False, "grove_model": ""}
+            self.update(format_collapsed_strip_markup(stats, meadow))
+        except Exception:
+            log.error("HeroCollapsedStrip._tick crash:\n%s", traceback.format_exc())
 
 
 # ── Scene ─────────────────────────────────────────────────────────────────────
 
 class HeroScene(Vertical):
-    """Hero band: top row (tree + info) over full-width meadow ground."""
+    """Hero band: full on Home; collapsed strip on all other nav targets."""
 
     DEFAULT_CSS = """
     HeroScene {
@@ -379,13 +407,68 @@ class HeroScene(Vertical):
         background: #0a0f07;
         border-bottom: solid #1e3a1e;
     }
+    HeroScene.collapsed {
+        height: 2;
+    }
+    HeroScene.collapsed #hero-top,
+    HeroScene.collapsed GroundStrip {
+        display: none;
+    }
+    HeroScene.collapsed HeroCollapsedStrip {
+        display: block;
+    }
+    HeroScene.expanded HeroCollapsedStrip {
+        display: none;
+    }
     #hero-top {
         height: 7;
     }
     """
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self._expanded = True
+        self._cpu_snap: tuple[int, int] | None = None
+        self._stats: dict | None = None
+
+    def is_expanded(self) -> bool:
+        return self._expanded
+
+    def set_expanded(self, expanded: bool) -> None:
+        """Toggle full hero (Home) vs one-line collapsed strip."""
+        if expanded == self._expanded:
+            return
+        self._expanded = expanded
+        self.set_class(expanded, "expanded")
+        self.set_class(not expanded, "collapsed")
 
     def compose(self) -> ComposeResult:
         with Horizontal(id="hero-top"):
             yield HeroInfo()
             yield WillowHero()
         yield GroundStrip()
+        yield HeroCollapsedStrip(id="hero-collapsed")
+
+    def on_mount(self) -> None:
+        self.set_class(True, "expanded")
+        self.set_class(False, "collapsed")
+        self.set_interval(5.0, self._poll_stats)
+        self._poll_stats()
+
+    @work(thread=True, exit_on_error=False)
+    def _poll_stats(self) -> None:
+        try:
+            stats = fetch_hero_stats(self._cpu_snap)
+            self._cpu_snap = stats.pop("cpu_snap")
+            self.post_message(HeroStatsUpdated(stats))
+        except Exception:
+            log.error("HeroScene._poll_stats crash:\n%s", traceback.format_exc())
+
+    def on_hero_stats_updated(self, event: HeroStatsUpdated) -> None:
+        self._stats = event.stats
+        for widget in self.query(HeroInfo):
+            widget.apply_stats(event.stats)
+        for widget in self.query(GroundStrip):
+            widget.apply_stats(event.stats)
+        for widget in self.query(HeroCollapsedStrip):
+            widget.apply_stats(event.stats)
