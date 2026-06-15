@@ -268,6 +268,51 @@ def archive_channel(conn, channel_id: int) -> bool:
 # Messages
 # ---------------------------------------------------------------------------
 
+def _frank_ledger_append(event_type: str, content: dict) -> None:
+    """Write one tamper-evident entry to frank_ledger in willow_20. Best-effort.
+
+    Re-homed from the cut grove_serve. Opens its own short-lived connection so a
+    ledger failure can never roll back the caller's message transaction.
+    """
+    try:
+        import hashlib as _hl
+        import json as _j
+        import uuid as _u
+        import psycopg2
+        import psycopg2.extras
+        db   = os.environ.get("WILLOW_PG_DB", "willow_20")
+        user = os.environ.get("WILLOW_PG_USER", os.environ.get("USER", ""))
+        conn = psycopg2.connect(dbname=db, user=user)
+        try:
+            cur = conn.cursor()
+            cur.execute("SELECT hash FROM frank_ledger ORDER BY created_at DESC LIMIT 1")
+            row       = cur.fetchone()
+            prev_hash = row[0] if row else None
+            payload   = _j.dumps({"event_type": event_type, "content": content}, sort_keys=True)
+            new_hash  = _hl.sha256(f"{prev_hash or ''}{payload}".encode()).hexdigest()
+            cur.execute(
+                "INSERT INTO frank_ledger (id, project, event_type, content, prev_hash, hash) "
+                "VALUES (%s, %s, %s, %s, %s, %s)",
+                (str(_u.uuid4()), "grove", event_type,
+                 psycopg2.extras.Json(content), prev_hash, new_hash),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+    except Exception as e:
+        print(f"[frank-ledger] write error: {e}", flush=True)
+
+
+def _is_human_sender(sender: str) -> bool:
+    """True if sender is the configured human operator handle (GROVE_HUMAN_SENDER).
+
+    send_message is the MCP/agent post path — the human dashboard chat bypasses it
+    via a raw INSERT — so this is normally empty and every post is agent activity.
+    """
+    human = (os.environ.get("GROVE_HUMAN_SENDER") or "").strip().lower()
+    return bool(human) and (sender or "").strip().lower() == human
+
+
 def send_message(conn, *, channel_id: int, sender: str, content: str,
                  message_type: str = "text", reply_to_id: int = None) -> Dict[str, Any]:
     if message_type not in VALID_MESSAGE_TYPES:
@@ -282,7 +327,18 @@ def send_message(conn, *, channel_id: int, sender: str, content: str,
     row = cur.fetchone()
     cols = [d[0] for d in cur.description]
     conn.commit()
-    return dict(zip(cols, row))
+    result = dict(zip(cols, row))
+    # FRANK audit (re-scoped from grove_serve): ledger agent-originated grove
+    # posts. Best-effort; never blocks or rolls back the send.
+    if not _is_human_sender(sender):
+        _frank_ledger_append("grove_agent_message", {
+            "msg_id": result.get("id"),
+            "channel_id": channel_id,
+            "sender": sender,
+            "content": (content or "")[:500],
+            "message_type": message_type,
+        })
+    return result
 
 
 def get_history(conn, channel_id: int, limit: int = 100,
