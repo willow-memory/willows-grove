@@ -11,4 +11,5 @@ build/
 *.db
 *.key
 .worktrees/
+worktrees/
 .cursor/grove_followup_last_id

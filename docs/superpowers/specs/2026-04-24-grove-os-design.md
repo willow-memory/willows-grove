@@ -120,7 +120,7 @@ Left app dock (icons). Channel list. Main chat. Members + model widget right.
 │    ● hanuman         │ │  Message #architecture...                        │
 │    ○ jeles           │ ╰──────────────────────────────────────────────────╯
 ├──────────────────────┤
-│ ● Sean  yggdrasil:v9 │
+│ ● USER  yggdrasil:v9 │
 ╰──────────────────────╯
 ```
 
