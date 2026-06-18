@@ -141,7 +141,7 @@ def init_schema(conn):
     cur.execute("""
         SELECT column_name FROM information_schema.columns
         WHERE table_schema = 'grove' AND table_name = 'messages'
-          AND column_name IN ('to_agent', 'bus_type', 'priority', 'correlation_id', 'ttl')
+          AND column_name IN ('to_agent', 'bus_type', 'priority', 'correlation_id', 'ttl', 'deleted_by')
     """)
     existing_msg_cols = {r[0] for r in cur.fetchall()}
     for col_name, col_sql in [
@@ -150,6 +150,7 @@ def init_schema(conn):
         ("priority",       "ALTER TABLE messages ADD COLUMN priority INTEGER DEFAULT 3"),
         ("correlation_id", "ALTER TABLE messages ADD COLUMN correlation_id TEXT"),
         ("ttl",            "ALTER TABLE messages ADD COLUMN ttl INTEGER"),
+        ("deleted_by",     "ALTER TABLE messages ADD COLUMN deleted_by TEXT"),
     ]:
         if col_name not in existing_msg_cols:
             cur.execute(col_sql)
@@ -508,6 +509,26 @@ def bus_receive(conn, agent: str, since_id: int = 0, limit: int = 50) -> List[Di
     rows = cur.fetchall()
     cols = [d[0] for d in cur.description]
     return [dict(zip(cols, r)) for r in rows]
+
+
+def bus_delete(conn, message_id: int, sender: str) -> Dict[str, Any]:
+    """Soft-delete a bus message. Sender must own the message; '__system__' bypasses."""
+    cur = conn.cursor()
+    cur.execute("SELECT id, sender, is_deleted FROM messages WHERE id = %s", (message_id,))
+    row = cur.fetchone()
+    if not row:
+        raise ValueError(f"message {message_id} not found")
+    msg_id, msg_sender, is_deleted = row
+    if is_deleted:
+        return {"id": msg_id, "deleted": False, "reason": "already deleted"}
+    if sender != "__system__" and msg_sender != sender:
+        raise PermissionError(f"'{sender}' cannot delete message owned by '{msg_sender}'")
+    cur.execute(
+        "UPDATE messages SET is_deleted = 1, deleted_by = %s WHERE id = %s",
+        (sender, message_id),
+    )
+    conn.commit()
+    return {"id": msg_id, "deleted": True, "deleted_by": sender}
 
 
 # ---------------------------------------------------------------------------

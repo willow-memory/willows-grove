@@ -569,6 +569,25 @@ def grove_bus_receive(agent: str, channel_name: str = "", since_id: int = 0) -> 
 
 
 @mcp.tool()
+def grove_bus_delete(channel_name: str, sender: str, message_id: int) -> dict:
+    """
+    Soft-delete a bus message — retracted, invisible to grove_bus_receive.
+
+    Args:
+        channel_name: Channel the message was sent to (used for context only).
+        sender: Your agent name — must match the original message sender.
+        message_id: ID of the message to retract.
+    """
+    conn = db.get_connection()
+    try:
+        return db.bus_delete(conn, message_id=message_id, sender=sender)
+    except (ValueError, PermissionError) as exc:
+        return {"deleted": False, "error": str(exc)}
+    finally:
+        db.release_connection(conn)
+
+
+@mcp.tool()
 def grove_ack(channel_name: str, sender: str, correlation_id: str,
               original_id: int) -> dict:
     """
