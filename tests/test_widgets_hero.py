@@ -2,6 +2,8 @@
 b17: WGRV1  ΔΣ=42
 """
 import sys, os
+from unittest.mock import patch
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from widgets.hero import POSES, advance_frame, render_frame
 
@@ -12,24 +14,24 @@ def test_each_pose_has_10_frames():
     for key, frames in POSES.items():
         assert len(frames) == 10, f"pose {key} has {len(frames)} frames"
 
-def test_advance_frame_cycles(monkeypatch):
-    monkeypatch.setattr("widgets.hero.random.random", lambda: 1.0)  # no 15% reverse
+def test_advance_frame_cycles():
     pose, frame = "L", 0
-    for _ in range(10):
-        pose, frame = advance_frame(pose, frame)
+    with patch("widgets.hero.random.random", return_value=1.0):
+        for _ in range(10):
+            pose, frame = advance_frame(pose, frame)
     assert pose == "C"
     assert frame == 0
 
-def test_advance_frame_full_cycle_returns_to_L(monkeypatch):
-    monkeypatch.setattr("widgets.hero.random.random", lambda: 1.0)
+def test_advance_frame_full_cycle_returns_to_L():
     pose, frame = "L", 0
-    for _ in range(30):
-        pose, frame = advance_frame(pose, frame)
+    with patch("widgets.hero.random.random", return_value=1.0):
+        for _ in range(30):
+            pose, frame = advance_frame(pose, frame)
     assert pose == "L"
     assert frame == 0
 
-def test_render_frame_returns_string_tuple():
-    parts = render_frame("C", 4)
-    assert isinstance(parts, tuple)
-    assert len(parts) == 6
-    assert all(isinstance(p, str) and len(p) > 0 for p in parts)
+def test_render_frame_returns_six_lines():
+    lines = render_frame("C", 4)
+    assert isinstance(lines, tuple)
+    assert len(lines) == 6
+    assert all(isinstance(line, str) and len(line) > 0 for line in lines)

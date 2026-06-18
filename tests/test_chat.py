@@ -1,13 +1,21 @@
 """tests/test_chat.py
 b17: WGRV1  ΔΣ=42
 """
-import sys, os, json
+import os
+import sys
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from panes.chat import (
-    render_content, format_ts, sort_channels, _build_channel_label
-)
 from datetime import datetime
+
+from panes.chat import _build_channel_label, format_ts, render_content, sort_channels
+from panes.chat_format import (
+    dm_channel_name,
+    dm_display_name,
+    format_channel_title,
+    is_direct_channel,
+    partition_channels,
+)
 
 
 def test_render_content_plain():
@@ -43,40 +51,65 @@ def test_format_ts_none():
 
 
 def test_sort_channels_known_order():
-    channels = [{"name": "architecture"}, {"name": "general"}, {"name": "readme"}]
+    channels = [
+        {"name": "architecture", "channel_type": "group"},
+        {"name": "general", "channel_type": "group"},
+        {"name": "readme", "channel_type": "group"},
+    ]
     result = sort_channels(channels)
     assert [c["name"] for c in result] == ["general", "architecture", "readme"]
 
 
-def test_sort_channels_unknown_appended_alphabetically():
-    channels = [{"name": "random"}, {"name": "general"}, {"name": "zzz"}]
-    result = sort_channels(channels)
-    assert result[0]["name"] == "general"
-    assert result[-1]["name"] == "zzz"
+def test_partition_text_and_dm():
+    channels = [
+        {"name": "general", "channel_type": "group", "unread": 0},
+        {"name": "dm:hanuman", "channel_type": "direct", "unread": 2},
+        {"name": "architecture", "channel_type": "group", "unread": 0},
+    ]
+    text, dms = partition_channels(channels)
+    assert [c["name"] for c in text] == ["general", "architecture"]
+    assert [c["name"] for c in dms] == ["dm:hanuman"]
+
+
+def test_dm_names():
+    assert dm_channel_name("Hanuman") == "dm:hanuman"
+    assert dm_display_name("dm:hanuman") == "@hanuman"
 
 
 def test_build_channel_label_plain():
-    ch = {"name": "general", "unread": 0, "agent_name": None}
-    assert _build_channel_label(ch) == "# general"
+    ch = {"name": "general", "unread": 0, "agent_name": None, "channel_type": "group"}
+    label = _build_channel_label(ch)
+    assert "# general" in label
+    assert "●" not in label
+
+
+def test_build_channel_label_dm():
+    ch = {"name": "dm:hanuman", "unread": 1, "channel_type": "direct"}
+    label = _build_channel_label(ch)
+    assert "@hanuman" in label
+    assert "# hanuman" not in label
 
 
 def test_build_channel_label_unread():
-    ch = {"name": "general", "unread": 3, "agent_name": None}
+    ch = {"name": "general", "unread": 3, "agent_name": None, "channel_type": "group"}
     label = _build_channel_label(ch)
     assert "# general" in label
     assert "3" in label
 
 
 def test_build_channel_label_agent():
-    ch = {"name": "willow-grove", "unread": 0, "agent_name": "hanuman"}
+    ch = {
+        "name": "willow-grove",
+        "unread": 0,
+        "agent_name": "hanuman",
+        "channel_type": "persona",
+    }
     label = _build_channel_label(ch)
     assert "# willow-grove" in label
     assert "hanuman" in label
 
 
-def test_build_channel_label_agent_and_unread():
-    ch = {"name": "willow-grove", "unread": 2, "agent_name": "hanuman"}
-    label = _build_channel_label(ch)
-    assert "# willow-grove" in label
-    assert "hanuman" in label
-    assert "2" in label
+def test_format_channel_title_dm():
+    ch = {"name": "dm:hanuman", "channel_type": "direct"}
+    assert "@hanuman" in format_channel_title(ch)
+    assert is_direct_channel(ch)

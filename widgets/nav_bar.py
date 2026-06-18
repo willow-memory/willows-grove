@@ -1,4 +1,4 @@
-"""widgets/nav_bar.py — NavBar: horizontal nav strip + NavChanged message.
+"""widgets/nav_bar.py — NavBar with 1–7 targets + vitals line.
 b17: WGRV1  ΔΣ=42
 """
 from __future__ import annotations
@@ -9,13 +9,22 @@ from textual.css.query import NoMatches
 from textual.message import Message
 from textual.widgets import Static
 
-from widgets.file_menu import FileMenuModal
-
+from grove.theme_textual import ACCENT, BG, HEALTHY, INPUT_BG, PRIMARY, SECONDARY
 
 NAV_TARGETS: list[str] = [
     "home", "chat", "projects", "knowledge",
     "providers", "settings", "help",
 ]
+
+NAV_LABELS: dict[str, str] = {
+    "home": "Home",
+    "chat": "Chat",
+    "projects": "Projects",
+    "knowledge": "Knowledge",
+    "providers": "Providers",
+    "settings": "Settings",
+    "help": "Help",
+}
 
 
 class NavChanged(Message):
@@ -27,24 +36,25 @@ class NavChanged(Message):
 class NavItem(Static):
     """Single clickable nav item."""
 
-    DEFAULT_CSS = """
-    NavItem {
+    DEFAULT_CSS = f"""
+    NavItem {{
         width: auto;
         padding: 0 1;
-        color: #8b949e;
-    }
-    NavItem:hover {
-        color: #c9d1d9;
-        background: #21262d;
-    }
-    NavItem.-active {
-        color: #58a6ff;
+        color: {SECONDARY};
+    }}
+    NavItem:hover {{
+        color: {PRIMARY};
+        background: {BG};
+    }}
+    NavItem.-active {{
+        color: {ACCENT};
         text-style: bold;
-    }
+    }}
     """
 
-    def __init__(self, target: str, **kwargs) -> None:
-        super().__init__(target.capitalize(), markup=False, **kwargs)
+    def __init__(self, index: int, target: str, **kwargs) -> None:
+        label = NAV_LABELS.get(target, target.title())
+        super().__init__(f"{index} {label}", markup=False, **kwargs)
         self._target = target
 
     def on_click(self) -> None:
@@ -52,53 +62,44 @@ class NavItem(Static):
 
 
 class NavLogo(Static):
-    """Top-left logo — click to open File menu."""
+    """Home shortcut."""
 
-    DEFAULT_CSS = """
-    NavLogo {
+    DEFAULT_CSS = f"""
+    NavLogo {{
         width: auto;
         padding: 0 1;
-        color: #3fb950;
-    }
-    NavLogo:hover {
-        color: #58a6ff;
-        background: #21262d;
-    }
+        color: {HEALTHY};
+    }}
+    NavLogo:hover {{
+        color: {ACCENT};
+        background: {BG};
+    }}
     """
 
     def __init__(self, **kwargs) -> None:
         super().__init__("[bold]◆[/]", markup=True, **kwargs)
 
     def on_click(self) -> None:
-        async def _handle(action: str | None) -> None:
-            if action == "quit":
-                self.app.exit()
-            elif action and action != "quit":
-                self.app.notify(f"{action.capitalize()}: coming soon", timeout=2)
-
-        self.app.push_screen(FileMenuModal(), _handle)
+        self.post_message(NavChanged("home"))
 
 
 class NavBar(Horizontal):
-    """Single-row nav strip with clickable items."""
+    """Nav strip: logo + 1–7 targets + vitals."""
 
-    DEFAULT_CSS = """
-    NavBar {
+    DEFAULT_CSS = f"""
+    NavBar {{
         height: 1;
-        background: #161b22;
-        padding: 0 0;
-    }
-    NavBar #nav-logo {
+        background: {INPUT_BG};
+    }}
+    NavBar #nav-links {{
         width: auto;
-        padding: 0 1;
-        color: #3fb950;
-    }
-    NavBar #nav-vitals {
+    }}
+    NavBar #nav-vitals {{
         width: 1fr;
         padding: 0 1;
-        color: #8b949e;
+        color: {SECONDARY};
         text-align: right;
-    }
+    }}
     """
 
     def __init__(self, **kwargs) -> None:
@@ -106,17 +107,19 @@ class NavBar(Horizontal):
         self._active = "home"
 
     def compose(self) -> ComposeResult:
-        yield NavLogo(id="nav-logo")
-        for target in NAV_TARGETS:
-            yield NavItem(target, id=f"nav-{target}")
+        with Horizontal(id="nav-links"):
+            yield NavLogo(id="nav-logo")
+            for i, target in enumerate(NAV_TARGETS, start=1):
+                yield NavItem(i, target, id=f"nav-{target}")
         yield Static("", id="nav-vitals", markup=True)
 
     def on_mount(self) -> None:
         self._update_active()
 
     def highlight(self, target: str) -> None:
-        self._active = target
-        self._update_active()
+        if target in NAV_TARGETS:
+            self._active = target
+            self._update_active()
 
     def set_vitals(self, text: str) -> None:
         try:

@@ -141,7 +141,7 @@ def init_schema(conn):
     cur.execute("""
         SELECT column_name FROM information_schema.columns
         WHERE table_schema = 'grove' AND table_name = 'messages'
-          AND column_name IN ('to_agent', 'bus_type', 'priority', 'correlation_id', 'ttl')
+          AND column_name IN ('to_agent', 'bus_type', 'priority', 'correlation_id', 'ttl', 'deleted_by')
     """)
     existing_msg_cols = {r[0] for r in cur.fetchall()}
     for col_name, col_sql in [
@@ -150,6 +150,7 @@ def init_schema(conn):
         ("priority",       "ALTER TABLE messages ADD COLUMN priority INTEGER DEFAULT 3"),
         ("correlation_id", "ALTER TABLE messages ADD COLUMN correlation_id TEXT"),
         ("ttl",            "ALTER TABLE messages ADD COLUMN ttl INTEGER"),
+        ("deleted_by",     "ALTER TABLE messages ADD COLUMN deleted_by TEXT"),
     ]:
         if col_name not in existing_msg_cols:
             cur.execute(col_sql)
@@ -268,6 +269,51 @@ def archive_channel(conn, channel_id: int) -> bool:
 # Messages
 # ---------------------------------------------------------------------------
 
+def _frank_ledger_append(event_type: str, content: dict) -> None:
+    """Write one tamper-evident entry to frank_ledger in willow_20. Best-effort.
+
+    Re-homed from the cut grove_serve. Opens its own short-lived connection so a
+    ledger failure can never roll back the caller's message transaction.
+    """
+    try:
+        import hashlib as _hl
+        import json as _j
+        import uuid as _u
+        import psycopg2
+        import psycopg2.extras
+        db   = os.environ.get("WILLOW_PG_DB", "willow_20")
+        user = os.environ.get("WILLOW_PG_USER", os.environ.get("USER", ""))
+        conn = psycopg2.connect(dbname=db, user=user)
+        try:
+            cur = conn.cursor()
+            cur.execute("SELECT hash FROM frank_ledger ORDER BY created_at DESC LIMIT 1")
+            row       = cur.fetchone()
+            prev_hash = row[0] if row else None
+            payload   = _j.dumps({"event_type": event_type, "content": content}, sort_keys=True)
+            new_hash  = _hl.sha256(f"{prev_hash or ''}{payload}".encode()).hexdigest()
+            cur.execute(
+                "INSERT INTO frank_ledger (id, project, event_type, content, prev_hash, hash) "
+                "VALUES (%s, %s, %s, %s, %s, %s)",
+                (str(_u.uuid4()), "grove", event_type,
+                 psycopg2.extras.Json(content), prev_hash, new_hash),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+    except Exception as e:
+        print(f"[frank-ledger] write error: {e}", flush=True)
+
+
+def _is_human_sender(sender: str) -> bool:
+    """True if sender is the configured human operator handle (GROVE_HUMAN_SENDER).
+
+    send_message is the MCP/agent post path — the human dashboard chat bypasses it
+    via a raw INSERT — so this is normally empty and every post is agent activity.
+    """
+    human = (os.environ.get("GROVE_HUMAN_SENDER") or "").strip().lower()
+    return bool(human) and (sender or "").strip().lower() == human
+
+
 def send_message(conn, *, channel_id: int, sender: str, content: str,
                  message_type: str = "text", reply_to_id: int = None) -> Dict[str, Any]:
     if message_type not in VALID_MESSAGE_TYPES:
@@ -282,7 +328,18 @@ def send_message(conn, *, channel_id: int, sender: str, content: str,
     row = cur.fetchone()
     cols = [d[0] for d in cur.description]
     conn.commit()
-    return dict(zip(cols, row))
+    result = dict(zip(cols, row))
+    # FRANK audit (re-scoped from grove_serve): ledger agent-originated grove
+    # posts. Best-effort; never blocks or rolls back the send.
+    if not _is_human_sender(sender):
+        _frank_ledger_append("grove_agent_message", {
+            "msg_id": result.get("id"),
+            "channel_id": channel_id,
+            "sender": sender,
+            "content": (content or "")[:500],
+            "message_type": message_type,
+        })
+    return result
 
 
 def get_history(conn, channel_id: int, limit: int = 100,
@@ -454,6 +511,26 @@ def bus_receive(conn, agent: str, since_id: int = 0, limit: int = 50) -> List[Di
     return [dict(zip(cols, r)) for r in rows]
 
 
+def bus_delete(conn, message_id: int, sender: str) -> Dict[str, Any]:
+    """Soft-delete a bus message. Sender must own the message; '__system__' bypasses."""
+    cur = conn.cursor()
+    cur.execute("SELECT id, sender, is_deleted FROM messages WHERE id = %s", (message_id,))
+    row = cur.fetchone()
+    if not row:
+        raise ValueError(f"message {message_id} not found")
+    msg_id, msg_sender, is_deleted = row
+    if is_deleted:
+        return {"id": msg_id, "deleted": False, "reason": "already deleted"}
+    if sender != "__system__" and msg_sender != sender:
+        raise PermissionError(f"'{sender}' cannot delete message owned by '{msg_sender}'")
+    cur.execute(
+        "UPDATE messages SET is_deleted = 1, deleted_by = %s WHERE id = %s",
+        (sender, message_id),
+    )
+    conn.commit()
+    return {"id": msg_id, "deleted": True, "deleted_by": sender}
+
+
 # ---------------------------------------------------------------------------
 # Cursors
 # ---------------------------------------------------------------------------
@@ -541,6 +618,25 @@ def ensure_card_builder_channel() -> None:
         cur.execute("""
             INSERT INTO grove.channels (name, channel_type, description, agent_name)
             VALUES ('card-builder', 'group', 'Heimdallr card builder interview', 'heimdallr')
+            ON CONFLICT (name) DO NOTHING
+        """)
+        conn.commit()
+    except Exception:
+        pass
+    finally:
+        if conn is not None:
+            release_connection(conn)
+
+
+def ensure_upstream_channel() -> None:
+    """Idempotent: create #upstream channel for Upstream Steward notifications."""
+    conn = None
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute("""
+            INSERT INTO grove.channels (name, channel_type, description, agent_name)
+            VALUES ('upstream', 'group', 'Upstream Steward — reply drafts', 'hanuman')
             ON CONFLICT (name) DO NOTHING
         """)
         conn.commit()

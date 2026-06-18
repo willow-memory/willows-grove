@@ -1,4 +1,4 @@
-"""panes/help.py — Help reference pane.
+"""panes/help.py — Keyboard reference for fresh-start shell.
 b17: WGRV1  ΔΣ=42
 """
 from __future__ import annotations
@@ -7,75 +7,73 @@ from textual.app import ComposeResult
 from textual.containers import VerticalScroll
 from textual.widgets import Static
 
-_OVERVIEW = """\
-[bold #58a6ff]Willow Grove[/]
+from grove.theme_textual import PRIMARY, markup_bold_accent, markup_dim
 
-Local-first AI workspace. One surface for messaging, task coordination,
-knowledge, and agent management. Everything runs on your machine.
-Postgres holds the memory. Ollama runs the models. You hold the keys.\
-"""
 
-_NAVIGATION = """\
-[bold #58a6ff]Navigation[/]
+def _section(title: str, body: str) -> str:
+    return f"{markup_bold_accent()}{title}[/]\n\n{body}"
 
-[bold]Home[/]       Dashboard — tasks, agents, active thoughts
-[bold]Chat[/]       Grove channels — agent and human messaging
-[bold]Projects[/]   Active projects and task queues
-[bold]Knowledge[/]  Search and browse the knowledge base
-[bold]Providers[/]  AI model providers — enable/disable
-[bold]Settings[/]   Consent, security controls, and subsystem health
-[bold]Help[/]       This panel\
-"""
 
-_SHORTCUTS = """\
-[bold #58a6ff]Keyboard Shortcuts[/]
+_OVERVIEW = _section(
+    "Willow Grove",
+    """Local-first AI workspace. One surface for messaging, task coordination,
+knowledge, and agent management. Postgres holds the memory. Ollama runs the models.""",
+)
 
-[bold]q[/]       Quit
-[bold]r[/]       Refresh
-[bold]1–7[/]     Navigate to Home / Chat / Projects / Knowledge /
+_NAVIGATION = _section(
+    "Navigation",
+    """[bold]Home[/]       Desk + card launchers
+[bold]Chat[/]       Grove channels — Discord-style sidebar
+[bold]Projects[/]   Personal project list (SOIL)
+[bold]Knowledge[/] Search Postgres KB atoms
+[bold]Providers[/]  Ollama + cloud provider status
+[bold]Settings[/]   Consent toggles + subsystem vitals
+[bold]Help[/]       This panel""",
+)
+
+_SHORTCUTS = _section(
+    "Keyboard Shortcuts",
+    """[bold]q[/]       Quit
+[bold]1–7[/]     Navigate Home / Chat / Projects / Knowledge /
             Providers / Settings / Help
-[bold]e[/]       Enable selected provider (Providers pane)
-[bold]d[/]       Disable selected provider (Providers pane)
-[bold]Enter[/]   Confirm selection / toggle (nav rows, settings)
-[bold]↑ ↓[/]     Move cursor (Knowledge search results)\
-"""
+[bold]: [/]      Chat mod command (when Chat is active)
+[bold]r[/]       Refresh (Settings, Providers, MCP)
+[bold]t[/]       Load MCP tools (MCP pane)
+[bold]s x R[/]   Start / stop / restart grove MCP serve
+[bold]e d[/]     Enable / disable provider (Providers pane)
+[bold]Enter[/]   Toggle consent row / call MCP tool / submit forms""",
+)
 
-_PRIVACY = """\
-[bold #58a6ff]Privacy & Consent[/]
-
-Willow runs locally. No data leaves your machine unless you explicitly
+_PRIVACY = _section(
+    "Privacy & Consent",
+    f"""Willow runs locally. No data leaves your machine unless you explicitly
 enable cloud features.
 
-[bold]Internet[/]    Outbound internet connections. Off = fully air-gapped.
-[bold]Cloud LLM[/]   Prompts sent to cloud AI providers (e.g. Anthropic).
-                Off = local models only.
-[bold]LAN[/]         Local network communication between your devices.
-                Off = no outbound LAN traffic.
+[bold]Internet[/]    Outbound internet connections.
+[bold]Cloud LLM[/]   Prompts sent to cloud AI providers.
+[bold]LAN[/]         Local network communication between devices.
 
-Consent state is stored at [dim]~/.willow/consent.json[/] and applies
-system-wide to all apps installed through Willow Grove.
-
-Authorization is enforced by the SAP gate — apps must present a
-PGP-signed manifest to access any Willow tool.\
-"""
+Consent state is stored at {markup_dim()}~/.willow/settings.global.json[/] (mirrored to consent.json).""",
+)
 
 
 class HelpPane(VerticalScroll):
-    DEFAULT_CSS = """
-    HelpPane {
+    DEFAULT_CSS = f"""
+    HelpPane {{
         height: 1fr;
         padding: 1 2;
-    }
-    HelpPane Static {
+        color: {PRIMARY};
+    }}
+    HelpPane Static {{
         padding: 0 0 2 0;
-    }
+    }}
     """
 
     def compose(self) -> ComposeResult:
-        yield Static(_OVERVIEW,   id="help-overview",   markup=True)
+        yield Static(_OVERVIEW, id="help-overview", markup=True)
         yield Static(_NAVIGATION, id="help-navigation", markup=True)
-        yield Static(_SHORTCUTS,  id="help-shortcuts",  markup=True)
-        yield Static(_PRIVACY,    id="help-privacy",    markup=True)
+        yield Static(_SHORTCUTS, id="help-shortcuts", markup=True)
+        yield Static(_PRIVACY, id="help-privacy", markup=True)
 
     def jump_to_section(self, section: str) -> None:
         from textual.css.query import NoMatches
