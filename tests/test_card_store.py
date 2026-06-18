@@ -121,7 +121,7 @@ def test_validate_card_def_defaults_enabled():
 def test_load_home_cards_includes_builtins():
     cards = load_home_cards()
     assert len(cards) >= len(BUILTIN_CARDS)
-    assert cards[0]["id"] == "user-todos"
+    assert cards[0]["id"] == "human"  # order=0 builtin
 
 
 def test_unique_card_id_avoids_builtin_collision():
