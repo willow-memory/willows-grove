@@ -16,5 +16,6 @@ def test_refresh_targets_cover_data_panes():
 
 def test_internal_pane_ids():
     from widgets.content_stack import _INTERNAL_PANES
-    assert len(_INTERNAL_PANES) == 9
+    assert len(_INTERNAL_PANES) == 10
     assert "#pane-think-map" in _INTERNAL_PANES
+    assert "#pane-user-todos" in _INTERNAL_PANES
