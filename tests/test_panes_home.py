@@ -36,7 +36,8 @@ def test_render_desk_no_attention_section():
 def test_home_cards_dense_eight():
     assert len(BUILTIN_CARDS) == 10
     ids = [c["id"] for c in BUILTIN_CARDS]
-    assert ids[0] == "user-todos"
+    assert ids[0] == "human"
+    assert "user-todos" in ids
     assert "mcp" in ids
     assert "think-map" in ids
     nav = {c["id"]: c["nav_target"] for c in BUILTIN_CARDS if c.get("nav_target")}
@@ -47,4 +48,4 @@ def test_home_cards_dense_eight():
 
 def test_load_home_cards_starts_with_my_desk():
     cards = load_home_cards()
-    assert cards[0]["id"] == "user-todos"
+    assert cards[0]["id"] == "human"
