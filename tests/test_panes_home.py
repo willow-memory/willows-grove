@@ -34,7 +34,7 @@ def test_render_desk_no_attention_section():
 
 
 def test_home_cards_dense_eight():
-    assert len(BUILTIN_CARDS) == 9
+    assert len(BUILTIN_CARDS) == 10
     ids = [c["id"] for c in BUILTIN_CARDS]
     assert ids[0] == "user-todos"
     assert "mcp" in ids
