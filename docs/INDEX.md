@@ -34,6 +34,7 @@ Enterprise doc spine for **Grove** (comms + dashboard) and how it meets the **Wi
 |-----|---------|
 | [`synthesis/store-console-source-map.md`](synthesis/store-console-source-map.md) | Grove ↔ SAFE App Store console integration brief (b17: SCMAP) |
 | [`synthesis/grove-starter-borrow-map.md`](synthesis/grove-starter-borrow-map.md) | Grove panes ↔ starter-pack scouts — steal vs wrap (b17: GSBRW) |
+| [`synthesis/the-one-desk.md`](synthesis/the-one-desk.md) | North-star: how Grove + all apps come together — one desk, one memory, many tools (b17: ONEDSK) |
 
 ## Decisions (ADRs)
 
