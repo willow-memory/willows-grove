@@ -28,9 +28,18 @@ Enterprise doc spine for **Grove** (comms + dashboard) and how it meets the **Wi
 | Message envelope & bus fields | [`contracts/MESSAGE_ENVELOPE.md`](contracts/MESSAGE_ENVELOPE.md) |
 | Routing: `willow.*` vs `public.routing_decisions` | [`verify/ROUTING_OBSERVABILITY.md`](verify/ROUTING_OBSERVABILITY.md) |
 
+## Synthesis
+
+| Doc | Purpose |
+|-----|---------|
+| [`synthesis/store-console-source-map.md`](synthesis/store-console-source-map.md) | Grove ↔ SAFE App Store console integration brief (b17: SCMAP) |
+| [`synthesis/grove-starter-borrow-map.md`](synthesis/grove-starter-borrow-map.md) | Grove panes ↔ starter-pack scouts — steal vs wrap (b17: GSBRW) |
+| [`synthesis/the-one-desk.md`](synthesis/the-one-desk.md) | North-star: how Grove + all apps come together — one desk, one memory, many tools (b17: ONEDSK) |
+
 ## Decisions (ADRs)
 
 - [`adrs/README.md`](adrs/README.md) — numbering, receipts, how extracts land here
+- [`adrs/ADR-20260615-safe-app-install-trust.md`](adrs/ADR-20260615-safe-app-install-trust.md) — two-phase install: `pending_trust` → Willow MCP promotion (b17: SITR1)
 
 ## Generated outputs (from extractor)
 
