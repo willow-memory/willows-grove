@@ -17,7 +17,7 @@ import grove_db
 import grove_reader
 from grove.apps.card_builder.values import resolve_subtitle
 from grove.apps.hero_stats import read_sysinfo
-from grove.theme_textual import ACCENT, DEGRADED, HEALTHY, IDLE, PRIMARY, SECONDARY
+from grove.theme_textual import ACCENT, DEGRADED, HEALTHY, IDLE, INPUT_BG, PRIMARY, SECONDARY, UNREAD
 from widgets.card_store import PLUS_CARD, PLUS_CARD_ID, load_home_cards, seed_catalog
 
 
@@ -159,22 +159,42 @@ class CardActivated(Message):
         self.nav_target = nav_target
 
 
+# Category → (glyph, left-border-color, css-class-suffix)
+_CAT: dict[str, tuple[str, str, str]] = {
+    "work":      ("◈", ACCENT,    "work"),
+    "dev":       ("⚙", HEALTHY,   "dev"),
+    "knowledge": ("◇", UNREAD,    "knowledge"),
+    "tasks":     ("▸", PRIMARY,   "tasks"),
+    "system":    ("·", SECONDARY, "system"),
+    "custom":    ("◆", SECONDARY, "custom"),
+}
+_CAT_DEFAULT = ("·", SECONDARY, "custom")
+
+
 class _CardCell(Static):
-    """Dense launcher cell — label + dim subline."""
+    """Launcher card — glyph + label + dim subline, category-accented left border."""
 
     DEFAULT_CSS = f"""
     _CardCell {{
-        height: 5;
-        border: solid {SECONDARY};
-        padding: 0 1;
+        height: 6;
+        border: round {SECONDARY};
+        padding: 1 1 0 1;
         content-align: left top;
     }}
     _CardCell:hover {{
-        border: solid {ACCENT};
+        border: round {ACCENT};
+        background: {INPUT_BG};
     }}
     _CardCell.plus-card {{
-        border: dashed {ACCENT};
+        border: round {ACCENT};
+        content-align: center middle;
     }}
+    _CardCell.cat-work      {{ border: round {ACCENT};    background: #2d1f40; }}
+    _CardCell.cat-dev       {{ border: round {HEALTHY};   background: #1a2e1a; }}
+    _CardCell.cat-knowledge {{ border: round {UNREAD};    background: #2e2800; }}
+    _CardCell.cat-tasks     {{ border: round {PRIMARY};   background: #2a2a2a; }}
+    _CardCell.cat-system    {{ border: round {SECONDARY}; background: #242424; }}
+    _CardCell.cat-custom    {{ border: round {SECONDARY}; background: #242424; }}
     """
 
     def __init__(
@@ -184,24 +204,27 @@ class _CardCell(Static):
         sub: str,
         nav_target: str,
         *,
+        category: str = "custom",
         plus: bool = False,
         **kwargs,
     ) -> None:
-        classes = "plus-card" if plus else ""
+        glyph, glyph_color, cat_slug = _CAT.get(category, _CAT_DEFAULT)
+        css_classes = f"cat-{cat_slug}"
+        if plus:
+            css_classes = "plus-card"
+        self._label = label
+        self._glyph_line = f"[{glyph_color}]{glyph}[/] [bold {ACCENT}]{label}[/]"
         super().__init__(
-            f"[bold {ACCENT}]{label}[/]\n[dim {SECONDARY}]{sub}[/]",
+            f"{self._glyph_line}\n[dim {SECONDARY}]{sub}[/]",
             markup=True,
-            classes=classes,
+            classes=css_classes,
             **kwargs,
         )
         self.card_id = card_id
-        self._label = label
         self._nav_target = nav_target
 
     def set_subline(self, sub: str) -> None:
-        self.update(
-            f"[bold {ACCENT}]{self._label}[/]\n[dim {SECONDARY}]{_e(sub)}[/]"
-        )
+        self.update(f"{self._glyph_line}\n[dim {SECONDARY}]{_e(sub)}[/]")
 
     def on_click(self) -> None:
         if self._nav_target:
@@ -241,6 +264,7 @@ class HomeGrid(Container):
                     card["label"],
                     sub,
                     card.get("nav_target") or "",
+                    category=card.get("category", "custom"),
                     id=f"cell-{card_id}",
                 )
             )
@@ -251,6 +275,7 @@ class HomeGrid(Container):
                 plus["label"],
                 plus.get("subtitle") or "Add card",
                 plus["nav_target"],
+                category="system",
                 plus=True,
                 id=f"cell-{PLUS_CARD_ID}",
             )
