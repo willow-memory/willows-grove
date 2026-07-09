@@ -219,9 +219,45 @@ def init_schema(conn):
 # Channels
 # ---------------------------------------------------------------------------
 
+def normalize_channel_name(name: str) -> str:
+    """Fold a channel name to the form stored in the channels table.
+
+    Senders reach us with Discord-style '#fleet' or padded ' fleet ' while the
+    stored row is 'fleet'. Callers that compare raw strings miss the match, and
+    create-if-missing then mints a second channel nobody reads.
+    """
+    return (name or "").strip().lstrip("#").strip()
+
+
+def find_channel_in(channels: List[Dict[str, Any]], name: str) -> Optional[Dict[str, Any]]:
+    """Locate a channel by name, folding sender-side spelling variants."""
+    target = normalize_channel_name(name)
+    if not target:
+        return None
+    return next(
+        (c for c in channels if normalize_channel_name(c["name"]) == target),
+        None,
+    )
+
+
+def duplicate_channel_groups(channels: List[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]:
+    """Group channels whose names collide once normalized.
+
+    A non-empty result means at least one channel is a shadow: writes land in it
+    and readers of the canonical name never see them.
+    """
+    groups: Dict[str, List[Dict[str, Any]]] = {}
+    for c in channels:
+        groups.setdefault(normalize_channel_name(c["name"]), []).append(c)
+    return {k: v for k, v in groups.items() if len(v) > 1}
+
+
 def create_channel(conn, *, name: str, channel_type: str, description: str = None) -> Dict[str, Any]:
     if channel_type not in VALID_CHANNEL_TYPES:
         raise ValueError(f"channel_type must be one of {VALID_CHANNEL_TYPES}")
+    name = normalize_channel_name(name)
+    if not name:
+        raise ValueError("channel name must not be empty after normalization")
     cur = conn.cursor()
     cur.execute("""
         INSERT INTO channels (name, channel_type, description)
