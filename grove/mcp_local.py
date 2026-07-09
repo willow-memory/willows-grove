@@ -187,7 +187,7 @@ def grove_get_history(channel_name: str, limit: int = 50, since_id: int = 0) -> 
     conn = db.get_connection()
     try:
         channels = db.list_channels(conn)
-        ch = next((c for c in channels if c["name"] == channel_name), None)
+        ch = db.find_channel_in(channels, channel_name)
         if not ch:
             return []
         if since_id > 0:
@@ -221,11 +221,11 @@ def grove_send_message(channel_name: str, content: str, sender: str = "Auto") ->
     conn = db.get_connection()
     try:
         channels = db.list_channels(conn)
-        ch = next((c for c in channels if c["name"] == channel_name), None)
+        ch = db.find_channel_in(channels, channel_name)
         if not ch:
             ch = db.create_channel(conn, name=channel_name, channel_type="group")
         msg = db.send_message(conn, channel_id=ch["id"], sender=sender, content=content)
-        return {"id": msg["id"], "channel": channel_name, "sent": True}
+        return {"id": msg["id"], "channel": ch["name"], "sent": True}
     finally:
         db.release_connection(conn)
 
@@ -244,7 +244,7 @@ def grove_search(query: str, channel_name: str = "") -> list[dict]:
         channel_id = None
         if channel_name:
             channels = db.list_channels(conn)
-            ch = next((c for c in channels if c["name"] == channel_name), None)
+            ch = db.find_channel_in(channels, channel_name)
             channel_id = ch["id"] if ch else None
         msgs = db.search_messages(conn, query, channel_id=channel_id)
         return [
@@ -307,7 +307,7 @@ def grove_channel_resource(channel_name: str) -> str:
     conn = db.get_connection()
     try:
         channels = db.list_channels(conn)
-        ch = next((c for c in channels if c["name"] == channel_name), None)
+        ch = db.find_channel_in(channels, channel_name)
         if not ch:
             return f"Channel '{channel_name}' not found."
         msgs = db.get_history(conn, ch["id"], limit=20)
@@ -327,7 +327,7 @@ async def _on_subscribe(uri: str) -> None:
     conn = db.get_connection()
     try:
         channels = db.list_channels(conn)
-        ch = next((c for c in channels if c["name"] == channel_name), None)
+        ch = db.find_channel_in(channels, channel_name)
         if not ch:
             return
         channel_id = ch["id"]
@@ -370,7 +370,7 @@ def grove_watch(channel_name: str, since_id: int) -> list[dict]:
     conn = db.get_connection()
     try:
         channels = db.list_channels(conn)
-        ch = next((c for c in channels if c["name"] == channel_name), None)
+        ch = db.find_channel_in(channels, channel_name)
         if not ch:
             return []
         msgs = db.get_history(conn, ch["id"], limit=50, since_id=since_id)
@@ -423,7 +423,7 @@ def grove_reply(channel_name: str, content: str, sender: str, reply_to_id: int) 
     conn = db.get_connection()
     try:
         channels = db.list_channels(conn)
-        ch = next((c for c in channels if c["name"] == channel_name), None)
+        ch = db.find_channel_in(channels, channel_name)
         if not ch:
             return {"error": f"channel '{channel_name}' not found"}
         msg = db.send_message(conn, channel_id=ch["id"], sender=sender,
@@ -521,7 +521,7 @@ def grove_bus_send(channel_name: str, sender: str, content: str,
     conn = db.get_connection()
     try:
         channels = db.list_channels(conn)
-        ch = next((c for c in channels if c["name"] == channel_name), None)
+        ch = db.find_channel_in(channels, channel_name)
         if not ch:
             ch = db.create_channel(conn, name=channel_name, channel_type="group")
         msg = db.bus_send(
@@ -534,7 +534,7 @@ def grove_bus_send(channel_name: str, sender: str, content: str,
         if bus_type in ("COMMAND", "INTERRUPT"):
             db.set_flag(conn, message_id=msg["id"], sender="__system__", flag="needs-reply")
         return {
-            "id": msg["id"], "channel": channel_name, "to_agent": to_agent,
+            "id": msg["id"], "channel": ch["name"], "to_agent": to_agent,
             "bus_type": bus_type, "priority": priority,
             "correlation_id": correlation_id or None, "sent": True,
         }
@@ -556,7 +556,7 @@ def grove_bus_receive(agent: str, channel_name: str = "", since_id: int = 0) -> 
     try:
         if channel_name:
             channels = db.list_channels(conn)
-            ch = next((c for c in channels if c["name"] == channel_name), None)
+            ch = db.find_channel_in(channels, channel_name)
             if not ch:
                 return []
             msgs = db.bus_receive(conn, agent=agent, since_id=since_id)
@@ -602,7 +602,7 @@ def grove_ack(channel_name: str, sender: str, correlation_id: str,
     conn = db.get_connection()
     try:
         channels = db.list_channels(conn)
-        ch = next((c for c in channels if c["name"] == channel_name), None)
+        ch = db.find_channel_in(channels, channel_name)
         if not ch:
             return {"error": f"channel '{channel_name}' not found"}
         msg = db.bus_send(
@@ -676,7 +676,7 @@ def grove_flagged(flag: str, channel_name: str = "") -> list[dict]:
         channel_id = None
         if channel_name:
             channels = db.list_channels(conn)
-            ch = next((c for c in channels if c["name"] == channel_name), None)
+            ch = db.find_channel_in(channels, channel_name)
             channel_id = ch["id"] if ch else None
         msgs = db.get_flagged(conn, flag=flag, channel_id=channel_id)
         return _msgs_to_dicts(msgs)
