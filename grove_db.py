@@ -212,6 +212,28 @@ def init_schema(conn):
         $$
     """)
 
+    # FRANK witness ledger — _frank_ledger_append() writes here on every message,
+    # but no repo shipped the CREATE TABLE, so on a fresh database the hash chain
+    # silently no-oped with a best-effort error on each send. Lives in public
+    # (shared fleet surface, same as willow-mcp's readers), not the grove schema.
+    # The partial unique index is the anti-fork guard: at most one genesis row
+    # (prev_hash IS NULL) per project, so the chain cannot silently restart.
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS public.frank_ledger (
+            id         TEXT PRIMARY KEY,
+            project    TEXT NOT NULL,
+            event_type TEXT NOT NULL,
+            content    JSONB NOT NULL,
+            prev_hash  TEXT,
+            hash       TEXT NOT NULL,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+        )
+    """)
+    cur.execute("""
+        CREATE UNIQUE INDEX IF NOT EXISTS frank_ledger_no_fork
+        ON public.frank_ledger (project) WHERE prev_hash IS NULL
+    """)
+
     conn.commit()
 
 
