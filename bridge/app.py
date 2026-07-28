@@ -140,6 +140,30 @@ class GroveMatrixBridge:
         async with listener.serve():
             await asyncio.Event().wait()
 
+    def _admit_contact(self, from_addr: str, pubkey: str) -> bool:
+        """Admit `from_addr` with `pubkey`, never silently rotating a key.
+
+        A first admission creates the contact. A repeat presentation of the
+        SAME key is a no-op. A DIFFERENT key is refused and logged: rotating a
+        peer's trusted key is an operator decision, and doing it from an
+        inbound packet is exactly how a re-KNOCK became a full trust reset.
+        """
+        if not pubkey:
+            return False
+        existing = self.contacts.get(from_addr)
+        if existing is None:
+            self.contacts.add(from_addr, pubkey)
+            log.info("admitted Grove contact %s", from_addr)
+            return True
+        if existing.public_key_hex == pubkey:
+            return True
+        log.warning(
+            "REFUSED key rotation for %s — inbound key %s… does not match the "
+            "stored key; existing key, blocked state and consent flags kept",
+            from_addr, pubkey[:16],
+        )
+        return False
+
     async def _grove_note(self, from_addr: str, body: str) -> None:
         """Grove NOTE → Matrix message. First NOTE from a pending addr = approval."""
         mapping = self.store.get_by_grove_addr(from_addr)
@@ -151,7 +175,7 @@ class GroveMatrixBridge:
             # First NOTE = implicit KNOCK approval. Admit them to contacts and activate.
             pending = self.store.get_pending_knock(from_addr)
             if pending and pending["public_key"]:
-                self.contacts.add(from_addr, pending["public_key"])
+                self._admit_contact(from_addr, pending["public_key"])
                 self.store.clear_pending_knock(from_addr)
             self.store.activate(from_addr)
             await self.matrix.send_notice(
@@ -172,9 +196,10 @@ class GroveMatrixBridge:
         """
         mapping = self.store.get_by_grove_addr(from_addr)
         if mapping and mapping["state"] == "active":
-            # Re-knock from known contact — update key silently
-            if pubkey:
-                self.contacts.add(from_addr, pubkey)
+            # Re-knock from a known contact. This used to "update key
+            # silently", which reset blocked and every consent flag along with
+            # it. A re-KNOCK now confirms the existing key or is refused.
+            self._admit_contact(from_addr, pubkey)
             return
 
         self.store.set_pending_knock(from_addr, pubkey)

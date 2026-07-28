@@ -19,9 +19,9 @@
     },
     {
       "id": "dm_conversations",
-      "purpose": "Encrypted human-to-human direct messages via u2u",
+      "purpose": "Signed human-to-human direct messages via u2u",
       "retention": "persistent",
-      "description": "End-to-end encrypted, local-only"
+      "description": "Ed25519-authenticated, NOT encrypted — packet bodies are plaintext JSON on the LAN. Origin and integrity are verified; confidentiality is not provided. Local-only."
     },
     {
       "id": "system_stats",
