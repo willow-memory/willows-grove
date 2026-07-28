@@ -13,7 +13,13 @@ Modes:
                      --watch: supervise a **child** serve process; restart it when
                      `grove/*.py` changes (parent polls mtimes — works because `mcp.run` blocks).
 
-Auth in serve mode: OAuth 2.0 PKCE (dynamic client registration, single-user approval page).
+Auth in serve mode: OAuth 2.0 + PKCE with open dynamic client registration.
+                    Registration is not a credential, so the thing that decides
+                    who gets a token is the /grove-approve page: /authorize
+                    parks the request and the human clicks Allow. Setting
+                    GROVE_MCP_AUTO_APPROVE=1 removes that click and hands a
+                    30-day full-scope token to any caller that can reach
+                    /authorize — off by default, and loud when on.
 Auth in stdio mode: implicit (local process, trusted user) — no OAuth.
 """
 import os
@@ -98,7 +104,13 @@ _BASE_URL = os.getenv("GROVE_MCP_URL", f"http://127.0.0.1:{_PORT}")
 
 
 def _transport_security():
-    """DNS rebinding — disabled behind ngrok (edge may forward Host: 127.0.0.1:8765)."""
+    """DNS rebinding — disabled behind ngrok (edge may forward Host: 127.0.0.1:8765).
+
+    Consequence worth stating plainly: in the https:// (tunnelled) deployment
+    there is no host/origin check, so reachability is whoever knows the tunnel
+    URL. The OAuth approval click, not the bind address, is what gates access
+    there. See grove/mcp_auth.py.
+    """
     from mcp.server.transport_security import TransportSecuritySettings
 
     if _BASE_URL.startswith("https://"):
@@ -129,12 +141,13 @@ _common_kwargs = dict(
 )
 
 if _SERVE_MODE:
-    from grove.mcp_auth import GroveOAuthProvider
+    from grove.mcp_auth import GroveOAuthProvider, auto_approve_enabled
     from mcp.server.auth.settings import AuthSettings, ClientRegistrationOptions
 
     _auth_provider = GroveOAuthProvider(
         token_path=Path.home() / ".willow" / "grove_mcp_token",
         base_url=_BASE_URL,
+        auto_approve=auto_approve_enabled(),
     )
     mcp = FastMCP(
         "grove",
@@ -687,6 +700,9 @@ def grove_flagged(flag: str, channel_name: str = "") -> list[dict]:
 # ── OAuth approval route (serve mode only) ───────────────────────────────────
 
 if _SERVE_MODE and _auth_provider is not None:
+    from html import escape as html_escape
+
+    from mcp.server.auth.provider import construct_redirect_uri
     from starlette.requests import Request
     from starlette.responses import HTMLResponse, RedirectResponse
 
@@ -699,7 +715,14 @@ if _SERVE_MODE and _auth_provider is not None:
 
     @mcp.custom_route("/grove-approve", methods=["GET", "POST"])
     async def grove_approve(request: Request) -> HTMLResponse | RedirectResponse:
-        """Single-user OAuth approval page. USER opens this to authorize claude.ai."""
+        """Single-user OAuth approval page — the authorization decision itself.
+
+        /authorize parks a request here and redirects the browser to this page.
+        No authorization code exists until the POST below runs, so declining or
+        simply closing the tab denies the grant. `pending` is a 256-bit
+        one-shot key, which is also what stops a third party from POSTing an
+        approval they were never shown.
+        """
         pending_key = request.query_params.get("pending", "")
         entry = _auth_provider.pop_pending(pending_key)
 
@@ -708,22 +731,32 @@ if _SERVE_MODE and _auth_provider is not None:
                 return HTMLResponse("<h2>Grove OAuth</h2><p>Invalid or expired approval link.</p>", status_code=400)
             client, params = entry
             # Re-stash so POST can use it
-            _auth_provider._pending[pending_key] = (client, params)
-            html = f"""<!DOCTYPE html>
+            _auth_provider.stash_pending(pending_key, client, params)
+            # client_name and redirect_uri are supplied by whoever registered the
+            # client, so they are escaped: this page must not be a way to inject
+            # markup into the operator's browser.
+            name = html_escape(client.client_name or client.client_id)
+            target = html_escape(str(params.redirect_uri))
+            scopes = html_escape(" ".join(params.scopes or ["grove"]))
+            page = f"""<!DOCTYPE html>
 <html><head><title>Grove Access Request</title>
 <style>body{{font-family:sans-serif;max-width:480px;margin:80px auto;padding:20px}}
 button{{padding:12px 24px;font-size:16px;cursor:pointer;margin:8px}}
+code{{word-break:break-all}}
 .allow{{background:#2563eb;color:#fff;border:none;border-radius:6px}}
 .deny{{background:#e5e7eb;color:#111;border:none;border-radius:6px}}</style>
 </head><body>
 <h2>Allow Grove access?</h2>
-<p><strong>{client.client_id}</strong> is requesting access to read and send Grove messages.</p>
+<p><strong>{name}</strong> is requesting access to read and send Grove messages.</p>
+<p>Scopes: <code>{scopes}</code><br>
+Codes will be sent to: <code>{target}</code></p>
+<p>If you did not just start this from your own client, click Deny.</p>
 <form method="post" action="/grove-approve?pending={pending_key}">
   <button class="allow" type="submit" name="action" value="allow">Allow</button>
   <button class="deny" type="submit" name="action" value="deny">Deny</button>
 </form>
 </body></html>"""
-            return HTMLResponse(html)
+            return HTMLResponse(page)
 
         # POST — issue code or deny (entry already popped at top of function)
         form = await request.form()
@@ -733,11 +766,11 @@ button{{padding:12px 24px;font-size:16px;cursor:pointer;margin:8px}}
 
         client, params = entry
         code = _auth_provider.issue_code(client, params)
-        redirect = str(params.redirect_uri)
-        sep = "&" if "?" in redirect else "?"
-        redirect_url = f"{redirect}{sep}code={code}"
-        if params.state:
-            redirect_url += f"&state={params.state}"
+        redirect_url = construct_redirect_uri(
+            str(params.redirect_uri),
+            code=code,
+            state=params.state,
+        )
         return RedirectResponse(redirect_url, status_code=302)
 
 
@@ -813,7 +846,11 @@ def _watch_serve_supervisor() -> None:
 
 def main():
     if "--serve" in sys.argv:
-        print(f"[grove-mcp] serving on http://127.0.0.1:{_PORT}/mcp  (OAuth: {'enabled' if _SERVE_MODE else 'disabled'})", flush=True)
+        if _auth_provider is not None and _auth_provider.auto_approve:
+            gate = "OAuth: enabled, AUTO-APPROVE (no human approval, no client vetting)"
+        else:
+            gate = "OAuth: enabled, approval required at /grove-approve"
+        print(f"[grove-mcp] serving on http://127.0.0.1:{_PORT}/mcp  ({gate})", flush=True)
         mcp.run(transport="streamable-http", mount_path="/")
     else:
         mcp.run(transport="stdio")
