@@ -148,9 +148,11 @@ G-DEP-01) it is named in the finding.
 | `tests/test_hero_format.py` | hero band formatters | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_hero_stats.py` | hero stats bundle | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_internal_panes.py` | Home card internal pane helpers | Out of scope — test code; not shipped and not reachable at runtime |
+| `tests/test_mcp_auth.py` | grove/mcp_auth.py: token-state durability and the authorization decision | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_mcp_client.py` | MCP stdio client helpers | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_mcp_process.py` | grove serve process control | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_mcp_registry.py` | MCP config reader | Out of scope — test code; not shipped and not reachable at runtime |
+| `tests/test_mcp_serve_oauth_flow.py` | The serve-mode OAuth flow, end to end, through the real Starlette app | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_nav_bar.py` | wave 2 nav targets | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_panes_home.py` | desk render + home grid cells | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_panes_knowledge.py` | KB search helpers | Out of scope — test code; not shipped and not reachable at runtime |
@@ -160,6 +162,7 @@ G-DEP-01) it is named in the finding.
 | `tests/test_panes_providers.py` | provider registry read | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_panes_settings.py` | consent I/O | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_panes_user_todos.py` | My Desk markup regression | Out of scope — test code; not shipped and not reachable at runtime |
+| `tests/test_security_audit_scope.py` | SECURITY_AUDIT.md's scope table must be a bijection with the tree it audits | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_theme_textual.py` | grove palette → Textual CSS helpers | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_think_map.py` | Think Map P0 store/validate + outline | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_upstream_steward.py` | Grove read-only upstream steward consumer | Out of scope — test code; not shipped and not reachable at runtime |
@@ -186,7 +189,7 @@ G-DEP-01) it is named in the finding.
 | `widgets/hero_scene.py` | HeroScene: willow tree + info panel + full-width meadow | Scanned |
 | `widgets/nav_bar.py` | NavBar with 1–7 targets + vitals line | Scanned |
 
-118 tracked source files: 11 Reviewed, 74 Scanned, 33 out of scope (`tests/`).
+121 tracked source files: 11 Reviewed, 74 Scanned, 36 out of scope (`tests/`).
 
 ---
 
@@ -478,7 +481,7 @@ directly contradicts the previous revision's R15 PASS.
 |---|---|
 | Scope row `grove_serve.py` — "Full" coverage | **Withdrawn.** File is not in this repo (cut to `willow-2.0`; see `grove_db.py:333`). |
 | Scope row `kart_worker.py` — "Full" coverage | **Withdrawn.** File is not in this repo. |
-| Scope "Total Python files ~45" | **Wrong.** 114 tracked `*.py` (81 excluding `tests/`), plus 4 `*.sh`. |
+| Scope "Total Python files ~45" | **Wrong.** 117 tracked `*.py` (81 excluding `tests/`), plus 4 `*.sh`. |
 | `u2u/`, `bridge/` unmentioned | **Fixed.** Both in the scope table; new checks R16/R17 and finding G-U2U-01. |
 | G-SHL-01 — `kart_worker.py:144` `bash -c` (P1) | **Withdrawn.** No `bash -c`, no `shell=True`, no `os.system` in this repo. |
 | G-KART-01 — unsigned Kart tasks (P1) | **Withdrawn.** No Kart worker in this repo. `panes/tasks.py` reads the queue; it does not execute. |
@@ -506,7 +509,9 @@ directly contradicts the previous revision's R15 PASS.
 
 The two serious findings were both in `grove/mcp_auth.py` — the file the
 previous revision rated PASS. Both are fixed on this branch and pinned by
-`tests/test_mcp_auth.py`.
+`tests/test_mcp_auth.py` and `tests/test_mcp_serve_oauth_flow.py`, which
+exercise the assembled Starlette app — the consent page was unreachable for as
+long as nothing did.
 
 The highest-value open item is **G-REBIND-01**: the serve mode is designed to be
 tunnelled, and in that configuration the transport has no host check. It is now

@@ -47,10 +47,6 @@ def rows():
     return found
 
 
-def test_audit_exists():
-    assert AUDIT.is_file()
-
-
 def test_every_tracked_source_file_appears_in_the_scope_table(rows):
     """A file must not be absent from the table."""
     listed = {path for path, _, _ in rows}

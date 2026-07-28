@@ -151,28 +151,47 @@ def test_token_file_is_0600_under_a_permissive_umask(tmp_path):
     assert _mode(token_path) == 0o600, f"expected 0600, got {_mode(token_path):#o}"
 
 
-def test_save_leaves_no_temp_files_behind(tmp_path):
+def test_save_replaces_the_file_rather_than_writing_through_it(tmp_path):
+    """Atomicity, stated as something observable without crashing mid-write.
+
+    An in-place `write_text` truncates the existing file and writes into the
+    same inode, so a reader holding it — or a crash — sees a half file. A
+    tmp-then-`os.replace` install puts a *new* inode in place, and anything
+    already holding the old one still sees the complete previous state.
+    """
+    token_path = tmp_path / "grove_mcp_token"
     provider = _provider(tmp_path)
     asyncio.run(provider.register_client(_client()))
-    asyncio.run(provider.register_client(_client("client-2")))
 
-    leftovers = [p.name for p in tmp_path.iterdir() if p.name != "grove_mcp_token"]
-    assert leftovers == []
+    first_inode = token_path.stat().st_ino
+    with token_path.open() as held:
+        asyncio.run(provider.register_client(_client("client-2")))
+
+        assert token_path.stat().st_ino != first_inode, (
+            "token file was written through in place — a crash mid-write "
+            "truncates it and _load_state has nothing to recover"
+        )
+        # The old inode is still whole and still parses.
+        previous = json.loads(held.read())
+        assert set(previous["clients"]) == {"client-1"}
+
+    # And the installed file is the new state, with no temp files left over.
+    assert set(json.loads(token_path.read_text())["clients"]) == {"client-1", "client-2"}
+    assert [p.name for p in tmp_path.iterdir()] == ["grove_mcp_token"]
 
 
-def test_save_is_atomic_no_partial_file_on_serialization_failure(tmp_path):
-    """A failed write must leave the previous state intact, not a half file."""
+def test_failed_save_leaves_the_previous_state_installed(tmp_path):
+    """A save that cannot complete must not destroy what was already there."""
+    token_path = tmp_path / "grove_mcp_token"
     provider = _provider(tmp_path)
     asyncio.run(provider.register_client(_client()))
-    good = (tmp_path / "grove_mcp_token").read_text()
+    good = token_path.read_text()
 
-    # An object json.dumps cannot serialize: the write must fail *before*
-    # anything replaces the good file.
     provider._state["clients"]["bad"] = {"unserializable": object()}
     with pytest.raises(TypeError):
         provider._save_state()
 
-    assert (tmp_path / "grove_mcp_token").read_text() == good
+    assert token_path.read_text() == good
     assert [p.name for p in tmp_path.iterdir()] == ["grove_mcp_token"]
 
 
