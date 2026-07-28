@@ -49,9 +49,37 @@ class U2UListener:
         finally:
             writer.close()
 
+    def _verification_key(self, packet: dict, sender_addr: str, ptype: PacketType) -> str:
+        """The ONLY key this packet is allowed to be checked against.
+
+        A known contact is always verified against its stored key — never
+        against a key the packet supplies. That is what makes wire-driven key
+        rotation impossible: a KNOCK bearing a new key simply fails to verify
+        and is dropped, rather than replacing the trusted one.
+
+        An unknown peer may only introduce itself with a KNOCK, and that KNOCK
+        must be self-verifying: signed by the very key in its own payload. That
+        proves possession of the private half, nothing more — admitting the key
+        still requires operator approval downstream.
+        """
+        contact = self._consent.get_contact(sender_addr)
+        if contact is not None:
+            return contact.public_key_hex
+        if ptype == PacketType.KNOCK:
+            payload = packet.get("payload")
+            if isinstance(payload, dict):
+                key = payload.get("public_key")
+                if isinstance(key, str):
+                    return key
+        return ""
+
     async def _process(self, packet: dict, peer):
-        sender_addr = packet.get("header", {}).get("from", "")
-        ptype_str   = packet.get("header", {}).get("type", "")
+        header      = packet.get("header")
+        if not isinstance(header, dict):
+            log.warning("packet without header from %s — dropped", peer)
+            return
+        sender_addr = header.get("from", "")
+        ptype_str   = header.get("type", "")
 
         try:
             ptype = PacketType(ptype_str)
@@ -59,26 +87,32 @@ class U2UListener:
             log.warning("unknown packet type %r from %s", ptype_str, peer)
             return
 
-        result = self._consent.check(sender_addr, ptype)
+        # ── AUTHENTICATE FIRST ───────────────────────────────────────────────
+        # Nothing below this point may be decided from, or dispatched on,
+        # unverified header data. Consent used to be evaluated here instead,
+        # which meant an attacker-chosen "from" address selected the policy and
+        # the PENDING branch handed an entirely unverified packet to handlers.
+        key = self._verification_key(packet, sender_addr, ptype)
+        if not key or not Packet.validate(packet, key):
+            log.warning("invalid sig for %s from %s — dropped", ptype_str, sender_addr)
+            return
+
+        # ── THEN AUTHORISE ───────────────────────────────────────────────────
+        result = self._consent.check(sender_addr, ptype, header.get("thread_id"))
         if result == ConsentResult.DENY:
             log.debug("denied %s from %s", ptype_str, sender_addr)
             if ptype == PacketType.NOTE:
                 dispatcher.dispatch({
-                    "header": {**packet["header"], "_denied": True},
+                    "header": {**header, "_denied": True},
                     "payload": {},
                 })
             return
         if result == ConsentResult.PENDING:
             log.info("KNOCK pending approval from %s", sender_addr)
             dispatcher.dispatch({
-                "header": {**packet["header"], "_pending": True},
+                "header": {**header, "_pending": True},
                 "payload": packet.get("payload", {}),
             })
-            return
-
-        contact = self._consent.get_contact(sender_addr)
-        if not contact or not Packet.validate(packet, contact.public_key_hex):
-            log.warning("invalid sig from %s — dropped", sender_addr)
             return
 
         dispatcher.dispatch(packet)
