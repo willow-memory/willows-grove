@@ -152,6 +152,7 @@ G-DEP-01) it is named in the finding.
 | `tests/test_mcp_client.py` | MCP stdio client helpers | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_mcp_process.py` | grove serve process control | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_mcp_registry.py` | MCP config reader | Out of scope — test code; not shipped and not reachable at runtime |
+| `tests/test_mcp_subscriptions.py` | SEP-2575 resource-update fan-out | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_mcp_serve_oauth_flow.py` | The serve-mode OAuth flow, end to end, through the real Starlette app | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_nav_bar.py` | wave 2 nav targets | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_panes_home.py` | desk render + home grid cells | Out of scope — test code; not shipped and not reachable at runtime |
