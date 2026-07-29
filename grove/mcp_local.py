@@ -118,19 +118,39 @@ _BASE_URL = os.getenv("GROVE_MCP_URL", f"http://127.0.0.1:{_PORT}")
 
 
 def _transport_security():
-    """DNS rebinding — disabled behind ngrok (edge may forward Host: 127.0.0.1:8765).
+    """Host/Origin allowlist for the Streamable HTTP transport (G-REBIND-01).
 
-    Consequence worth stating plainly: in the https:// (tunnelled) deployment
-    there is no host/origin check, so reachability is whoever knows the tunnel
-    URL. The OAuth approval click, not the bind address, is what gates access
-    there. See grove/mcp_auth.py.
+    DNS-rebinding protection is ON in every deployment. It used to be turned OFF
+    whenever `GROVE_MCP_URL` was https:// — i.e. exactly the tunnelled
+    deployment this server is meant to run in — so the only thing gating access
+    was knowledge of the tunnel URL, and a page in the operator's browser could
+    reach the server cross-origin through a rebound name.
+
+    The reason it was disabled is real: behind a tunnel the edge may forward
+    `Host: 127.0.0.1:8765` (the origin address) OR the public hostname,
+    depending on the tunnel. That is an argument for allowlisting BOTH, not for
+    checking neither. Loopback stays on the list for the forwarded case; the
+    tunnel host comes from the configured base URL, which the operator sets and
+    an attacker does not.
+
+    A malformed or hostless GROVE_MCP_URL adds nothing rather than falling back
+    to permissive — an address that cannot be parsed is not a grant.
     """
     from mcp.server.transport_security import TransportSecuritySettings
 
-    if _BASE_URL.startswith("https://"):
-        return TransportSecuritySettings(enable_dns_rebinding_protection=False)
+    # The forwarded-origin case, and plain local runs.
     hosts = ["127.0.0.1:*", "localhost:*", "[::1]:*"]
     origins = ["http://127.0.0.1:*", "http://localhost:*", "http://[::1]:*"]
+
+    parsed = urlparse(_BASE_URL)
+    if parsed.scheme in ("http", "https") and parsed.netloc:
+        # netloc keeps any explicit port, which is what the Host header carries.
+        if parsed.netloc not in hosts:
+            hosts.append(parsed.netloc)
+        origin = f"{parsed.scheme}://{parsed.netloc}"
+        if origin not in origins:
+            origins.append(origin)
+
     return TransportSecuritySettings(
         enable_dns_rebinding_protection=True,
         allowed_hosts=hosts,

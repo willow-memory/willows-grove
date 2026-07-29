@@ -163,13 +163,28 @@ def test_dns_rebinding_disable_is_still_recorded():
     """The audit's R5 correction must stay true to the code.
 
     If someone fixes _transport_security, the audit needs updating too — that
-    is a good failure, not a bad one.
+    is a good failure, not a bad one. It fired exactly once: on the branch that
+    fixed it.
+
+    Checks OPEN-ness, not mere mention. The original assertion was
+    `disables == ("G-REBIND-01" in audit)`, which on a fix demands the finding
+    be DELETED — contradicting this document's own rule that withdrawn and
+    closed items stay recorded, so anyone who acted on the old text can see what
+    changed. A finding marked Fixed is the correct end state and has to be a
+    passing one.
     """
     sys.path.insert(0, str(REPO))
     source = (REPO / "grove" / "mcp_local.py").read_text(encoding="utf-8")
+    audit = AUDIT.read_text(encoding="utf-8")
     disables = "enable_dns_rebinding_protection=False" in source
-    recorded = "G-REBIND-01" in AUDIT.read_text(encoding="utf-8")
-    assert disables == recorded, (
-        "grove/mcp_local.py and SECURITY_AUDIT.md disagree about whether "
-        f"DNS-rebinding protection is disabled (code={disables}, audit={recorded})."
+
+    assert "### G-REBIND-01" in audit, "the finding must stay recorded either way"
+    block = audit[audit.index("### G-REBIND-01"):]
+    status = block[block.index("**Status:**"):].splitlines()[0]
+    open_finding = status.strip().endswith("Open")
+
+    assert disables == open_finding, (
+        "grove/mcp_local.py and SECURITY_AUDIT.md disagree about DNS-rebinding "
+        f"protection (code disables={disables}, finding open={open_finding} "
+        f"from status line {status!r})."
     )
