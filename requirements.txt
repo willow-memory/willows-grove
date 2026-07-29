@@ -19,7 +19,7 @@ aiohttp>=3.9.0,<4
 # to resolve to different SDK majors. The MCP 2026-07-28 revision is the largest
 # since launch and breaks the handshake, session IDs and the version string, so
 # an unbounded pin here was a live risk rather than a theoretical one.
-mcp>=1.28.1,<2.0.0
+mcp>=2.0.0,<3.0.0
 
 starlette>=0.37.0,<2
 uvicorn>=0.30.0,<1

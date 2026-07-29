@@ -39,14 +39,21 @@ _GROVE_ROOT = Path(__file__).parent.parent
 if str(_GROVE_ROOT) not in sys.path:
     sys.path.insert(0, str(_GROVE_ROOT))
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
+from mcp.server.subscriptions import InMemorySubscriptionBus
+from mcp.shared.subscriptions import ResourceUpdated
 
 import grove_db as db
 import grove_reader as _grove_reader
 
 # ── Notification state ────────────────────────────────────────────────────────
-_subscriptions: dict[int, set[asyncio.Queue]] = {}
-_subscriptions_lock = threading.Lock()
+# SEP-2575 removed the standing GET stream and `subscribe_resource`. A client
+# now opts in with `subscriptions/listen`, whose RESPONSE is the stream, and
+# MCPServer registers the handler for it automatically. Fan-out is the bus's
+# job, so the per-session queue registry this used to keep — a dict of
+# asyncio.Queues keyed by channel id, plus a lock, plus a watcher task per
+# subscription — is deleted rather than ported. We publish; the SDK delivers.
+_bus = InMemorySubscriptionBus()
 _main_loop: asyncio.AbstractEventLoop | None = None
 
 
@@ -79,18 +86,25 @@ def _pg_notify_thread() -> None:
                         channel_id = int(n.payload)
                     except ValueError:
                         continue
-                    with _subscriptions_lock:
-                        queues = list(_subscriptions.get(channel_id, set()))
-                    if queues and _main_loop:
-                        for q in queues:
-                            asyncio.run_coroutine_threadsafe(q.put(channel_id), _main_loop)
+                    # `SubscriptionBus.publish` is a COROUTINE, and this is a
+                    # plain thread — calling it here would build a coroutine
+                    # nobody awaits, which does nothing and says nothing. It has
+                    # to be marshalled onto the loop, same as the queue puts it
+                    # replaced. No loop yet means no listener yet, so dropping
+                    # the event is correct rather than merely tolerable.
+                    name = _channel_name_for_id(channel_id)
+                    if name and _main_loop:
+                        asyncio.run_coroutine_threadsafe(
+                            _bus.publish(ResourceUpdated(uri=f"grove://channel/{name}")),
+                            _main_loop,
+                        )
         except Exception:
             import time
             time.sleep(3)
 
 
 @asynccontextmanager
-async def _lifespan(server: FastMCP) -> AsyncIterator[None]:
+async def _lifespan(server: MCPServer) -> AsyncIterator[None]:
     global _main_loop
     _main_loop = asyncio.get_running_loop()
     t = threading.Thread(target=_pg_notify_thread, daemon=True)
@@ -135,9 +149,8 @@ _common_kwargs = dict(
         "Grove sovereign workspace messaging. "
         "Send and read messages, search conversations, list channels."
     ),
-    host="127.0.0.1",
-    port=_PORT,
     lifespan=_lifespan,
+    subscriptions=_bus,
 )
 
 if _SERVE_MODE:
@@ -149,10 +162,9 @@ if _SERVE_MODE:
         base_url=_BASE_URL,
         auto_approve=auto_approve_enabled(),
     )
-    mcp = FastMCP(
+    mcp = MCPServer(
         "grove",
         **_common_kwargs,
-        transport_security=_transport_security(),
         auth_server_provider=_auth_provider,
         auth=AuthSettings(
             issuer_url=_BASE_URL.rstrip("/") + "/",
@@ -167,7 +179,7 @@ if _SERVE_MODE:
     )
 else:
     _auth_provider = None
-    mcp = FastMCP("grove", **_common_kwargs)
+    mcp = MCPServer("grove", **_common_kwargs)
 
 
 @mcp.tool()
@@ -331,41 +343,24 @@ def grove_channel_resource(channel_name: str) -> str:
         db.release_connection(conn)
 
 
-@mcp._mcp_server.subscribe_resource()
-async def _on_subscribe(uri: str) -> None:
-    """Register a notification queue for this session when client subscribes to a channel resource."""
-    if not uri.startswith("grove://channel/"):
-        return
-    channel_name = uri[len("grove://channel/"):]
-    conn = db.get_connection()
+def _channel_name_for_id(channel_id: int) -> str | None:
+    """Resolve a NOTIFY payload (a channel id) to the name its resource URI uses.
+
+    The old path did this lookup at SUBSCRIBE time and keyed queues by id; the
+    bus carries a URI, so the resolution moves to publish time. Returns None on
+    any failure — a channel we cannot name is one we cannot address, and
+    publishing a wrong URI would be worse than publishing nothing.
+    """
+    conn = None
     try:
-        channels = db.list_channels(conn)
-        ch = db.find_channel_in(channels, channel_name)
-        if not ch:
-            return
-        channel_id = ch["id"]
+        conn = db.get_connection()
+        ch = next((c for c in db.list_channels(conn) if c["id"] == channel_id), None)
+        return ch["name"] if ch else None
+    except Exception:
+        return None
     finally:
-        db.release_connection(conn)
-
-    queue: asyncio.Queue = asyncio.Queue()
-    with _subscriptions_lock:
-        _subscriptions.setdefault(channel_id, set()).add(queue)
-
-    session = mcp._mcp_server.request_context.session
-
-    async def _watcher():
-        try:
-            while True:
-                await queue.get()
-                from mcp.types import AnyUrl
-                await session.send_resource_updated(AnyUrl(uri))
-        except Exception:
-            pass
-        finally:
-            with _subscriptions_lock:
-                _subscriptions.get(channel_id, set()).discard(queue)
-
-    asyncio.ensure_future(_watcher())
+        if conn is not None:
+            db.release_connection(conn)
 
 
 @mcp.tool()
@@ -851,7 +846,17 @@ def main():
         else:
             gate = "OAuth: enabled, approval required at /grove-approve"
         print(f"[grove-mcp] serving on http://127.0.0.1:{_PORT}/mcp  ({gate})", flush=True)
-        mcp.run(transport="streamable-http", mount_path="/")
+        # SDK 2.x: host/port/transport_security/path all belong to the
+        # transport now, not the server object — the stateless core making
+        # "where and how this instance listens" a property of the run.
+        # `mount_path` was renamed `streamable_http_path`.
+        mcp.run(
+            transport="streamable-http",
+            host="127.0.0.1",
+            port=_PORT,
+            streamable_http_path="/",
+            transport_security=_transport_security(),
+        )
     else:
         mcp.run(transport="stdio")
 
