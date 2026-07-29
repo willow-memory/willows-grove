@@ -166,6 +166,7 @@ G-DEP-01) it is named in the finding.
 | `tests/test_security_audit_scope.py` | SECURITY_AUDIT.md's scope table must be a bijection with the tree it audits | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_theme_textual.py` | grove palette → Textual CSS helpers | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_think_map.py` | Think Map P0 store/validate + outline | Out of scope — test code; not shipped and not reachable at runtime |
+| `tests/test_transport_security.py` | G-REBIND-01 host/origin allowlist | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_u2u_trust.py` | u2u verify-before-consent, consent matrix, key rotation | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_upstream_steward.py` | Grove read-only upstream steward consumer | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_user_board.py` | My Desk aggregation | Out of scope — test code; not shipped and not reachable at runtime |
@@ -203,7 +204,7 @@ G-DEP-01) it is named in the finding.
 | R2 | Shell injection — `os.system`, `shell=True` | ✅ PASS | No `os.system`, no `shell=True`, no `bash -c` anywhere in the tree. The seven `subprocess` call sites (`panes/git.py:22`, `panes/prs.py:23`, `panes/providers.py:134,146`, `grove/apps/mcp_process.py:103`, `grove/mcp_local.py:801,807`) all pass argument lists. |
 | R3 | Path traversal — file ops accepting `../` or absolute | ✅ PASS | File paths derive from `Path.home()`, `Path(__file__)`, or env vars set by the operator. No request- or message-derived path reaches a file operation. |
 | R4 | Hardcoded credentials in VC | ✅ PASS | No secrets in source. OAuth tokens are generated with `secrets.token_urlsafe(32)` (`grove/mcp_auth.py`) and stored under `~/.willow/`. U2U keys are generated per host (`u2u/identity.py`). |
-| R5 | CORS / network exposure of the MCP server | ⚠️ P2 | **Corrected.** Serve mode is *not* localhost-only by design. `grove/mcp_local.py:_transport_security` disables DNS-rebinding protection outright whenever `GROVE_MCP_URL` is `https://`, which is the intended ngrok/tunnel deployment — so in the deployment that matters there is no Host or Origin check and the listener is reachable by anyone who learns the tunnel URL. The bind address is not the control; the OAuth approval click is. See G-REBIND-01. |
+| R5 | CORS / network exposure of the MCP server | ✅ PASS (was ⚠️ P2) | **Corrected, then fixed.** Serve mode is *not* localhost-only by design, and `_transport_security` used to disable DNS-rebinding protection outright whenever `GROVE_MCP_URL` was `https://` — the intended tunnel deployment — leaving no Host or Origin check there. Now the tunnel host and origin are allowlisted alongside loopback and protection is on in every configuration. The approval click (G-OAUTH-01) remains the access control; this restores the transport check that was supposed to sit under it. See G-REBIND-01. |
 | R6 | XSS — untrusted values rendered into HTML | ✅ PASS | The repo does have one HTML surface — the `/grove-approve` consent page in `grove/mcp_local.py`. It renders `client_name`, `redirect_uri` and scopes, all supplied by whoever registered the client, and escapes them with `html.escape`. `client_id` and the `pending` key are server-generated. (The 2026-05-06 "no web frontend" rating was wrong about the page's existence, though the page was unreachable at the time.) |
 | R7 | Unsigned/unverified code execution | ✅ PASS | No task-executor in this repo. The `subprocess` sites in R2 run fixed binaries (`git`, `willow`, the configured MCP command, `python3 -m grove.mcp_local`). |
 | R8 | Missing auth on MCP tools | ⚠️ P2 (was P0) | **Corrected.** PKCE was implemented and *is* enforced (S256, by the SDK token handler), but PKCE binds a code to the requester — it does not decide whether a requester should get one. Until this branch, `authorize()` issued a code unconditionally, so open dynamic client registration plus one `/authorize` call yielded a 30-day full-scope `grove` token to any caller. The consent page existed but nothing routed to it. Fixed: approval is now required by default, auto-approve is an explicit opt-in. See G-OAUTH-01. Residual P2: registration remains open and unbounded — G-REG-01. |
@@ -290,7 +291,9 @@ Covered by `tests/test_mcp_auth.py`.
 ### G-REBIND-01 — DNS-Rebinding Protection Disabled in the Deployment That Needs It (P2)
 
 **File:** `grove/mcp_local.py` — `_transport_security`
-**Status:** Open
+**Status:** Fixed in `claude/g-rebind-01`
+
+Was:
 
 ```python
 if _BASE_URL.startswith("https://"):
@@ -307,9 +310,18 @@ reaches it directly.
 This was survivable only because it was paired with an approval click — which,
 until G-OAUTH-01, was not there.
 
-**Recommended fix:** derive the allowlist from `GROVE_MCP_URL` — allow that
-host plus the loopback set, rather than disabling the setting. `TransportSecurity
-Settings(allowed_hosts=[urlparse(_BASE_URL).netloc, "127.0.0.1:*", …])`.
+**Fixed** as recommended: the allowlist is derived from `GROVE_MCP_URL` — that
+host and origin plus the loopback set — and `enable_dns_rebinding_protection` is
+now `True` in every configuration. Loopback stays on the list precisely because
+the edge may forward `Host: 127.0.0.1:8765`; that case wanted both entries
+allowlisted, never the check removed. A malformed or hostless `GROVE_MCP_URL`
+adds nothing rather than falling back to permissive — an address that cannot be
+parsed is not a grant.
+
+Pinned by `tests/test_transport_security.py`, whose headline assertion is that
+there is no configuration in which protection is off. It is parametrised over
+the https, http, unset, and unparseable cases, and every https case fails
+against the previous code.
 
 ---
 
