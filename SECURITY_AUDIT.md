@@ -165,6 +165,7 @@ G-DEP-01) it is named in the finding.
 | `tests/test_security_audit_scope.py` | SECURITY_AUDIT.md's scope table must be a bijection with the tree it audits | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_theme_textual.py` | grove palette → Textual CSS helpers | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_think_map.py` | Think Map P0 store/validate + outline | Out of scope — test code; not shipped and not reachable at runtime |
+| `tests/test_u2u_trust.py` | u2u verify-before-consent, consent matrix, key rotation | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_upstream_steward.py` | Grove read-only upstream steward consumer | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_user_board.py` | My Desk aggregation | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_vitals.py` | Tests for vitals strip helpers | Out of scope — test code; not shipped and not reachable at runtime |
