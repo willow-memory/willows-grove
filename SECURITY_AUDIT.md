@@ -133,6 +133,7 @@ G-DEP-01) it is named in the finding.
 | `panes/user_todos.py` | My Desk: user todos, projects, deadlines, atoms | Scanned |
 | `run_dev.sh` | launch Grove dashboard (fresh-start worktree) | Reviewed |
 | `run_mcp.sh` | Grove MCP server (stdio or serve) | Reviewed |
+| `scripts/mcp_entry_toggle.py` | idempotent add/remove of one http entry in an .mcp.json (used by grove-serve) | Reviewed |
 | `soil.py` | thin sqlite3 wrapper for SOIL collections used by the dashboard | Scanned |
 | `tests/__init__.py` | Empty package marker (0 bytes) | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_card_builder.py` | scripted wizard + templates | Out of scope — test code; not shipped and not reachable at runtime |
@@ -152,6 +153,7 @@ G-DEP-01) it is named in the finding.
 | `tests/test_mcp_client.py` | MCP stdio client helpers | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_mcp_process.py` | grove serve process control | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_mcp_registry.py` | MCP config reader | Out of scope — test code; not shipped and not reachable at runtime |
+| `tests/test_mcp_remote_tools.py` | fleet-awareness / channel-management serve-mode tools + _jsonify | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_mcp_subscriptions.py` | SEP-2575 resource-update fan-out | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_mcp_serve_oauth_flow.py` | The serve-mode OAuth flow, end to end, through the real Starlette app | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_nav_bar.py` | wave 2 nav targets | Out of scope — test code; not shipped and not reachable at runtime |
@@ -318,6 +320,17 @@ allowlisted, never the check removed. A malformed or hostless `GROVE_MCP_URL`
 adds nothing rather than falling back to permissive — an address that cannot be
 parsed is not a grant.
 
+**Follow-up (`claude/grove-adaptor-remote-restore`):** the allowlist gained an
+operator escape hatch for tunnels (Pangolin/Newt, reverse proxies) that forward
+a Host other than loopback or the `GROVE_MCP_URL` netloc:
+`GROVE_MCP_EXTRA_HOSTS` / `GROVE_MCP_EXTRA_ORIGINS` (comma-separated). These are
+read once at import time from the environment only — never from a request or
+header — so they are operator-set, not attacker-influenced. They are purely
+additive: `enable_dns_rebinding_protection` stays `True`, and a bare `*` / `:*`
+entry cannot match a real Host header, so the mechanism cannot reach an
+allow-all state. Covered by `tests/test_transport_security.py`
+(`test_extras_never_disable_protection`, `test_blank_and_empty_extras_add_nothing`).
+
 Pinned by `tests/test_transport_security.py`, whose headline assertion is that
 there is no configuration in which protection is off. It is parametrised over
 the https, http, unset, and unparseable cases, and every https case fails
@@ -476,7 +489,10 @@ correct if the constant becomes a setting.
 ### G-PATH-01 — Hardcoded Developer Home Paths (P3)
 
 **Files:** `run_mcp.sh:13`, `.cursor/hooks/run_grove_followup.sh:8`, `.mcp.json`
-**Status:** Open
+**Status:** Partially fixed — `run_mcp.sh` done in `claude/grove-adaptor-remote-restore`
+(the hardcoded `/home/sean-campbell/...` default is gone; it now resolves
+`$GROVE_VENV` → repo `./.venv` → `PATH` and warns when the MCP SDK is absent).
+`.cursor/hooks/run_grove_followup.sh` and `.mcp.json` remain open.
 
 `run_mcp.sh` falls back to `command -v python3` when the hardcoded venv is
 missing, so it degrades rather than breaking, and `.mcp.json` is developer-local

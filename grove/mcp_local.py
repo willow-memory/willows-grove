@@ -117,6 +117,24 @@ _SERVE_MODE = "--serve" in sys.argv
 _BASE_URL = os.getenv("GROVE_MCP_URL", f"http://127.0.0.1:{_PORT}")
 
 
+def _csv_env(name: str) -> list[str]:
+    """A comma-separated env var as a clean list (empty and blanks dropped)."""
+    return [v.strip() for v in os.getenv(name, "").split(",") if v.strip()]
+
+
+# Extra Host/Origin values to allowlist beyond loopback and the GROVE_MCP_URL
+# netloc. Escape hatch for tunnels whose edge forwards a Host header that is
+# neither loopback nor the exact public host in GROVE_MCP_URL — e.g. a Pangolin
+# resource host, a reverse proxy's upstream name, or a second public alias. This
+# is additive and explicit: an operator sets it deliberately, an attacker does
+# not, so it never widens protection into the "off" state the DNS-rebinding
+# guard exists to prevent. Format: comma-separated Host values (host or
+# host:port) in GROVE_MCP_EXTRA_HOSTS, comma-separated scheme://host origins in
+# GROVE_MCP_EXTRA_ORIGINS.
+_EXTRA_HOSTS = _csv_env("GROVE_MCP_EXTRA_HOSTS")
+_EXTRA_ORIGINS = _csv_env("GROVE_MCP_EXTRA_ORIGINS")
+
+
 def _transport_security():
     """Host/Origin allowlist for the Streamable HTTP transport (G-REBIND-01).
 
@@ -150,6 +168,15 @@ def _transport_security():
         origin = f"{parsed.scheme}://{parsed.netloc}"
         if origin not in origins:
             origins.append(origin)
+
+    # Operator-supplied extras for tunnels that forward some other Host/Origin
+    # (Pangolin resource hosts, reverse-proxy upstream names, public aliases).
+    for h in _EXTRA_HOSTS:
+        if h not in hosts:
+            hosts.append(h)
+    for o in _EXTRA_ORIGINS:
+        if o not in origins:
+            origins.append(o)
 
     return TransportSecuritySettings(
         enable_dns_rebinding_protection=True,
@@ -710,6 +737,106 @@ def grove_flagged(flag: str, channel_name: str = "") -> list[dict]:
         return _msgs_to_dicts(msgs)
     finally:
         db.release_connection(conn)
+
+
+# ── Fleet awareness & channel management ─────────────────────────────────────
+# These expose read/write surfaces that already existed for the local dashboard
+# (grove_reader) to remote MCP clients (claude.ai). Each wraps a reader function
+# that owns its own connection, so there is no pool handling here. Datetimes are
+# coerced to ISO strings by _jsonify because the MCP result must be JSON.
+from datetime import date, datetime  # noqa: E402
+from decimal import Decimal  # noqa: E402
+
+
+def _jsonify(value):
+    """Recursively coerce non-JSON DB types to JSON-safe ones for MCP results.
+
+    datetime/date -> ISO string; Decimal (psycopg2 returns NUMERIC as Decimal)
+    -> float; set/frozenset -> list. Dicts and sequences recurse.
+    """
+    if isinstance(value, (datetime, date)):
+        return value.isoformat()
+    if isinstance(value, Decimal):
+        return float(value)
+    if isinstance(value, dict):
+        return {k: _jsonify(v) for k, v in value.items()}
+    if isinstance(value, (list, tuple, set, frozenset)):
+        return [_jsonify(v) for v in value]
+    return value
+
+
+@mcp.tool()
+def grove_agents() -> list[dict]:
+    """
+    List fleet agents by most-recent HEARTBEAT, newest first.
+
+    Each entry: {sender, last_seen_at (ISO), age_secs}. Use this to see who is
+    currently alive in the fleet before addressing or coordinating with them.
+    """
+    return _jsonify(_grove_reader.grove_agents())
+
+
+@mcp.tool()
+def grove_fleet_status(limit: int = 50) -> list[dict]:
+    """
+    Rich fleet status rows — presence plus what each agent is doing.
+
+    Each row: {sender, last_seen_at (ISO), age_secs, ui_state, peek, blocked,
+    reply_to_message_id, correlation_id}. This is the AGENTS-region view the
+    dashboard shows, made available remotely.
+
+    Args:
+        limit: Max agents to return (clamped 1..100).
+    """
+    cap = max(1, min(int(limit), 100))
+    return _jsonify(_grove_reader.grove_agent_fleet_rows(limit=cap))
+
+
+@mcp.tool()
+def grove_mentions(handle: str, limit: int = 20) -> list[dict]:
+    """
+    Recent messages that @-mention a handle, across all channels, newest first.
+
+    Args:
+        handle: The mention handle to search for (with or without a leading @).
+        limit: Max messages to return (clamped 1..50).
+    """
+    name = handle.strip().lstrip("@")
+    if not name:
+        return []
+    cap = max(1, min(int(limit), 50))
+    return _jsonify(_grove_reader.grove_mentions(name, limit=cap))
+
+
+@mcp.tool()
+def grove_human_required(limit: int = 30, open_only: bool = True) -> list[dict]:
+    """
+    The human-required queue — work that pauses automation until a person acts
+    (consent, attestation, review, onboarding). Priority-first, then newest.
+
+    Poll this from a remote session to see what needs the operator before the
+    fleet can proceed.
+
+    Args:
+        limit: Max items to return (clamped 1..100).
+        open_only: When true (default) only items with status='open'.
+    """
+    cap = max(1, min(int(limit), 100))
+    return _jsonify(_grove_reader.human_required_queue(limit=cap, open_only=bool(open_only)))
+
+
+@mcp.tool()
+def grove_create_channel(name: str, description: str = "") -> dict:
+    """
+    Create a new group text channel (or revive an archived one of the same name).
+
+    Args:
+        name: Desired channel name; normalized to Grove's channel-name rules.
+        description: Optional description; defaults to "#<name>".
+
+    Returns {ok: bool, channel?: {...}, error?: str}.
+    """
+    return _jsonify(_grove_reader.grove_create_text_channel(name, description))
 
 
 # ── OAuth approval route (serve mode only) ───────────────────────────────────

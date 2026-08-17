@@ -51,7 +51,9 @@ This repo consolidates:
 | `python3 app.py` | Main Textual dashboard (active, full-featured) |
 | `python3 -m grove` | Lightweight curses TUI (SSH / narrow terminal) |
 | `python3 -m grove_standalone` | Standalone Textual DM app |
-| `python3 grove_serve.py` | LAN command server |
+| `./run_mcp.sh` | Grove MCP server (stdio — Claude/Cursor spawn this) |
+| `./run_mcp.sh --serve` | Grove MCP over HTTP+OAuth on :8765 (remote/claude.ai via a tunnel) |
+| `scripts/grove-serve {install\|on\|off\|status}` | Toggle serve mode + the local `.mcp.json` entry |
 
 ## Architecture
 
@@ -65,9 +67,12 @@ This repo consolidates:
 | `grove_standalone.py` | Standalone Textual grove DM TUI |
 | `u2u/` | Encrypted LAN transport (knock/consent/note) |
 | `bridge/` | Matrix bridge |
-| `grove_serve.py` | LAN HTTP command server (HMAC-signed) |
-| `grove_client.py` | LAN client (send commands to remote nodes) |
-| `grove_coordination.py` | Agent coordination patterns |
+| `grove/mcp_local.py` | Grove MCP server — stdio (local) or `--serve` (HTTP+OAuth, remote/claude.ai) |
+| `grove/mcp_auth.py` | `GroveOAuthProvider` — OAuth 2.0/PKCE authorization server for serve mode |
+| `run_mcp.sh` | Launch wrapper for the MCP server (resolves venv, sets env) |
+| `deploy/grove-mcp-serve.service.template` | systemd `--user` unit template for serve mode |
+| `scripts/grove-serve` | Toggle serve unit + `.mcp.json` entry together |
+| `grove_client.py` | LAN client (send signed commands to remote nodes) |
 
 ## Willow System Context
 
