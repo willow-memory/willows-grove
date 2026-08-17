@@ -4,6 +4,16 @@ All notable changes to Willow Grove are documented here.
 
 ## [Unreleased]
 
+### feat/grove-per-tool-oauth-scopes
+Serve-mode OAuth scopes are now granular instead of one flat `grove` scope that let any remote token call every tool including writes.
+
+- **Two scopes**: `grove:read` and `grove:write`. `grove` remains a back-compat superscope implying both, so a 30-day token minted before this change (or any client that still asks for plain `grove`) keeps full access — nothing needs re-authorizing. `AuthSettings` (`grove/mcp_local.py`): `valid_scopes=["grove", "grove:read", "grove:write"]`, `default_scopes=["grove:read", "grove:write"]` (an ordinary connect still gets full access), `required_scopes=["grove:read"]` (the floor every token must clear).
+- **Enforcement point:** `_require_scope()` reads the *current request's* token via the MCP SDK's own auth-context contextvar (`mcp.server.auth.middleware.auth_context.get_access_token()`) — not an ambient flag. It is a no-op whenever that contextvar is empty, which is always true under stdio (no HTTP request ever runs through the SDK's auth middleware there), preserving local Claude Code's implicit trust unchanged.
+- **`@writes` decorator** applied to the 9 write tools (`grove_send_message`, `grove_reply`, `grove_flag`, `grove_unflag`, `grove_bus_send`, `grove_bus_delete`, `grove_ack`, `grove_heartbeat`, `grove_create_channel`); it composes cleanly under `@mcp.tool()` because `functools.wraps` preserves `__wrapped__`, which `inspect.signature(..., eval_str=True)` follows by default — the advertised JSON schema and docstring are unaffected (verified in tests, not assumed). Read tools carry no decorator; the server-wide `required_scopes=["grove:read"]` already covers them.
+- **`grove/mcp_auth.py`:** `GroveOAuthProvider.load_access_token` now widens a stored `grove`-scoped token to also carry `grove:read`/`grove:write` literally before handing it back — the SDK's transport-level scope gate does exact string membership with no notion of implication, so an old `["grove"]` token would otherwise fail a `required_scopes=["grove:read"]` check. New `effective_scopes()` picks what `/authorize` explicitly requested, else the client's own registered scope (which defaults to `default_scopes` at DCR time), else the superscope — used by `issue_code`, the auto-approve warning, and the `/grove-approve` consent page so the scopes shown there are the granular ones.
+- **Tests:** new `tests/test_tool_scopes.py` (22 cases) — the gate's read/refused-write/full-access/no-context matrix, all 9 write tools individually confirmed gated, schema/docstring survival through `@writes`, `_expand_scopes`/`effective_scopes` unit coverage, and a collection-time probe pinning the actual `AuthSettings` wiring in serve mode. Full suite: 362 passing.
+- **Docs:** `docs/runbooks/grove.md` remote section documents the two scopes and how a client requests read-only.
+
 ### feat/grove-adaptor-remote-restore
 Restored the remote-Grove (claude.ai) MCP adaptor and made it tunnel-agnostic so it can be fronted by **Pangolin** (Newt or reverse-proxy) as readily as ngrok/cloudflared/Tailscale Funnel. The serve/OAuth code was healthy but undeployed and unwired; this closes the plumbing gaps.
 

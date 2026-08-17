@@ -62,6 +62,58 @@ _PENDING_TTL = 600         # 10 minutes for a human to click Allow
 AUTO_APPROVE_ENV = "GROVE_MCP_AUTO_APPROVE"
 _TRUTHY = {"1", "true", "yes", "on"}
 
+# Scope vocabulary — mirrors grove/mcp_local.py's AuthSettings. Duplicated
+# rather than imported: mcp_local imports GroveOAuthProvider from this module
+# only in serve mode, so importing back from here would risk a cycle for no
+# real gain (three string constants).
+SCOPE_READ  = "grove:read"
+SCOPE_WRITE = "grove:write"
+SCOPE_FULL  = "grove"  # back-compat superscope: implies both read and write
+DEFAULT_SCOPES = [SCOPE_READ, SCOPE_WRITE]
+
+
+def _expand_scopes(scopes: list[str] | None) -> list[str]:
+    """Widen the `grove` superscope to its granular equivalents.
+
+    The MCP SDK's `RequireAuthMiddleware` checks `required_scope not in
+    token.scopes` — exact string membership, no notion of implication. A
+    30-day token minted before per-tool scopes existed carries literally
+    `["grove"]`; without this it would fail a `required_scopes=["grove:read"]`
+    gate even though "grove" was always meant to be full access. Called at
+    the token-verification boundary (`load_access_token`) so both the
+    transport-level gate and the per-tool checks in grove/mcp_local.py see
+    the same widened set — old tokens keep working, nothing needs migrating.
+    """
+    out = list(dict.fromkeys(scopes or []))
+    if SCOPE_FULL in out:
+        for s in (SCOPE_READ, SCOPE_WRITE):
+            if s not in out:
+                out.append(s)
+    return out
+
+
+def effective_scopes(
+    client: OAuthClientInformationFull,
+    params: AuthorizationParams,
+) -> list[str]:
+    """The scopes actually in play for one authorization request.
+
+    Prefers what `/authorize` explicitly asked for (`params.scopes`). Falls
+    back to the client's own registered scope, which itself defaults to
+    `AuthSettings.default_scopes` at registration time when the client asked
+    for nothing specific (see the MCP SDK's `register.py`) — so an ordinary
+    dynamic-client-registration connect that never sends `scope=` still shows
+    and grants the granular scope names rather than a hardcoded guess. Only
+    a client record from before any of this existed (no `.scope` at all)
+    falls all the way back to the full-access superscope.
+    """
+    if params.scopes:
+        return list(params.scopes)
+    if client.scope:
+        return client.scope.split(" ")
+    return [SCOPE_FULL]
+
+
 _STATE_KEYS = ("clients", "access_tokens", "refresh_tokens")
 
 
@@ -242,7 +294,7 @@ class GroveOAuthProvider:
         code_str = _tok()
         self._codes[code_str] = AuthorizationCode(
             code=code_str,
-            scopes=params.scopes or ["grove"],
+            scopes=effective_scopes(client, params),
             expires_at=time.time() + _CODE_TTL,
             client_id=client.client_id,
             code_challenge=params.code_challenge,
@@ -280,8 +332,8 @@ class GroveOAuthProvider:
         if self._auto_approve:
             self._warn(
                 f"auto-approved OAuth grant for client_id={client.client_id!r} "
-                f"(scopes={params.scopes or ['grove']}) with no human approval — "
-                f"{AUTO_APPROVE_ENV} is set."
+                f"(scopes={effective_scopes(client, params)}) with no human "
+                f"approval — {AUTO_APPROVE_ENV} is set."
             )
             return construct_redirect_uri(
                 str(params.redirect_uri),
@@ -404,6 +456,11 @@ class GroveOAuthProvider:
             del self._state["access_tokens"][token]
             self._save_state()
             return None
+        # Widen `grove` to its granular equivalents here, not in storage — the
+        # persisted grant stays exactly what was authorized, but every reader
+        # (the transport's required_scopes gate, per-tool checks) sees the
+        # implied full access. See _expand_scopes.
+        data = {**data, "scopes": _expand_scopes(data.get("scopes"))}
         return AccessToken(**data)
 
     async def revoke_token(self, token: AccessToken | RefreshToken) -> None:

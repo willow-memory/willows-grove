@@ -22,6 +22,7 @@ Auth in serve mode: OAuth 2.0 + PKCE with open dynamic client registration.
                     /authorize — off by default, and loud when on.
 Auth in stdio mode: implicit (local process, trusted user) — no OAuth.
 """
+import functools
 import os
 import select
 import socket
@@ -39,7 +40,9 @@ _GROVE_ROOT = Path(__file__).parent.parent
 if str(_GROVE_ROOT) not in sys.path:
     sys.path.insert(0, str(_GROVE_ROOT))
 
+from mcp.server.auth.middleware.auth_context import get_access_token
 from mcp.server.mcpserver import MCPServer
+from mcp.server.mcpserver.exceptions import ToolError
 from mcp.server.subscriptions import InMemorySubscriptionBus
 from mcp.shared.subscriptions import ResourceUpdated
 
@@ -191,6 +194,74 @@ def _public_mcp_url() -> str:
     return base if base.endswith("/mcp") else f"{base}/mcp"
 
 
+# ── Per-tool OAuth scopes (serve mode) ────────────────────────────────────────
+# Two granular scopes, plus `grove` kept as a back-compat superscope that
+# implies both — so a 30-day token minted before this existed, or a client
+# that still asks for plain `grove`, keeps full access rather than breaking.
+# Defined at module level (not inside `if _SERVE_MODE:`) so both the stdio and
+# serve import paths see the same constants — decorators below are applied to
+# tool functions unconditionally, and just no-op under stdio.
+SCOPE_READ  = "grove:read"
+SCOPE_WRITE = "grove:write"
+SCOPE_FULL  = "grove"
+
+VALID_SCOPES   = [SCOPE_FULL, SCOPE_READ, SCOPE_WRITE]
+DEFAULT_SCOPES = [SCOPE_READ, SCOPE_WRITE]   # a normal connect still gets full access
+REQUIRED_SCOPES = [SCOPE_READ]               # the floor every token must clear
+
+
+def _require_scope(required_scope: str) -> None:
+    """Per-tool scope gate, enforced against the CURRENT request's token.
+
+    Stdio mode never runs a Starlette request through the SDK's auth
+    middleware, so `get_access_token()` is always None there — this is a
+    no-op, preserving the existing implicit-trust posture for local Claude
+    Code usage. In serve mode, `required_scopes=["grove:read"]` on the whole
+    server already refuses an unauthenticated or scope-less request before it
+    reaches any tool, so a live tool call always has a token in context;
+    reaching this function with `token is None` would mean that gate was
+    bypassed, and is treated as fail-closed rather than assumed benign.
+
+    `GroveOAuthProvider.load_access_token` widens a `grove`-scoped token to
+    also carry `grove:read`/`grove:write` literally (see mcp_auth._expand_scopes),
+    so the plain `in` checks below already account for the superscope; the
+    explicit `SCOPE_FULL in scopes` check is defense-in-depth, not the only path.
+    """
+    token = get_access_token()
+    if token is None:
+        return
+    scopes = set(token.scopes or [])
+    if required_scope in scopes or SCOPE_FULL in scopes:
+        return
+    raise ToolError(
+        f"insufficient scope: '{required_scope}' required "
+        f"(token scopes: {sorted(scopes) or ['(none)']})"
+    )
+
+
+def writes(fn):
+    """Tool decorator: require `grove:write` before the wrapped tool runs.
+
+    Place it directly on the function, under `@mcp.tool()`:
+
+        @mcp.tool()
+        @writes
+        def grove_send_message(...): ...
+
+    `functools.wraps` sets `__wrapped__`, and `Tool.from_function` builds the
+    JSON schema via `inspect.signature(fn, eval_str=True)`, which follows
+    `__wrapped__` by default — so `@mcp.tool()` still sees the original
+    parameters and docstring, not `(*args, **kwargs)`. Verified in
+    tests/test_tool_scopes.py rather than assumed.
+    """
+    @functools.wraps(fn)
+    def _scope_checked(*args, **kwargs):
+        _require_scope(SCOPE_WRITE)
+        return fn(*args, **kwargs)
+
+    return _scope_checked
+
+
 _common_kwargs = dict(
     instructions=(
         "Grove sovereign workspace messaging. "
@@ -201,7 +272,7 @@ _common_kwargs = dict(
 )
 
 if _SERVE_MODE:
-    from grove.mcp_auth import GroveOAuthProvider, auto_approve_enabled
+    from grove.mcp_auth import GroveOAuthProvider, auto_approve_enabled, effective_scopes
     from mcp.server.auth.settings import AuthSettings, ClientRegistrationOptions
 
     _auth_provider = GroveOAuthProvider(
@@ -218,10 +289,10 @@ if _SERVE_MODE:
             resource_server_url=_public_mcp_url(),
             client_registration_options=ClientRegistrationOptions(
                 enabled=True,
-                valid_scopes=["grove"],
-                default_scopes=["grove"],
+                valid_scopes=VALID_SCOPES,
+                default_scopes=DEFAULT_SCOPES,
             ),
-            required_scopes=["grove"],
+            required_scopes=REQUIRED_SCOPES,
         ),
     )
 else:
@@ -281,6 +352,7 @@ def grove_get_history(channel_name: str, limit: int = 50, since_id: int = 0) -> 
 
 
 @mcp.tool()
+@writes
 def grove_send_message(channel_name: str, content: str, sender: str = "Auto") -> dict:
     """
     Send a message to a Grove channel. Creates the channel if it doesn't exist.
@@ -465,6 +537,7 @@ def grove_watch_all(cursors: dict) -> dict:
 
 
 @mcp.tool()
+@writes
 def grove_reply(channel_name: str, content: str, sender: str, reply_to_id: int) -> dict:
     """
     Reply to a message in a thread.
@@ -518,6 +591,7 @@ def grove_get_thread(message_id: int) -> dict:
 
 
 @mcp.tool()
+@writes
 def grove_flag(message_id: int, flag: str, sender: str) -> dict:
     """
     Set a flag on a message.
@@ -538,6 +612,7 @@ def grove_flag(message_id: int, flag: str, sender: str) -> dict:
 
 
 @mcp.tool()
+@writes
 def grove_unflag(message_id: int, flag: str, sender: str) -> dict:
     """
     Clear a flag from a message.
@@ -556,6 +631,7 @@ def grove_unflag(message_id: int, flag: str, sender: str) -> dict:
 
 
 @mcp.tool()
+@writes
 def grove_bus_send(channel_name: str, sender: str, content: str,
                    to_agent: str = "__all__", bus_type: str = "EVENT",
                    priority: int = 3, correlation_id: str = "",
@@ -624,6 +700,7 @@ def grove_bus_receive(agent: str, channel_name: str = "", since_id: int = 0) -> 
 
 
 @mcp.tool()
+@writes
 def grove_bus_delete(channel_name: str, sender: str, message_id: int) -> dict:
     """
     Soft-delete a bus message — retracted, invisible to grove_bus_receive.
@@ -643,6 +720,7 @@ def grove_bus_delete(channel_name: str, sender: str, message_id: int) -> dict:
 
 
 @mcp.tool()
+@writes
 def grove_ack(channel_name: str, sender: str, correlation_id: str,
               original_id: int) -> dict:
     """
@@ -674,6 +752,7 @@ def grove_ack(channel_name: str, sender: str, correlation_id: str,
 
 
 @mcp.tool()
+@writes
 def grove_heartbeat(sender: str) -> dict:
     """
     Broadcast a heartbeat — I am alive and on the bus.
@@ -826,6 +905,7 @@ def grove_human_required(limit: int = 30, open_only: bool = True) -> list[dict]:
 
 
 @mcp.tool()
+@writes
 def grove_create_channel(name: str, description: str = "") -> dict:
     """
     Create a new group text channel (or revive an archived one of the same name).
@@ -879,7 +959,7 @@ if _SERVE_MODE and _auth_provider is not None:
             # markup into the operator's browser.
             name = html_escape(client.client_name or client.client_id)
             target = html_escape(str(params.redirect_uri))
-            scopes = html_escape(" ".join(params.scopes or ["grove"]))
+            scopes = html_escape(" ".join(effective_scopes(client, params)))
             page = f"""<!DOCTYPE html>
 <html><head><title>Grove Access Request</title>
 <style>body{{font-family:sans-serif;max-width:480px;margin:80px auto;padding:20px}}

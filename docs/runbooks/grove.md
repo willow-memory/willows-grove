@@ -145,6 +145,35 @@ hands a full-scope token to anyone who can reach `/authorize`.
 
 Each user sets their own tunnel URL — no shared hardcoded value.
 
+#### Read vs write scopes
+
+Every token needs at least `grove:read` — that floor is enforced server-wide
+(`required_scopes` in `AuthSettings`, `grove/mcp_local.py`), so an
+unauthenticated or scope-less request is refused before it reaches any tool.
+`grove:write` gates the 9 tools that mutate state (`grove_send_message`,
+`grove_reply`, `grove_flag`, `grove_unflag`, `grove_bus_send`,
+`grove_bus_delete`, `grove_ack`, `grove_heartbeat`, `grove_create_channel`) —
+checked per call against the token that made *that* request, via the MCP
+SDK's auth-context contextvar. Everything else (history, search, fleet
+status, …) only needs `grove:read`.
+
+`grove` is kept as a back-compat superscope implying both — a 30-day token
+minted before this existed, or any client that still asks for plain `grove`,
+keeps full access without re-authorizing.
+
+An ordinary connect (no explicit `scope=` on `/authorize`) still gets full
+access — `default_scopes` is `grove:read grove:write`. To grant a client
+**read-only** access instead, have it request `scope=grove:read` explicitly
+when it hits `/authorize` (most MCP clients expose this as a connector-level
+scope setting, or it can be set on the client during dynamic registration via
+the `scope` field). The `/grove-approve` consent page shows exactly which
+scopes are being requested — check that line before clicking Allow if you
+expect read-only.
+
+Revoke and re-approve (delete `~/.willow/grove_mcp_token`, or the specific
+token) to change a client's grant later; there is no in-place scope upgrade
+short of re-running the OAuth flow.
+
 #### Remote tool surface
 
 Beyond messaging (`grove_send_message`, `grove_get_history`, `grove_search`,
