@@ -745,15 +745,22 @@ def grove_flagged(flag: str, channel_name: str = "") -> list[dict]:
 # that owns its own connection, so there is no pool handling here. Datetimes are
 # coerced to ISO strings by _jsonify because the MCP result must be JSON.
 from datetime import date, datetime  # noqa: E402
+from decimal import Decimal  # noqa: E402
 
 
 def _jsonify(value):
-    """Recursively coerce datetimes/dates to ISO strings for JSON results."""
+    """Recursively coerce non-JSON DB types to JSON-safe ones for MCP results.
+
+    datetime/date -> ISO string; Decimal (psycopg2 returns NUMERIC as Decimal)
+    -> float; set/frozenset -> list. Dicts and sequences recurse.
+    """
     if isinstance(value, (datetime, date)):
         return value.isoformat()
+    if isinstance(value, Decimal):
+        return float(value)
     if isinstance(value, dict):
         return {k: _jsonify(v) for k, v in value.items()}
-    if isinstance(value, (list, tuple)):
+    if isinstance(value, (list, tuple, set, frozenset)):
         return [_jsonify(v) for v in value]
     return value
 

@@ -30,6 +30,11 @@ os.environ["GROVE_MCP_URL"] = BASE_URL
 os.environ["HOME"] = _tmp_home
 os.environ.pop("GROVE_MCP_AUTO_APPROVE", None)
 try:
+    # Serve mode is decided at import time, so this file must re-execute the
+    # module under --serve rather than accept a copy another test file already
+    # imported in stdio mode (which leaves _auth_provider = None). Dropping the
+    # cached entry forces a fresh load regardless of collection order.
+    sys.modules.pop("grove.mcp_local", None)
     import grove.mcp_local as mcp_local
 finally:
     sys.argv = _saved_argv

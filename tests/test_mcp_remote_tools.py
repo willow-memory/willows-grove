@@ -25,6 +25,16 @@ def test_jsonify_coerces_nested_datetimes():
     assert out == {"a": _ISO, "b": [1, {"c": _ISO}], "d": "x"}
 
 
+def test_jsonify_coerces_decimal_and_set():
+    from decimal import Decimal
+
+    # Decimal is what psycopg2 hands back for NUMERIC columns; it is not
+    # JSON-serializable and must become a float.
+    assert mcp_local._jsonify(Decimal("1.5")) == 1.5
+    assert mcp_local._jsonify({"n": Decimal("2")}) == {"n": 2.0}
+    assert sorted(mcp_local._jsonify({1, 2, 3})) == [1, 2, 3]
+
+
 def test_grove_agents_serializes_last_seen(monkeypatch):
     monkeypatch.setattr(
         mcp_local._grove_reader, "grove_agents",
