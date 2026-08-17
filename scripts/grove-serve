@@ -1,0 +1,109 @@
+#!/usr/bin/env bash
+# grove-serve — turn Grove MCP OAuth serve mode on/off at will.
+# b17: GRSRV · ΔΣ=42
+#
+# Manages a systemd --user unit for the `--serve` HTTP process AND toggles the
+# matching http entry in this repo's .mcp.json, so a local HTTP client connects
+# only when serve is on. No hand-editing of config, no code change per toggle.
+#
+#   grove-serve install    # one-time: write + load the systemd user unit
+#   grove-serve on         # start serve + add the .mcp.json entry   (then /mcp)
+#   grove-serve off        # stop serve  + remove the .mcp.json entry (then /mcp)
+#   grove-serve status     # unit state + whether the entry is present
+#   grove-serve logs       # follow the serve process logs (journalctl)
+#
+# The serve process always binds 127.0.0.1:$GROVE_MCP_PORT. To reach it from
+# claude.ai or another external client, front it with a tunnel and set
+# GROVE_MCP_URL to the public HTTPS base BEFORE `install` (or via a drop-in,
+# then re-run install). See docs/runbooks/grove.md for the Pangolin/tunnel guide.
+#
+#   GROVE_MCP_PORT   bind port (default 8765; loopback only)
+#   GROVE_MCP_URL    public base URL for OAuth/allowlist (default http://127.0.0.1:PORT)
+#   GROVE_VENV       python venv dir (default: repo ./.venv if present)
+set -euo pipefail
+
+UNIT="grove-mcp-serve"
+PORT="${GROVE_MCP_PORT:-8765}"
+HOST="127.0.0.1"
+ENTRY_NAME="grove-serve"
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+MCP_JSON="$REPO_ROOT/.mcp.json"
+BASE_URL="${GROVE_MCP_URL:-http://$HOST:$PORT}"
+VENV_DIR="${GROVE_VENV:-$REPO_ROOT/.venv}"
+VENV_PY="$VENV_DIR/bin/python3"
+TEMPLATE="$REPO_ROOT/deploy/grove-mcp-serve.service.template"
+LOCAL_URL="http://$HOST:$PORT/mcp"
+PUBLIC_URL="${BASE_URL%/}/mcp"
+UNIT_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user"
+UNIT_FILE="$UNIT_DIR/$UNIT.service"
+TOGGLE_PY="$REPO_ROOT/scripts/mcp_entry_toggle.py"
+
+usage() {
+  echo "usage: grove-serve {install|on|off|status|logs}" >&2
+  exit 2
+}
+have_unit() { [ -f "$UNIT_FILE" ]; }
+
+toggle_entry() {  # $1 = add|remove
+  local py="python3"
+  [ -x "$VENV_PY" ] && py="$VENV_PY"
+  "$py" "$TOGGLE_PY" "$MCP_JSON" "$ENTRY_NAME" "$LOCAL_URL" "$1"
+}
+entry_present() { grep -q "\"$ENTRY_NAME\"" "$MCP_JSON" 2>/dev/null; }
+
+case "${1:-}" in
+  install)
+    [ -f "$TEMPLATE" ] || { echo "missing template: $TEMPLATE" >&2; exit 1; }
+    [ -x "$VENV_PY" ] || echo "warning: $VENV_PY not found — create the venv first (python3 -m venv .venv && ./.venv/bin/pip install -r requirements.txt)" >&2
+    mkdir -p "$UNIT_DIR"
+    sed -e "s#@VENV_DIR@#$VENV_DIR#g" \
+        -e "s#@WORKDIR@#$REPO_ROOT#g" \
+        -e "s#@PORT@#$PORT#g" \
+        -e "s#@BASE_URL@#$BASE_URL#g" \
+        "$TEMPLATE" > "$UNIT_FILE"
+    systemctl --user daemon-reload
+    echo "installed $UNIT_FILE  (port $PORT)"
+    echo "  GROVE_MCP_URL=$BASE_URL"
+    if [ "$BASE_URL" = "http://$HOST:$PORT" ]; then
+      echo "  note: loopback-only base URL — set GROVE_MCP_URL to your tunnel host for claude.ai." >&2
+    fi
+    echo "next: grove-serve on"
+    ;;
+  on)
+    have_unit || { echo "unit not installed — run: grove-serve install" >&2; exit 1; }
+    systemctl --user start "$UNIT"
+    toggle_entry add
+    if systemctl --user is-active --quiet "$UNIT"; then
+      echo "serve ON   local: $LOCAL_URL   (.mcp.json entry added — run /mcp to reconnect)"
+      echo "           remote (claude.ai connector URL): $PUBLIC_URL"
+    else
+      echo "unit did not stay active — check: grove-serve logs" >&2
+      exit 1
+    fi
+    ;;
+  off)
+    have_unit && systemctl --user stop "$UNIT" || true
+    toggle_entry remove
+    echo "serve OFF   (.mcp.json entry removed — run /mcp to reconnect)"
+    ;;
+  status)
+    if have_unit && systemctl --user is-active --quiet "$UNIT"; then
+      echo "unit:      active (port $PORT)"
+    else
+      echo "unit:      inactive"
+    fi
+    if entry_present; then
+      echo ".mcp.json: entry present  ($LOCAL_URL)"
+    else
+      echo ".mcp.json: entry absent"
+    fi
+    echo "public:    $PUBLIC_URL   (claude.ai connector URL when tunnelled)"
+    ;;
+  logs)
+    journalctl --user -u "$UNIT" -f
+    ;;
+  *)
+    usage
+    ;;
+esac

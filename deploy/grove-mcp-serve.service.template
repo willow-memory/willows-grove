@@ -1,0 +1,35 @@
+# systemd --user unit template for Grove MCP OAuth HTTP serve mode.
+# b17: GRSVC · ΔΣ=42
+#
+# Not used directly — `scripts/grove-serve install` fills in the @PLACEHOLDERS@
+# and writes the resolved unit to ~/.config/systemd/user/grove-mcp-serve.service.
+#
+# The serve process ALWAYS binds 127.0.0.1 (loopback); it never listens on a
+# public interface itself. A tunnel (Pangolin/Newt, cloudflared, ngrok, a
+# reverse proxy, Tailscale Funnel) forwards a public HTTPS host to @PORT@.
+#
+# GROVE_MCP_URL is the public base URL the tunnel exposes. Everything OAuth
+# derives from it — issuer, RFC 9728 resource metadata, and the Host/Origin
+# allowlist — so it must be stable. Change it (or the tunnel host) via a drop-in
+# rather than editing this file:
+#   systemctl --user edit grove-mcp-serve
+#     [Service]
+#     Environment=GROVE_MCP_URL=https://grove.example.org
+#     Environment=GROVE_MCP_EXTRA_HOSTS=grove.internal:8765
+[Unit]
+Description=Grove MCP OAuth HTTP serve mode
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=@WORKDIR@
+Environment=GROVE_VENV=@VENV_DIR@
+Environment=GROVE_MCP_PORT=@PORT@
+Environment=GROVE_MCP_URL=@BASE_URL@
+ExecStart=@WORKDIR@/run_mcp.sh --serve --port @PORT@
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=default.target

@@ -4,6 +4,16 @@ All notable changes to Willow Grove are documented here.
 
 ## [Unreleased]
 
+### feat/grove-adaptor-remote-restore
+Restored the remote-Grove (claude.ai) MCP adaptor and made it tunnel-agnostic so it can be fronted by **Pangolin** (Newt or reverse-proxy) as readily as ngrok/cloudflared/Tailscale Funnel. The serve/OAuth code was healthy but undeployed and unwired; this closes the plumbing gaps.
+
+- **`run_mcp.sh`** no longer defaults to a stale absolute venv path (`/home/sean-campbell/...willow-2.0/.venv-dev`) that silently fell back to bare `python3`. It now prefers `$GROVE_VENV`, then a repo-local `./.venv`, then PATH, and warns loudly when the resolved interpreter cannot import the MCP SDK.
+- **Tunnel escape hatch:** `_transport_security()` (`grove/mcp_local.py`) now honours `GROVE_MCP_EXTRA_HOSTS` / `GROVE_MCP_EXTRA_ORIGINS` (comma-separated) so a tunnel that forwards a Host other than loopback or the `GROVE_MCP_URL` netloc can be allowlisted **without disabling DNS-rebinding protection** (which stays on in every deployment).
+- **`scripts/grove-serve`** + `deploy/grove-mcp-serve.service.template` + `scripts/mcp_entry_toggle.py`: one-command on/off/status for serve mode, managing the systemd `--user` unit and the local `.mcp.json` entry together (parity with willow-mcp's `willow-serve`). Skill: `skills/grove-serve.md`.
+- **New remote tools** (serve-mode MCP surface): `grove_agents` (fleet presence), `grove_fleet_status` (AGENTS-region rows), `grove_mentions`, `grove_human_required` (operator queue), `grove_create_channel` — each wrapping an existing `grove_reader` function, with datetimes coerced to ISO via `_jsonify`.
+- **Docs:** `docs/runbooks/grove.md` remote section rewritten for tunnel-agnostic + Pangolin (Newt and reverse-proxy) fronting, the extra-hosts allowlist, and the `/grove-approve` OAuth flow; stale `grove_serve.py` entry-point references fixed in `CLAUDE.md`.
+- **Tests:** escape-hatch cases added to `test_transport_security.py`; new `test_mcp_remote_tools.py` covers the five new tools (argument clamping, `@`-stripping, JSON-safety). 34 tests across both files green.
+
 ### fix/u2u-verify-before-consent
 P0 security fix in the u2u trust layer. **Authentication now precedes authorisation.** The listener verified a packet's signature only on the ALLOW path, so consent was decided from an attacker-chosen `from` address and the PENDING branch handed an entirely unverified KNOCK to registered handlers — one unauthenticated TCP packet was enough to install an attacker's public key as trusted. Signatures are now checked for every packet type before consent is consulted; a KNOCK from an unknown peer must be self-verifying against the key in its own payload, and a KNOCK from a known peer is verified against the STORED key, so wire-driven key rotation is impossible.
 

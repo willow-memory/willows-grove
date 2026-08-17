@@ -50,29 +50,111 @@ Start: `python3 -m grove.mcp_local --serve` or `systemctl --user start grove-mcp
 
 ### Remote access (claude.ai, external clients)
 
-**Step 1** — Start a tunnel pointing at port 8765:
+The serve process **always binds `127.0.0.1:8765`** — it never listens on a
+public interface itself (`grove/mcp_local.py`, `host="127.0.0.1"`). To reach it
+from claude.ai you put a **tunnel** in front of loopback. The code is
+tunnel-agnostic: Pangolin, ngrok, cloudflared, and Tailscale Funnel all work —
+the server only cares about `GROVE_MCP_URL`.
+
+Three things must line up:
+
+1. The tunnel forwards a **stable public HTTPS host** → `127.0.0.1:8765`.
+2. `GROVE_MCP_URL` is set to that public base URL, because OAuth derives its
+   issuer, RFC 9728 resource metadata, and the Host/Origin allowlist from it. A
+   rotating free-tier URL invalidates client registrations and tokens on every
+   restart — use a reserved/stable hostname.
+3. The tunnel's forwarded `Host` header is either loopback (`127.0.0.1:8765`) or
+   the exact `GROVE_MCP_URL` netloc — both are allowlisted automatically. If a
+   tunnel forwards some other host, allowlist it with `GROVE_MCP_EXTRA_HOSTS`
+   (see "DNS-rebinding allowlist" below) rather than turning protection off.
+
+#### Toggle it with `grove-serve`
+
+`scripts/grove-serve` manages the systemd `--user` unit and the local `.mcp.json`
+entry together, so serve mode is one command:
+
 ```bash
-ngrok http 8765   # → https://your-tunnel.ngrok-free.app
+# one-time: reserve/point your tunnel at 127.0.0.1:8765 first, then:
+GROVE_MCP_URL=https://grove.example.org scripts/grove-serve install
+scripts/grove-serve on       # start serve + add local .mcp.json entry
+scripts/grove-serve status   # unit state, entry presence, claude.ai connector URL
+scripts/grove-serve logs     # journalctl -f
+scripts/grove-serve off      # stop serve + remove entry
 ```
 
-**Step 2** — Set `GROVE_MCP_URL` via systemd drop-in (persists across reboots):
+To change the public URL later without reinstalling:
 ```bash
-systemctl --user edit grove-mcp
+systemctl --user edit grove-mcp-serve
 ```
 ```ini
 [Service]
-Environment=GROVE_MCP_URL=https://your-tunnel.ngrok-free.app
+Environment=GROVE_MCP_URL=https://grove.example.org
 ```
 
-**Step 3** — Configure the remote client's `.mcp.json`:
-```json
-{
-  "mcpServers": {
-    "grove": { "type": "http", "url": "https://your-tunnel.ngrok-free.app/mcp" }
-  }
-}
-```
+#### Pangolin
 
-For claude.ai: **Settings → Integrations → MCP servers**.
+Pangolin fronts loopback one of two ways.
+
+**A. Newt (Pangolin's tunnel client, no inbound ports on the origin).** Register
+a resource in the Pangolin dashboard for your public hostname, target
+`http://127.0.0.1:8765`, then run Newt on the Grove host:
+```bash
+newt --id <resource-id> --secret <resource-secret> --endpoint https://pangolin.example.org
+```
+Set `GROVE_MCP_URL=https://<your-pangolin-hostname>`. Newt forwards the public
+`Host`, which matches the `GROVE_MCP_URL` netloc — no extra config needed.
+
+**B. Reverse-proxy target (Pangolin/Traefik in front, origin reachable on the
+LAN).** Point the Pangolin resource at the Grove host's `:8765`. If the proxy
+rewrites `Host` to an internal name (Traefik `passHostHeader: false`, or an
+upstream service name), add that value:
+```ini
+[Service]
+Environment=GROVE_MCP_EXTRA_HOSTS=grove.internal:8765
+Environment=GROVE_MCP_EXTRA_ORIGINS=https://grove.internal:8765
+```
+Prefer preserving the original Host (`passHostHeader: true`) so no extra is
+needed.
+
+#### Other tunnels (drop-in)
+
+```bash
+ngrok http 8765                                  # → https://<sub>.ngrok-free.app
+cloudflared tunnel --url http://127.0.0.1:8765   # named tunnel = stable host
+tailscale funnel 8765                            # → https://<host>.<tailnet>.ts.net
+```
+Set `GROVE_MCP_URL` to whichever public base you get, then restart the unit.
+
+#### DNS-rebinding allowlist
+
+`_transport_security()` keeps DNS-rebinding protection **on in every
+deployment** and allowlists: loopback (`127.0.0.1:*`, `localhost:*`, `[::1]:*`),
+the `GROVE_MCP_URL` netloc, and anything in `GROVE_MCP_EXTRA_HOSTS` /
+`GROVE_MCP_EXTRA_ORIGINS` (comma-separated). These extras are the supported way
+to accommodate a tunnel that forwards a different Host — protection is never
+disabled to make a tunnel work.
+
+#### Point claude.ai at it
+
+**Settings → Connectors → Add custom connector**, URL `https://<public-host>/mcp`.
+On first connect claude.ai runs OAuth: it registers, hits `/authorize`, and your
+browser lands on the **`/grove-approve`** consent page. Click **Allow** — no
+token is issued until you do. Tokens last 30 days (claude.ai does not
+auto-refresh). Do **not** set `GROVE_MCP_AUTO_APPROVE=1` behind a tunnel; it
+hands a full-scope token to anyone who can reach `/authorize`.
 
 Each user sets their own tunnel URL — no shared hardcoded value.
+
+#### Remote tool surface
+
+Beyond messaging (`grove_send_message`, `grove_get_history`, `grove_search`,
+`grove_reply`, `grove_watch*`, the bus tools), serve mode exposes fleet-awareness
+and channel management to remote clients:
+
+| Tool | What |
+|------|------|
+| `grove_agents` | Who is alive (latest HEARTBEAT per sender) |
+| `grove_fleet_status` | Rich AGENTS-region rows: presence + what each agent is doing |
+| `grove_mentions` | Recent messages @-mentioning a handle |
+| `grove_human_required` | The human-required queue — work paused pending an operator |
+| `grove_create_channel` | Create (or revive) a group text channel |
