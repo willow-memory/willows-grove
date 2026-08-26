@@ -151,6 +151,13 @@ guarded code path:
    rungs. Each renders when its add-on is present; each no-ops (not errors)
    when absent. **Absence is a state, not a failure** (D7).
 
+   *Reference pattern:* `hornbook-knowledge/oakenscrolls-office/almanac_seam.py:37-49`
+   — `_matcher()` tries to import Nestor's `StringMatcher` once, caches the
+   result (`_MATCHER_TRIED` flag), and degrades exact-match search when
+   absent. Grove's per-add-on activations should follow this shape:
+   lazy import, probe once, cache, degrade gracefully — never crash on
+   the absence of an add-on.
+
 The seat writes no code (magistrate-writes-no-code, per
 `willow-memory/willow/design/jarvis-build-orders.md:26`). This makes literal
 sense once the map is drawn — the code is already written across willow-mcp,
@@ -166,7 +173,7 @@ neighborhood, not a single package.
 | Org | What lives there | Grove renders when installed |
 |---|---|---|
 | **`Die-Namic-Systems`** | Nestor — meaning infrastructure (cascade, decisions, evidence, warrants, ledger, refusal voice); `nestor ui` (Queue/Memory/Ask/Signals/Ledger/Graph) | Governance surface (decision-check / evidence / warrants); refusal chip (`¬` pigeon); ambient memory strip from ledger tail |
-| **`hornbook-knowledge`** | Bureau's graduation destination — `Jeles` (librarian package + corpus), `oakenscrolls-office` (records + `almanac_seam.py`), `UTETY` (companion/chat) | persona chips + skins (`§` mint for Jeles, colored corner for Oakenscroll); retrieval, records, chat surfaces gated behind their app |
+| **`hornbook-knowledge`** | Bureau's graduation destination. **`Jeles`** — verified-corpus organ: 1,028 human-verified Q/A nuggets across 74 seed files, 85+ institutional source cards (arXiv, PubMed, LOC, Europeana, WHO, IMF, CourtListener, …) with epistemic metadata (custody, review status, jurisdiction). Schema mirrors Nestor's pair shape by design — see D8. **`oakenscrolls-office`** — local-first calibration ledger (predictions with confidence, graded when world weighs in), with `almanac_seam.py` that reads local almanac-data clones directly (no git binary, no subprocess) and pins each clone's HEAD commit into citations. **`UTETY`** — pedagogy + trust layer, entirely different concern (learner + content); not a Grove connection, but its shape (no-egress zone + one named outbound seam holding only de-identified concept queries) is a reference for structural privacy the desk can borrow. | persona chips + skins (`§` mint for Jeles, `⌸` bark for Oakenscroll); Jeles's retrieval + source-card provenance surface when installed; Oakenscroll's cited-grade surface when installed |
 | **`almanac-data`** | 13 domain corpora (civic, climate, transportation, science, health, agriculture, economy, education, environment, justice, energy) + `almanac-template`; two licenses (`LICENSE-CODE`, `LICENSE-DATA`); `SCHEMA-V2` shared | not consumed by Grove directly — Jeles/Oakenscrolls reach them; Grove may surface corpus provenance in Jeles-authored cards |
 | **`homestead-affairs`** | Peer seat's family — `homestead` (base seat with keep/rungs/serve chokepoint), `homestead-ledger`, `homestead-health`, `homestead-law` | peer-seat awareness on the desk (may coexist as a sibling surface); Grove borrows discipline (rungs, `serve()`, DECISION card format) whether or not homestead itself is loaded |
 | **`willow-memory` beyond charter** | `willow-data-vault`, `willow-gate`, `kartikeya`, `corpus-lens` | vault / gate / kart / corpus surfaces when installed |
@@ -252,6 +259,25 @@ guarded code path that no-ops on absence.
 - evidence: `safe-app-willow-grove/docs/synthesis/the-one-desk.md` — ONEDSK's Tools layer already distinguishes flagships (sovereign) + scouts (utility belt), each one job, each optional
 - evidence: `hornbook-knowledge/oakenscrolls-office/almanac_seam.py` — live cross-add-on wiring (Oakenscrolls calls almanacs), proof add-ons compose without Grove mediating
 - evidence: `rudi193-cmd/Forge/promotion.json` — graduation pattern: apps carry `author` persona forward and `host: safe-app-store` preserves roots after moving to their own repo. Forge itself is the reference case (its own promotion.json points back), and the pattern is now graduating INTO Forge as a productized build tool — safe-app-store's build/graduation half moving out, its app-collection half staying.
+
+**D8 — Nestor and Jeles are the fleet's Independent Witnesses of Article 0 §0.2.** *(sealed)*
+Every factual claim carries two provenance questions. **Nestor asks
+*"did a named human check this?"*** — the sealing dimension. **Jeles asks
+*"do enough independent sources back this?"*** — the corroboration
+dimension. Both stores use the identical pair schema
+(`source_text` / `source_lang` / `target_text` / `target_lang`); Jeles's
+`corpus/compose.py` names this dual-write path explicitly. Grove renders
+their refusals **distinctly**: Nestor's `¬` (pigeon-gray) means
+*"unsealed — no human has checked."* Jeles's `§` (mint) means
+*"insufficient independent sources."* **They must never collapse into a
+single 'refused' chip** — two different meanings, two different remedies
+(get a human vs. cite more sources). This satisfies Article 0 §0.2's
+Independent Witness bar (materially distinct failure modes: one is a
+signature check, one is a source-count check).
+- evidence: `hornbook-knowledge/Jeles/corpus/compose.py` — "the two stores ask different questions — jeles asks 'do enough independent sources back this?', Nestor asks 'did a named human check it?'"
+- evidence: `hornbook-knowledge/Jeles/README.md` — corpus sits in front of live search; confident nugget match answers instantly; misses log as gaps
+- evidence: 1,028 human-verified nuggets across 74 seed files (adversarial rounds included: `adv_challenge`, `adv_steelman`, `adv_factcheck`); 85+ institutional source cards with epistemic metadata (custody / review status / jurisdiction)
+- caveat: `rudi193-cmd/jeles-remote` has drifted from the canonical `Jeles` package (833 differing lines in its vendored `sources.py`, zero `_egress` references — the SSRF/key-leak fix is absent). Grove must not trust `jeles-remote` as a Jeles substitute; treat as a **known-drifted add-on**. Jeles-local is the source of truth.
 
 ## Constitutional anchors
 
