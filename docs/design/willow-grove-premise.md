@@ -87,25 +87,40 @@ Everything the desk shows is fetched, not synthesized.
 Every load-bearing piece already exists somewhere in the fleet. Willow's
 Grove is a page that binds them; not a system that replaces them.
 
-| Piece | Where it lives | Grove's relationship |
-|---|---|---|
-| Persona roster | `willow-memory/willow/fleet.json` (+ `safe-app-store/apps/bureau/data/professors/*.json`, `willow-mcp/src/willow_mcp/bundle/config/specialists.json`, `nestor.persona.Persona`) | reads |
-| Fleet presence seam | `safe-app-store/libs/fleet-presence/src/fleet_presence/__init__.py` — `announce/roster/withdraw` over `~/.willow/store/fleet/store.db` | announces + polls |
-| Dispatch API | `willow-mcp` — 7 tools (`dispatch_send/read/list/accept`, `handoff_write_v4`, `verify_handoff`, `agent_clear`); HMAC-signed packets under `$WILLOW_HOME/dispatch/{id}/` | calls |
-| Grove data API | `willow-mcp` — 20 `grove_*` tools (`grove_fleet_status`, `grove_agents`, `grove_human_required`, `grove_bus_*`, `grove_list_channels`, `grove_get_history`, `grove_search`, …) | calls |
-| Memory (facts, reminders) | `safe-app-store/apps/jarvis` — IndexedDB fact store with compound indices, IDF ranking, alias bridging, `supersedes`, absence-as-fact | calls handlers (`remember/recall/forget/set_reminder`) |
-| Decisions / evidence / warrants / ledger / refusal voice | Nestor (`pip install nestor-meaning`) — CLI + Python API + `nestor serve` MCP over stdio | embeds or calls |
-| Constitution + Trace IDs | `willow-memory/willow/CONSTITUTION.md` — Draft 0.7, 13 Articles, `CONST-*` | renders |
-| Envelopes (active grants + expiry + meter) | `willow-memory/willow/envelopes/pre-approved.json` | renders |
-| Voice ingress pipeline | `willow-mcp/src/willow_mcp/voice/` — WO-1 in flight; `hey_jarvis` already a wake option | listens for events |
-| Commitment / calendar membrane | `willow-mcp/src/willow_mcp/commitments/` — WO-2 in flight | listens for events |
-| Ratatosk sessions | `safe-app-store/apps/ratatosk` — already posts `session_started`/`session_ended` to a Grove channel | listens |
-| The willow hero | `safe-app-willow-grove/widgets/hero.py` + `widgets/hero_scene.py` — ASCII willow, meadow, Gerald, pigeon, blooms, wind, per-character color | ports to SVG + `<pre>` |
-| Served-HTML precedent | `willow-mcp/src/willow_mcp/gates_serve.py` — 127.0.0.1 + OAuth 2.1 PKCE + polling refresh | mirrors pattern |
-| Nestor UI | `nestor ui` — Queue / Memory / Ask / Signals / Ledger / Graph (Cytoscape) | embeds under Governance lens |
-| Aesthetic explorations | `willow-mcp/docs/design/willow-*.html` — 10 direction sketches | draws on |
+**Base vs add-on** — Grove's base is willow-mcp native (plus the
+`willow-memory/willow` charter and this repo itself). Everything else is
+an **opt-in add-on** the operator installs and consents to (SAP / SITR1
+already gates this). Grove renders what's present; **absence is a state,
+not a failure**. See D7.
+
+| Piece | Where it lives | Base? | Grove's relationship |
+|---|---|---|---|
+| Persona roster | `willow-memory/willow/fleet.json` + `willow-mcp/src/willow_mcp/bundle/config/specialists.json` (base); Bureau JSONs, `hornbook-knowledge/*` persona files, `nestor.persona` (add-on) | **base** (partial) + add-on entries when present | merges what's present |
+| Fleet presence seam | `safe-app-store/libs/fleet-presence/src/fleet_presence/__init__.py` — `announce/roster/withdraw` over `~/.willow/store/fleet/store.db` | **add-on** (stdlib-only; silent no-op if store missing) | announces + polls when present |
+| Dispatch API | `willow-mcp` — 7 tools (`dispatch_send/read/list/accept`, `handoff_write_v4`, `verify_handoff`, `agent_clear`); HMAC-signed packets under `$WILLOW_HOME/dispatch/{id}/` | **base** | calls |
+| Grove data API | `willow-mcp` — 20 `grove_*` tools (`grove_fleet_status`, `grove_agents`, `grove_human_required`, `grove_bus_*`, `grove_list_channels`, `grove_get_history`, `grove_search`, …) | **base** | calls |
+| Memory (facts, reminders) | `safe-app-store/apps/jarvis` — IndexedDB fact store with compound indices, IDF ranking, alias bridging, `supersedes`, absence-as-fact | **add-on** | calls handlers when installed |
+| Decisions / evidence / warrants / ledger / refusal voice | Nestor (`pip install nestor-meaning`) — CLI + Python API + `nestor serve` MCP over stdio | **add-on** | embeds or calls when installed |
+| Constitution + Trace IDs | `willow-memory/willow/CONSTITUTION.md` — Draft 0.7, 13 Articles, `CONST-*` | **base** (the seat serves the law) | renders |
+| Envelopes (active grants + expiry + meter) | `willow-memory/willow/envelopes/pre-approved.json` | **base** | renders |
+| Voice ingress pipeline | `willow-mcp/src/willow_mcp/voice/` — WO-1 in flight; `hey_jarvis` already a wake option | **base** once WO-1 lands | listens for events |
+| Commitment / calendar membrane | `willow-mcp/src/willow_mcp/commitments/` — WO-2 in flight | **base** once WO-2 lands | listens for events |
+| Ratatosk sessions | `safe-app-store/apps/ratatosk` — already posts `session_started`/`session_ended` to a Grove channel | **add-on** | listens when installed |
+| The willow hero | `safe-app-willow-grove/widgets/hero.py` + `widgets/hero_scene.py` — ASCII willow, meadow, Gerald, pigeon, blooms, wind, per-character color | **base** (Grove's own) | ports to SVG + `<pre>` |
+| Served-HTML precedent | `willow-mcp/src/willow_mcp/gates_serve.py` — 127.0.0.1 + OAuth 2.1 PKCE + polling refresh | **base** (pattern) | mirrors pattern |
+| Nestor UI | `nestor ui` — Queue / Memory / Ask / Signals / Ledger / Graph (Cytoscape) | **add-on** (with Nestor) | embeds under Governance lens when present |
+| Aesthetic explorations | `willow-mcp/docs/design/willow-*.html` — 10 direction sketches | **base** (design reference) | draws on |
+| Jeles the librarian + her corpus | `hornbook-knowledge/Jeles` — Python package, corpus, tests | **add-on** | renders her sigil / voice / retrieval surface when installed |
+| Oakenscrolls Office + its almanac seam | `hornbook-knowledge/oakenscrolls-office` — `almanac_seam.py` bridges to almanac-data | **add-on** | renders when installed; already calls almanacs directly |
+| UTETY (chat / companion) | `hornbook-knowledge/UTETY` | **add-on** | renders when installed |
+| 13 domain corpora | `almanac-data/*-almanac` — civic, climate, transportation, science, health, agriculture, economy, education, environment, justice, energy, template; `SCHEMA-V2` + `LICENSE-CODE`/`LICENSE-DATA` separation | **add-on** (data, not code) | not consumed directly — Jeles/Oakenscrolls reach them |
+| Homestead·Affairs seats | `homestead-affairs/homestead` (base seat) + `homestead-ledger` + `homestead-health` + `homestead-law` | **add-on** (peer seat's family) | may coexist on desk; borrows discipline (rungs, `serve()` chokepoint, DECISION cards) |
+| Forge checkpoint governance | `rudi193-cmd/Forge` — authored by Vishwakarma per `promotion.json` | **add-on** | renders build-lane surfaces when installed |
 
 ## The build (the very small part)
+
+**Base build** — assumes only willow-mcp + `willow-memory/willow` charter,
+runs on any operator's machine before any add-on is installed:
 
 1. **One HTML page**, served on 127.0.0.1 under the `gates_serve` pattern —
    the tri-modal canvas. Structure, not novel plumbing.
@@ -113,23 +128,52 @@ Grove is a page that binds them; not a system that replaces them.
    (localStorage / URL fragment) + one toggle affordance.
 3. **Layout memory** — which panels are up, where, per-operator. Browser
    state plus a small SOIL record.
-4. **The unified persona-roster mint** — a merge script that reads Bureau
-   JSONs + `specialists.json` + `fleet.json` + Nestor persona + Heimdallr
-   and normalizes to `{name, domain, voice_register, emit_fields}`. Once
-   written, everyone reads it; nobody has to build it again.
-5. **The seat's `announce("grove", …)` call** — Grove contributes its own
-   presence to `fleet-presence`. A few lines.
-6. **The `WILLOW_HUMAN_ORCHESTRATOR=1` env** — Grove sets this to be
+4. **The `WILLOW_HUMAN_ORCHESTRATOR=1` env** — Grove sets this to be
    recognized as the operator seat.
-7. **Grove's Postgres-reads → `grove_*` MCP tool migration** —
+5. **Grove's Postgres-reads → `grove_*` MCP tool migration** —
    incremental, pane by pane, existing behavior preserved. Real work, but
    *migration* work, not new logic.
+6. **Base persona-roster mint** — reads `specialists.json` + `fleet.json`
+   (both base sources) and normalizes to `{name, domain, voice_register,
+   emit_fields, visual: {color, sigil}}`. Ships with skins for the base
+   personas (Willow, Hanuman, Loki, Jeles, Ada, Skirnir, Vishwakarma,
+   Heimdallr).
+
+**Conditional (activates when add-on is present)** — each is a small,
+guarded code path:
+
+7. **`announce("grove", …)`** — calls `fleet-presence` when the seam is
+   importable; silent no-op otherwise.
+8. **Roster merge extends** with `hornbook-knowledge/*` persona files,
+   `nestor.persona`, Bureau JSONs — whichever the operator has installed.
+9. **Per-add-on renderers** — Nestor chip / Jeles's search surface /
+   Oakenscrolls' records surface / Vish's Forge build lanes / homestead's
+   rungs. Each renders when its add-on is present; each no-ops (not errors)
+   when absent. **Absence is a state, not a failure** (D7).
 
 The seat writes no code (magistrate-writes-no-code, per
 `willow-memory/willow/design/jarvis-build-orders.md:26`). This makes literal
 sense once the map is drawn — the code is already written across willow-mcp,
 safe-app-store, Nestor, and fleet-presence. The seat's job is to bind and
-render, not build.
+render what's present, not build.
+
+## The add-on ecosystem
+
+Currently-known add-ons Grove can render when the operator opts in. Not
+forced; not required to boot; not required to be complete. Each entry is a
+neighborhood, not a single package.
+
+| Org | What lives there | Grove renders when installed |
+|---|---|---|
+| **`Die-Namic-Systems`** | Nestor — meaning infrastructure (cascade, decisions, evidence, warrants, ledger, refusal voice); `nestor ui` (Queue/Memory/Ask/Signals/Ledger/Graph) | Governance surface (decision-check / evidence / warrants); refusal chip (`¬` pigeon); ambient memory strip from ledger tail |
+| **`hornbook-knowledge`** | Bureau's graduation destination — `Jeles` (librarian package + corpus), `oakenscrolls-office` (records + `almanac_seam.py`), `UTETY` (companion/chat) | persona chips + skins (`§` mint for Jeles, colored corner for Oakenscroll); retrieval, records, chat surfaces gated behind their app |
+| **`almanac-data`** | 13 domain corpora (civic, climate, transportation, science, health, agriculture, economy, education, environment, justice, energy) + `almanac-template`; two licenses (`LICENSE-CODE`, `LICENSE-DATA`); `SCHEMA-V2` shared | not consumed by Grove directly — Jeles/Oakenscrolls reach them; Grove may surface corpus provenance in Jeles-authored cards |
+| **`homestead-affairs`** | Peer seat's family — `homestead` (base seat with keep/rungs/serve chokepoint), `homestead-ledger`, `homestead-health`, `homestead-law` | peer-seat awareness on the desk (may coexist as a sibling surface); Grove borrows discipline (rungs, `serve()`, DECISION card format) whether or not homestead itself is loaded |
+| **`willow-memory` beyond charter** | `willow-data-vault`, `willow-gate`, `kartikeya`, `corpus-lens` | vault / gate / kart / corpus surfaces when installed |
+| **`safe-app-store` (in `rudi193-cmd`)** | The catalog itself, `libs/fleet-presence`, ~30 apps (Bureau, `jarvis`, `ratatosk`, `intake-desk`, `law-gazelle`, `private-ledger`, `nasa-archive`, `vision-board`, `the-binder`, `field-notes`, …) | catalog / install surfaces (SITR1); each app renders its own surfaces when installed |
+| **`rudi193-cmd/Forge`** | Checkpoint governance — Vishwakarma's authored app | build-lane surfaces (checkpoint memory, engagement monitor, human-loop attestation) when installed |
+| **`terpsi-programs`** | WIP — org exists; content still landing | future add-on |
+| **`forge-play`** | WIP — org exists; content still landing | future add-on |
 
 ## Composition sketch — what each surface renders
 
@@ -194,6 +238,20 @@ Migrate to willow-mcp's `grove_*` tools (20 exist). Current direct-Postgres
 reads (in `grove_reader.py`, `panes/*`, `hero_stats.py`) are pre-redesign
 plumbing.
 - evidence: `willow-mcp/src/willow_mcp/grove_tools.py` — 20 tools already exposed
+
+**D7 — Grove's base vs its add-ons.** *(sealed)*
+Grove's base is willow-mcp native (plus the `willow-memory/willow` charter
+and this repo itself). Everything else — Nestor, Forge, homestead,
+hornbook-knowledge (Jeles, Oakenscrolls, UTETY), almanac-data (13 corpora),
+Bureau apps, ratatosk, `fleet-presence` — is an **opt-in add-on** the
+operator installs and consents to (SAP / SITR1 already gates this). **Grove
+renders what's present; absence is a state, not a failure.** Personas load
+with their homes: Jeles's `§` mint sigil only appears when
+`hornbook-knowledge/Jeles` is installed. Every per-add-on renderer is a
+guarded code path that no-ops on absence.
+- evidence: `safe-app-willow-grove/docs/synthesis/the-one-desk.md` — ONEDSK's Tools layer already distinguishes flagships (sovereign) + scouts (utility belt), each one job, each optional
+- evidence: `hornbook-knowledge/oakenscrolls-office/almanac_seam.py` — live cross-add-on wiring (Oakenscrolls calls almanacs), proof add-ons compose without Grove mediating
+- evidence: `rudi193-cmd/Forge/promotion.json` — graduation pattern: apps carry `author` persona forward and `host: safe-app-store` preserves roots after moving to their own repo
 
 ## Constitutional anchors
 
