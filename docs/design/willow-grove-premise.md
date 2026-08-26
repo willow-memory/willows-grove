@@ -170,8 +170,8 @@ neighborhood, not a single package.
 | **`almanac-data`** | 13 domain corpora (civic, climate, transportation, science, health, agriculture, economy, education, environment, justice, energy) + `almanac-template`; two licenses (`LICENSE-CODE`, `LICENSE-DATA`); `SCHEMA-V2` shared | not consumed by Grove directly — Jeles/Oakenscrolls reach them; Grove may surface corpus provenance in Jeles-authored cards |
 | **`homestead-affairs`** | Peer seat's family — `homestead` (base seat with keep/rungs/serve chokepoint), `homestead-ledger`, `homestead-health`, `homestead-law` | peer-seat awareness on the desk (may coexist as a sibling surface); Grove borrows discipline (rungs, `serve()`, DECISION card format) whether or not homestead itself is loaded |
 | **`willow-memory` beyond charter** | `willow-data-vault`, `willow-gate`, `kartikeya`, `corpus-lens` | vault / gate / kart / corpus surfaces when installed |
-| **`safe-app-store` (in `rudi193-cmd`)** | The catalog itself, `libs/fleet-presence`, ~30 apps (Bureau, `jarvis`, `ratatosk`, `intake-desk`, `law-gazelle`, `private-ledger`, `nasa-archive`, `vision-board`, `the-binder`, `field-notes`, …) | catalog / install surfaces (SITR1); each app renders its own surfaces when installed |
-| **`rudi193-cmd/Forge`** | Checkpoint governance — Vishwakarma's authored app | build-lane surfaces (checkpoint memory, engagement monitor, human-loop attestation) when installed |
+| **`safe-app-store` (in `rudi193-cmd`)** | The current catalog + `libs/fleet-presence` + ~30 apps (Bureau, `jarvis`, `ratatosk`, `intake-desk`, `law-gazelle`, `private-ledger`, `nasa-archive`, `vision-board`, `the-binder`, `field-notes`, …); today it holds both the *apps* and the *build/graduation pattern*. The pattern half is graduating to Forge (below); the app-collection stays. | catalog / install surfaces (SITR1); each app renders its own surfaces when installed |
+| **`rudi193-cmd/Forge`** | Vishwakarma's build tool — **the pattern he built while building safe-app-store, graduating into a tool that helps others build.** Started as checkpoint governance (checkpoint memory, engagement monitor, human-loop attestation); becoming the productized graduation pipeline itself (promotion, measurement, calibration, engagement scoring). Its own `promotion.json` — with `author: vishwakarma`, `host: safe-app-store` — is a self-illustration: Forge was graduated using the pattern Forge is now becoming. | build surfaces for anyone using Forge to build; not required to build Grove itself |
 | **`terpsi-programs`** | WIP — org exists; content still landing | future add-on |
 | **`forge-play`** | WIP — org exists; content still landing | future add-on |
 
@@ -251,7 +251,7 @@ with their homes: Jeles's `§` mint sigil only appears when
 guarded code path that no-ops on absence.
 - evidence: `safe-app-willow-grove/docs/synthesis/the-one-desk.md` — ONEDSK's Tools layer already distinguishes flagships (sovereign) + scouts (utility belt), each one job, each optional
 - evidence: `hornbook-knowledge/oakenscrolls-office/almanac_seam.py` — live cross-add-on wiring (Oakenscrolls calls almanacs), proof add-ons compose without Grove mediating
-- evidence: `rudi193-cmd/Forge/promotion.json` — graduation pattern: apps carry `author` persona forward and `host: safe-app-store` preserves roots after moving to their own repo
+- evidence: `rudi193-cmd/Forge/promotion.json` — graduation pattern: apps carry `author` persona forward and `host: safe-app-store` preserves roots after moving to their own repo. Forge itself is the reference case (its own promotion.json points back), and the pattern is now graduating INTO Forge as a productized build tool — safe-app-store's build/graduation half moving out, its app-collection half staying.
 
 ## Constitutional anchors
 
