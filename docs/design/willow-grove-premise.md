@@ -25,6 +25,46 @@ Bureau's characters (Jeles, Oakenscroll, Ofshield, Binder, Pigeon,
 Gerald, Hanz), plus Nestor's refusal voice — the fleet — are around
 Willow, but reached through her, never around her.
 
+## Prior art (north star)
+
+**This document extends; it does not synthesize.** Two prior docs already
+stated the shape and are load-bearing for what follows:
+
+- **[`docs/synthesis/the-one-desk.md`](../synthesis/the-one-desk.md)** —
+  ONEDSK, 2026-06-24, Vishwakarma with operator. The five-layer stack
+  (**Voice / Desk / Tools / Memory / Trust**). The single-sentence
+  architecture: *"Apps do not talk to each other. They talk to a shared
+  memory, and a human talks to all of them from one desk."* The two
+  questions that replace the mesh (what atoms does a tool read; what does
+  it write). Flagged: "Read this first when the fog rolls back." **The
+  Voice layer — personas as skins over tools, one voice driving many
+  tools, one tool driven by many voices — is an architectural given
+  there. Willow's Grove renders it; it does not invent it.**
+
+- **[`docs/synthesis/grove-starter-borrow-map.md`](../synthesis/grove-starter-borrow-map.md)** —
+  GSBRW, 2026-06-24, Vishwakarma. The **steal-vs-wrap** discipline applied
+  to the third-party starter pack (nvitop, toolong, kanban-tui, calcure,
+  parllama, visidata, sqlit, fast-resume, feeds.fun, dooit, botany), plus
+  a prioritized P0–P3 borrow backlog with acceptance criteria per steal.
+
+What **this** doc adds:
+1. The **constitutional framing** (`willow-memory/willow`, arrived later)
+   — that the desk is the *Operator Jarvis seat* and serves the law.
+2. The **tri-modal seat** shape (Governance / PM / PA from
+   `willow-memory/willow/ORIENT.md`) as the desk's explicit lens
+   structure.
+3. The **name correction** (Willow's Grove — her space, everything routes
+   through her).
+4. **Decisions D1–D6** taken during the design conversation, each with
+   evidence and warrant.
+5. Extension of the steal-vs-wrap discipline from GSBRW's third-party
+   starter pack to the **fleet's own already-built pieces**
+   (`fleet-presence`, dispatch, Nestor, `apps/jarvis`, envelopes,
+   constitutional articles).
+
+Where GSBRW and this doc collide, GSBRW wins on ground it already
+covered; this doc yields.
+
 ## What Willow's Grove is
 
 The **Operator Jarvis seat**, rendered as a tri-modal desk that consumes
