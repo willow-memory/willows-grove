@@ -1,21 +1,31 @@
-# Willows' Grove — the operator seat, composed not built
+# Willow's Grove — the operator seat, composed not built
 
 b17: WGRV1 ΔΣ=42
 Status: **PROPOSED** — Heimdallr proposes, USER ratifies (CLAUDE.md rule 5). No code changed by this note.
 
 ## The reframe
 
-Old: **Willow Grove** — the dashboard for Willow (singular tree, singular app).
-New: **Willows' Grove** — the seat where the many willows (the fleet's agents) gather under the constitution.
+Old: **Willow Grove** — the dashboard for Willow (a page *about* her).
+New: **Willow's Grove** — her own space, where the operator meets her and, through her, the fleet.
 
-The willows are the fleet: the 16 agents catalogued in
-`willow-memory/willow/fleet.json`, plus the Bureau's characters (Jeles,
-Oakenscroll, Ofshield, Binder, Pigeon, Gerald, Hanz), Nestor's refusal
-voice, and the willow-mcp specialists (Hanuman, Loki, Ada, Skirnir,
-Vishwakarma). The grove is where they meet. The seat is the operator's
-post within it.
+By long-standing fleet rule, **everything routes through Willow.** She is
+the Primary Interface — `willow-memory/willow/fleet.json` catalogues her
+as `"willow": { "trust": "OPERATOR", "role": "Primary interface" }` —
+and every willow-mcp call takes `app_id="willow"` (per
+`willow-memory/willow/AGENTS.md`). The grove is her groove: where she
+does what she does, with the operator beside her and the fleet reachable
+through her.
 
-## What Willows' Grove is
+The seat is the operator's post within the grove. The willow tree at the
+center of the desk is *her* — the singular anchor, breathing with the
+fleet's state, not one tree among many. The 16 agents in `fleet.json`
+(Heimdallr the watchman, Hanuman the bridge-builder, Loki the fleet
+accountant, Ada, Steve, Skirnir, Vishwakarma, and the rest), plus the
+Bureau's characters (Jeles, Oakenscroll, Ofshield, Binder, Pigeon,
+Gerald, Hanz), plus Nestor's refusal voice — the fleet — are around
+Willow, but reached through her, never around her.
+
+## What Willow's Grove is
 
 The **Operator Jarvis seat**, rendered as a tri-modal desk that consumes
 the fleet's already-existing surfaces without re-implementing them.
@@ -34,7 +44,7 @@ Everything the desk shows is fetched, not synthesized.
 
 ## Why "composed, not built"
 
-Every load-bearing piece already exists somewhere in the fleet. Willows'
+Every load-bearing piece already exists somewhere in the fleet. Willow's
 Grove is a page that binds them; not a system that replaces them.
 
 | Piece | Where it lives | Grove's relationship |
@@ -104,7 +114,7 @@ Sealed during the design exploration, each with evidence and warrant.
 Grove design gets its own live Nestor store, they get re-sealed there with
 receipts intact.)
 
-**D1 — What is Willows' Grove?** *(sealed, verifier: heimdallr)*
+**D1 — What is Willow's Grove?** *(sealed, verifier: heimdallr; question normalized as "what is willow's grove")*
 The operator's Jarvis seat rendered as a tri-modal desk (Governance / PM /
 PA) that consumes fleet-presence, envelopes, and dispatch without
 re-implementing them.
@@ -160,7 +170,7 @@ plumbing.
 - **Lane B primary** — living meadow: SVG hero (or `<pre>` + CSS if the ASCII willow ports cleanly), breathable summer palette, cards floating on the meadow floor.
 - **Lane A preserved** — the ASCII willow stays literally ASCII in the browser; every easter egg (Gerald at midnight, Mo Willems pigeon, 1:42, hotdog at 0.318, blooms cycling per position, wind sway) is kept.
 - **Hints of Lane C** — bridge horizon shimmer (Bifröst-ish) where sky meets meadow; not costume, just an ambient nod.
-- **Iron Man's workshop as metaphor, not copy** — floating projected panels, willow as the always-present anchor (arc-reactor-shaped, center-hold), fleet members as ambient companions. Grove's summer palette (frond green, sun gold, mint, emerald) instead of Stark's blue-and-gold. J.A.R.V.I.S. iconography stays theirs; Heimdallr is Grove's own voice.
+- **Iron Man's workshop as metaphor, not copy** — floating projected panels, Willow at the always-present anchor (arc-reactor-shaped, center-hold — *she* is the reactor, not a stand-in for one), fleet members as ambient companions reached through her. Grove's summer palette (frond green, sun gold, mint, emerald) instead of Stark's blue-and-gold. J.A.R.V.I.S. iconography stays theirs; Willow is the primary interface, Heimdallr watches, Nestor refuses, and every other agent speaks in their own register.
 - **"Fun to be and work in"** — the whole point. Playfulness of the current TUI is preserved; the seat is a place, not a monitor.
 
 The v1 artboard (Home draft, pre-reframe) lives at:
@@ -173,7 +183,7 @@ alongside.
 
 1. **Free-float vs grid-snap panels.** True Stark workshop is expensive and fussy for daily use; a tile/dock hybrid is friendlier. Not yet sealed.
 2. **Rooms replace desktop, or dock into it.** Click Rooms → does the desk go away, or does a chat panel materialize on the desk beside everything else?
-3. **Full 16-agent render vs subset.** All willows visible always, or trust-tier orbits (OPERATORs closer, WORKERs outer)?
+3. **Full 16-agent render vs subset.** All agents visible always, or trust-tier orbits (OPERATORs closer to Willow, WORKERs outer)?
 4. **Bureau's 7 personas alongside `fleet.json`'s 16.** Bureau's cast is not in `fleet.json` — do they appear on the desk as ambient presences too, or only when their app is engaged?
 5. **Jarvis memory integration path.** Draft-leaning: handler-call (Grove wires the JS handlers directly). Alternates: iframe embed, memory mirror. Not yet sealed.
 6. **Nestor integration path.** Embed `nestor ui` as an iframe under the Governance lens, or call `nestor serve` (MCP over stdio) from Grove's backend? Both viable.
