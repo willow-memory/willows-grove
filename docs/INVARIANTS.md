@@ -113,6 +113,10 @@ the state (unreached) exists AND rendering it distinctly is required.
 The premise-doc D7 section (`docs/design/willow-grove-premise.md`
 around line 316) carries a supersede line pointing here.
 
+Pinning tests (§2): the D7-supersede is pinned by `tests/test_panel_wiring.py`
+(every reader raises `Unreachable` on missing source; no reader
+collapses to empty on a real failure).
+
 ## §3 — Doc discipline
 
 - Every design-doc reference in code comments cites `INVARIANTS.md
@@ -125,6 +129,12 @@ around line 316) carries a supersede line pointing here.
 - New endpoints state their §1 response shape in the handler docstring.
 - New Web Components state their §1 rendering states in the JSDoc
   header.
+
+Pinning tests (§3): `scripts/check_docs_drift.py` (called from
+`.github/workflows/tests.yml`) enforces that every `INVARIANTS.md §N`
+citation resolves, that every `[Unreleased]` CHANGELOG bullet cites
+its PR, and that every INVARIANTS section names at least one CI
+witness that exists on disk. Drift on any of these fails the build.
 
 ## §4 — Reader/endpoint coverage (v0.9 PR 1 baseline)
 
@@ -141,6 +151,12 @@ endpoint answers 200/populated, 200/empty, or 503/unreachable.
 | `grove/nestor_client.py`   | `POST /api/nestor/decide`      |
 
 Any future reader/endpoint added to Grove joins this table in the same PR.
+
+Pinning tests (§4): `tests/test_panel_wiring.py` pins the endpoint /
+reader / Web Component wire shape for every row above; the round-trip
+suite under `tests/e2e_willow_mcp/test_journal_roundtrip.py` extends
+that to the writer + reader loop for `POST /api/journal` and
+`GET /api/journal/recent`.
 
 ## §5 — Trust order
 
