@@ -207,6 +207,7 @@ G-DEP-01) it is named in the finding.
 | `tests/test_think_map.py` | Think Map P0 store/validate + outline | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_tool_scopes.py` | per-tool grove:read/grove:write OAuth scope enforcement | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_transport_security.py` | G-REBIND-01 host/origin allowlist | Out of scope — test code; not shipped and not reachable at runtime |
+| `tests/test_u2u_consent_order.py` | u2u trust order — INVARIANTS.md §5 signature → consent → dispatch, pinned by name | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_u2u_trust.py` | u2u verify-before-consent, consent matrix, key rotation | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_upstream_steward.py` | Grove read-only upstream steward consumer | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_user_board.py` | My Desk aggregation | Out of scope — test code; not shipped and not reachable at runtime |
@@ -215,7 +216,7 @@ G-DEP-01) it is named in the finding.
 | `tests/test_widgets_hero_scene.py` | tests/test_widgets_hero_scene.py | Out of scope — test code; not shipped and not reachable at runtime |
 | `u2u/__init__.py` | Empty package marker (0 bytes) | Scanned |
 | `u2u/consent.py` | U2U consent gate — allow/deny/pending logic | Reviewed |
-| `u2u/contacts.py` | U2U contact store — ~/.willow/grove_contacts.json | Scanned |
+| `u2u/contacts.py` | U2U contact store — ~/.willow/grove_contacts.json | Reviewed |
 | `u2u/dispatcher.py` | U2U inbound packet dispatcher — routes by type to registered handlers | Scanned |
 | `u2u/identity.py` | u2u/identity.py | Reviewed |
 | `u2u/listener.py` | U2U TCP listener — asyncio server, port 8550 by default | Reviewed |

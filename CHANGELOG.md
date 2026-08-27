@@ -9,6 +9,7 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Added
 - INVARIANTS.md — single source of truth for Grove discipline.
+- INVARIANTS.md §5 "Trust order" — signature → consent → dispatch, in exactly that sequence, with the contact-store rules that protect the state consent depends on.
 - INVARIANTS.md §6 — "Manifests describe code, not aspirations" (Grove v0.9 PR 7). Tests enforce.
 - CHANGELOG.md — reorganized under Keep a Changelog v1.1.0; earlier per-branch entries preserved below as historical work.
 - docs/design/u2u-security-limits.md — new doc naming what u2u guarantees (authenticity, integrity, non-repudiation within signing-key boundary) and what it does not (confidentiality). Cites `u2u/packets.py:74-75`. Encryption planned for Gate 6.
@@ -19,6 +20,11 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 - safe-app-manifest.json: dm_conversations no longer claims encryption; u2u is signed-not-encrypted (CODE_REVIEW.md P0 corrected).
 - README.md: u2u description corrected to match code.
 - docs/design/u2u-security-limits.md: new doc naming what u2u guarantees and what it does not.
+
+### Fixed
+- u2u: verify signature before consulting consent for every packet type (was: PENDING KNOCKs dispatched unverified — CODE_REVIEW.md P0). The invariant is now anchored at INVARIANTS.md §5 and pinned by name in `tests/test_u2u_consent_order.py`.
+- u2u: `contacts.update_key()` preserves blocked and consent flags on rotation; `bridge/app.py` no longer resets state via `contacts.add()`. Rotation now defaults closed — the caller MUST pass `require_confirmation=False` to attest that a human authorised the key change, and the refusal is logged.
+- u2u: REPLY packets require a correlated outstanding thread_id — the `ALLOW`-unconditional path is gone, and a REPLY without a live `open_thread` entry is DENY, per INVARIANTS.md §5.
 
 ### Previous work (pre-v0.9)
 

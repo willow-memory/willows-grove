@@ -108,6 +108,43 @@ endpoint answers 200/populated, 200/empty, or 503/unreachable.
 
 Any future reader/endpoint added to Grove joins this table in the same PR.
 
+## §5 — Trust order
+
+Every u2u packet has its signature verified before consent is consulted;
+consent decisions never render on unverified data. The order is
+**signature → consent → dispatch**, in exactly that sequence.
+
+Concretely, in `u2u/listener.py._process`:
+
+1. Parse and shape-check the header.
+2. Verify the Ed25519 signature against the *correct* verification key —
+   the stored key for a known contact, or the KNOCK's own payload key for
+   an unknown peer's KNOCK (the only self-verifying admission).
+3. **Only then** consult `ConsentGate.check` with the (now-authenticated)
+   sender address, packet type, and thread_id.
+4. Dispatch on ALLOW; refuse-with-signal on DENY; refuse-with-approval-hook
+   on PENDING.
+
+Anything derived from an unauthenticated header — including a `_denied`
+notification, a `_pending` operator prompt, or a bridge admission — is a
+dispatch, and MUST NOT happen before step 2 succeeds.
+
+Two related contact-store rules protect the state that decision depends on:
+
+- `ContactStore.add()` is the ONLY path to create a new contact and refuses
+  an address it already knows. Reconstructing the dataclass silently reset
+  `blocked` and every `consent_*` flag — that was the "silent trust reset"
+  half of the P0.
+- `ContactStore.update_key()` is the ONLY path to rotate an existing
+  contact's key. It mutates the pubkey and preserves `blocked`, every
+  `consent_*` flag, `name`, `added` and `resources`. It defaults closed —
+  the caller must explicitly pass `require_confirmation=False` to attest
+  that a human authorised the rotation.
+
+Anchor witnesses: `tests/test_u2u_consent_order.py` (this invariant by
+name) and `tests/test_u2u_trust.py` (the wider matrix). Every code comment
+on the modified lines cites this section by anchor, not by line number.
+
 ## §6 — Manifests describe code, not aspirations
 
 Every capability described in `safe-app-manifest.json` reflects a property the
