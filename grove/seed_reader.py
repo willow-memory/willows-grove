@@ -3,8 +3,11 @@
 
 D16 (`docs/design/willow-grove-premise.md`) seals: the six-part canon *IS*
 the human onboarding — six movements, one per chapter, walked at first
-boot. The canonical source is the charter's seed dir
-(`willow-memory/willow/seed/`), which holds either:
+boot. INVARIANTS.md §9 seals the read side: the /seed/ route renders
+content from `willow-memory/willow/seed/canon/` verbatim when the probe
+path resolves, and serves the D16 stub on absence (C3 continuity). The
+canonical source is the charter's seed dir (`willow-memory/willow/seed/`),
+which holds either:
 
 * a `canon/` tree of `NN-<slug>.md` chapter files (the current shape,
   operator-ratified 2026-07-22), or
