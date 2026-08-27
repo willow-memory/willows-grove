@@ -55,13 +55,41 @@
 <body>
   <header class="harness">
     <h1>Willow's Grove — primitives harness</h1>
-    <span style="color: var(--grove-muted);">grove-card &middot; grove-envelope-panel</span>
+    <span style="color: var(--grove-muted);">grove-card &middot; grove-envelope-panel &middot; grove-cast-chip</span>
   </header>
 
   <main>
     <section class="panel">
       <h2>Envelopes (Governance lens)</h2>
       <grove-envelope-panel data-source="./fixtures/envelopes.json"></grove-envelope-panel>
+    </section>
+
+    <section class="panel">
+      <h2>Cast chips (D10 consumer, V6)</h2>
+      <!--
+        <grove-persona-registry> is assumed to exist per D10; this harness
+        supplies the inline-JSON shim shape (see grove-cast-chip.js — the
+        chip reads registry.getPersona(), registry.personas, or a
+        <script type="application/json"> child in that order).
+      -->
+      <grove-persona-registry id="cast-registry">
+        <script type="application/json">
+          {
+            "schema": "fleet-personas/v1",
+            "personas": {
+              "willow": { "visual": { "color": "#6faa6a", "sigil": "❦" } },
+              "loki":   { "visual": { "color": "#e0a840", "sigil": "△" } },
+              "nestor": { "visual": { "color": "#7a7a7a", "sigil": "¬" } }
+            }
+          }
+        </script>
+      </grove-persona-registry>
+      <div id="cast-row" style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+        <grove-cast-chip agent="willow"></grove-cast-chip>
+        <grove-cast-chip agent="loki"></grove-cast-chip>
+        <grove-cast-chip agent="nestor"></grove-cast-chip>
+        <grove-cast-chip agent="phantom"></grove-cast-chip>
+      </div>
     </section>
 
     <section class="panel controls">
@@ -95,6 +123,7 @@
   <script type="module">
     import "./components/grove-card.js";
     import "./components/grove-envelope-panel.js";
+    import "./components/grove-cast-chip.js";
 
     document.getElementById("summon-nestor").addEventListener("click", () => {
       document.getElementById("card-nestor").summon();
