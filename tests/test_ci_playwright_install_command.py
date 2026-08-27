@@ -16,40 +16,35 @@ Delivered had ``npx playwright install --with-deps chromium`` (no
 Must fail on the unfixed workflow — the run: command for the
 "Install Playwright browsers (chromium)" step does not contain
 ``--yes``.
+
+Line-level regex grep, no PyYAML dependency — the workflow yml is
+tracked-code and this pin is about a substring, not the structural
+shape of the file.
 """
 from __future__ import annotations
 
+import re
 from pathlib import Path
-
-import yaml
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 _WORKFLOW_PATH = _REPO_ROOT / ".github" / "workflows" / "tests.yml"
 
+# The step's `run:` line invokes `playwright install …`. Match the value.
+_PLAYWRIGHT_INSTALL_RE = re.compile(
+    r"^\s*run:\s*(.*playwright\s+install.*)$", re.MULTILINE
+)
 
-def _find_playwright_install_step():
-    """Return the step dict for the Playwright browser install step.
 
-    Walks every job's steps looking for the one whose ``run:`` command
-    invokes ``playwright install`` (the browser-download step, not the
-    ``npm install`` step or the ``npx playwright test`` run step).
-    """
-    workflow = yaml.safe_load(_WORKFLOW_PATH.read_text(encoding="utf-8"))
-    jobs = workflow.get("jobs", {})
-    for job in jobs.values():
-        for step in job.get("steps", []):
-            run_cmd = step.get("run")
-            if not run_cmd:
-                continue
-            if "playwright install" in run_cmd:
-                return step
-    return None
+def _find_playwright_install_run_command() -> str | None:
+    text = _WORKFLOW_PATH.read_text(encoding="utf-8")
+    m = _PLAYWRIGHT_INSTALL_RE.search(text)
+    return m.group(1).strip() if m else None
 
 
 def test_playwright_install_step_exists():
     """Sanity: the workflow must actually have a playwright install step."""
-    step = _find_playwright_install_step()
-    assert step is not None, (
+    cmd = _find_playwright_install_run_command()
+    assert cmd is not None, (
         "No step running 'playwright install' found in "
         f"{_WORKFLOW_PATH} — INVARIANTS.md §10 requires one."
     )
@@ -61,10 +56,9 @@ def test_playwright_install_step_uses_yes_flag():
     Fails on the unfixed workflow, whose run: command is
     'npx playwright install --with-deps chromium' — no '--yes'.
     """
-    step = _find_playwright_install_step()
-    assert step is not None, "playwright install step not found"
-    run_cmd = step["run"]
-    assert "--yes" in run_cmd, (
+    cmd = _find_playwright_install_run_command()
+    assert cmd is not None, "playwright install step not found"
+    assert "--yes" in cmd, (
         "Playwright browser install step must pass '--yes' to npx "
-        f"(INVARIANTS.md §10). Got run: {run_cmd!r}"
+        f"(INVARIANTS.md §10). Got run: {cmd!r}"
     )
