@@ -128,6 +128,30 @@ _TOP_STRIP = (
 )
 
 
+# Tri-modal lens toggle (P8/C12). Rendered right below the top strip so the
+# operator's current posture-lens is the second thing they see, next to the
+# fleet-standing indicator. Additive-only: the component ships as a Web
+# Component with its own shadow root and does not restyle the strip above.
+_LENS_SWITCH = (
+    '<div class="lens-row">'
+    '<grove-lens-switch></grove-lens-switch>'
+    '</div>'
+)
+_LENS_SWITCH_SCRIPT = (
+    '<script type="module" '
+    'src="/web/components/grove-lens-switch.js"></script>'
+)
+_LENS_SWITCH_CSS = (
+    "  .lens-row {"
+    " display: flex;"
+    " justify-content: flex-end;"
+    " padding: .35rem 1rem;"
+    " background: var(--bg-soft);"
+    " border-bottom: 1px solid var(--border);"
+    " }\n"
+)
+
+
 _FOOTER = (
     '<footer>'
     'grove.willow_20 · 127.0.0.1:8766 · b17: WGRV1 ΔΣ=42'
@@ -157,14 +181,23 @@ def render_page() -> str:
         '<meta name="viewport" content="width=device-width,initial-scale=1">\n'
         "<title>willow's grove</title>\n"
         f"<style>{_CSS}</style>\n"
+        f"<style>{_LENS_SWITCH_CSS}</style>\n"
+        f"{_LENS_SWITCH_SCRIPT}\n"
+        # C11 chat card (LEFT-side write path). Registered here as an ES module
+        # so ``<grove-chat>`` upgrades in place. The RIGHT-side read-back is a
+        # follow-up PR (resident-watcher work). Additive only — no existing
+        # markup is moved or reshaped.
+        '<script type="module" src="/web/components/grove-chat.js"></script>\n'
         '<script type="module" src="/web/components/grove-cast-chip.js"></script>\n'
         '<script type="module" src="/web/components/grove-dispatch-rail.js"></script>\n'
         "</head>\n"
         "<body>\n"
         f"{_TOP_STRIP}\n"
+        f"{_LENS_SWITCH}\n"
         "<main>\n"
         f"  {_tree_block()}\n"
         '  <p class="here">the grove is here.</p>\n'
+        '  <grove-chat home-edge="bottom"></grove-chat>\n'
         '  <grove-dispatch-rail lens="pa"></grove-dispatch-rail>\n'
         "</main>\n"
         f"{_FOOTER}\n"

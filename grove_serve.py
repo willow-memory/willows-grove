@@ -31,6 +31,10 @@ from starlette.staticfiles import StaticFiles
 
 from grove import kart_reader
 from grove_html import render_page
+from grove import journal_writer
+
+
+_WEB_ROOT = Path(__file__).resolve().parent / "web"
 
 
 # Static home for the vanilla-JS Web Components (D9: no build step). The rail's
@@ -107,16 +111,53 @@ async def _dispatch(request: Request) -> JSONResponse:
     return JSONResponse([_serialize_row(r) for r in rows])
 
 
+async def _journal(request: Request) -> JSONResponse:
+    """POST /api/journal — chat card LEFT-side (C11) write endpoint.
+
+    Accepts JSON ``{"text": "...", "sender": "operator"}``. Delegates to
+    ``grove.journal_writer.write_operator_turn`` — which writes the operator's
+    words verbatim into willow-mcp's ``kb_journal`` (V5-style discipline: the
+    operator's own utterance is load-bearing and must not be reshaped here).
+
+    Responses:
+      200 — ``{"ok": true, "id": "<atom>", "ts": "<iso>"}``.
+      400 — ``{"ok": false, "reason": "text required"}`` on empty/missing text.
+      503 — ``{"ok": false, "reason": "<why>"}`` when the writer degrades
+            (willow-mcp not reachable, or reachable-but-rejected). The client
+            leaves the text in the composer and the operator retries.
+    """
+    try:
+        payload = await request.json()
+    except Exception:  # noqa: BLE001 — malformed body is a 400, not a 500
+        return JSONResponse({"ok": False, "reason": "invalid json body"}, status_code=400)
+
+    text = payload.get("text") if isinstance(payload, dict) else None
+    sender = payload.get("sender", "operator") if isinstance(payload, dict) else "operator"
+    if not isinstance(text, str) or not text.strip():
+        return JSONResponse({"ok": False, "reason": "text required"}, status_code=400)
+    if not isinstance(sender, str) or not sender:
+        sender = "operator"
+
+    # Verbatim discipline: pass `text` unchanged — no strip, no normalize.
+    result = journal_writer.write_operator_turn(text, sender=sender)
+    if not result.get("ok"):
+        return JSONResponse(result, status_code=503)
+    return JSONResponse(result, status_code=200)
+
+
 def build_app() -> Starlette:
-    return Starlette(
-        routes=[
-            Route("/", _index),
-            Route("/health", _health),
-            # ── additive routes (do not reorder; existing routes stay first) ──
-            Route("/api/dispatch", _dispatch),
-            Mount("/web", app=StaticFiles(directory=str(_WEB_ROOT)), name="web"),
-        ]
-    )
+    routes = [
+        Route("/", _index),
+        Route("/health", _health),
+        Route("/api/journal", _journal, methods=["POST"]),
+        Route("/api/dispatch", _dispatch),
+    ]
+    # `/web` serves the vanilla-JS Web Components + libs (D9 — no build step).
+    # Mounted only when the directory exists so unit tests that import this
+    # module from an unusual cwd don't fall over on a missing tree.
+    if _WEB_ROOT.is_dir():
+        routes.append(Mount("/web", app=StaticFiles(directory=str(_WEB_ROOT)), name="web"))
+    return Starlette(routes=routes)
 
 
 def run(host: str = DEFAULT_HOST, port: int = DEFAULT_PORT) -> None:
