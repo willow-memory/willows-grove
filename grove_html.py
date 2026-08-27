@@ -152,6 +152,58 @@ _LENS_SWITCH_CSS = (
 )
 
 
+# Governance-lens region — the served-page home for panels whose subject is
+# the fleet's constitutional surface (envelopes, provenance, ratification
+# trails). Kept as a section wrapper rather than a full lens region so a
+# later PR can add sibling panels here without moving the mount point.
+# INVARIANTS.md §8 — the served page consumes /api/envelopes live via
+# <grove-envelope-panel>. The `data-source` attribute is set to the live
+# endpoint verbatim (not a fixture path); the served page never carries
+# an explicit fixture-path data-source per §8.
+_GOVERNANCE_LENS = (
+    '<section class="governance-lens" data-lens="governance">'
+    '<grove-envelope-panel data-source="/api/envelopes"></grove-envelope-panel>'
+    '</section>'
+)
+
+
+# INVARIANTS.md §1 guidance: a component's state event has a page-level
+# listener. <grove-persona-registry> dispatches `registry-unreachable`
+# (bubbles + composed) when its /api/personas fetch fails. Log the event
+# once at info (not error) with a visible marker per the §1 guidance, and
+# stamp `body.registry-unreachable` so a follow-up PR can style around it.
+# Kept as an inline non-module <script> so it runs at parse time and is
+# ready before the persona-registry element upgrades — and so it does
+# NOT disturb the `<script type="module" src="…">` ordering that
+# `tests/test_grove_html_boot_wire.py::test_boot_script_is_last_module_in_head`
+# pins on the layout-memory boot tag.
+_REGISTRY_UNREACHABLE_LISTENER = (
+    '<script>'
+    '(function(){'
+    'try{'
+    'var logged=false;'
+    'window.addEventListener("registry-unreachable",function(ev){'
+    'try{'
+    'if(!logged){'
+    'logged=true;'
+    'var reason=(ev&&ev.detail&&ev.detail.reason)||"unknown";'
+    'if(window.console&&console.info){'
+    'console.info("[grove] registry-unreachable:",reason);'
+    '}'
+    '}'
+    '}catch(_e){}'
+    'try{'
+    'if(document&&document.body&&document.body.classList){'
+    'document.body.classList.add("registry-unreachable");'
+    '}'
+    '}catch(_e){}'
+    '});'
+    '}catch(_e){}'
+    '})();'
+    '</script>'
+)
+
+
 _FOOTER = (
     '<footer>'
     'grove.willow_20 · 127.0.0.1:8766 · b17: WGRV1 ΔΣ=42'
@@ -205,6 +257,16 @@ def render_page() -> str:
         # ``grove-refusal-chip`` component script above so the constructor is
         # defined by the time the boot fires an event.
         '<script type="module" src="/web/boot/refusal-summon-boot.js"></script>\n'
+        # INVARIANTS.md §8: the served page consumes /api/envelopes live via
+        # <grove-envelope-panel> mounted in the Governance-lens region below.
+        # Component module registered here so the tag upgrades on connect.
+        '<script type="module" src="/web/components/grove-envelope-panel.js"></script>\n'
+        # INVARIANTS.md §1 page-level listener for `registry-unreachable`
+        # (dispatched by <grove-persona-registry>). Inline non-module script
+        # so it registers at parse time — before the element upgrades — and
+        # so it does NOT participate in the module-src ordering pinned by
+        # `tests/test_grove_html_boot_wire.py`.
+        f'{_REGISTRY_UNREACHABLE_LISTENER}\n'
         # Layout-memory boot — walks <grove-card id="…"> nodes and wires each
         # to per-viewer localStorage so remembered edge/state persists across
         # reloads, and pinned cards summon on boot (D12 + D14). Ordering
@@ -222,6 +284,7 @@ def render_page() -> str:
         '  <p class="here">the grove is here.</p>\n'
         '  <grove-chat home-edge="bottom"></grove-chat>\n'
         '  <grove-dispatch-rail lens="pa"></grove-dispatch-rail>\n'
+        f"  {_GOVERNANCE_LENS}\n"
         "</main>\n"
         f"{_FOOTER}\n"
         # Mount point for verbatim refusal chips summoned by
