@@ -4,6 +4,15 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ## [Unreleased]
 
+### Added
+- `docs/OPS_RUNBOOK.md` — operator-facing reference for running, checking, and recovering Grove at v0.9. Cites `docs/INVARIANTS.md` §-anchors; names entry points, boot preconditions, health-check sweep, common failure recovery, the trust root (Willow-through-the-human, §12), the audit record, and the pr14 carryovers. (Grove v0.9 PR 13.)
+
+## [0.9.0] — 2026-08-27
+
+**First tagged release of Willow's Grove.** 13 PRs from stand-up plan to release cut. 12 CI-enforced invariants (§1–§12). Loki audit + Hanuman fleet fixes for 38 findings, with the 39th refuted by empirical check. §11 persona provenance and §12 ratification sealed and demonstrated in this PR's own body.
+
+The release is ratified by the human trust root, not the fleet — no fleet persona has unilateral authority. See `docs/audits/loki-v0.9-audit.md` for what Loki said, `docs/audits/loki-swarm-measurement.md` for what the swarm measurement showed, `docs/design/pr14-carryovers.md` for what is intentionally not yet in v0.9.
+
 ### Changed
 - Three-state discipline landed for every /api/* endpoint and every Web Component (INVARIANTS.md §1). Supersedes D7's implicit read of "absence is a state" (INVARIANTS.md §2). (Grove v0.9 PR 1.)
 - `<grove-envelope-panel>` default `data-source` moved to `/api/envelopes` — the served page now consumes the live envelope registry, not the fixture harness's JSON. Fixture-based rendering is opt-in via an explicit `data-source` attribute (harness use only). INVARIANTS.md §8. (Grove v0.9 PR 2.)
