@@ -241,7 +241,29 @@ class GroveOAuthProvider:
         client: OAuthClientInformationFull,
         params: AuthorizationParams,
     ) -> None:
-        """Park an authorization request until a human decides on it."""
+        """Park an authorization request until a human decides on it.
+
+        If `key` already has a live entry, its ORIGINAL expires_at is kept —
+        re-stashing (e.g. grove_approve's GET branch re-parking the request
+        after popping it) must not push the 5-minute ceiling out again. Per
+        INVARIANTS.md §7 the one-shot key has a hard 5-minute lifetime; a
+        caller that genuinely needs the clock reset should use
+        stash_pending_or_refresh instead.
+        """
+        existing = self._pending.get(key)
+        expires_at = existing[2] if existing is not None else time.time() + _PENDING_TTL
+        self._pending[key] = (client, params, expires_at)
+
+    def stash_pending_or_refresh(
+        self,
+        key: str,
+        client: OAuthClientInformationFull,
+        params: AuthorizationParams,
+    ) -> None:
+        """Park an authorization request, resetting the TTL even if `key` is
+        already pending. Distinct from stash_pending, which preserves the
+        original expiry on re-stash — see INVARIANTS.md §7.
+        """
         self._pending[key] = (client, params, time.time() + _PENDING_TTL)
 
     def pop_pending(self, key: str):
