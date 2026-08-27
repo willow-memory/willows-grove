@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+# grove-watcher-run — start Grove's Gate 5 v1 resident watcher (L1-capped).
+# b17: WGRV1 · ΔΣ=42
+#
+# Foreground wrapper for `grove/resident_watcher.py`. Mirrors
+# `scripts/grove-serve-run` in shape: resolve venv, set the operator flag the
+# rest of the fleet reads, echo the seat's core config, then exec.
+#
+# The watcher is a SEPARATE process from the served page (`grove_serve.py`) —
+# they can run side by side. The served page is Willow's front door;
+# the watcher is what stands at the post while Willow is quiet.
+#
+# Reads:
+#   * LISTEN/NOTIFY on grove.messages via WILLOW_DB_URL
+#   * ~/.willow/store/active_model (SOIL) for the active model (Q1 lock)
+#   * fleet_presence roster, envelope registry, Nestor decision_check
+#
+# Writes:
+#   * kb_journal ONLY, sender="resident-watcher", with a domain-tag
+#     classification. Nothing else in v1 (L1 ceiling, autonomous-continuity §5).
+#
+# Usage:
+#   scripts/grove-watcher-run
+#   GROVE_WATCHER_HEARTBEAT=60 scripts/grove-watcher-run
+#   GROVE_WATCHER_OLLAMA=http://127.0.0.1:11434 scripts/grove-watcher-run
+#
+# For a persistent unit, see `deploy/grove-watcher.service.template`.
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$REPO_ROOT"
+
+PY=""
+if [[ -n "${GROVE_VENV:-}" && -x "${GROVE_VENV}/bin/python3" ]]; then
+  PY="${GROVE_VENV}/bin/python3"
+elif [[ -x "${REPO_ROOT}/.venv/bin/python3" ]]; then
+  PY="${REPO_ROOT}/.venv/bin/python3"
+else
+  PY="$(command -v python3)"
+fi
+
+export WILLOW_HUMAN_ORCHESTRATOR=1
+export PYTHONPATH="${REPO_ROOT}${PYTHONPATH:+:$PYTHONPATH}"
+
+# --- config echo (one glance to see what the watcher is bound to) ---
+MODEL_PATH="${HOME}/.willow/store/active_model"
+if [[ -r "$MODEL_PATH" ]]; then
+  MODEL="$(head -n 1 "$MODEL_PATH" 2>/dev/null || true)"
+  MODEL_SOURCE="SOIL"
+else
+  MODEL="llama3.2:3b (fallback)"
+  MODEL_SOURCE="fallback"
+fi
+DB_URL_ECHO="${WILLOW_DB_URL:-<unset — heartbeat-only>}"
+OLLAMA_URL_ECHO="${GROVE_WATCHER_OLLAMA:-http://localhost:11434}"
+
+echo "willow's grove — resident watcher (Gate 5 v1, L1-capped)"
+echo "  model:  ${MODEL:-<empty>} (${MODEL_SOURCE})"
+echo "  db_url: ${DB_URL_ECHO}"
+echo "  ollama: ${OLLAMA_URL_ECHO}"
+echo "  sender: resident-watcher  (never speaks as willow or a persona)"
+
+exec "$PY" -m grove.resident_watcher

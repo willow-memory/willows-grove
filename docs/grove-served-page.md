@@ -99,10 +99,28 @@ serves from her side of the seat. Binding to a non-loopback host still
 runs, but prints a warning — the seat is designed for the desk, not the
 internet.
 
-## What's still ahead
+## The resident watcher (Gate 5 v1)
 
-The resident watcher process and its Gate 5 seal — a local Ollama model
-that acts as the seat's at-rest actor, with Kart as the escalation seam
-to bigger models — is the next big piece. See
-[`design/autonomous-continuity.md`](design/autonomous-continuity.md)
-**C4-C5**.
+The Gate-5-v1 resident watcher is Willow's local actor at the post — a
+separate process from the served page ([`grove/resident_watcher.py`](../grove/resident_watcher.py),
+autonomous-continuity **C4-C5**, **C11** RIGHT-side). It LISTENs on
+`grove.messages`, classifies each new message with the operator's SOIL
+active model via Ollama, and writes one atom per classification into
+`kb_journal` — always `sender="resident-watcher"`, with a `domain:<tag>`
+carrying one of `chat / governance / pm / pa / unknown`. Every heartbeat
+(default 30s) it refreshes the fleet-presence roster and notes any
+envelope whose re-attestation is due within 48h.
+
+Run it foreground with `scripts/grove-watcher-run`; for a persistent unit
+see `deploy/grove-watcher.service.template`. Config lives in SOIL
+(`~/.willow/store/active_model`, fallback `llama3.2:3b` with a log-once),
+`WILLOW_DB_URL` for LISTEN/NOTIFY (unset → heartbeat-only mode, D7), and
+`GROVE_WATCHER_OLLAMA` for the local endpoint (default
+`http://localhost:11434`). Nestor `decision_check` gates every write:
+`refused` skips the atom, unreachable proceeds (D7).
+
+What v1 explicitly does **not** do: no Kart drafts, no Nestor pair
+proposals, no writes to `grove.channels`, no speaking as a persona or as
+Willow. Those are the L2-and-above rungs deferred to a later gate — the
+watcher is capped at L1 by design (autonomous-continuity §5), and
+`sender="resident-watcher"` is load-bearing.

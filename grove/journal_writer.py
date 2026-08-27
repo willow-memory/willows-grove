@@ -72,7 +72,21 @@ def _now_iso() -> str:
     return _dt.datetime.now(_dt.timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
 
 
-def _try_import_write(text: str, sender: str, ts: str) -> Optional[dict[str, Any]]:
+def _build_tags(sender: str, ts: str, domain: Optional[str]) -> list[str]:
+    """Compose the tag list for one kb_journal atom.
+
+    Additive discipline: the base tag surface (``journal``, ``sender:*``,
+    ``ts:*``) is unchanged; the optional ``domain:<domain>`` tag is appended
+    only when a caller supplies it (the resident watcher, per Q2 of the
+    Gate 5 lock — a domain tag on the atom, not persona routing).
+    """
+    tags = ["journal", f"sender:{sender}", f"ts:{ts}"]
+    if domain:
+        tags.append(f"domain:{domain}")
+    return tags
+
+
+def _try_import_write(text: str, sender: str, ts: str, domain: Optional[str] = None) -> Optional[dict[str, Any]]:
     """Attempt (a): call ``willow_mcp.server.kb_journal`` in-process.
 
     Returns the raw ``{"id": ..., "domain": ...}`` on success, or ``None`` if
@@ -86,7 +100,7 @@ def _try_import_write(text: str, sender: str, ts: str) -> Optional[dict[str, Any
         from willow_mcp import server as _wms  # type: ignore
     except Exception:  # noqa: BLE001 — any import failure means path (a) is unavailable
         return None
-    tags = ["journal", f"sender:{sender}", f"ts:{ts}"]
+    tags = _build_tags(sender, ts, domain)
     try:
         return _wms.kb_journal(app_id=_APP_ID, content=text, source=sender, tags=tags)
     except Exception as err:  # noqa: BLE001
@@ -94,7 +108,7 @@ def _try_import_write(text: str, sender: str, ts: str) -> Optional[dict[str, Any
         return None
 
 
-def _try_http_write(url: str, text: str, sender: str, ts: str) -> Optional[dict[str, Any]]:
+def _try_http_write(url: str, text: str, sender: str, ts: str, domain: Optional[str] = None) -> Optional[dict[str, Any]]:
     """Attempt (b): POST to ``{url}/tools/kb_journal``.
 
     Sync-only — uses stdlib ``urllib.request`` to avoid a hard dep on httpx.
@@ -106,7 +120,7 @@ def _try_http_write(url: str, text: str, sender: str, ts: str) -> Optional[dict[
         "app_id": _APP_ID,
         "content": text,
         "source": sender,
-        "tags": ["journal", f"sender:{sender}", f"ts:{ts}"],
+        "tags": _build_tags(sender, ts, domain),
     }
     body = json.dumps(payload).encode("utf-8")
     req = urllib.request.Request(  # noqa: S310 — endpoint is operator-configured, loopback by default
@@ -128,13 +142,23 @@ def _try_http_write(url: str, text: str, sender: str, ts: str) -> Optional[dict[
         return None
 
 
-def write_operator_turn(text: str, *, sender: str = "operator") -> dict[str, Any]:
+def write_operator_turn(
+    text: str,
+    *,
+    sender: str = "operator",
+    domain: Optional[str] = None,
+) -> dict[str, Any]:
     """Write one operator turn to ``kb_journal`` — the chat card's LEFT side.
 
     The atom carries ``domain='journal'``, ``sender=<sender>``, ``text=<text>``,
     ``ts=<ISO 8601 UTC>`` (encoded as content + source + tag fields to match
     willow-mcp's ``kb_journal`` field surface). ``text`` is written verbatim —
     no paraphrase, no strip, no normalize (V5-style discipline).
+
+    The optional ``domain`` argument (additive; introduced with Gate 5's
+    resident watcher, Q2 lock) is appended as a ``domain:<value>`` tag on the
+    atom. Existing callers see no behavior change; only new call sites that
+    pass a value participate. ``None`` and empty string omit the tag.
 
     Returns:
         On success: ``{"ok": True, "id": "<atom id>", "ts": "<iso>"}``.
@@ -150,13 +174,13 @@ def write_operator_turn(text: str, *, sender: str = "operator") -> dict[str, Any
 
     ts = _now_iso()
 
-    result = _try_import_write(text, sender, ts)
+    result = _try_import_write(text, sender, ts, domain)
     tried = ["import"]
     if result is None:
         url = os.environ.get("WILLOW_MCP_URL", "").strip()
         if url:
             tried.append("http")
-            result = _try_http_write(url, text, sender, ts)
+            result = _try_http_write(url, text, sender, ts, domain)
 
     if result is None:
         reason = "willow-mcp not reachable"
