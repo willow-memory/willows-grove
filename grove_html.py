@@ -116,14 +116,20 @@ _CSS = """
 """
 
 
+# INVARIANTS.md §8 / Constraint 1 (DESIGN_CONSTRAINTS.md): "I could not
+# reach the source" must never collapse into "there is nothing there."
+# This strip used to render "standing" / "grove stable" as static
+# markup — no endpoint, no state check — so the operator read "grove
+# stable" whether or not any seam was reachable. Until a follow-up PR
+# adds a boot module that polls a status endpoint (a new /api/health
+# is out of scope here), the strip carries a neutral placeholder that
+# makes no claim either way.
 _TOP_STRIP = (
     '<div class="strip">'
     '<span class="dot"></span>'
     '<span class="name">ƒ willow</span>'
     '<span>·</span>'
-    '<span>standing</span>'
-    '<span>·</span>'
-    '<span>grove stable</span>'
+    '<span>reading standing…</span>'
     '</div>'
 )
 
