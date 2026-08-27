@@ -12,6 +12,14 @@
  *                 (INVARIANTS.md §1 supersedes the older reading where
  *                 empty and unreachable rendered the same pixels).
  *
+ * Live-endpoint default (INVARIANTS.md §8): the panel consumes
+ * `/api/envelopes` as its default `data-source`. The `data-source`
+ * attribute is preserved as an opt-in override for the fixture harness
+ * (`web/harness.html`) — but the served page (`grove_html.py`) MUST
+ * NOT carry an explicit `data-source`, so the panel there always
+ * renders the live envelope registry, not a curated fixture. §8 codifies
+ * the discipline named by §4's reader/endpoint coverage table.
+ *
  * Fetches an envelope registry (schema envelope-registry/v1.1) from
  * either `/api/envelopes` (default) or a local JSON path passed via the
  * `data-source` attribute (used by the fixture harness). Rows show

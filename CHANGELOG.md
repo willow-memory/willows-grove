@@ -6,12 +6,18 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Changed
 - Three-state discipline landed for every /api/* endpoint and every Web Component (INVARIANTS.md §1). Supersedes D7's implicit read of "absence is a state" (INVARIANTS.md §2).
+- `<grove-envelope-panel>` default `data-source` moved to `/api/envelopes` — the served page now consumes the live envelope registry, not the fixture harness's JSON. Fixture-based rendering is opt-in via an explicit `data-source` attribute (harness use only). INVARIANTS.md §8.
 
 ### Added
 - INVARIANTS.md — single source of truth for Grove discipline.
 - INVARIANTS.md §5 "Trust order" — signature → consent → dispatch, in exactly that sequence, with the contact-store rules that protect the state consent depends on.
 - INVARIANTS.md §6 — "Manifests describe code, not aspirations" (Grove v0.9 PR 7). Tests enforce.
 - INVARIANTS.md §7 — "Consent flows are real, not automatic" (Grove v0.9 PR 6). Names the /grove-approve loopback POST discipline, the 5-min pending TTL, the 24-hour access TTL, and the tunnel-acknowledgement flag.
+- INVARIANTS.md §8 — "Panels consume live endpoints by default" (Grove v0.9 PR 2). Every Web Component consumes its matching `/api/*` endpoint by default; fixture-based rendering is opt-in (harness use only); the served page renders live state, not curated data.
+- `window.groveNestorAsk(claim)` now handles the `state="unreachable"` branch distinctly — summons a subdued `<grove-refusal-chip>` in a new `mode: "unreachable"` variant so the operator sees when the L4 Nestor seam is down instead of the 503 being swallowed silently. INVARIANTS.md §1 + §8.
+- `<grove-refusal-chip>` gains a `mode` field: `"refusal"` (default, verbatim Nestor speech act) or `"unreachable"` (dashed border + subdued render, distinct from a real refusal). V5 discipline is unchanged for the `refusal` mode.
+- `tests/test_panel_wiring.py` — pins the three-state shape end-to-end for every endpoint the panels consume: `/api/envelopes`, `/api/nestor/decide`, `/api/dispatch`, `/api/journal/recent`. INVARIANTS.md §1 + §8.
+- `tests/test_refusal_summon_shape.py` — pins the refusal-summon boot module's contract with the chip: POSTs to `/api/nestor/decide`, dispatches `nestor-refusal` on `refused`, dispatches the same event with `mode: "unreachable"` on 503/state=unreachable.
 - CHANGELOG.md — reorganized under Keep a Changelog v1.1.0; earlier per-branch entries preserved below as historical work.
 - docs/design/u2u-security-limits.md — new doc naming what u2u guarantees (authenticity, integrity, non-repudiation within signing-key boundary) and what it does not (confidentiality). Cites `u2u/packets.py:74-75`. Encryption planned for Gate 6.
 - tests/test_manifest_honesty.py — pins INVARIANTS.md §6 for `safe-app-manifest.json`.
