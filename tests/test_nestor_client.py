@@ -10,6 +10,7 @@ from unittest.mock import patch
 import pytest
 
 from grove import nestor_client
+from grove.errors import Unreachable
 from grove.nestor_client import NestorClient
 
 
@@ -101,15 +102,32 @@ def test_refusal_is_returned_verbatim(monkeypatch):
     assert out == verbatim, "V5: refusal must be VERBATIM, not paraphrased"
 
 
-def test_missing_binary_is_noop(monkeypatch):
+def test_missing_binary_decision_check_raises_unreachable(monkeypatch):
+    """INVARIANTS.md §1: unreachable is a distinct sentinel, not None.
+    decision_check() raises when the binary is not on PATH; the other
+    evidence/warrant/refusal helpers keep returning None (they operate
+    on already-resolved pair ids and callers already know available()
+    is a probe)."""
     monkeypatch.setattr(nestor_client.shutil, "which", lambda _exe: None)
     nc = NestorClient()
     assert nc.available() is False
-    assert nc.decision_check("anything") is None
+    with pytest.raises(Unreachable):
+        nc.decision_check("anything")
     assert nc.evidence_for("x") is None
     assert nc.warrant_for("x") is None
     assert nc.refusal("x") is None
     nc.close()  # must not raise
+
+
+def test_missing_binary_reachable_reached_no_match_still_returns_none(monkeypatch):
+    """Available and reached, but the fake process sends nothing → None.
+
+    This is the "reachable but no sealed pair" case (the 200 pending
+    branch on the endpoint). It stays as ``None`` — Unreachable is
+    reserved for the source-not-reached state."""
+    _install_fake(monkeypatch, [])  # no canned responses → empty readline
+    with NestorClient() as nc:
+        assert nc.decision_check("q") is None
 
 
 def test_transport_error_returns_none(monkeypatch):

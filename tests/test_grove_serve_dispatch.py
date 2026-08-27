@@ -82,27 +82,96 @@ class _ServerHarness:
         return f"http://{self.host}:{self.port}{path}"
 
 
-class DispatchRouteTests(unittest.TestCase):
-    def test_dispatch_pa_returns_json_list(self) -> None:
-        with _ServerHarness() as srv:
-            with urllib.request.urlopen(srv.url("/api/dispatch?lens=pa"), timeout=2.0) as resp:
-                self.assertEqual(resp.status, 200)
-                body = json.loads(resp.read().decode("utf-8"))
-        self.assertIsInstance(body, list)
+def _get_dispatch(url: str) -> tuple[int, dict]:
+    """GET with 4xx/5xx tolerated so we can assert the 503 body."""
+    req = urllib.request.Request(url, method="GET", headers={"accept": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=3.0) as resp:
+            return resp.status, json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
+        raw = e.read().decode("utf-8")
+        try:
+            return e.code, json.loads(raw)
+        except json.JSONDecodeError:
+            return e.code, {"raw": raw}
 
-    def test_dispatch_no_lens_returns_json_list(self) -> None:
+
+class DispatchRouteTests(unittest.TestCase):
+    """Three-state (INVARIANTS.md §1): populated / empty / unreachable."""
+
+    def test_dispatch_pa_returns_state_wrapper(self) -> None:
+        """No WILLOW_DB_URL by default in this test env → unreachable (503).
+        When a DB IS wired (CI job), state is populated/empty with tasks."""
         with _ServerHarness() as srv:
-            with urllib.request.urlopen(srv.url("/api/dispatch"), timeout=2.0) as resp:
-                self.assertEqual(resp.status, 200)
-                body = json.loads(resp.read().decode("utf-8"))
-        self.assertIsInstance(body, list)
+            status, body = _get_dispatch(srv.url("/api/dispatch?lens=pa"))
+        self.assertIn(status, (200, 503))
+        self.assertIn(body.get("state"), ("populated", "empty", "unreachable"))
+        if status == 503:
+            self.assertEqual(body.get("state"), "unreachable")
+            self.assertIn("reason", body)
+
+    def test_dispatch_no_lens_returns_state_wrapper(self) -> None:
+        with _ServerHarness() as srv:
+            status, body = _get_dispatch(srv.url("/api/dispatch"))
+        self.assertIn(status, (200, 503))
+        self.assertIn(body.get("state"), ("populated", "empty", "unreachable"))
 
     def test_dispatch_unknown_lens_falls_through_to_unfiltered(self) -> None:
         with _ServerHarness() as srv:
-            with urllib.request.urlopen(srv.url("/api/dispatch?lens=nonsense"), timeout=2.0) as resp:
-                self.assertEqual(resp.status, 200)
-                body = json.loads(resp.read().decode("utf-8"))
-        self.assertIsInstance(body, list)
+            status, body = _get_dispatch(srv.url("/api/dispatch?lens=nonsense"))
+        self.assertIn(status, (200, 503))
+        self.assertIn(body.get("state"), ("populated", "empty", "unreachable"))
+
+    def test_dispatch_unreachable_when_reader_raises(self) -> None:
+        """503 + state=unreachable when kart_reader raises Unreachable."""
+        import grove_serve
+        from grove.errors import Unreachable
+        from unittest.mock import patch
+
+        def _boom(*_a, **_kw):
+            raise Unreachable("test — DSN gone")
+
+        with _ServerHarness() as srv, patch.object(
+            grove_serve.kart_reader, "read_queue", _boom
+        ), patch.object(
+            grove_serve.kart_reader, "read_by_lens", _boom
+        ):
+            status, body = _get_dispatch(srv.url("/api/dispatch"))
+        self.assertEqual(status, 503)
+        self.assertEqual(body.get("state"), "unreachable")
+        self.assertEqual(body.get("reason"), "test — DSN gone")
+
+    def test_dispatch_empty_when_reader_returns_empty(self) -> None:
+        """200 + state=empty when reader returns an empty list."""
+        import grove_serve
+        from unittest.mock import patch
+
+        with _ServerHarness() as srv, patch.object(
+            grove_serve.kart_reader, "read_queue", lambda: []
+        ), patch.object(
+            grove_serve.kart_reader, "read_by_lens", lambda *_a, **_kw: []
+        ):
+            status, body = _get_dispatch(srv.url("/api/dispatch"))
+        self.assertEqual(status, 200)
+        self.assertEqual(body.get("state"), "empty")
+        self.assertEqual(body.get("tasks"), [])
+
+    def test_dispatch_populated_when_reader_returns_rows(self) -> None:
+        """200 + state=populated when reader returns non-empty rows."""
+        import grove_serve
+        from unittest.mock import patch
+
+        rows = [
+            {"id": 1, "status": "queued", "task": "reply to Ada"},
+            {"id": 2, "status": "queued", "task": "roll build"},
+        ]
+        with _ServerHarness() as srv, patch.object(
+            grove_serve.kart_reader, "read_queue", lambda: rows
+        ):
+            status, body = _get_dispatch(srv.url("/api/dispatch"))
+        self.assertEqual(status, 200)
+        self.assertEqual(body.get("state"), "populated")
+        self.assertEqual(len(body.get("tasks")), 2)
 
     def test_web_static_serves_dispatch_rail_module(self) -> None:
         """The additive /web/ mount must serve the Web Component module."""

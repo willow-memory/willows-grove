@@ -1,8 +1,17 @@
 # Changelog
 
-All notable changes to Willow Grove are documented here.
+All notable changes land here per INVARIANTS.md §3. Format follows Keep a Changelog v1.1.0.
 
 ## [Unreleased]
+
+### Changed
+- Three-state discipline landed for every /api/* endpoint and every Web Component (INVARIANTS.md §1). Supersedes D7's implicit read of "absence is a state" (INVARIANTS.md §2).
+
+### Added
+- INVARIANTS.md — single source of truth for Grove discipline.
+- CHANGELOG.md — reorganized under Keep a Changelog v1.1.0; earlier per-branch entries preserved below as historical work.
+
+### Previous work (pre-v0.9)
 
 ### feat/grove-per-tool-oauth-scopes
 Serve-mode OAuth scopes are now granular instead of one flat `grove` scope that let any remote token call every tool including writes.

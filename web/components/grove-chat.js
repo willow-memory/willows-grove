@@ -3,6 +3,15 @@
  * <grove-chat> — the workshop chat card. D14 metaphor: this is what
  * Tony says to Jarvis (LEFT) and what Jarvis says back (RIGHT).
  *
+ * Three-state contract (see docs/INVARIANTS.md §1) for the RIGHT column:
+ *   populated   — atoms present; each turn renders with sender chip + text.
+ *   empty       — willow-mcp reached, no atoms; the "no messages yet"
+ *                 placeholder line renders in muted default color.
+ *   unreachable — 503/fetch failure; a distinct amber banner reads
+ *                 "read-back unreachable" at the top of the RIGHT column.
+ *                 MUST be visually distinct from the empty state
+ *                 (different color, distinct copy).
+ *
  * C11 (autonomous-continuity.md) sealed the LEFT side as an operator
  * write into willow-mcp's ``kb_journal`` via the small resident model,
  * and the RIGHT side as the resident watcher's read-back — atoms from
@@ -284,7 +293,17 @@ class GroveChat extends HTMLElement {
           background: var(--chat-bg-soft);
           display: none;
         }
-        .readback-status[data-state="unreachable"] { display: block; }
+        /* INVARIANTS.md §1: unreachable MUST render distinctly from empty —
+           amber banner + border, distinct copy, so the operator sees the
+           difference between "no messages yet" and "read-back unreachable". */
+        .readback-status[data-state="unreachable"] {
+          display: block;
+          border-color: var(--chat-warn);
+          background: rgba(185, 122, 74, 0.15);
+        }
+        .readback-status[data-state="unreachable"]::before {
+          content: "\\26A0  "; /* ⚠ */
+        }
         .readback-empty {
           flex: 1;
           display: flex;
@@ -487,8 +506,20 @@ class GroveChat extends HTMLElement {
       this._setReadbackStatus("unreachable", "read-back unreachable");
       return;
     }
+    let body = null;
+    try { body = await res.json(); } catch (_) { body = null; }
+    // INVARIANTS.md §1: 200 body carries {state, atoms}. Tolerate the
+    // pre-INVARIANTS bare-list shape so a stale server doesn't collapse
+    // to unreachable spuriously.
     let atoms = null;
-    try { atoms = await res.json(); } catch (_) { atoms = null; }
+    if (Array.isArray(body)) {
+      atoms = body;
+    } else if (body && body.state === "unreachable") {
+      this._setReadbackStatus("unreachable", "read-back unreachable");
+      return;
+    } else if (body && Array.isArray(body.atoms)) {
+      atoms = body.atoms;
+    }
     if (!Array.isArray(atoms)) {
       this._setReadbackStatus("unreachable", "read-back unreachable");
       return;

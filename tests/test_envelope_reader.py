@@ -15,6 +15,7 @@ from pathlib import Path
 from unittest import mock
 
 from grove import envelope_reader as er
+from grove.errors import Unreachable
 
 
 def _envelope(env_id: str, **overrides) -> dict:
@@ -59,16 +60,20 @@ class EnvelopeReaderTests(unittest.TestCase):
             env["WILLOW_HOME"] = str(self.fake_home / "unset")
         return mock.patch.dict(os.environ, env, clear=False)
 
-    # ---- D7: no directories present ----
-    def test_no_dirs_returns_empty_and_logs_once(self) -> None:
+    # ---- three-state: unreachable (INVARIANTS.md §1) ----
+    def test_no_dirs_raises_unreachable_and_logs_once(self) -> None:
+        """No envelope directory in the probe path → raise Unreachable.
+        Absence is a state, and it must render distinctly (INVARIANTS.md §1
+        supersedes the earlier "empty on absence" reading)."""
         with self._env():
             with self.assertLogs(er.log, level="INFO") as caplog:
-                result = er.read_all()
-                second = er.read_all()
+                with self.assertRaises(Unreachable) as ctx1:
+                    er.read_all()
+                with self.assertRaises(Unreachable) as ctx2:
+                    er.read_all()
 
-        self.assertEqual(result["schema"], er.SCHEMA_ID)
-        self.assertEqual(result["envelopes"], [])
-        self.assertEqual(second["envelopes"], [])
+        self.assertIn("envelope directory", ctx1.exception.reason)
+        self.assertIn("envelope directory", ctx2.exception.reason)
 
         missing_dir_logs = [
             r for r in caplog.records if "no envelope directory" in r.getMessage()
@@ -78,6 +83,17 @@ class EnvelopeReaderTests(unittest.TestCase):
             1,
             "missing-dir log must fire exactly once, not per call",
         )
+
+    # ---- three-state: empty (reached, no data) ----
+    def test_dir_present_but_no_files_returns_empty_envelope_list(self) -> None:
+        """Directory exists but holds no usable json → empty list (reached).
+        This is the "empty" three-state case, distinct from unreachable."""
+        env_dir = self.willow_home / "envelopes"
+        env_dir.mkdir(parents=True)
+        with self._env(willow_home=str(self.willow_home)):
+            result = er.read_all()
+        self.assertEqual(result["schema"], er.SCHEMA_ID)
+        self.assertEqual(result["envelopes"], [])
 
     # ---- normal path: two files in one dir ----
     def test_two_files_in_one_dir_merge(self) -> None:

@@ -14,7 +14,7 @@ This module is the read side of that seam only. Writes to
 (Kart, the fleet agents themselves) — never to Grove. The autonomous-
 continuity ladder pins Grove at L0 for this table: read-only.
 
-Shape tolerance (D7 — *absence is a state, not a failure*):
+Shape tolerance (INVARIANTS.md §1 — three-state):
 
 The premise doc's Kart section names ``origin``, ``urgency``,
 ``authority_needed``, ``context_refs`` and ``proposed_action`` as the
@@ -27,15 +27,23 @@ select expression whose column is missing — the rail renders what the
 row does carry, and a single info log fires once per absent column so
 the drift is visible without spamming.
 
-Style mirrors ``grove/persona_roster.py``: one small synchronous
-module, no async, ``[]`` when the source is absent, log-once on
-degradation.
+Three-state contract:
+
+* populated / empty → list of rows (empty when nothing queued).
+* unreachable       → raises ``grove.errors.Unreachable`` on missing DSN,
+                      missing table, psycopg2 unavailable, or vocabulary
+                      drift so total we can't name a column.
+
+INVARIANTS.md §2 supersedes the earlier "[] on absence" reading: [] now
+means "reached the source, nothing queued", never "could not reach".
 """
 from __future__ import annotations
 
 import logging
 import os
 from typing import Any, Optional
+
+from grove.errors import Unreachable
 
 log = logging.getLogger(__name__)
 
@@ -85,8 +93,8 @@ def _dsn() -> Optional[str]:
         return dsn
     if not _logged_missing_dsn:
         log.info(
-            "kart_reader: WILLOW_DB_URL is not set — dispatch rail runs as "
-            "no-op ([]) per D7."
+            "kart_reader: WILLOW_DB_URL is not set — dispatch rail will "
+            "raise Unreachable (INVARIANTS.md §1)."
         )
         _logged_missing_dsn = True
     return None
@@ -204,26 +212,33 @@ def _run(lens: Optional[str], limit: int) -> list[dict]:
 
     Opens one short-lived psycopg2 connection, checks the live column
     set, builds the SELECT from what exists, and returns dict rows.
-    Every failure mode (missing DSN, missing table, missing column) is a
-    log-once ``[]`` — no crash reaches the rail.
+
+    Three-state contract (INVARIANTS.md §1):
+
+    * populated / empty → list of dicts (empty when the table exists
+      but no queued rows match).
+    * unreachable       → raises ``Unreachable`` for: missing DSN,
+      psycopg2 not importable, connect failure, missing table, or a
+      total-vocabulary drift where not a single column we know can be
+      selected.
     """
     global _logged_missing_table
 
     dsn = _dsn()
     if dsn is None:
-        return []
+        raise Unreachable("WILLOW_DB_URL is not set")
 
     try:
         import psycopg2  # local import — kart_reader is a leaf module
     except ImportError:  # pragma: no cover - psycopg2 is a hard install dep
-        log.warning("kart_reader: psycopg2 not importable — []")
-        return []
+        log.warning("kart_reader: psycopg2 not importable — Unreachable")
+        raise Unreachable("psycopg2 not importable")
 
     try:
         conn = psycopg2.connect(dsn)
     except Exception as err:  # noqa: BLE001 — network / auth failures are runtime
-        log.warning("kart_reader: connect failed (%s) — []", err)
-        return []
+        log.warning("kart_reader: connect failed (%s)", err)
+        raise Unreachable(f"psycopg2 connect failed: {err}")
 
     try:
         with conn.cursor() as cur:
@@ -232,15 +247,17 @@ def _run(lens: Optional[str], limit: int) -> list[dict]:
                 if not _logged_missing_table:
                     log.info(
                         "kart_reader: public.tasks not present in this "
-                        "database — [] per D7."
+                        "database — Unreachable (INVARIANTS.md §1)."
                     )
                     _logged_missing_table = True
-                return []
+                raise Unreachable("public.tasks table not present")
 
             select_cols = _select_columns(present)
             if not select_cols:
                 # Vocabulary drift so total we cannot name a single column.
-                return []
+                raise Unreachable(
+                    "public.tasks carries no column from the known vocabulary"
+                )
 
             status_frag, status_params = _where_status_queued(present)
             lens_frag, lens_params = _lens_predicate(lens, present)

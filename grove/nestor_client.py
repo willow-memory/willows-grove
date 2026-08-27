@@ -30,6 +30,8 @@ import threading
 from pathlib import Path
 from typing import Any, Optional
 
+from grove.errors import Unreachable
+
 log = logging.getLogger(__name__)
 
 _DEFAULT_STORE_ENVS = ("NESTOR_STORE", "NESTOR_STORE_PATH")
@@ -180,7 +182,25 @@ class NestorClient:
 
     # ---- public surface ----
     def decision_check(self, question: str) -> Optional[dict[str, Any]]:
-        """Ask Nestor: has this decision been sealed?  Returns the raw response."""
+        """Ask Nestor: has this decision been sealed?
+
+        Three-state contract (INVARIANTS.md §1):
+
+        * populated → returns the raw JSON-RPC response dict with a
+          ``result`` payload (sealed / refused / pending — all real
+          Nestor states).
+        * empty → returns ``None`` when Nestor is reachable but has no
+          matching sealed pair for this claim (the "pending" case at the
+          endpoint layer).
+        * unreachable → raises ``Unreachable`` when ``available()`` is
+          False (nestor binary not on PATH). Callers used to see
+          ``None`` in both the "reachable but no match" and "binary
+          absent" cases; the endpoint used to disambiguate by calling
+          ``available()`` first, and it still does — but a caller that
+          skips the probe now gets a distinct sentinel.
+        """
+        if not self.available():
+            raise Unreachable("nestor binary not on PATH")
         return self._call("nestor/decision_check", {"question": question})
 
     def evidence_for(self, pair_id: str) -> Optional[dict[str, Any]]:

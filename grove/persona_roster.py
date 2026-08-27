@@ -5,13 +5,22 @@
 — extends ``fleet.json`` with per-agent ``voice`` (register, mandate,
 not_do), ``visual`` (color, sigil, color_token), ``emission_fields``,
 and a ``canonical_file`` pointer per D10 in
-``docs/design/willow-grove-premise.md``. Grove reads it at boot and
-caches the rows; per D7 (*absence is a state, not a failure*) the
-reader degrades cleanly when the file is not on disk — a single info
-log fires once, then every subsequent locate call is silent.
+``docs/design/willow-grove-premise.md``.
 
-Style mirrors ``grove/nestor_client.py``: one small synchronous class,
-no threading or async, ``None`` when the source is absent. Writes are
+Three-state contract (see ``docs/INVARIANTS.md §1``):
+
+* populated    — ``PersonaRoster.load()`` returns a roster with rows.
+* empty        — ``PersonaRoster.load()`` returns a roster with no rows
+                 (file present, ``agents`` / ``personas`` empty).
+* unreachable  — ``PersonaRoster.load()`` raises ``Unreachable`` when
+                 no registry file is found on any probe path.
+
+INVARIANTS.md §2 supersedes the earlier D7 reading: absence is a state
+AND it must render distinctly, so this module no longer returns ``None``
+for "source not reached" — it raises. Callers translate that into a
+503 response with ``state="unreachable"``.
+
+Style: one small synchronous class, no threading or async. Writes are
 governance acts (Article VIII) and belong to the charter — this module
 never writes to the registry.
 """
@@ -22,6 +31,8 @@ import logging
 import os
 from pathlib import Path
 from typing import Any, Iterable, Optional
+
+from grove.errors import Unreachable
 
 log = logging.getLogger(__name__)
 
@@ -222,11 +233,24 @@ class PersonaRoster:
         self._rows = _load_from_path(resolved) if resolved is not None else []
 
     @classmethod
-    def load(cls) -> Optional["PersonaRoster"]:
-        """Locate + load. Returns ``None`` when no registry file exists (D7)."""
+    def load(cls) -> "PersonaRoster":
+        """Locate + load. Raises ``Unreachable`` when no registry file exists.
+
+        Three-state contract (INVARIANTS.md §1):
+
+        * populated / empty → returns a ``PersonaRoster`` (rows may be []).
+        * unreachable       → raises ``Unreachable`` with the probe list.
+
+        Prior behavior returned ``None`` on absence and callers checked for
+        it; INVARIANTS.md §2 supersedes that — the ``Unreachable`` sentinel
+        is what the endpoint translates into a 503 payload.
+        """
         path = locate_personas_file()
         if path is None:
-            return None
+            raise Unreachable(
+                "no fleet_personas.json found in probe path "
+                "($WILLOW_HOME/willow-memory/willow, ~/willow-memory/willow, ~/.willow)"
+            )
         return cls(path=path)
 
     # ---- introspection ----

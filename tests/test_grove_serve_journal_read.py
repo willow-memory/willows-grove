@@ -99,7 +99,8 @@ def _get_json(url: str) -> tuple[int, object]:
 
 
 class JournalRecentRouteTests(unittest.TestCase):
-    def test_returns_list_from_reader(self) -> None:
+    def test_returns_populated_from_reader(self) -> None:
+        """Three-state (INVARIANTS.md §1): reader returns atoms → state=populated."""
         import grove_serve
 
         atoms = [
@@ -115,11 +116,11 @@ class JournalRecentRouteTests(unittest.TestCase):
         ):
             status, body = _get_json(srv.url("/api/journal/recent"))
         self.assertEqual(status, 200)
-        self.assertIsInstance(body, list)
-        self.assertEqual(body, atoms)
+        self.assertEqual(body.get("state"), "populated")
+        self.assertEqual(body.get("atoms"), atoms)
 
-    def test_empty_reader_returns_empty_list_200(self) -> None:
-        """D7: unreachable willow-mcp is a legible state, not an error."""
+    def test_empty_reader_returns_empty_state_200(self) -> None:
+        """Reader reached, no atoms → 200 + state=empty."""
         import grove_serve
 
         with _ServerHarness() as srv, patch.object(
@@ -127,7 +128,24 @@ class JournalRecentRouteTests(unittest.TestCase):
         ):
             status, body = _get_json(srv.url("/api/journal/recent"))
         self.assertEqual(status, 200)
-        self.assertEqual(body, [])
+        self.assertEqual(body.get("state"), "empty")
+        self.assertEqual(body.get("atoms"), [])
+
+    def test_unreachable_reader_returns_503_state_unreachable(self) -> None:
+        """Reader raises Unreachable → 503 + state=unreachable (INVARIANTS.md §1)."""
+        import grove_serve
+        from grove.errors import Unreachable
+
+        def _boom(**_kw):
+            raise Unreachable("willow-mcp not reachable")
+
+        with _ServerHarness() as srv, patch.object(
+            grove_serve.journal_reader, "read_recent", _boom
+        ):
+            status, body = _get_json(srv.url("/api/journal/recent"))
+        self.assertEqual(status, 503)
+        self.assertEqual(body.get("state"), "unreachable")
+        self.assertEqual(body.get("reason"), "willow-mcp not reachable")
 
     def test_limit_capped_at_200(self) -> None:
         import grove_serve

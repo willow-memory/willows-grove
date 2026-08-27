@@ -21,6 +21,7 @@ if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
 from grove import journal_writer  # noqa: E402
+from grove.errors import Unreachable  # noqa: E402
 
 
 class _FakeHTTPResponse:
@@ -62,28 +63,34 @@ class WriteOperatorTurnTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             journal_writer.write_operator_turn(None)  # type: ignore[arg-type]
 
-    # ---- degradation (c) ----
-    def test_no_backend_returns_ok_false(self) -> None:
+    # ---- three-state: unreachable (INVARIANTS.md §1) ----
+    def test_no_backend_raises_unreachable(self) -> None:
         with self._force_no_import():
             # WILLOW_MCP_URL unset from setUp — path (b) is skipped too.
             self.assertNotIn("WILLOW_MCP_URL", os.environ)
-            result = journal_writer.write_operator_turn("hello")
-        self.assertFalse(result.get("ok"))
-        self.assertIn("reason", result)
-        self.assertIn("not reachable", result["reason"])
+            with self.assertRaises(Unreachable) as ctx:
+                journal_writer.write_operator_turn("hello")
+        self.assertIn("not reachable", ctx.exception.reason)
 
     def test_no_backend_logs_once_across_many_calls(self) -> None:
         """One WARNING per process, not one per call (V-anti-noise)."""
         with self._force_no_import():
             with self.assertLogs(journal_writer.log, level="WARNING") as cap:
                 # First call must emit exactly one WARNING; second must be silent.
-                journal_writer.write_operator_turn("first")
+                with self.assertRaises(Unreachable):
+                    journal_writer.write_operator_turn("first")
                 first_count = len(cap.records)
-                journal_writer.write_operator_turn("second")
-                journal_writer.write_operator_turn("third")
+                with self.assertRaises(Unreachable):
+                    journal_writer.write_operator_turn("second")
+                with self.assertRaises(Unreachable):
+                    journal_writer.write_operator_turn("third")
                 total_count = len(cap.records)
         self.assertEqual(first_count, 1, cap.output)
         self.assertEqual(total_count, 1, cap.output)
+
+    # ---- three-state: populated (successful write) ----
+    # A successful write is always populated — see test_http_success_returns_atom_id
+    # below (kept in the HTTP-path block).
 
     # ---- HTTP path (b) ----
     def test_http_success_returns_atom_id(self) -> None:
@@ -114,7 +121,8 @@ class WriteOperatorTurnTests(unittest.TestCase):
         self.assertEqual(payload["source"], "operator")
         self.assertEqual(payload["app_id"], "willow-grove")
 
-    def test_http_transport_error_returns_ok_false(self) -> None:
+    def test_http_transport_error_raises_unreachable(self) -> None:
+        """Transport error on the HTTP path → Unreachable (INVARIANTS.md §1)."""
         import urllib.error as _urlerr
 
         os.environ["WILLOW_MCP_URL"] = "http://127.0.0.1:9"
@@ -125,9 +133,8 @@ class WriteOperatorTurnTests(unittest.TestCase):
         with self._force_no_import(), patch.object(
             journal_writer.urllib.request, "urlopen", _boom
         ):
-            result = journal_writer.write_operator_turn("hi")
-        self.assertFalse(result.get("ok"))
-        self.assertIn("reason", result)
+            with self.assertRaises(Unreachable):
+                journal_writer.write_operator_turn("hi")
 
     def test_verbatim_operator_text_is_preserved(self) -> None:
         """Operator words are load-bearing — no trim, no normalize (V5)."""
@@ -148,16 +155,19 @@ class WriteOperatorTurnTests(unittest.TestCase):
         payload = json.loads(captured["body"].decode("utf-8"))
         self.assertEqual(payload["content"], weird)
 
-    def test_reachable_but_error_returns_ok_false_with_reason(self) -> None:
+    def test_reachable_but_error_raises_unreachable_with_reason(self) -> None:
+        """Reached but rejected — INVARIANTS.md §1 treats this as unreachable
+        (the source could not answer with the shape we asked for), and the
+        endpoint layer surfaces the rejection reason to the operator."""
         os.environ["WILLOW_MCP_URL"] = "http://127.0.0.1:9999"
         body = json.dumps({"error": "schema_unusable"}).encode("utf-8")
         with self._force_no_import(), patch.object(
             journal_writer.urllib.request, "urlopen",
             lambda _r, timeout=None: _FakeHTTPResponse(body),
         ):
-            result = journal_writer.write_operator_turn("hello")
-        self.assertFalse(result.get("ok"))
-        self.assertEqual(result.get("reason"), "schema_unusable")
+            with self.assertRaises(Unreachable) as ctx:
+                journal_writer.write_operator_turn("hello")
+        self.assertEqual(ctx.exception.reason, "schema_unusable")
 
 
 if __name__ == "__main__":
