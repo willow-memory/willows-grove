@@ -195,6 +195,16 @@ def render_page() -> str:
         # first in <body> so its /api/personas fetch is in flight before every
         # other component connects and reads visual.color / visual.sigil / voice.
         '<script type="module" src="/web/components/grove-persona-registry.js"></script>\n'
+        # D11/V5 verbatim refusal chip — registered here so the boot module
+        # below can construct one on demand and the element upgrades in place.
+        '<script type="module" src="/web/components/grove-refusal-chip.js"></script>\n'
+        # Refusal auto-summon boot: listens for the ``nestor-refusal`` window
+        # CustomEvent and mounts a <grove-refusal-chip> into #refusal-chip-mount
+        # with the verbatim payload. Also exposes ``window.groveNestorAsk``
+        # as an operator/console summon path. MUST be loaded after the
+        # ``grove-refusal-chip`` component script above so the constructor is
+        # defined by the time the boot fires an event.
+        '<script type="module" src="/web/boot/refusal-summon-boot.js"></script>\n'
         # Layout-memory boot — walks <grove-card id="…"> nodes and wires each
         # to per-viewer localStorage so remembered edge/state persists across
         # reloads, and pinned cards summon on boot (D12 + D14). Ordering
@@ -214,6 +224,10 @@ def render_page() -> str:
         '  <grove-dispatch-rail lens="pa"></grove-dispatch-rail>\n'
         "</main>\n"
         f"{_FOOTER}\n"
+        # Mount point for verbatim refusal chips summoned by
+        # ``/web/boot/refusal-summon-boot.js`` in response to
+        # ``nestor-refusal`` window events (D11/V5).
+        '<div id="refusal-chip-mount"></div>\n'
         "</body>\n"
         "</html>\n"
     )
