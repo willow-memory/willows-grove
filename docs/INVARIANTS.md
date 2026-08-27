@@ -320,3 +320,17 @@ in its docstrings and CHANGELOG bullet.
 A new INVARIANTS section that ships without a CI witness is a §10
 violation and is fixed in the same PR — either the enforcement lands,
 or a step that fails loudly ("`§N` has no CI witness yet") does.
+
+Pinning tests (populated as each downstream PR lands):
+
+- `tests/e2e_ollama/test_watcher_ollama_readiness.py` — canary for
+  the Ollama-backed e2e suite. Verifies the CI Ollama service is
+  reachable at `$OLLAMA_HOST` and that the smallest candidate model
+  pulls + generates. A skip here signals an environment gap; a fail
+  here means the whole suite is not being exercised. (Grove v0.9 PR 8.)
+- `tests/e2e_ollama/test_watcher_ollama_e2e.py` — pins the C11
+  LEFT-side write path end-to-end: real Postgres LISTEN/NOTIFY on
+  `grove.messages` → real Ollama classification → journal write
+  carrying `sender="resident-watcher"`, a `domain:*` tag in the
+  closed `DOMAINS` set, and the operator's text verbatim (Gate 5 Q2,
+  Q3, and V5 discipline). (Grove v0.9 PR 8.)
