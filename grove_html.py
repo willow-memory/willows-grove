@@ -190,15 +190,21 @@ def render_page() -> str:
         '<script type="module" src="/web/components/grove-chat.js"></script>\n'
         '<script type="module" src="/web/components/grove-cast-chip.js"></script>\n'
         '<script type="module" src="/web/components/grove-dispatch-rail.js"></script>\n'
+        # D10 unified persona registry: mounted in <head> so the definition is
+        # ready before the <body> instance upgrades; the instance itself sits
+        # first in <body> so its /api/personas fetch is in flight before every
+        # other component connects and reads visual.color / visual.sigil / voice.
+        '<script type="module" src="/web/components/grove-persona-registry.js"></script>\n'
         # Layout-memory boot — walks <grove-card id="…"> nodes and wires each
         # to per-viewer localStorage so remembered edge/state persists across
         # reloads, and pinned cards summon on boot (D12 + D14). Ordering
-        # matters: this MUST come after the grove-card component script above
-        # so ``customElements.define("grove-card", …)`` has already run by
-        # the time the boot walks the DOM by tag name.
+        # matters: this MUST come after every component script above so all
+        # ``customElements.define(…)`` calls have run by the time the boot
+        # walks the DOM by tag name.
         '<script type="module" src="/web/boot/layout-memory-boot.js"></script>\n'
         "</head>\n"
         "<body>\n"
+        '<grove-persona-registry></grove-persona-registry>\n'
         f"{_TOP_STRIP}\n"
         f"{_LENS_SWITCH}\n"
         "<main>\n"
