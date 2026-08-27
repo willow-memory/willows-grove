@@ -1,0 +1,66 @@
+{
+  "schema": "envelope-registry/v1.1",
+  "description": "Fixture — three envelopes exercising each P1 attestation state (attested, missing, invalid). Mirrors the pre_approved shape from willow-memory/willow/envelopes/pre-approved.json.",
+  "pre_approved": [
+    {
+      "id": "reach-willow-home-rw",
+      "grantee": "kart",
+      "kind": "filesystem",
+      "paths": ["{{HOME}}/.willow"],
+      "mode": "rw",
+      "enforced_by": "willow-2.0/willow/fylgja/config/kart-sandbox.json#bind_read_write",
+      "issued_at": "2026-06-01",
+      "expires_at": null,
+      "notes": "Fleet home — handoffs, SOIL overlay.",
+      "max_count": null,
+      "used_count": 0,
+      "attestation": "attested",
+      "constitutional_ref": "CONST-III-2"
+    },
+    {
+      "id": "reach-gh-api-loki-rate-limited",
+      "grantee": "loki",
+      "kind": "network",
+      "paths": ["https://api.github.com/repos/rudi193-cmd/*"],
+      "mode": "read",
+      "enforced_by": "loki-sandbox.json#egress_gh",
+      "issued_at": "2026-08-01",
+      "expires_at": "2026-09-01",
+      "notes": "Fleet accountant — read-only PR + issue polls.",
+      "max_count": 500,
+      "used_count": 173,
+      "attestation": "attestation_missing",
+      "constitutional_ref": "CONST-III-2"
+    },
+    {
+      "id": "reach-outbox-vish-write",
+      "grantee": "vishwakarma",
+      "kind": "filesystem",
+      "paths": ["{{HOME}}/.willow/outbox"],
+      "mode": "w",
+      "enforced_by": "vish-sandbox.json#bind_write",
+      "issued_at": "2026-07-15",
+      "expires_at": "2026-08-20",
+      "notes": "Build lane outputs. EXPIRED — kept as example of invalid attestation.",
+      "max_count": null,
+      "used_count": 42,
+      "attestation": "attestation_invalid",
+      "constitutional_ref": "CONST-III-2"
+    },
+    {
+      "id": "reach-postgres-heimdallr-ro",
+      "grantee": "heimdallr",
+      "kind": "database",
+      "paths": ["postgres://willow_20/grove.*"],
+      "mode": "read",
+      "enforced_by": "heimdallr-sandbox.json#pg_read",
+      "issued_at": "2026-05-10",
+      "expires_at": "2027-05-10",
+      "notes": "Watch post — read-only Postgres for dashboard.",
+      "max_count": null,
+      "used_count": 8419,
+      "attestation": "attested",
+      "constitutional_ref": "CONST-III-2"
+    }
+  ]
+}
