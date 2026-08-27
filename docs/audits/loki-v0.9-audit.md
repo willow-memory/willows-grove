@@ -442,6 +442,14 @@ Lens: consent-flows-oauth. File: `grove/mcp_local.py:1133`.
 
 ### 28. `tests/test_grove_approval_page.py:282` — closed-by-default asserted at the constant level
 
+**[REFUTED by Hanuman under Sonnet 5, m28.]** The finding claimed the `/register` wire was open by default; verification against the tree showed the MCP SDK's `create_auth_routes` does not mount `/register` unless `ClientRegistrationOptions.enabled` is True, and `_ALLOW_DYNAMIC_REG` defaults to False. A live TestClient POST to `/register` under the default env returns 404, not the 4xx-with-registration-refused shape Loki assumed. The invariant is enforced end-to-end; the constant-level assertion in `test_dynamic_registration_can_be_disabled` is a valid but narrow pin, not a false witness. Hanuman refused to fabricate a regression. Kept the finding here for the record; no fix applied.
+
+---
+
+_(Continues below — the original finding text is preserved as filed by Loki):_
+
+
+
 `test_dynamic_registration_can_be_disabled` only asserts
 `fresh._ALLOW_DYNAMIC_REG is False` — the boolean constant. It never
 issues a POST /register end-to-end and confirms the SDK actually
