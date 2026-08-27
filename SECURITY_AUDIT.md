@@ -156,6 +156,7 @@ G-DEP-01) it is named in the finding.
 | `tests/test_chat_persona.py` | Wave C persona routing + dispatch | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_content_stack.py` | nav pane wiring | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_envelope_reader.py` | `grove/envelope_reader.py` D7 tolerance — empty dirs, malformed-file skip + log-once, later-dir precedence on `id` collision, and the `pre_approved` charter-key shape | Out of scope — test code; not shipped and not reachable at runtime |
+| `tests/test_grove_html_boot_wire.py` | `grove_html.render_page()` mounts `/web/boot/layout-memory-boot.js` last among module scripts in `<head>` so the boot walks the DOM after all sibling component scripts have registered their custom elements | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_grove_lens_switch.py` | `<grove-lens-switch>` mount verification — asserts `grove_html.render_page()` references the tri-modal lens component + module, and that the JS file exists on disk | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_grove_serve.py` | Grove served-page skeleton integration test (starts uvicorn on an ephemeral loopback port; asserts /health and /) | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_grove_serve_dispatch.py` | integration test for grove_serve.py's /api/dispatch route + /web/ static mount | Out of scope — test code; not shipped and not reachable at runtime |

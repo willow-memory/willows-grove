@@ -195,6 +195,13 @@ def render_page() -> str:
         # first in <body> so its /api/personas fetch is in flight before every
         # other component connects and reads visual.color / visual.sigil / voice.
         '<script type="module" src="/web/components/grove-persona-registry.js"></script>\n'
+        # Layout-memory boot — walks <grove-card id="…"> nodes and wires each
+        # to per-viewer localStorage so remembered edge/state persists across
+        # reloads, and pinned cards summon on boot (D12 + D14). Ordering
+        # matters: this MUST come after every component script above so all
+        # ``customElements.define(…)`` calls have run by the time the boot
+        # walks the DOM by tag name.
+        '<script type="module" src="/web/boot/layout-memory-boot.js"></script>\n'
         "</head>\n"
         "<body>\n"
         '<grove-persona-registry></grove-persona-registry>\n'
