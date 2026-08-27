@@ -1,0 +1,27 @@
+{
+  "name": "Willow's Grove",
+  "slug": "willows-grove",
+  "version": "0.9.0",
+  "summary": "The operator's seat for the Willow AI fleet. Loopback-only served page + Web Components + Grove MCP.",
+  "author": "willow-memory",
+  "license": "See LICENSE file (TBD)",
+  "capabilities": {
+    "u2u": {
+      "transport": "LAN (UDP/TCP)",
+      "authentication": "Ed25519 signatures",
+      "confidentiality": "none — signed plaintext; see docs/design/u2u-security-limits.md; encryption planned for Gate 6",
+      "message_kinds": ["knock", "consent", "note"]
+    },
+    "mcp_serve": {
+      "auth": "OAuth 2.0 with PKCE (S256)",
+      "surface": "loopback-only unless an operator explicitly acknowledges a tunnel with WILLOW_MCP_TUNNEL_ACKNOWLEDGED=1",
+      "dynamic_registration": "off by default; opt-in via GROVE_MCP_ALLOW_DYNAMIC_REGISTRATION=1",
+      "access_ttl_hours": 24,
+      "pending_ttl_minutes": 5
+    },
+    "dashboard_ports": "none — loopback served page on 127.0.0.1:8766; no public HTTP surface"
+  },
+  "invariants": "docs/INVARIANTS.md",
+  "audit": "docs/audits/loki-v0.9-audit.md",
+  "repository": "https://github.com/willow-memory/willows-grove"
+}

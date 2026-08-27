@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.superpowers/
+*.db
+*.key
+.worktrees/
+worktrees/
+.cursor/grove_followup_last_id
+data/

@@ -1,0 +1,831 @@
+"""
+grove_db.py — Grove workspace messaging database.
+b17: WGRV1  ΔΣ=42
+
+Self-contained — no sibling repo dependency. Pool, schema bootstrap,
+LISTEN helper, and all channel/message/flag/bus/cursor operations.
+
+Every psycopg2 connection this module opens is bounded by
+``connect_timeout`` and a session ``statement_timeout`` GUC. CLAUDE.md
+pins "If Postgres is down, surface it and stop." — an unbounded
+connect against a stuck-but-reachable Postgres would hang the
+dashboard instead. Timeouts are configurable via
+``GROVE_PG_CONNECT_TIMEOUT`` (seconds; default 5) and
+``GROVE_PG_STATEMENT_TIMEOUT_MS`` (milliseconds; default 30000). Loki
+v0.9 finding #21 (Grove v0.9 PR 12).
+
+The FRANK ledger writer (``_frank_ledger_append``) raises
+``grove.errors.LedgerWriteFailed`` on any failure and logs via the
+module logger. The pre-PR-12 shape swallowed every exception —
+including the anti-fork ``frank_ledger_no_fork`` UniqueViolation — to
+a bare ``print()``. That was the anti-pattern named in Loki v0.9
+finding #23. Best-effort semantics stay at the call site, not inside
+the primitive.
+"""
+
+import logging
+import os
+import threading
+from datetime import datetime
+from typing import Optional, List, Dict, Any
+
+_pool = None
+_pool_lock = threading.Lock()
+
+log = logging.getLogger(__name__)
+
+SCHEMA = "grove"
+
+VALID_CHANNEL_TYPES = frozenset({"direct", "group", "persona", "broadcast"})
+VALID_MESSAGE_TYPES = frozenset({"text", "system", "file_share", "reaction"})
+VALID_FLAGS = frozenset({"needs-reply", "starred", "read", "urgent", "resolved"})
+
+# Bus protocol constants
+BUS_TYPES = frozenset({
+    "COMMAND",    # instruct an agent to do something
+    "RESPONSE",   # reply to a COMMAND
+    "EVENT",      # something happened (fire and forget)
+    "INTERRUPT",  # act immediately, preempt normal flow
+    "HEARTBEAT",  # I am alive
+    "ACK",        # I received and understood your message
+    "DATA",       # bulk payload, routed to Kart/DMA layer
+    "SYNC",       # synchronise state between agents
+})
+
+# Priority 0 = highest (INTERRUPT), 7 = lowest (DEBUG) — mirrors CAN bus
+BUS_PRIORITY = {
+    "INTERRUPT": 0, "URGENT": 1, "HIGH": 2, "NORMAL": 3,
+    "LOW": 4, "BACKGROUND": 5, "HEARTBEAT": 6, "DEBUG": 7,
+}
+BUS_BROADCAST = "__all__"   # sentinel: message is addressed to every agent
+
+
+def _connect_timeout_secs() -> int:
+    """Seconds to wait for a Postgres TCP connect before giving up.
+
+    Configurable via ``GROVE_PG_CONNECT_TIMEOUT``. Default 5. A
+    non-positive or non-integer value falls back to the default so a
+    typo in a systemd unit never removes the bound.
+    """
+    raw = os.getenv("GROVE_PG_CONNECT_TIMEOUT", "5")
+    try:
+        n = int(raw)
+    except (TypeError, ValueError):
+        return 5
+    return n if n > 0 else 5
+
+
+def _statement_timeout_ms() -> int:
+    """Milliseconds to allow a single Postgres statement before killing it.
+
+    Configurable via ``GROVE_PG_STATEMENT_TIMEOUT_MS``. Default 30000
+    (30 s). Set as a session GUC via the psycopg2 ``options`` string
+    (``-c statement_timeout=<ms>``) on every connect this module opens.
+    """
+    raw = os.getenv("GROVE_PG_STATEMENT_TIMEOUT_MS", "30000")
+    try:
+        n = int(raw)
+    except (TypeError, ValueError):
+        return 30000
+    return n if n > 0 else 30000
+
+
+def _connect_kwargs() -> Dict[str, Any]:
+    """The bounded-timeout kwargs every psycopg2.connect in this module passes."""
+    return {
+        "connect_timeout": _connect_timeout_secs(),
+        "options": f"-c statement_timeout={_statement_timeout_ms()}",
+    }
+
+
+def _get_pool():
+    global _pool
+    if _pool is not None:
+        return _pool
+    with _pool_lock:
+        if _pool is None:
+            import psycopg2.pool
+            dsn = os.getenv("WILLOW_DB_URL", "")
+            if not dsn:
+                pg_db   = os.getenv("WILLOW_PG_DB", "willow_20")
+                pg_user = os.getenv("WILLOW_PG_USER", os.environ.get("USER", ""))
+                dsn = f"dbname={pg_db} user={pg_user}"
+            # Timeouts pass through ThreadedConnectionPool's *args/**kwargs
+            # into every psycopg2.connect it opens.
+            _pool = psycopg2.pool.ThreadedConnectionPool(
+                minconn=2,
+                maxconn=10,
+                dsn=dsn,
+                **_connect_kwargs(),
+            )
+            _bootstrap_schema(_pool)
+    return _pool
+
+
+def _bootstrap_schema(pool):
+    """Create grove schema idempotently on first pool use."""
+    conn = pool.getconn()
+    try:
+        init_schema(conn)
+    finally:
+        pool.putconn(conn)
+
+
+def get_connection():
+    pool = _get_pool()
+    conn = pool.getconn()
+    try:
+        conn.autocommit = False
+        cur = conn.cursor()
+        cur.execute(f"SET search_path = {SCHEMA}, public")
+        cur.close()
+        return conn
+    except Exception:
+        pool.putconn(conn)
+        raise
+
+
+def release_connection(conn):
+    try:
+        conn.rollback()
+    except Exception:
+        # A connection whose rollback failed is in an unknown transactional
+        # state. Handing it back to the pool would let the next borrower
+        # inherit that state (Loki v0.9 finding #38). Close it directly
+        # instead and let the pool open a fresh one on the next getconn().
+        log.warning(
+            "grove_db.release_connection: rollback failed, closing connection "
+            "instead of returning it to the pool",
+            exc_info=True,
+        )
+        try:
+            conn.close()
+        except Exception:
+            pass
+        return
+    _get_pool().putconn(conn)
+
+
+def listen_connection():
+    """Open a dedicated autocommit connection for LISTEN — not from the pool.
+
+    Callers own this connection for its lifetime and must close() it themselves.
+    Pool connections must not be set autocommit; this is the correct path for
+    any caller that needs LISTEN/NOTIFY.
+
+    Bounded by ``connect_timeout`` and ``statement_timeout`` per the
+    module docstring — the LISTEN statement itself returns immediately,
+    so ``statement_timeout`` does not affect the subsequent
+    ``poll_notify`` idle path.
+    """
+    import psycopg2
+    pg_db   = os.getenv("WILLOW_PG_DB",   "willow_20")
+    pg_user = os.getenv("WILLOW_PG_USER",  os.getenv("USER", ""))
+    dsn     = os.getenv("WILLOW_DB_URL",   "") or f"dbname={pg_db} user={pg_user}"
+    conn    = psycopg2.connect(dsn, **_connect_kwargs())
+    conn.autocommit = True
+    return conn
+
+
+def init_schema(conn):
+    """Create grove schema and tables. Idempotent."""
+    cur = conn.cursor()
+    cur.execute(f"CREATE SCHEMA IF NOT EXISTS {SCHEMA}")
+    cur.execute(f"SET search_path = {SCHEMA}, public")
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS channels (
+            id              BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+            name            TEXT NOT NULL UNIQUE,
+            channel_type    TEXT NOT NULL CHECK (channel_type IN ('direct','group','persona','broadcast')),
+            description     TEXT,
+            created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            is_archived     BOOLEAN DEFAULT FALSE
+        )
+    """)
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS messages (
+            id                  BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+            channel_id          BIGINT NOT NULL REFERENCES channels(id),
+            sender              TEXT NOT NULL,
+            content             TEXT NOT NULL,
+            message_type        TEXT NOT NULL DEFAULT 'text'
+                                    CHECK (message_type IN ('text','system','file_share','reaction')),
+            reply_to_id         BIGINT REFERENCES messages(id),
+            willow_indexed_at   TIMESTAMP,
+            created_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            is_deleted          INTEGER DEFAULT 0
+        )
+    """)
+
+    # Bus envelope columns — only ALTER when column genuinely absent (avoids ACCESS EXCLUSIVE lock)
+    cur.execute("""
+        SELECT column_name FROM information_schema.columns
+        WHERE table_schema = 'grove' AND table_name = 'messages'
+          AND column_name IN ('to_agent', 'bus_type', 'priority', 'correlation_id', 'ttl', 'deleted_by')
+    """)
+    existing_msg_cols = {r[0] for r in cur.fetchall()}
+    for col_name, col_sql in [
+        ("to_agent",       "ALTER TABLE messages ADD COLUMN to_agent TEXT DEFAULT '__all__'"),
+        ("bus_type",       "ALTER TABLE messages ADD COLUMN bus_type TEXT DEFAULT 'EVENT'"),
+        ("priority",       "ALTER TABLE messages ADD COLUMN priority INTEGER DEFAULT 3"),
+        ("correlation_id", "ALTER TABLE messages ADD COLUMN correlation_id TEXT"),
+        ("ttl",            "ALTER TABLE messages ADD COLUMN ttl INTEGER"),
+        ("deleted_by",     "ALTER TABLE messages ADD COLUMN deleted_by TEXT"),
+    ]:
+        if col_name not in existing_msg_cols:
+            cur.execute(col_sql)
+
+    cur.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_channels_name ON channels (name)")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_channels_type ON channels (channel_type)")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_messages_channel ON messages (channel_id)")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_messages_sender ON messages (sender)")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_messages_created ON messages (created_at)")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_messages_reply ON messages (reply_to_id)")
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS message_flags (
+            id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+            message_id  BIGINT NOT NULL REFERENCES messages(id) ON DELETE CASCADE,
+            sender      TEXT NOT NULL,
+            flag        TEXT NOT NULL CHECK (flag IN ('needs-reply','starred','read','urgent','resolved')),
+            created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE (message_id, sender, flag)
+        )
+    """)
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_flags_message ON message_flags (message_id)")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_flags_flag ON message_flags (flag)")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_messages_to_agent ON messages (to_agent)")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_messages_bus_type ON messages (bus_type)")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_messages_priority ON messages (priority)")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_messages_correlation ON messages (correlation_id) WHERE correlation_id IS NOT NULL")
+
+    # Optional agent_name column on channels — only ALTER when absent (avoids ACCESS EXCLUSIVE lock)
+    cur.execute("""
+        SELECT 1 FROM information_schema.columns
+        WHERE table_schema = 'grove' AND table_name = 'channels' AND column_name = 'agent_name'
+    """)
+    if not cur.fetchone():
+        cur.execute("ALTER TABLE channels ADD COLUMN agent_name TEXT")
+
+    # LISTEN/NOTIFY trigger — fires grove_channel notify on every new message
+    cur.execute("""
+        CREATE OR REPLACE FUNCTION grove_notify_message()
+        RETURNS trigger LANGUAGE plpgsql AS $$
+        BEGIN
+            PERFORM pg_notify('grove_channel', NEW.channel_id::text);
+            RETURN NEW;
+        END;
+        $$
+    """)
+    cur.execute("""
+        DO $$
+        BEGIN
+            IF NOT EXISTS (
+                SELECT 1 FROM pg_trigger
+                WHERE tgname = 'trg_grove_notify'
+            ) THEN
+                CREATE TRIGGER trg_grove_notify
+                AFTER INSERT ON messages
+                FOR EACH ROW EXECUTE FUNCTION grove_notify_message();
+            END IF;
+        END
+        $$
+    """)
+
+    # FRANK witness ledger — _frank_ledger_append() writes here on every message,
+    # but no repo shipped the CREATE TABLE, so on a fresh database the hash chain
+    # silently no-oped with a best-effort error on each send. Lives in public
+    # (shared fleet surface, same as willow-mcp's readers), not the grove schema.
+    # The partial unique index is the anti-fork guard: at most one genesis row
+    # (prev_hash IS NULL) per project, so the chain cannot silently restart.
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS public.frank_ledger (
+            id         TEXT PRIMARY KEY,
+            project    TEXT NOT NULL,
+            event_type TEXT NOT NULL,
+            content    JSONB NOT NULL,
+            prev_hash  TEXT,
+            hash       TEXT NOT NULL,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+        )
+    """)
+    cur.execute("""
+        CREATE UNIQUE INDEX IF NOT EXISTS frank_ledger_no_fork
+        ON public.frank_ledger (project) WHERE prev_hash IS NULL
+    """)
+
+    conn.commit()
+
+
+# ---------------------------------------------------------------------------
+# Channels
+# ---------------------------------------------------------------------------
+
+def normalize_channel_name(name: str) -> str:
+    """Fold a channel name to the form stored in the channels table.
+
+    Senders reach us with Discord-style '#fleet' or padded ' fleet ' while the
+    stored row is 'fleet'. Callers that compare raw strings miss the match, and
+    create-if-missing then mints a second channel nobody reads.
+    """
+    return (name or "").strip().lstrip("#").strip()
+
+
+def find_channel_in(channels: List[Dict[str, Any]], name: str) -> Optional[Dict[str, Any]]:
+    """Locate a channel by name, folding sender-side spelling variants."""
+    target = normalize_channel_name(name)
+    if not target:
+        return None
+    return next(
+        (c for c in channels if normalize_channel_name(c["name"]) == target),
+        None,
+    )
+
+
+def duplicate_channel_groups(channels: List[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]:
+    """Group channels whose names collide once normalized.
+
+    A non-empty result means at least one channel is a shadow: writes land in it
+    and readers of the canonical name never see them.
+    """
+    groups: Dict[str, List[Dict[str, Any]]] = {}
+    for c in channels:
+        groups.setdefault(normalize_channel_name(c["name"]), []).append(c)
+    return {k: v for k, v in groups.items() if len(v) > 1}
+
+
+def create_channel(conn, *, name: str, channel_type: str, description: str = None) -> Dict[str, Any]:
+    if channel_type not in VALID_CHANNEL_TYPES:
+        raise ValueError(f"channel_type must be one of {VALID_CHANNEL_TYPES}")
+    name = normalize_channel_name(name)
+    if not name:
+        raise ValueError("channel name must not be empty after normalization")
+    cur = conn.cursor()
+    cur.execute("""
+        INSERT INTO channels (name, channel_type, description)
+        VALUES (%s, %s, %s)
+        RETURNING id, name, channel_type, description, created_at, updated_at, is_archived
+    """, (name, channel_type, description))
+    row = cur.fetchone()
+    cols = [d[0] for d in cur.description]
+    conn.commit()
+    return dict(zip(cols, row))
+
+
+def list_channels(conn, include_archived: bool = False) -> List[Dict[str, Any]]:
+    cur = conn.cursor()
+    if include_archived:
+        cur.execute("SELECT * FROM channels ORDER BY name")
+    else:
+        cur.execute("SELECT * FROM channels WHERE is_archived = FALSE ORDER BY name")
+    rows = cur.fetchall()
+    cols = [d[0] for d in cur.description]
+    return [dict(zip(cols, r)) for r in rows]
+
+
+def get_channel(conn, channel_id: int) -> Optional[Dict[str, Any]]:
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM channels WHERE id = %s", (channel_id,))
+    row = cur.fetchone()
+    if not row:
+        return None
+    cols = [d[0] for d in cur.description]
+    return dict(zip(cols, row))
+
+
+def archive_channel(conn, channel_id: int) -> bool:
+    cur = conn.cursor()
+    cur.execute(
+        "UPDATE channels SET is_archived = TRUE, updated_at = CURRENT_TIMESTAMP WHERE id = %s",
+        (channel_id,)
+    )
+    conn.commit()
+    return cur.rowcount > 0
+
+
+# ---------------------------------------------------------------------------
+# Messages
+# ---------------------------------------------------------------------------
+
+def _frank_ledger_append(event_type: str, content: dict) -> None:
+    """Write one tamper-evident entry to frank_ledger in willow_20.
+
+    Re-homed from the cut grove_serve. Opens its own short-lived,
+    timeout-bounded connection so a ledger failure can never roll back
+    the caller's message transaction.
+
+    Failure surfaces two ways (Loki v0.9 finding #23, Grove v0.9 PR 12):
+    the module logger records an ERROR with exception info, AND
+    ``grove.errors.LedgerWriteFailed`` is raised so the caller can
+    react. The pre-fix shape caught every exception and ``print()``ed
+    it, which vanished the anti-fork ``frank_ledger_no_fork``
+    UniqueViolation to stdout — the exact anti-pattern the audit named.
+
+    Best-effort semantics stay at the call site (see ``send_message``),
+    not inside this primitive. See ``docs/INVARIANTS.md §1``.
+    """
+    # Lazy import so grove_db has no import-time coupling to grove.errors
+    # (mirrors cursor_load's pattern).
+    from grove.errors import LedgerWriteFailed
+    try:
+        import hashlib as _hl
+        import json as _j
+        import uuid as _u
+        import psycopg2
+        import psycopg2.extras
+        db   = os.environ.get("WILLOW_PG_DB", "willow_20")
+        user = os.environ.get("WILLOW_PG_USER", os.environ.get("USER", ""))
+        conn = psycopg2.connect(dbname=db, user=user, **_connect_kwargs())
+        try:
+            cur = conn.cursor()
+            cur.execute("SELECT hash FROM frank_ledger ORDER BY created_at DESC LIMIT 1")
+            row       = cur.fetchone()
+            prev_hash = row[0] if row else None
+            payload   = _j.dumps({"event_type": event_type, "content": content}, sort_keys=True)
+            new_hash  = _hl.sha256(f"{prev_hash or ''}{payload}".encode()).hexdigest()
+            cur.execute(
+                "INSERT INTO frank_ledger (id, project, event_type, content, prev_hash, hash) "
+                "VALUES (%s, %s, %s, %s, %s, %s)",
+                (str(_u.uuid4()), "grove", event_type,
+                 psycopg2.extras.Json(content), prev_hash, new_hash),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+    except LedgerWriteFailed:
+        # Never wrap our own sentinel.
+        raise
+    except Exception as e:
+        log.error("frank_ledger append failed for event_type=%r: %s",
+                  event_type, e, exc_info=True)
+        raise LedgerWriteFailed(f"frank_ledger append failed: {e}") from e
+
+
+def _is_human_sender(sender: str) -> bool:
+    """True if sender is the configured human operator handle (GROVE_HUMAN_SENDER).
+
+    send_message is the MCP/agent post path — the human dashboard chat bypasses it
+    via a raw INSERT — so this is normally empty and every post is agent activity.
+    """
+    human = (os.environ.get("GROVE_HUMAN_SENDER") or "").strip().lower()
+    return bool(human) and (sender or "").strip().lower() == human
+
+
+def send_message(conn, *, channel_id: int, sender: str, content: str,
+                 message_type: str = "text", reply_to_id: int = None) -> Dict[str, Any]:
+    if message_type not in VALID_MESSAGE_TYPES:
+        raise ValueError(f"message_type must be one of {VALID_MESSAGE_TYPES}")
+    cur = conn.cursor()
+    cur.execute("""
+        INSERT INTO messages (channel_id, sender, content, message_type, reply_to_id)
+        VALUES (%s, %s, %s, %s, %s)
+        RETURNING id, channel_id, sender, content, message_type, reply_to_id,
+                  willow_indexed_at, created_at, is_deleted
+    """, (channel_id, sender, content, message_type, reply_to_id))
+    row = cur.fetchone()
+    cols = [d[0] for d in cur.description]
+    conn.commit()
+    result = dict(zip(cols, row))
+    # FRANK audit (re-scoped from grove_serve): ledger agent-originated grove
+    # posts. Best-effort at the call site — the primitive itself now raises
+    # LedgerWriteFailed and logs (Loki v0.9 finding #23). We catch the
+    # sentinel here and log at WARNING so a ledger outage never blocks or
+    # rolls back a real message send, but it also never vanishes silently.
+    if not _is_human_sender(sender):
+        from grove.errors import LedgerWriteFailed
+        try:
+            _frank_ledger_append("grove_agent_message", {
+                "msg_id": result.get("id"),
+                "channel_id": channel_id,
+                "sender": sender,
+                "content": (content or "")[:500],
+                "message_type": message_type,
+            })
+        except LedgerWriteFailed as e:
+            log.warning("frank_ledger append skipped for msg_id=%r (best-effort): %s",
+                        result.get("id"), e.reason)
+    return result
+
+
+def get_history(conn, channel_id: int, limit: int = 100,
+                before_id: int = None, since_id: int = None) -> List[Dict[str, Any]]:
+    """Return top-level messages (no replies).
+
+    before_id: newest-first pagination (go backward).
+    since_id:  forward polling — return messages with id > since_id, oldest first.
+    """
+    cur = conn.cursor()
+    if since_id is not None:
+        cur.execute("""
+            SELECT * FROM messages
+            WHERE channel_id = %s AND reply_to_id IS NULL AND is_deleted = 0 AND id > %s
+            ORDER BY id ASC LIMIT %s
+        """, (channel_id, since_id, limit))
+    elif before_id:
+        cur.execute("""
+            SELECT * FROM messages
+            WHERE channel_id = %s AND reply_to_id IS NULL AND is_deleted = 0 AND id < %s
+            ORDER BY created_at DESC LIMIT %s
+        """, (channel_id, before_id, limit))
+    else:
+        cur.execute("""
+            SELECT * FROM messages
+            WHERE channel_id = %s AND reply_to_id IS NULL AND is_deleted = 0
+            ORDER BY created_at DESC LIMIT %s
+        """, (channel_id, limit))
+    rows = cur.fetchall()
+    cols = [d[0] for d in cur.description]
+    return [dict(zip(cols, r)) for r in rows]
+
+
+def get_thread(conn, parent_id: int) -> List[Dict[str, Any]]:
+    """Return all replies to a message, oldest first."""
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT * FROM messages
+        WHERE reply_to_id = %s AND is_deleted = 0
+        ORDER BY created_at ASC
+    """, (parent_id,))
+    rows = cur.fetchall()
+    cols = [d[0] for d in cur.description]
+    return [dict(zip(cols, r)) for r in rows]
+
+
+def delete_message(conn, message_id: int) -> bool:
+    cur = conn.cursor()
+    cur.execute("UPDATE messages SET is_deleted = 1 WHERE id = %s", (message_id,))
+    conn.commit()
+    return cur.rowcount > 0
+
+
+def search_messages(conn, query: str, channel_id: int = None) -> List[Dict[str, Any]]:
+    cur = conn.cursor()
+    if channel_id is not None:
+        cur.execute("""
+            SELECT * FROM messages
+            WHERE content ILIKE %s AND channel_id = %s AND is_deleted = 0
+            ORDER BY created_at DESC LIMIT 100
+        """, (f"%{query}%", channel_id))
+    else:
+        cur.execute("""
+            SELECT * FROM messages
+            WHERE content ILIKE %s AND is_deleted = 0
+            ORDER BY created_at DESC LIMIT 100
+        """, (f"%{query}%",))
+    rows = cur.fetchall()
+    cols = [d[0] for d in cur.description]
+    return [dict(zip(cols, r)) for r in rows]
+
+
+# ---------------------------------------------------------------------------
+# Flags
+# ---------------------------------------------------------------------------
+
+def set_flag(conn, *, message_id: int, sender: str, flag: str) -> bool:
+    if flag not in VALID_FLAGS:
+        raise ValueError(f"flag must be one of {VALID_FLAGS}")
+    cur = conn.cursor()
+    cur.execute("""
+        INSERT INTO message_flags (message_id, sender, flag)
+        VALUES (%s, %s, %s) ON CONFLICT (message_id, sender, flag) DO NOTHING
+    """, (message_id, sender, flag))
+    conn.commit()
+    return cur.rowcount > 0
+
+
+def clear_flag(conn, *, message_id: int, sender: str, flag: str) -> bool:
+    cur = conn.cursor()
+    cur.execute("""
+        DELETE FROM message_flags WHERE message_id = %s AND sender = %s AND flag = %s
+    """, (message_id, sender, flag))
+    conn.commit()
+    return cur.rowcount > 0
+
+
+def get_flags(conn, message_id: int) -> list[dict]:
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT sender, flag, created_at FROM message_flags WHERE message_id = %s ORDER BY created_at
+    """, (message_id,))
+    rows = cur.fetchall()
+    return [{"sender": r[0], "flag": r[1], "created_at": r[2].isoformat() if r[2] else None}
+            for r in rows]
+
+
+def get_flagged(conn, flag: str, channel_id: int = None, limit: int = 50) -> list[dict]:
+    cur = conn.cursor()
+    if channel_id is not None:
+        cur.execute("""
+            SELECT m.* FROM messages m
+            JOIN message_flags f ON f.message_id = m.id
+            WHERE f.flag = %s AND m.channel_id = %s AND m.is_deleted = 0
+            ORDER BY m.created_at DESC LIMIT %s
+        """, (flag, channel_id, limit))
+    else:
+        cur.execute("""
+            SELECT m.* FROM messages m
+            JOIN message_flags f ON f.message_id = m.id
+            WHERE f.flag = %s AND m.is_deleted = 0
+            ORDER BY m.created_at DESC LIMIT %s
+        """, (flag, limit))
+    rows = cur.fetchall()
+    cols = [d[0] for d in cur.description]
+    return [dict(zip(cols, r)) for r in rows]
+
+
+# ---------------------------------------------------------------------------
+# Bus
+# ---------------------------------------------------------------------------
+
+def bus_send(conn, *, channel_id: int, sender: str, content: str,
+             to_agent: str = BUS_BROADCAST, bus_type: str = "EVENT",
+             priority: int = 3, correlation_id: str = None,
+             ttl: int = None) -> Dict[str, Any]:
+    if bus_type not in BUS_TYPES:
+        raise ValueError(f"bus_type must be one of {BUS_TYPES}")
+    cur = conn.cursor()
+    cur.execute("""
+        INSERT INTO messages
+            (channel_id, sender, content, message_type, to_agent, bus_type, priority, correlation_id, ttl)
+        VALUES (%s, %s, %s, 'text', %s, %s, %s, %s, %s)
+        RETURNING id, channel_id, sender, content, to_agent, bus_type, priority,
+                  correlation_id, ttl, created_at
+    """, (channel_id, sender, content, to_agent, bus_type, priority, correlation_id, ttl))
+    row = cur.fetchone()
+    cols = [d[0] for d in cur.description]
+    conn.commit()
+    return dict(zip(cols, row))
+
+
+def bus_receive(conn, agent: str, since_id: int = 0, limit: int = 50) -> List[Dict[str, Any]]:
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT * FROM messages
+        WHERE (
+            LOWER(TRIM(COALESCE(to_agent, ''))) = LOWER(TRIM(%s))
+            OR to_agent = %s
+          )
+          AND is_deleted = 0
+          AND id > %s
+          AND (ttl IS NULL OR created_at + (ttl || ' seconds')::interval > NOW())
+        ORDER BY priority ASC, id ASC
+        LIMIT %s
+    """, (agent, BUS_BROADCAST, since_id, limit))
+    rows = cur.fetchall()
+    cols = [d[0] for d in cur.description]
+    return [dict(zip(cols, r)) for r in rows]
+
+
+def bus_delete(conn, message_id: int, sender: str) -> Dict[str, Any]:
+    """Soft-delete a bus message. Sender must own the message; '__system__' bypasses."""
+    cur = conn.cursor()
+    cur.execute("SELECT id, sender, is_deleted FROM messages WHERE id = %s", (message_id,))
+    row = cur.fetchone()
+    if not row:
+        raise ValueError(f"message {message_id} not found")
+    msg_id, msg_sender, is_deleted = row
+    if is_deleted:
+        return {"id": msg_id, "deleted": False, "reason": "already deleted"}
+    if sender != "__system__" and msg_sender != sender:
+        raise PermissionError(f"'{sender}' cannot delete message owned by '{msg_sender}'")
+    cur.execute(
+        "UPDATE messages SET is_deleted = 1, deleted_by = %s WHERE id = %s",
+        (sender, message_id),
+    )
+    conn.commit()
+    return {"id": msg_id, "deleted": True, "deleted_by": sender}
+
+
+# ---------------------------------------------------------------------------
+# Cursors
+# ---------------------------------------------------------------------------
+
+def cursor_save(conn, agent: str, cursors: dict) -> None:
+    import json
+    cur = conn.cursor()
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS agent_cursors (
+            agent      TEXT PRIMARY KEY,
+            cursors    JSONB NOT NULL,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    cur.execute("""
+        INSERT INTO agent_cursors (agent, cursors, updated_at)
+        VALUES (%s, %s, CURRENT_TIMESTAMP)
+        ON CONFLICT (agent) DO UPDATE
+        SET cursors = EXCLUDED.cursors, updated_at = CURRENT_TIMESTAMP
+    """, (agent, json.dumps(cursors)))
+    conn.commit()
+
+
+def cursor_load(conn, agent: str) -> dict:
+    """Load cursors for ``agent``.
+
+    Three-state contract (INVARIANTS.md §1): a state reader.
+
+    * populated → the stored cursor dict for ``agent``.
+    * empty     → ``{}`` when ``agent`` has never persisted a cursor row.
+    * unreachable → raises ``grove.errors.Unreachable`` when the database
+      cannot be read. The pre-PR-12 shape here caught every exception and
+      returned ``{}``, which collapsed a real DB failure into the empty
+      state — the exact anti-pattern §1 forbids.
+    """
+    import json
+    from grove.errors import Unreachable
+    try:
+        cur = conn.cursor()
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS agent_cursors (
+                agent      TEXT PRIMARY KEY,
+                cursors    JSONB NOT NULL,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        cur.execute("SELECT cursors FROM agent_cursors WHERE agent = %s", (agent,))
+        row = cur.fetchone()
+        conn.commit()
+    except Exception as err:
+        # Best-effort txn hygiene so the pool does not hand out a mid-txn conn.
+        try:
+            conn.rollback()
+        except Exception:
+            pass
+        raise Unreachable(f"agent_cursors read failed: {err}")
+    if not row:
+        return {}
+    val = row[0]
+    return val if isinstance(val, dict) else json.loads(val)
+
+
+# ---------------------------------------------------------------------------
+# Indexing
+# ---------------------------------------------------------------------------
+
+def get_unindexed(conn, limit: int = 100) -> List[Dict[str, Any]]:
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT * FROM messages
+        WHERE willow_indexed_at IS NULL AND is_deleted = 0
+        ORDER BY created_at ASC LIMIT %s
+    """, (limit,))
+    rows = cur.fetchall()
+    cols = [d[0] for d in cur.description]
+    return [dict(zip(cols, r)) for r in rows]
+
+
+def mark_indexed(conn, message_ids: List[int]) -> int:
+    if not message_ids:
+        return 0
+    cur = conn.cursor()
+    cur.execute(
+        "UPDATE messages SET willow_indexed_at = CURRENT_TIMESTAMP WHERE id = ANY(%s)",
+        (message_ids,)
+    )
+    conn.commit()
+    return cur.rowcount
+
+
+# ---------------------------------------------------------------------------
+# Grove-specific helpers
+# ---------------------------------------------------------------------------
+
+def ensure_card_builder_channel() -> None:
+    """Idempotent: create #card-builder channel if absent."""
+    conn = None
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute("""
+            INSERT INTO grove.channels (name, channel_type, description, agent_name)
+            VALUES ('card-builder', 'group', 'Heimdallr card builder interview', 'heimdallr')
+            ON CONFLICT (name) DO NOTHING
+        """)
+        conn.commit()
+    except Exception:
+        pass
+    finally:
+        if conn is not None:
+            release_connection(conn)
+
+
+def ensure_upstream_channel() -> None:
+    """Idempotent: create #upstream channel for Upstream Steward notifications."""
+    conn = None
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute("""
+            INSERT INTO grove.channels (name, channel_type, description, agent_name)
+            VALUES ('upstream', 'group', 'Upstream Steward — reply drafts', 'hanuman')
+            ON CONFLICT (name) DO NOTHING
+        """)
+        conn.commit()
+    except Exception:
+        pass
+    finally:
+        if conn is not None:
+            release_connection(conn)

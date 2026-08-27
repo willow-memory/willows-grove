@@ -1,0 +1,1047 @@
+{
+  "summary": "Seven Loki auditors fan out across the v0.9 tree by lens; one synthesis Loki ranks",
+  "agentCount": 8,
+  "logs": [
+    "fan-out returned 7 lens reports"
+  ],
+  "result": {
+    "raw": [
+      {
+        "lens": "three-state",
+        "findings": [
+          {
+            "promised": "INVARIANTS.md §1: 'A bare [] or {} MUST NOT mean \"unreachable\" anywhere in the tree' + §2: 'the readers collapsed could-not-reach-the-source into [] / {} / None ... which IS the fleet's disease'",
+            "delivered": "grove/journal_reader.py:196-200 — when willow-mcp is reached in-process and returns {\"error\": ...} (schema unusable, postgres down, etc.), `_try_import_read` returns `[]` (via `return []`), which grove_serve._journal_recent then answers as 200 {state: empty, atoms: []}. journal_writer.py:198-200 handles the identical error shape correctly by raising Unreachable — the reader half of the same seam does the exact thing §1/§2 forbid.",
+            "distance": "Reached-but-rejected collapses into the empty state; the operator sees 'no messages yet' when willow-mcp actually errored, and the writer/reader on the same wire disagree about what that error means.",
+            "severity": "major",
+            "lens": "three-state",
+            "file": "grove/journal_reader.py",
+            "line": 200
+          },
+          {
+            "promised": "INVARIANTS.md §1: 'Every reader returns EITHER a value with a bounded shape (populated OR empty) OR raises a grove.errors.Unreachable sentinel.' Reader shape table: populated | empty | unreachable — no other case.",
+            "delivered": "grove/persona_roster.py:146,148,158 — `_load_from_path` raises `ValueError` on invalid JSON, non-object top level, or schema mismatch. `PersonaRoster.__init__` invokes `_load_from_path` unconditionally when a path is present, and `PersonaRoster.load()` (the §1-documented entry point) makes no attempt to translate that ValueError into Unreachable.",
+            "distance": "The reader's failure mode on a drifted registry file is neither populated, empty, nor Unreachable — it is a raw ValueError, a shape the §1 vocabulary does not contain.",
+            "severity": "major",
+            "lens": "three-state",
+            "file": "grove/persona_roster.py",
+            "line": 146
+          },
+          {
+            "promised": "INVARIANTS.md §1 Endpoint shape: 'Every /api/* handler wraps its reader in a try/except Unreachable and answers with one of: 200/populated, 200/empty, 503/unreachable.'",
+            "delivered": "grove_serve.py:193-199 — `_personas` only wraps the load in `try/except Unreachable`. A `ValueError` from `_load_from_path` (bad JSON at locate time, schema drift) propagates out of PersonaRoster.load() and Starlette answers HTTP 500 with no `state` field. The mid-flight re-read at line 213-224 catches OSError/ValueError, but the initial load does not.",
+            "distance": "A drifted persona registry produces a bare 500, not the 503/unreachable §1 mandates — the operator gets the 'null' end of the discipline the section was written to prevent.",
+            "severity": "major",
+            "lens": "three-state",
+            "file": "grove_serve.py",
+            "line": 194
+          },
+          {
+            "promised": "INVARIANTS.md §1: 'A bare [] or {} MUST NOT mean \"unreachable\" anywhere in the tree.' §2: readers must not 'collapse could-not-reach-the-source into [] / {} / None'.",
+            "delivered": "grove/fleet_presence.py:60-73 — `roster()` returns `[]` in three distinct cases: (a) the `fleet_presence` add-on is not importable at all (line 66 via `_available()` → False); (b) `_fp.roster()` raises any exception (line 71-72, `log.warning` then `return []`); (c) the store is actually empty. Absent-seam and error-on-fetch are literally the 'unreachable' state §1 names, and both are surfaced as an empty list indistinguishable from a quiet fleet.",
+            "distance": "The exact §1 sin, in the exact words of §2, on a reader that lives in grove/*.py — the operator cannot tell 'no fleet reachable' from 'fleet reached, nobody speaking'.",
+            "severity": "major",
+            "lens": "three-state",
+            "file": "grove/fleet_presence.py",
+            "line": 73
+          },
+          {
+            "promised": "INVARIANTS.md §1: readers raise `Unreachable` on 'could not reach the source' — never a bare value. §2: 'the readers collapsed \"could-not-reach-the-source\" into [] / {} / None ... which IS the fleet's disease'.",
+            "delivered": "grove/nestor_client.py:206,210,214-231 — `evidence_for`, `warrant_for`, and `refusal` return `None` when `available()` is False (via `_call` line 158-159). Only `decision_check` was upgraded to raise Unreachable; the sibling methods on the same client are still None-on-absent. tests/test_nestor_client.py:105-119 explicitly pins this exclusion ('the other evidence/warrant/refusal helpers keep returning None') — the pinning test enshrines the §2 sin rather than superseding it.",
+            "distance": "Three of the four public reader methods on NestorClient collapse the unreachable state into None; the §1 discipline was applied to one method and skipped for the rest.",
+            "severity": "major",
+            "lens": "three-state",
+            "file": "grove/nestor_client.py",
+            "line": 206
+          }
+        ]
+      },
+      {
+        "lens": "trust-order-u2u",
+        "findings": [
+          {
+            "promised": "Every code comment on the modified lines cites this section by anchor, not by line number.",
+            "delivered": "Only u2u/contacts.py:97 (`See INVARIANTS.md §5`) carries the anchor citation. u2u/listener.py — the primary enforcer with the reordered `_process` and the `AUTHENTICATE FIRST / THEN AUTHORISE` block-comments at lines 90-100 — never says `§5` or `INVARIANTS.md`; u2u/consent.py (the gate the invariant governs) says only `u2u.listener enforces that ordering` at line 8 without the anchor; bridge/app.py's `_admit_contact` (lines 143-165), which is the very re-KNOCK/silent-trust-reset story §5 tells, has zero `§5` references. `grep -n '§5\\|INVARIANTS.md' u2u bridge/app.py` returns one hit.",
+            "distance": "The invariant claims a project-wide citation discipline that only 1 of the 3+ modified files actually keeps, so a future editor of listener.py or bridge/app.py has no in-file breadcrumb tying the ordering constraint back to §5.",
+            "severity": "minor",
+            "lens": "trust-order-u2u",
+            "file": "docs/INVARIANTS.md",
+            "line": 195
+          }
+        ]
+      },
+      {
+        "lens": "manifest-honesty",
+        "findings": [
+          {
+            "promised": "CLAUDE.md line 68 (architecture table): `u2u/ | Encrypted LAN transport (knock/consent/note)`",
+            "delivered": "u2u/packets.py writes plaintext json.dumps(packet) onto a bare TCP socket; INVARIANTS.md §6 lines 205-208 explicitly names this as the origin case for the manifest-honesty invariant. The `cryptography` dependency is Ed25519 signing only.",
+            "distance": "The CLAUDE.md architecture entry still asserts u2u is 'Encrypted LAN transport' — the exact phrase §6 says must not describe today's code.",
+            "severity": "blocker",
+            "lens": "manifest-honesty",
+            "file": "CLAUDE.md",
+            "line": 68
+          },
+          {
+            "promised": "CLAUDE.md line 86 (Willow System Context): `u2u | UDP/TCP LAN — encrypted human-to-human DMs`",
+            "delivered": "u2u packet transport is signed-only; INVARIANTS.md §6 line 207 states 'u2u/packets.py:74-75 writes plaintext JSON onto a bare TCP socket'.",
+            "distance": "A second CLAUDE.md row still calls u2u 'encrypted' after the §6 correction was landed in the manifest and README — the CLAUDE.md sweep was missed.",
+            "severity": "blocker",
+            "lens": "manifest-honesty",
+            "file": "CLAUDE.md",
+            "line": 86
+          },
+          {
+            "promised": "CLAUDE.md line 44 (consolidation history): `safe-app-grove — u2u encrypted DM transport, Matrix bridge, grove_db.py`",
+            "delivered": "The transport does not do confidentiality; per INVARIANTS.md §6 the 'encrypted' phrasing was the origin case for the whole invariant.",
+            "distance": "The consolidation blurb keeps the withdrawn 'encrypted DM transport' phrasing that §6 forbids anywhere trust is being claimed.",
+            "severity": "major",
+            "lens": "manifest-honesty",
+            "file": "CLAUDE.md",
+            "line": 44
+          },
+          {
+            "promised": "README.md line 73 (Entry points): `python3 grove_serve.py | LAN command server (HMAC-signed)` — and line 103 restates `grove_serve.py | LAN HTTP command server`",
+            "delivered": "grove_serve.py is a 127.0.0.1:8766 Starlette served-page skeleton (grove_serve.py lines 1-8): 'Willow's Grove served-page skeleton on 127.0.0.1:8766 ... a small Starlette + uvicorn app bound to loopback, no MCP, no auth of its own beyond the loopback boundary.' Grep for `hmac` in grove_serve.py returns zero matches.",
+            "distance": "README claims a 'LAN command server (HMAC-signed)' capability that the code does not implement — the module is a loopback-only HTML page shell with no HMAC and no command surface.",
+            "severity": "blocker",
+            "lens": "manifest-honesty",
+            "file": "README.md",
+            "line": 73
+          },
+          {
+            "promised": "README.md line 71 (Entry points): `python3 -m grove_standalone | Standalone DM app`, and CLAUDE.md line 53 restates `python3 -m grove_standalone`",
+            "delivered": "No `grove_standalone.py` or `grove_standalone/` package exists in the tree (ls /tmp/pr12/grove_standalone* returns 'No such file or directory').",
+            "distance": "An entry-point command that documents a nonexistent module — invoking it fails immediately with ModuleNotFoundError.",
+            "severity": "major",
+            "lens": "manifest-honesty",
+            "file": "README.md",
+            "line": 71
+          },
+          {
+            "promised": "README.md line 100 (Architecture table): `grove_standalone.py | Standalone DM app`, CLAUDE.md line 67 restates `grove_standalone.py | Standalone Textual grove DM TUI`",
+            "delivered": "grove_standalone.py does not exist in the tree.",
+            "distance": "Architecture tables in both README and CLAUDE.md still name a module that is absent from the checkout.",
+            "severity": "major",
+            "lens": "manifest-honesty",
+            "file": "README.md",
+            "line": 100
+          },
+          {
+            "promised": "README.md line 98 (Architecture table): `kart_worker.py | Task queue consumer (daemon thread)`",
+            "delivered": "No kart_worker.py exists at the repo root or elsewhere in the tree.",
+            "distance": "The architecture table names a task-queue consumer module that is not present — the referenced daemon does not ship.",
+            "severity": "major",
+            "lens": "manifest-honesty",
+            "file": "README.md",
+            "line": 98
+          },
+          {
+            "promised": "README.md line 86 (Environment variables): `GROVE_KNOWN_AGENTS | (auto-discovered) | Comma-separated agent names for ThoughtStream`; README.md line 121 restates the ThoughtStream behavior",
+            "delivered": "grep -rn 'GROVE_KNOWN_AGENTS' /tmp/pr12/ --include='*.py' returns zero matches; no ThoughtStream widget exists (widgets/thought_stream.py absent).",
+            "distance": "A documented env var that no code reads, pointing at a widget the tree no longer contains — pure aspiration in a variables reference table.",
+            "severity": "major",
+            "lens": "manifest-honesty",
+            "file": "README.md",
+            "line": 86
+          },
+          {
+            "promised": "README.md line 58 + Makefile line 12: `make grove-docs` runs `./scripts/grove_docs_refresh.sh`",
+            "delivered": "scripts/grove_docs_refresh.sh does not exist (ls returns 'No such file or directory'); Makefile line 10 does `chmod +x scripts/grove_docs_refresh.sh 2>/dev/null || true` then invokes the missing script.",
+            "distance": "Documented regeneration workflow points at a script that isn't in the tree — `make grove-docs` will fail with 'No such file or directory' the first time an operator runs it.",
+            "severity": "minor",
+            "lens": "manifest-honesty",
+            "file": "README.md",
+            "line": 58
+          }
+        ]
+      },
+      {
+        "lens": "consent-flows-oauth",
+        "findings": [
+          {
+            "promised": "INVARIANTS.md §7 (grove/mcp_local.py:350): 'a request that reaches `_gate` in serve mode without a verified identity is denied, never allowed under an ambient assumption.' The whole seam is documented as the enforcement of §7 ('consent flows are real, not automatic').",
+            "delivered": "grove/mcp_local.py:397 defines `_gate(serve_mode, token)` and grove/mcp_local.py:341 defines `_resolve_serve_identity` — grep of grove/, app.py, grove_serve.py returns zero call sites. The functions run only from tests/test_serve_mode_identity.py. Actual per-request refusal at runtime is done by AuthSettings.required_scopes + `_require_scope`; `_gate` is never wired to any request handler.",
+            "distance": "The documented serve-mode identity gate is dead code — the pinning tests exercise a seam the request pipeline never traverses, so they are exactly the 'pinning test that only asserts import succeeds' pattern in gate clothing.",
+            "severity": "major",
+            "lens": "consent-flows-oauth",
+            "file": "grove/mcp_local.py",
+            "line": 397
+          },
+          {
+            "promised": "INVARIANTS.md §7 line 246: 'Pending approvals expire in 5 minutes. The one-shot key becomes unusable and no code can be issued against it.'",
+            "delivered": "grove/mcp_local.py:1133 the GET branch calls `_auth_provider.stash_pending(pending_key, client, params)` again after popping it. `stash_pending` (grove/mcp_auth.py:245) recomputes `expires_at = time.time() + _PENDING_TTL`, so every GET refresh resets the 5-minute clock — a pending key can remain usable for arbitrarily long as long as the operator (or anyone with the URL) keeps re-fetching the approval page.",
+            "distance": "The 5-minute pending TTL is not a hard ceiling; it re-arms on every GET, so 'the one-shot key becomes unusable' after 5 minutes is false whenever the page is refreshed.",
+            "severity": "minor",
+            "lens": "consent-flows-oauth",
+            "file": "grove/mcp_local.py",
+            "line": 1133
+          },
+          {
+            "promised": "INVARIANTS.md §7 line 251: 'Dynamic client registration is off by default. An operator opts in explicitly via `GROVE_MCP_ALLOW_DYNAMIC_REGISTRATION=1`. Otherwise only pre-enrolled clients can authorize — the pre-PR-6 open dispenser is closed.'",
+            "delivered": "tests/test_grove_approval_page.py:282 `test_dynamic_registration_can_be_disabled` only asserts `fresh._ALLOW_DYNAMIC_REG is False` — the boolean constant. It never issues a POST /register against the assembled Starlette app under the default (unset) env and confirms the SDK actually refuses it. Every other test in the file sets `GROVE_MCP_ALLOW_DYNAMIC_REGISTRATION=1`, so the closed-by-default posture is asserted only at the constant level, not the wire.",
+            "distance": "The 'closed-by-default' guarantee is pinned by inspecting a Python bool, not by observing that /register is refused end-to-end. If ClientRegistrationOptions were ever wired to a different flag (or the SDK's default flipped), this test would still pass.",
+            "severity": "minor",
+            "lens": "consent-flows-oauth",
+            "file": "tests/test_grove_approval_page.py",
+            "line": 282
+          },
+          {
+            "promised": "INVARIANTS.md §7 line 238: 'The pre-PR-6 `GROVE_MCP_AUTO_APPROVE` env-var escape hatch is gone — there is no auto-approve path.'",
+            "delivered": "skills/grove-serve.md:50 and docs/runbooks/grove.md:143 still instruct operators to 'Do not set `GROVE_MCP_AUTO_APPROVE=1` behind a tunnel', treating the env var as a live knob to avoid. The variable no longer exists in code — the docs advertise a switch that isn't there.",
+            "distance": "Docs still describe an env-var escape hatch that INVARIANTS.md §7 declares dead — an operator reading the runbook would believe there is a knob to set (or not set) that the code no longer honors.",
+            "severity": "minor",
+            "lens": "consent-flows-oauth",
+            "file": "docs/runbooks/grove.md",
+            "line": 143
+          },
+          {
+            "promised": "INVARIANTS.md §7 line 244: 'The POST that completes the grant is refused unless the peer is on 127.0.0.1 / ::1 / localhost. The operator has to be on the box (SSH port-forward, local browser) to complete the click.'",
+            "delivered": "grove/mcp_local.py:1102 `_remote_is_loopback` checks `request.client.host` — the raw TCP peer as seen by Starlette. When Grove runs behind a same-box reverse proxy or a tunnel edge that terminates locally and connects to 127.0.0.1:8765 (a common Pangolin / nginx / cloudflared / tailscale-funnel deployment for which GROVE_MCP_EXTRA_HOSTS itself exists), `request.client.host` is 127.0.0.1 for every off-box POST. There is no X-Forwarded-For consultation, no trusted-proxy allowlist, no operator-attestation of 'no proxy in front'.",
+            "distance": "The stated intent ('operator has to be on the box') is violated by any local reverse proxy that forwards to loopback — exactly the tunnel topology the rest of §7 assumes. The literal 'peer is 127.0.0.1' check passes for these deployments even when the human clicking Allow is on the public internet.",
+            "severity": "major",
+            "lens": "consent-flows-oauth",
+            "file": "grove/mcp_local.py",
+            "line": 1102
+          }
+        ]
+      },
+      {
+        "lens": "panels-live-endpoints",
+        "findings": [
+          {
+            "promised": "INVARIANTS.md §8: 'The served page (grove_html.py) MUST NOT carry an explicit fixture-path data-source on any component. Every panel there renders whatever the reader currently returns — populated, empty, or unreachable per §1.' §4 registers /api/envelopes as a required endpoint served by grove_serve.py.",
+            "delivered": "grove_html.py:216-225 mounts only <grove-persona-registry>, <grove-lens-switch>, <grove-chat>, and <grove-dispatch-rail>. <grove-envelope-panel> is never mounted on the served page — the component exists only in web/harness.html:64 with an explicit fixture data-source. The /api/envelopes endpoint (grove_serve.py:154) is live but no panel on the served page consumes it.",
+            "distance": "The Governance-lens envelope panel — the sole consumer of /api/envelopes — is wired only against the fixture harness JSON blob; the served page has no path from the live endpoint to the operator.",
+            "severity": "major",
+            "lens": "panels-live-endpoints",
+            "file": "grove_html.py",
+            "line": 216
+          },
+          {
+            "promised": "INVARIANTS.md §1 Web Component shape: 'source-fetch failure fires a component <name>-unreachable event so a page-level listener can act.' grove-persona-registry.js JSDoc: 'Consumers MUST check .state === \"unreachable\" (or listen for the registry-unreachable event) rather than treating an empty map as \"everything is fine\".'",
+            "delivered": "grove-persona-registry.js:204 dispatches registry-unreachable (and :190 registry-loaded), but grove_html.py never wires a page-level listener for either event, and no boot module (web/boot/*.js) subscribes to them. A registry-unreachable fires and reaches the bubbling DOM with nothing bound.",
+            "distance": "The registry emits its state event to a page that never listens — the unreachable signal is silently dropped and the served page has no page-scoped 'personas source down' affordance.",
+            "severity": "major",
+            "lens": "panels-live-endpoints",
+            "file": "grove_html.py",
+            "line": 217
+          },
+          {
+            "promised": "INVARIANTS.md §8: 'The served page renders live state, not curated data.' Constraint 1 (quoted in the file preamble): '\"I could not reach the source\" must never collapse into \"there is nothing there.\"'",
+            "delivered": "grove_html.py:119-128 (_TOP_STRIP) renders the header strip with the literal hardcoded text 'standing' and 'grove stable' — no endpoint, no reader, no state check. The operator sees 'grove stable' regardless of whether Postgres, willow-mcp, Nestor, or any other seam is reachable.",
+            "distance": "The served page hardcodes a fleet-standing claim as static markup; §8's live-state discipline is bypassed for the very first strip the operator reads.",
+            "severity": "minor",
+            "lens": "panels-live-endpoints",
+            "file": "grove_html.py",
+            "line": 119
+          },
+          {
+            "promised": "INVARIANTS.md §1 Web Component shape: 'Every Web Component that consumes an /api/* endpoint renders a distinct visual for unreachable. It is NEVER the same pixels as empty.' §8: 'Every panel there renders whatever the reader currently returns — populated, empty, or unreachable.'",
+            "delivered": "grove-chat.js:337-339 seeds the RIGHT column's shadow DOM with a literal <div class=\"readback-empty\">no messages yet</div> BEFORE /api/journal/recent has been consulted, and _pollReadback (grove-chat.js:501-508) does not remove that placeholder on unreachable — it only sets a banner via _setReadbackStatus. An unreachable readback therefore shows both the 'read-back unreachable' banner AND the 'no messages yet' empty-state pixels stacked.",
+            "distance": "The panel paints hardcoded empty-state markup before the endpoint is queried, and keeps that empty-state pixel visible while unreachable — the two states share pixels instead of rendering distinctly.",
+            "severity": "major",
+            "lens": "panels-live-endpoints",
+            "file": "web/components/grove-chat.js",
+            "line": 337
+          },
+          {
+            "promised": "INVARIANTS.md §8: 'Fixture-based rendering is opt-in (harness use only). The harness page web/harness.html MAY carry an explicit data-source=\"./fixtures/...\" override... That is the only legitimate use of an explicit fixture path.'",
+            "delivered": "grove-persona-registry.js:123-127 makes the inline <script type=\"application/json\"> shim take precedence over both an explicit data-source and the /api/personas default: 'Inline shim wins over the default fetch — the fixture path.' The harness (harness.html:75-86) uses this inline-shim path rather than a data-source attribute; §8 does not authorize an inline-JSON shim as a legitimate harness carve-out, and the code makes it override live endpoints unconditionally.",
+            "distance": "A fixture-harness escape hatch remains wired in the production component code and unconditionally trumps any live endpoint the operator or served page configures.",
+            "severity": "minor",
+            "lens": "panels-live-endpoints",
+            "file": "web/components/grove-persona-registry.js",
+            "line": 123
+          }
+        ]
+      },
+      {
+        "lens": "ci-witnesses",
+        "findings": [
+          {
+            "promised": "INVARIANTS.md §1 lines 51-52: \"The empty state and the unreachable state look different to the operator — text, color, or affordance MUST differ.\" — pinned at the render layer by tests/e2e/three-state-affordances.spec.js (§1 lines 76-79).",
+            "delivered": "tests/e2e/three-state-affordances.spec.js:92 and :131 return `(root.innerHTML || '') + '|' + (el._state || '')` from each probe; the subsequent `expect(normalize(unreachableHtml)).not.toBe(normalize(emptyHtml))` compares HTML with the internal `_state` string appended. Line 138 explicitly justifies this: \"a component that renders identical shadow markup but exposes distinct `_state` still passes\".",
+            "distance": "The §1 visual-layer pin greens for a component whose empty and unreachable renders are byte-identical to the operator, so long as an internal `_state` property differs — which is exactly the collapse §1 forbids.",
+            "severity": "blocker",
+            "lens": "ci-witnesses",
+            "file": "tests/e2e/three-state-affordances.spec.js",
+            "line": 138
+          },
+          {
+            "promised": "INVARIANTS.md §1 lines 68-72 names `tests/test_refusal_summon_shape.py` as pinning \"the reader / endpoint / wiring wire shape\", and the file's own docstring (line 6-13) claims to pin that the boot module \"handles `state === 'unreachable'` distinctly (does not swallow 503)\" and \"dispatches ... with mode: 'unreachable' on the 503/unreachable path\".",
+            "delivered": "tests/test_refusal_summon_shape.py:33-34 slurps `web/boot/refusal-summon-boot.js` as raw text; every assertion (e.g. line 108-112 `assertRegex(self.src, r\"state\\s*===\\s*['\\\"]unreachable['\\\"]\")`) is a static text regex against that string. The JS is never executed and no seam behavior is exercised.",
+            "distance": "A refusal-summon module that carries the required substrings only inside a `//` comment or an unreachable early-return still passes every test — the pin cannot fail loudly when the invariant is violated.",
+            "severity": "major",
+            "lens": "ci-witnesses",
+            "file": "tests/test_refusal_summon_shape.py",
+            "line": 30
+          },
+          {
+            "promised": "INVARIANTS.md §10 lines 340-343: \"Every INVARIANTS section is enforced by at least one CI step. Ollama, Playwright, docs-drift, and security-grep are CI-first (never operator-only).\" §10 lines 383-390 name `tests/e2e_ollama/test_watcher_ollama_readiness.py` and `tests/e2e_ollama/test_watcher_ollama_e2e.py` as the C11 LEFT-write witnesses.",
+            "delivered": "tests/e2e_ollama/conftest.py:119-123 calls `pytest.skip(...)` when Ollama's `/api/tags` fails to answer inside 30s; lines 206-210 skip when no candidate model can be pulled; lines 295-298, 303, 308 skip when `WILLOW_DB_URL` is unset, psycopg2 is missing, or Postgres is unreachable. Every §10 assertion downstream is gated on all three fixtures succeeding.",
+            "distance": "The CI step exits 0 with all §10 witnesses silently skipped whenever the ollama sidecar takes >30s to warm, the runner has no outbound network, or psycopg2 is not on the venv — the promised proof is a skip masquerading as green.",
+            "severity": "major",
+            "lens": "ci-witnesses",
+            "file": "tests/e2e_ollama/conftest.py",
+            "line": 119
+          },
+          {
+            "promised": "INVARIANTS.md §4 lines 155-159: \"Pinning tests (§4): `tests/test_panel_wiring.py` pins the endpoint / reader / Web Component wire shape for every row above\" — the coverage table (lines 146-151) lists `GET /api/personas`, `GET /api/envelopes`, `GET /api/dispatch`, `GET /api/journal/recent`, `POST /api/journal`, and `POST /api/nestor/decide`.",
+            "delivered": "tests/test_panel_wiring.py:139, 202, 268, 305 define exactly four test classes — EnvelopesWiringTests, NestorDecideWiringTests, DispatchWiringTests, JournalRecentWiringTests. There is no PersonasWiringTests and no test class exercising the POST /api/journal writer through the served app. The module docstring (lines 14-19) itself lists only these four endpoints exercised.",
+            "distance": "Two of the six §4 endpoint rows have zero witness in the file INVARIANTS names as the §4 pin; the \"every row above\" claim is false and a personas or journal-writer regression will not fail this witness.",
+            "severity": "major",
+            "lens": "ci-witnesses",
+            "file": "tests/test_panel_wiring.py",
+            "line": 14
+          },
+          {
+            "promised": "tests/e2e/seed-canon.spec.js:6-11 (the file INVARIANTS.md §9 line 334 names as a witness): \"Rendered pixels match the PR 3 baselines at tests/regression/screenshots/seed/{1..6}.png within a headless-renderer tolerance (~5% per-pixel-ratio, threshold 0.3 ...)\".",
+            "delivered": "tests/e2e/seed-canon.spec.js:115 declares each of the six pixel-baseline subtests as `test.skip(\\`/seed/${n} matches its baseline within tolerance (pixel compare — follow-up)\\`, async () => {});` — every visual-regression assertion is permanently skipped, with an inline comment deferring it as a \"follow-up\".",
+            "distance": "The pixel-baseline pass the spec's docstring and the §9 witness list both promise never runs; a rendering regression against the PR 3 baselines cannot fail this file.",
+            "severity": "major",
+            "lens": "ci-witnesses",
+            "file": "tests/e2e/seed-canon.spec.js",
+            "line": 115
+          },
+          {
+            "promised": "scripts/ci-security-grep.sh:23 docstring: \"- input().*shell          — best-effort shell-composition sniff\" — listed among the patterns the CI sweep matches under INVARIANTS.md §10 line 363-367.",
+            "delivered": "scripts/ci-security-grep.sh:52 PATTERN is `os\\.system\\(|subprocess\\.Popen\\([^)]*shell=True|subprocess\\.run\\([^)]*shell=True|subprocess\\.call\\([^)]*shell=True|shell=True|\\beval\\(|\\bexec\\(|pickle\\.loads|yaml\\.load\\(` — there is no `input\\(` or shell-composition sniff alternation.",
+            "distance": "The script's own docstring names a property (input()-driven shell composition detection) that the code does not enforce; a shell-composed `input()` in the tree passes the sweep silently.",
+            "severity": "minor",
+            "lens": "ci-witnesses",
+            "file": "scripts/ci-security-grep.sh",
+            "line": 23
+          },
+          {
+            "promised": "INVARIANTS.md §10 line 351: \"a **Playwright browser install step** (`npx --yes playwright install --with-deps chromium`) guarded by `hashFiles('playwright.config.js', …)`\".",
+            "delivered": ".github/workflows/tests.yml:103 runs `npx playwright install --with-deps chromium` — the `--yes` token INVARIANTS names is absent.",
+            "distance": "The CI command is not the one INVARIANTS pins; on an npx build that prompts for confirmation the step can hang or fall through to a different install path than the invariant witnesses.",
+            "severity": "minor",
+            "lens": "ci-witnesses",
+            "file": ".github/workflows/tests.yml",
+            "line": 103
+          },
+          {
+            "promised": "INVARIANTS.md §10 lines 349-350: \"a `postgres` service (already present) and a new **`ollama` service** container. The Ollama-backed watcher e2e (`tests/e2e_ollama/`, filled by PR 8) runs against it.\" §10 line 355-358 says the Playwright suite step is guarded by `hashFiles('tests/e2e/*.spec.*', …)` \"so an empty directory is a no-op\".",
+            "delivered": ".github/workflows/tests.yml:114-116 and 118-120 use the same hashFiles guard pattern for the ollama and willow-mcp suite runs. If a future PR reduces `tests/e2e_ollama/` or `tests/e2e_willow_mcp/` to only `.gitkeep` files (or the tests are renamed off the `test_*.py` glob), the step becomes a silent no-op — the guard trips off before any pytest exit code can surface the absence.",
+            "distance": "The witness that §10 relies on to \"fail loudly\" when an invariant loses its enforcement is designed to go silent instead — the workflow disappears the step rather than failing when its test directory empties.",
+            "severity": "minor",
+            "lens": "ci-witnesses",
+            "file": ".github/workflows/tests.yml",
+            "line": 115
+          }
+        ]
+      },
+      {
+        "lens": "cross-cutting-hazards",
+        "findings": [
+          {
+            "promised": "INVARIANTS.md §1: \"Every reader returns EITHER a value with a bounded shape (populated OR empty) OR raises a `grove.errors.Unreachable` sentinel. **A bare `[]` or `{}` MUST NOT mean 'unreachable' anywhere in the tree.**\"",
+            "delivered": "grove_reader.py has at least 16 readers whose top-level `except Exception:` block returns `[]`, `{}`, or `None` — silently collapsing 'DB unreachable / query failed' into the empty state. Representative sites: grove_reader.py:138-140 (grove_messages_bus_addressed_to), :182-184 (grove_own_channel_since), :249-251 (grove_member_roster), :292-294 (grove_agents), :341-343 (grove_latest_message_for_sender), :427-429 (grove_agent_fleet_rows), :446-448 (coordinator_heartbeat returns None on any exception including json.JSONDecodeError), :730-732, :786-788, :844-846, :923-925, :979-981, :1052-1054, :1131-1133, :1173-1175, :1207-1209. None of these ever raise `Unreachable`; the entire top-level file imports neither `grove.errors.Unreachable` nor propagates errors up.",
+            "distance": "The 'unreachable ≠ empty' discipline that §1 seals as universal ('anywhere in the tree') is not honored anywhere in grove_reader.py — every unreachable state collapses to the empty shape, which §2 names as 'the fleet's disease.'",
+            "severity": "blocker",
+            "lens": "cross-cutting-hazards",
+            "file": "grove_reader.py",
+            "line": 138
+          },
+          {
+            "promised": "INVARIANTS.md §1: \"A bare `[]` or `{}` MUST NOT mean 'unreachable' anywhere in the tree.\"",
+            "delivered": "grove_db.py:633-635 — `cursor_load` catches `except Exception:`, calls `conn.rollback()`, and returns `{}`. A DB failure looks identical to 'no cursors stored' to every caller. Same pattern in `ensure_card_builder_channel` (grove_db.py:682-684) and `ensure_upstream_channel` (grove_db.py:700-702), which swallow all exceptions with a bare `pass` — the caller cannot tell whether the channel was created, existed, or the DB is unreachable.",
+            "distance": "Persistent-state helpers in the schema-owning module silently collapse errors to empty/None. cursor_load is a reader; it must raise Unreachable, not fake an empty cursor bundle.",
+            "severity": "blocker",
+            "lens": "cross-cutting-hazards",
+            "file": "grove_db.py",
+            "line": 633
+          },
+          {
+            "promised": "Loki lens brief: \"error responses that leak internal state (`str(e)` with a stack line, DB error text)\".",
+            "delivered": "grove_reader.py returns raw `str(e)` — including psycopg2 error text (schema names, constraint names, sometimes row values) — inside caller-facing dicts at :558 (`grove_create_text_channel`), :587 (`grove_archive_channel`), :642 (`grove_set_channel_agent`), :668 (`grove_set_channel_description`), :715 (`grove_rename_channel`), :862 (`grove_message_delete`), :888 (`grove_message_toggle_flag`), :952 (`grove_mark_channel_read`). These dicts are surfaced by the Textual dashboard and by chat admin flows.",
+            "distance": "DB error strings that name internal schema, constraint identifiers, and stray values are handed to the UI verbatim as the 'error' field, exactly the leak the lens brief calls out.",
+            "severity": "major",
+            "lens": "cross-cutting-hazards",
+            "file": "grove_reader.py",
+            "line": 558
+          },
+          {
+            "promised": "grove_db.py docstring: \"FRANK witness ledger — _frank_ledger_append() writes here on every message ... tamper-evident entry to frank_ledger in willow_20. Best-effort.\" plus \"The partial unique index is the anti-fork guard: at most one genesis row (prev_hash IS NULL) per project, so the chain cannot silently restart.\"",
+            "delivered": "grove_db.py:361-362 — the entire ledger write is wrapped in `except Exception as e: print(f\"[frank-ledger] write error: {e}\", flush=True)`. Any failure (connect refused, schema drift, hash collision, uniqueness violation on the anti-fork guard) is printed to stdout and the caller is told nothing. Combined with `_get_pool()`-less raw `psycopg2.connect(dbname=db, user=user)` (line 344, no connect_timeout, no statement_timeout), a stalled Postgres hangs the ledger write for the socket-default timeout before silently disappearing.",
+            "distance": "A 'tamper-evident' chain whose failures are print-to-stdout is not tamper-evident; the anti-fork guarantee named in the schema comment cannot be observed from any calling code, because every ledger error is swallowed.",
+            "severity": "major",
+            "lens": "cross-cutting-hazards",
+            "file": "grove_db.py",
+            "line": 361
+          },
+          {
+            "promised": "INVARIANTS.md §5: \"Every u2u packet has its signature verified before consent is consulted; consent decisions never render on unverified data.\"",
+            "delivered": "u2u/packets.py:70-71 — `Packet.validate` wraps the whole verification in a bare `except Exception: return False`. Any exception — malformed hex, wrong-length pubkey, Ed25519 library error, JSON re-serialization mismatch, unexpected packet shape — is collapsed to the same False that a legitimate bad signature returns. The listener at u2u/listener.py:96-98 logs 'invalid sig' and drops silently in every case.",
+            "distance": "The verification path cannot distinguish between an attacker replaying a bogus signature, a caller passing a malformed key, and a library bug. All three land in the same 'dropped' bucket with no telemetry, hiding attack probes and misconfiguration under the same signal.",
+            "severity": "major",
+            "lens": "cross-cutting-hazards",
+            "file": "u2u/packets.py",
+            "line": 70
+          },
+          {
+            "promised": "CLAUDE.md: \"If Postgres is down, surface it and stop. Don't build on a broken foundation.\"",
+            "delivered": "grove_db.py opens Postgres connections with no `connect_timeout` and no `statement_timeout` set. The pool DSN at :54 is `f\"dbname={pg_db} user={pg_user}\"`; the LISTEN connection at :102 uses raw `psycopg2.connect(dsn)`; the ledger writer at :344 uses `psycopg2.connect(dbname=db, user=user)`. A postgres host that accepts TCP but never responds hangs each of these forever — the dashboard, the served page, and the ledger writer all block on OS-default socket timeouts (minutes) instead of surfacing the failure.",
+            "distance": "A stuck-but-reachable Postgres is exactly the 'broken foundation' the boot mandate names, but nothing in grove_db.py bounds how long a connect or query is allowed to take; the failure mode is 'silent hang', not 'surface it and stop'.",
+            "severity": "major",
+            "lens": "cross-cutting-hazards",
+            "file": "grove_db.py",
+            "line": 54
+          },
+          {
+            "promised": "Loki lens brief: \"environment variables read without a default that would crash the server on startup\".",
+            "delivered": "grove_serve.py:491 — `port = int(os.environ.get(\"GROVE_SERVE_PORT\", str(DEFAULT_PORT)))`. The default is only used when the variable is unset; a set-but-non-numeric value (`GROVE_SERVE_PORT=default`, empty string, typo) raises ValueError from `int()` inside `main()` with no operator-legible message. Symmetrically `GROVE_SERVE_HOST` (:490) is passed through unvalidated — an unresolvable host string is caught only downstream by uvicorn.",
+            "distance": "Startup crashes on a bad env-var value with a raw stack trace instead of an operator-legible refusal; the fallback the code appears to have (`DEFAULT_PORT`) does not fire on the mistyped-value case.",
+            "severity": "minor",
+            "lens": "cross-cutting-hazards",
+            "file": "grove_serve.py",
+            "line": 491
+          },
+          {
+            "promised": "Loki lens brief: \"silent error swallowing (`except Exception: pass`, `except: pass`, empty `try/except` blocks)\".",
+            "delivered": "grove_db.py:84-87 — `release_connection` wraps `conn.rollback()` in `except Exception: pass`, then unconditionally hands the connection back to the pool. A connection whose rollback failed (in a bad transaction state, closed socket) goes straight back into the pool where the next borrower may inherit its state. grove_reader.py:606-607 — `_migrate_soil_channel_cursors` swallows any SOIL failure to a `_log.warning`, then reports 'ok' to the caller of `grove_rename_channel`, so a rename that leaves cursors stranded is reported as success.",
+            "distance": "Two pool-hygiene failures where the tree silently pretends a partial operation succeeded: a poisoned connection is recycled, and a rename that abandoned its cursor migration returns ok.",
+            "severity": "minor",
+            "lens": "cross-cutting-hazards",
+            "file": "grove_db.py",
+            "line": 84
+          }
+        ]
+      }
+    ],
+    "ranked": [
+      {
+        "rank": 1,
+        "promised": "INVARIANTS.md §1: 'Every reader returns EITHER a value with a bounded shape (populated OR empty) OR raises a `grove.errors.Unreachable` sentinel. **A bare `[]` or `{}` MUST NOT mean \"unreachable\" anywhere in the tree.**'",
+        "delivered": "grove_reader.py has at least 16 readers whose top-level `except Exception:` block returns `[]`, `{}`, or `None` — silently collapsing 'DB unreachable / query failed' into the empty state. Representative sites: grove_reader.py:138-140 (grove_messages_bus_addressed_to), :182-184 (grove_own_channel_since), :249-251 (grove_member_roster), :292-294 (grove_agents), :341-343 (grove_latest_message_for_sender), :427-429 (grove_agent_fleet_rows), :446-448 (coordinator_heartbeat returns None on any exception including json.JSONDecodeError), :730-732, :786-788, :844-846, :923-925, :979-981, :1052-1054, :1131-1133, :1173-1175, :1207-1209. None of these ever raise `Unreachable`; the entire top-level file imports neither `grove.errors.Unreachable` nor propagates errors up.",
+        "distance": "The 'unreachable ≠ empty' discipline that §1 seals as universal ('anywhere in the tree') is not honored anywhere in grove_reader.py — every unreachable state collapses to the empty shape, which §2 names as 'the fleet's disease.'",
+        "severity": "blocker",
+        "lenses": [
+          "cross-cutting-hazards"
+        ],
+        "file": "grove_reader.py",
+        "line": 138
+      },
+      {
+        "rank": 2,
+        "promised": "INVARIANTS.md §1: 'A bare `[]` or `{}` MUST NOT mean \"unreachable\" anywhere in the tree.'",
+        "delivered": "grove_db.py:633-635 — `cursor_load` catches `except Exception:`, calls `conn.rollback()`, and returns `{}`. A DB failure looks identical to 'no cursors stored' to every caller. Same pattern in `ensure_card_builder_channel` (grove_db.py:682-684) and `ensure_upstream_channel` (grove_db.py:700-702), which swallow all exceptions with a bare `pass` — the caller cannot tell whether the channel was created, existed, or the DB is unreachable.",
+        "distance": "Persistent-state helpers in the schema-owning module silently collapse errors to empty/None. cursor_load is a reader; it must raise Unreachable, not fake an empty cursor bundle.",
+        "severity": "blocker",
+        "lenses": [
+          "cross-cutting-hazards"
+        ],
+        "file": "grove_db.py",
+        "line": 633
+      },
+      {
+        "rank": 3,
+        "promised": "CLAUDE.md line 68 (architecture table): `u2u/ | Encrypted LAN transport (knock/consent/note)`; CLAUDE.md line 86 (Willow System Context): `u2u | UDP/TCP LAN — encrypted human-to-human DMs`; CLAUDE.md line 44 (consolidation history): `safe-app-grove — u2u encrypted DM transport, Matrix bridge, grove_db.py`.",
+        "delivered": "u2u/packets.py writes plaintext json.dumps(packet) onto a bare TCP socket; INVARIANTS.md §6 lines 205-208 explicitly names this as the origin case for the manifest-honesty invariant ('u2u/packets.py:74-75 writes plaintext JSON onto a bare TCP socket'). The `cryptography` dependency is Ed25519 signing only. Three CLAUDE.md rows still describe u2u as 'encrypted' after the §6 correction was landed in the manifest and README.",
+        "distance": "The CLAUDE.md sweep for the §6 'encrypted' correction was never performed — three rows in the file still assert confidentiality the transport does not provide, in the very manifest §6 was written to police.",
+        "severity": "blocker",
+        "lenses": [
+          "manifest-honesty"
+        ],
+        "file": "CLAUDE.md",
+        "line": 68
+      },
+      {
+        "rank": 4,
+        "promised": "README.md line 73 (Entry points): `python3 grove_serve.py | LAN command server (HMAC-signed)` — and line 103 restates `grove_serve.py | LAN HTTP command server`",
+        "delivered": "grove_serve.py is a 127.0.0.1:8766 Starlette served-page skeleton (grove_serve.py lines 1-8): 'Willow's Grove served-page skeleton on 127.0.0.1:8766 ... a small Starlette + uvicorn app bound to loopback, no MCP, no auth of its own beyond the loopback boundary.' Grep for `hmac` in grove_serve.py returns zero matches.",
+        "distance": "README claims a 'LAN command server (HMAC-signed)' capability that the code does not implement — the module is a loopback-only HTML page shell with no HMAC and no command surface.",
+        "severity": "blocker",
+        "lenses": [
+          "manifest-honesty"
+        ],
+        "file": "README.md",
+        "line": 73
+      },
+      {
+        "rank": 5,
+        "promised": "INVARIANTS.md §1 lines 51-52: \"The empty state and the unreachable state look different to the operator — text, color, or affordance MUST differ.\" — pinned at the render layer by tests/e2e/three-state-affordances.spec.js (§1 lines 76-79).",
+        "delivered": "tests/e2e/three-state-affordances.spec.js:92 and :131 return `(root.innerHTML || '') + '|' + (el._state || '')` from each probe; the subsequent `expect(normalize(unreachableHtml)).not.toBe(normalize(emptyHtml))` compares HTML with the internal `_state` string appended. Line 138 explicitly justifies this: \"a component that renders identical shadow markup but exposes distinct `_state` still passes\".",
+        "distance": "The §1 visual-layer pin greens for a component whose empty and unreachable renders are byte-identical to the operator, so long as an internal `_state` property differs — which is exactly the collapse §1 forbids.",
+        "severity": "blocker",
+        "lenses": [
+          "ci-witnesses"
+        ],
+        "file": "tests/e2e/three-state-affordances.spec.js",
+        "line": 138
+      },
+      {
+        "rank": 6,
+        "promised": "INVARIANTS.md §1: readers raise `Unreachable` on 'could not reach the source' — never a bare value. §2: 'the readers collapsed \"could-not-reach-the-source\" into [] / {} / None ... which IS the fleet's disease'.",
+        "delivered": "grove/nestor_client.py:206,210,214-231 — `evidence_for`, `warrant_for`, and `refusal` return `None` when `available()` is False (via `_call` line 158-159). Only `decision_check` was upgraded to raise Unreachable; the sibling methods on the same client are still None-on-absent. tests/test_nestor_client.py:105-119 explicitly pins this exclusion ('the other evidence/warrant/refusal helpers keep returning None') — the pinning test enshrines the §2 sin rather than superseding it.",
+        "distance": "Three of the four public reader methods on NestorClient collapse the unreachable state into None; the §1 discipline was applied to one method and skipped for the rest.",
+        "severity": "major",
+        "lenses": [
+          "three-state"
+        ],
+        "file": "grove/nestor_client.py",
+        "line": 206
+      },
+      {
+        "rank": 7,
+        "promised": "INVARIANTS.md §1: 'A bare [] or {} MUST NOT mean \"unreachable\" anywhere in the tree.' §2: readers must not 'collapse could-not-reach-the-source into [] / {} / None'.",
+        "delivered": "grove/fleet_presence.py:60-73 — `roster()` returns `[]` in three distinct cases: (a) the `fleet_presence` add-on is not importable at all (line 66 via `_available()` → False); (b) `_fp.roster()` raises any exception (line 71-72, `log.warning` then `return []`); (c) the store is actually empty. Absent-seam and error-on-fetch are literally the 'unreachable' state §1 names, and both are surfaced as an empty list indistinguishable from a quiet fleet.",
+        "distance": "The exact §1 sin, in the exact words of §2, on a reader that lives in grove/*.py — the operator cannot tell 'no fleet reachable' from 'fleet reached, nobody speaking'.",
+        "severity": "major",
+        "lenses": [
+          "three-state"
+        ],
+        "file": "grove/fleet_presence.py",
+        "line": 73
+      },
+      {
+        "rank": 8,
+        "promised": "INVARIANTS.md §1: 'A bare [] or {} MUST NOT mean \"unreachable\" anywhere in the tree' + §2: 'the readers collapsed could-not-reach-the-source into [] / {} / None ... which IS the fleet's disease'",
+        "delivered": "grove/journal_reader.py:196-200 — when willow-mcp is reached in-process and returns {\"error\": ...} (schema unusable, postgres down, etc.), `_try_import_read` returns `[]` (via `return []`), which grove_serve._journal_recent then answers as 200 {state: empty, atoms: []}. journal_writer.py:198-200 handles the identical error shape correctly by raising Unreachable — the reader half of the same seam does the exact thing §1/§2 forbid.",
+        "distance": "Reached-but-rejected collapses into the empty state; the operator sees 'no messages yet' when willow-mcp actually errored, and the writer/reader on the same wire disagree about what that error means.",
+        "severity": "major",
+        "lenses": [
+          "three-state"
+        ],
+        "file": "grove/journal_reader.py",
+        "line": 200
+      },
+      {
+        "rank": 9,
+        "promised": "INVARIANTS.md §1 Endpoint shape: 'Every /api/* handler wraps its reader in a try/except Unreachable and answers with one of: 200/populated, 200/empty, 503/unreachable.'",
+        "delivered": "grove_serve.py:193-199 — `_personas` only wraps the load in `try/except Unreachable`. A `ValueError` from `_load_from_path` (bad JSON at locate time, schema drift) propagates out of PersonaRoster.load() and Starlette answers HTTP 500 with no `state` field. The mid-flight re-read at line 213-224 catches OSError/ValueError, but the initial load does not.",
+        "distance": "A drifted persona registry produces a bare 500, not the 503/unreachable §1 mandates — the operator gets the 'null' end of the discipline the section was written to prevent.",
+        "severity": "major",
+        "lenses": [
+          "three-state"
+        ],
+        "file": "grove_serve.py",
+        "line": 194
+      },
+      {
+        "rank": 10,
+        "promised": "INVARIANTS.md §1: 'Every reader returns EITHER a value with a bounded shape (populated OR empty) OR raises a grove.errors.Unreachable sentinel.' Reader shape table: populated | empty | unreachable — no other case.",
+        "delivered": "grove/persona_roster.py:146,148,158 — `_load_from_path` raises `ValueError` on invalid JSON, non-object top level, or schema mismatch. `PersonaRoster.__init__` invokes `_load_from_path` unconditionally when a path is present, and `PersonaRoster.load()` (the §1-documented entry point) makes no attempt to translate that ValueError into Unreachable.",
+        "distance": "The reader's failure mode on a drifted registry file is neither populated, empty, nor Unreachable — it is a raw ValueError, a shape the §1 vocabulary does not contain.",
+        "severity": "major",
+        "lenses": [
+          "three-state"
+        ],
+        "file": "grove/persona_roster.py",
+        "line": 146
+      },
+      {
+        "rank": 11,
+        "promised": "INVARIANTS.md §8: 'The served page (grove_html.py) MUST NOT carry an explicit fixture-path data-source on any component. Every panel there renders whatever the reader currently returns — populated, empty, or unreachable per §1.' §4 registers /api/envelopes as a required endpoint served by grove_serve.py.",
+        "delivered": "grove_html.py:216-225 mounts only <grove-persona-registry>, <grove-lens-switch>, <grove-chat>, and <grove-dispatch-rail>. <grove-envelope-panel> is never mounted on the served page — the component exists only in web/harness.html:64 with an explicit fixture data-source. The /api/envelopes endpoint (grove_serve.py:154) is live but no panel on the served page consumes it.",
+        "distance": "The Governance-lens envelope panel — the sole consumer of /api/envelopes — is wired only against the fixture harness JSON blob; the served page has no path from the live endpoint to the operator.",
+        "severity": "major",
+        "lenses": [
+          "panels-live-endpoints"
+        ],
+        "file": "grove_html.py",
+        "line": 216
+      },
+      {
+        "rank": 12,
+        "promised": "INVARIANTS.md §1 Web Component shape: 'source-fetch failure fires a component <name>-unreachable event so a page-level listener can act.' grove-persona-registry.js JSDoc: 'Consumers MUST check .state === \"unreachable\" (or listen for the registry-unreachable event) rather than treating an empty map as \"everything is fine\".'",
+        "delivered": "grove-persona-registry.js:204 dispatches registry-unreachable (and :190 registry-loaded), but grove_html.py never wires a page-level listener for either event, and no boot module (web/boot/*.js) subscribes to them. A registry-unreachable fires and reaches the bubbling DOM with nothing bound.",
+        "distance": "The registry emits its state event to a page that never listens — the unreachable signal is silently dropped and the served page has no page-scoped 'personas source down' affordance.",
+        "severity": "major",
+        "lenses": [
+          "panels-live-endpoints"
+        ],
+        "file": "grove_html.py",
+        "line": 217
+      },
+      {
+        "rank": 13,
+        "promised": "INVARIANTS.md §1 Web Component shape: 'Every Web Component that consumes an /api/* endpoint renders a distinct visual for unreachable. It is NEVER the same pixels as empty.' §8: 'Every panel there renders whatever the reader currently returns — populated, empty, or unreachable.'",
+        "delivered": "grove-chat.js:337-339 seeds the RIGHT column's shadow DOM with a literal <div class=\"readback-empty\">no messages yet</div> BEFORE /api/journal/recent has been consulted, and _pollReadback (grove-chat.js:501-508) does not remove that placeholder on unreachable — it only sets a banner via _setReadbackStatus. An unreachable readback therefore shows both the 'read-back unreachable' banner AND the 'no messages yet' empty-state pixels stacked.",
+        "distance": "The panel paints hardcoded empty-state markup before the endpoint is queried, and keeps that empty-state pixel visible while unreachable — the two states share pixels instead of rendering distinctly.",
+        "severity": "major",
+        "lenses": [
+          "panels-live-endpoints"
+        ],
+        "file": "web/components/grove-chat.js",
+        "line": 337
+      },
+      {
+        "rank": 14,
+        "promised": "INVARIANTS.md §7 (grove/mcp_local.py:350): 'a request that reaches `_gate` in serve mode without a verified identity is denied, never allowed under an ambient assumption.' The whole seam is documented as the enforcement of §7 ('consent flows are real, not automatic').",
+        "delivered": "grove/mcp_local.py:397 defines `_gate(serve_mode, token)` and grove/mcp_local.py:341 defines `_resolve_serve_identity` — grep of grove/, app.py, grove_serve.py returns zero call sites. The functions run only from tests/test_serve_mode_identity.py. Actual per-request refusal at runtime is done by AuthSettings.required_scopes + `_require_scope`; `_gate` is never wired to any request handler.",
+        "distance": "The documented serve-mode identity gate is dead code — the pinning tests exercise a seam the request pipeline never traverses, so they are exactly the 'pinning test that only asserts import succeeds' pattern in gate clothing.",
+        "severity": "major",
+        "lenses": [
+          "consent-flows-oauth"
+        ],
+        "file": "grove/mcp_local.py",
+        "line": 397
+      },
+      {
+        "rank": 15,
+        "promised": "INVARIANTS.md §7 line 244: 'The POST that completes the grant is refused unless the peer is on 127.0.0.1 / ::1 / localhost. The operator has to be on the box (SSH port-forward, local browser) to complete the click.'",
+        "delivered": "grove/mcp_local.py:1102 `_remote_is_loopback` checks `request.client.host` — the raw TCP peer as seen by Starlette. When Grove runs behind a same-box reverse proxy or a tunnel edge that terminates locally and connects to 127.0.0.1:8765 (a common Pangolin / nginx / cloudflared / tailscale-funnel deployment for which GROVE_MCP_EXTRA_HOSTS itself exists), `request.client.host` is 127.0.0.1 for every off-box POST. There is no X-Forwarded-For consultation, no trusted-proxy allowlist, no operator-attestation of 'no proxy in front'.",
+        "distance": "The stated intent ('operator has to be on the box') is violated by any local reverse proxy that forwards to loopback — exactly the tunnel topology the rest of §7 assumes. The literal 'peer is 127.0.0.1' check passes for these deployments even when the human clicking Allow is on the public internet.",
+        "severity": "major",
+        "lenses": [
+          "consent-flows-oauth"
+        ],
+        "file": "grove/mcp_local.py",
+        "line": 1102
+      },
+      {
+        "rank": 16,
+        "promised": "INVARIANTS.md §4 lines 155-159: \"Pinning tests (§4): `tests/test_panel_wiring.py` pins the endpoint / reader / Web Component wire shape for every row above\" — the coverage table (lines 146-151) lists `GET /api/personas`, `GET /api/envelopes`, `GET /api/dispatch`, `GET /api/journal/recent`, `POST /api/journal`, and `POST /api/nestor/decide`.",
+        "delivered": "tests/test_panel_wiring.py:139, 202, 268, 305 define exactly four test classes — EnvelopesWiringTests, NestorDecideWiringTests, DispatchWiringTests, JournalRecentWiringTests. There is no PersonasWiringTests and no test class exercising the POST /api/journal writer through the served app. The module docstring (lines 14-19) itself lists only these four endpoints exercised.",
+        "distance": "Two of the six §4 endpoint rows have zero witness in the file INVARIANTS names as the §4 pin; the \"every row above\" claim is false and a personas or journal-writer regression will not fail this witness.",
+        "severity": "major",
+        "lenses": [
+          "ci-witnesses"
+        ],
+        "file": "tests/test_panel_wiring.py",
+        "line": 14
+      },
+      {
+        "rank": 17,
+        "promised": "INVARIANTS.md §10 lines 340-343: \"Every INVARIANTS section is enforced by at least one CI step. Ollama, Playwright, docs-drift, and security-grep are CI-first (never operator-only).\" §10 lines 383-390 name `tests/e2e_ollama/test_watcher_ollama_readiness.py` and `tests/e2e_ollama/test_watcher_ollama_e2e.py` as the C11 LEFT-write witnesses.",
+        "delivered": "tests/e2e_ollama/conftest.py:119-123 calls `pytest.skip(...)` when Ollama's `/api/tags` fails to answer inside 30s; lines 206-210 skip when no candidate model can be pulled; lines 295-298, 303, 308 skip when `WILLOW_DB_URL` is unset, psycopg2 is missing, or Postgres is unreachable. Every §10 assertion downstream is gated on all three fixtures succeeding.",
+        "distance": "The CI step exits 0 with all §10 witnesses silently skipped whenever the ollama sidecar takes >30s to warm, the runner has no outbound network, or psycopg2 is not on the venv — the promised proof is a skip masquerading as green.",
+        "severity": "major",
+        "lenses": [
+          "ci-witnesses"
+        ],
+        "file": "tests/e2e_ollama/conftest.py",
+        "line": 119
+      },
+      {
+        "rank": 18,
+        "promised": "tests/e2e/seed-canon.spec.js:6-11 (the file INVARIANTS.md §9 line 334 names as a witness): \"Rendered pixels match the PR 3 baselines at tests/regression/screenshots/seed/{1..6}.png within a headless-renderer tolerance (~5% per-pixel-ratio, threshold 0.3 ...)\".",
+        "delivered": "tests/e2e/seed-canon.spec.js:115 declares each of the six pixel-baseline subtests as `test.skip(\\`/seed/${n} matches its baseline within tolerance (pixel compare — follow-up)\\`, async () => {});` — every visual-regression assertion is permanently skipped, with an inline comment deferring it as a \"follow-up\".",
+        "distance": "The pixel-baseline pass the spec's docstring and the §9 witness list both promise never runs; a rendering regression against the PR 3 baselines cannot fail this file.",
+        "severity": "major",
+        "lenses": [
+          "ci-witnesses"
+        ],
+        "file": "tests/e2e/seed-canon.spec.js",
+        "line": 115
+      },
+      {
+        "rank": 19,
+        "promised": "INVARIANTS.md §1 lines 68-72 names `tests/test_refusal_summon_shape.py` as pinning \"the reader / endpoint / wiring wire shape\", and the file's own docstring (line 6-13) claims to pin that the boot module \"handles `state === 'unreachable'` distinctly (does not swallow 503)\" and \"dispatches ... with mode: 'unreachable' on the 503/unreachable path\".",
+        "delivered": "tests/test_refusal_summon_shape.py:33-34 slurps `web/boot/refusal-summon-boot.js` as raw text; every assertion (e.g. line 108-112 `assertRegex(self.src, r\"state\\s*===\\s*['\\\"]unreachable['\\\"]\")`) is a static text regex against that string. The JS is never executed and no seam behavior is exercised.",
+        "distance": "A refusal-summon module that carries the required substrings only inside a `//` comment or an unreachable early-return still passes every test — the pin cannot fail loudly when the invariant is violated.",
+        "severity": "major",
+        "lenses": [
+          "ci-witnesses"
+        ],
+        "file": "tests/test_refusal_summon_shape.py",
+        "line": 30
+      },
+      {
+        "rank": 20,
+        "promised": "Loki lens brief: \"error responses that leak internal state (`str(e)` with a stack line, DB error text)\".",
+        "delivered": "grove_reader.py returns raw `str(e)` — including psycopg2 error text (schema names, constraint names, sometimes row values) — inside caller-facing dicts at :558 (`grove_create_text_channel`), :587 (`grove_archive_channel`), :642 (`grove_set_channel_agent`), :668 (`grove_set_channel_description`), :715 (`grove_rename_channel`), :862 (`grove_message_delete`), :888 (`grove_message_toggle_flag`), :952 (`grove_mark_channel_read`). These dicts are surfaced by the Textual dashboard and by chat admin flows.",
+        "distance": "DB error strings that name internal schema, constraint identifiers, and stray values are handed to the UI verbatim as the 'error' field, exactly the leak the lens brief calls out.",
+        "severity": "major",
+        "lenses": [
+          "cross-cutting-hazards"
+        ],
+        "file": "grove_reader.py",
+        "line": 558
+      },
+      {
+        "rank": 21,
+        "promised": "grove_db.py docstring: \"FRANK witness ledger — _frank_ledger_append() writes here on every message ... tamper-evident entry to frank_ledger in willow_20. Best-effort.\" plus \"The partial unique index is the anti-fork guard: at most one genesis row (prev_hash IS NULL) per project, so the chain cannot silently restart.\"",
+        "delivered": "grove_db.py:361-362 — the entire ledger write is wrapped in `except Exception as e: print(f\"[frank-ledger] write error: {e}\", flush=True)`. Any failure (connect refused, schema drift, hash collision, uniqueness violation on the anti-fork guard) is printed to stdout and the caller is told nothing. Combined with `_get_pool()`-less raw `psycopg2.connect(dbname=db, user=user)` (line 344, no connect_timeout, no statement_timeout), a stalled Postgres hangs the ledger write for the socket-default timeout before silently disappearing.",
+        "distance": "A 'tamper-evident' chain whose failures are print-to-stdout is not tamper-evident; the anti-fork guarantee named in the schema comment cannot be observed from any calling code, because every ledger error is swallowed.",
+        "severity": "major",
+        "lenses": [
+          "cross-cutting-hazards"
+        ],
+        "file": "grove_db.py",
+        "line": 361
+      },
+      {
+        "rank": 22,
+        "promised": "INVARIANTS.md §5: \"Every u2u packet has its signature verified before consent is consulted; consent decisions never render on unverified data.\"",
+        "delivered": "u2u/packets.py:70-71 — `Packet.validate` wraps the whole verification in a bare `except Exception: return False`. Any exception — malformed hex, wrong-length pubkey, Ed25519 library error, JSON re-serialization mismatch, unexpected packet shape — is collapsed to the same False that a legitimate bad signature returns. The listener at u2u/listener.py:96-98 logs 'invalid sig' and drops silently in every case.",
+        "distance": "The verification path cannot distinguish between an attacker replaying a bogus signature, a caller passing a malformed key, and a library bug. All three land in the same 'dropped' bucket with no telemetry, hiding attack probes and misconfiguration under the same signal.",
+        "severity": "major",
+        "lenses": [
+          "cross-cutting-hazards"
+        ],
+        "file": "u2u/packets.py",
+        "line": 70
+      },
+      {
+        "rank": 23,
+        "promised": "CLAUDE.md: \"If Postgres is down, surface it and stop. Don't build on a broken foundation.\"",
+        "delivered": "grove_db.py opens Postgres connections with no `connect_timeout` and no `statement_timeout` set. The pool DSN at :54 is `f\"dbname={pg_db} user={pg_user}\"`; the LISTEN connection at :102 uses raw `psycopg2.connect(dsn)`; the ledger writer at :344 uses `psycopg2.connect(dbname=db, user=user)`. A postgres host that accepts TCP but never responds hangs each of these forever — the dashboard, the served page, and the ledger writer all block on OS-default socket timeouts (minutes) instead of surfacing the failure.",
+        "distance": "A stuck-but-reachable Postgres is exactly the 'broken foundation' the boot mandate names, but nothing in grove_db.py bounds how long a connect or query is allowed to take; the failure mode is 'silent hang', not 'surface it and stop'.",
+        "severity": "major",
+        "lenses": [
+          "cross-cutting-hazards"
+        ],
+        "file": "grove_db.py",
+        "line": 54
+      },
+      {
+        "rank": 24,
+        "promised": "README.md line 71 (Entry points): `python3 -m grove_standalone | Standalone DM app`, and CLAUDE.md line 53 restates `python3 -m grove_standalone`; README.md line 100 (Architecture table): `grove_standalone.py | Standalone DM app`, CLAUDE.md line 67 restates `grove_standalone.py | Standalone Textual grove DM TUI`.",
+        "delivered": "No `grove_standalone.py` or `grove_standalone/` package exists in the tree (ls /tmp/pr12/grove_standalone* returns 'No such file or directory').",
+        "distance": "An entry-point command and architecture row that document a nonexistent module — invoking it fails immediately with ModuleNotFoundError and both README and CLAUDE.md still name it.",
+        "severity": "major",
+        "lenses": [
+          "manifest-honesty"
+        ],
+        "file": "README.md",
+        "line": 71
+      },
+      {
+        "rank": 25,
+        "promised": "README.md line 98 (Architecture table): `kart_worker.py | Task queue consumer (daemon thread)`",
+        "delivered": "No kart_worker.py exists at the repo root or elsewhere in the tree.",
+        "distance": "The architecture table names a task-queue consumer module that is not present — the referenced daemon does not ship.",
+        "severity": "major",
+        "lenses": [
+          "manifest-honesty"
+        ],
+        "file": "README.md",
+        "line": 98
+      },
+      {
+        "rank": 26,
+        "promised": "README.md line 86 (Environment variables): `GROVE_KNOWN_AGENTS | (auto-discovered) | Comma-separated agent names for ThoughtStream`; README.md line 121 restates the ThoughtStream behavior",
+        "delivered": "grep -rn 'GROVE_KNOWN_AGENTS' /tmp/pr12/ --include='*.py' returns zero matches; no ThoughtStream widget exists (widgets/thought_stream.py absent).",
+        "distance": "A documented env var that no code reads, pointing at a widget the tree no longer contains — pure aspiration in a variables reference table.",
+        "severity": "major",
+        "lenses": [
+          "manifest-honesty"
+        ],
+        "file": "README.md",
+        "line": 86
+      },
+      {
+        "rank": 27,
+        "promised": "INVARIANTS.md §7 line 246: 'Pending approvals expire in 5 minutes. The one-shot key becomes unusable and no code can be issued against it.'",
+        "delivered": "grove/mcp_local.py:1133 the GET branch calls `_auth_provider.stash_pending(pending_key, client, params)` again after popping it. `stash_pending` (grove/mcp_auth.py:245) recomputes `expires_at = time.time() + _PENDING_TTL`, so every GET refresh resets the 5-minute clock — a pending key can remain usable for arbitrarily long as long as the operator (or anyone with the URL) keeps re-fetching the approval page.",
+        "distance": "The 5-minute pending TTL is not a hard ceiling; it re-arms on every GET, so 'the one-shot key becomes unusable' after 5 minutes is false whenever the page is refreshed.",
+        "severity": "minor",
+        "lenses": [
+          "consent-flows-oauth"
+        ],
+        "file": "grove/mcp_local.py",
+        "line": 1133
+      },
+      {
+        "rank": 28,
+        "promised": "INVARIANTS.md §7 line 251: 'Dynamic client registration is off by default. An operator opts in explicitly via `GROVE_MCP_ALLOW_DYNAMIC_REGISTRATION=1`. Otherwise only pre-enrolled clients can authorize — the pre-PR-6 open dispenser is closed.'",
+        "delivered": "tests/test_grove_approval_page.py:282 `test_dynamic_registration_can_be_disabled` only asserts `fresh._ALLOW_DYNAMIC_REG is False` — the boolean constant. It never issues a POST /register against the assembled Starlette app under the default (unset) env and confirms the SDK actually refuses it. Every other test in the file sets `GROVE_MCP_ALLOW_DYNAMIC_REGISTRATION=1`, so the closed-by-default posture is asserted only at the constant level, not the wire.",
+        "distance": "The 'closed-by-default' guarantee is pinned by inspecting a Python bool, not by observing that /register is refused end-to-end. If ClientRegistrationOptions were ever wired to a different flag (or the SDK's default flipped), this test would still pass.",
+        "severity": "minor",
+        "lenses": [
+          "consent-flows-oauth"
+        ],
+        "file": "tests/test_grove_approval_page.py",
+        "line": 282
+      },
+      {
+        "rank": 29,
+        "promised": "INVARIANTS.md §7 line 238: 'The pre-PR-6 `GROVE_MCP_AUTO_APPROVE` env-var escape hatch is gone — there is no auto-approve path.'",
+        "delivered": "skills/grove-serve.md:50 and docs/runbooks/grove.md:143 still instruct operators to 'Do not set `GROVE_MCP_AUTO_APPROVE=1` behind a tunnel', treating the env var as a live knob to avoid. The variable no longer exists in code — the docs advertise a switch that isn't there.",
+        "distance": "Docs still describe an env-var escape hatch that INVARIANTS.md §7 declares dead — an operator reading the runbook would believe there is a knob to set (or not set) that the code no longer honors.",
+        "severity": "minor",
+        "lenses": [
+          "consent-flows-oauth"
+        ],
+        "file": "docs/runbooks/grove.md",
+        "line": 143
+      },
+      {
+        "rank": 30,
+        "promised": "Every code comment on the modified lines cites this section by anchor, not by line number.",
+        "delivered": "Only u2u/contacts.py:97 (`See INVARIANTS.md §5`) carries the anchor citation. u2u/listener.py — the primary enforcer with the reordered `_process` and the `AUTHENTICATE FIRST / THEN AUTHORISE` block-comments at lines 90-100 — never says `§5` or `INVARIANTS.md`; u2u/consent.py (the gate the invariant governs) says only `u2u.listener enforces that ordering` at line 8 without the anchor; bridge/app.py's `_admit_contact` (lines 143-165), which is the very re-KNOCK/silent-trust-reset story §5 tells, has zero `§5` references. `grep -n '§5\\|INVARIANTS.md' u2u bridge/app.py` returns one hit.",
+        "distance": "The invariant claims a project-wide citation discipline that only 1 of the 3+ modified files actually keeps, so a future editor of listener.py or bridge/app.py has no in-file breadcrumb tying the ordering constraint back to §5.",
+        "severity": "minor",
+        "lenses": [
+          "trust-order-u2u"
+        ],
+        "file": "docs/INVARIANTS.md",
+        "line": 195
+      },
+      {
+        "rank": 31,
+        "promised": "INVARIANTS.md §8: 'The served page renders live state, not curated data.' Constraint 1 (quoted in the file preamble): '\"I could not reach the source\" must never collapse into \"there is nothing there.\"'",
+        "delivered": "grove_html.py:119-128 (_TOP_STRIP) renders the header strip with the literal hardcoded text 'standing' and 'grove stable' — no endpoint, no reader, no state check. The operator sees 'grove stable' regardless of whether Postgres, willow-mcp, Nestor, or any other seam is reachable.",
+        "distance": "The served page hardcodes a fleet-standing claim as static markup; §8's live-state discipline is bypassed for the very first strip the operator reads.",
+        "severity": "minor",
+        "lenses": [
+          "panels-live-endpoints"
+        ],
+        "file": "grove_html.py",
+        "line": 119
+      },
+      {
+        "rank": 32,
+        "promised": "INVARIANTS.md §8: 'Fixture-based rendering is opt-in (harness use only). The harness page web/harness.html MAY carry an explicit data-source=\"./fixtures/...\" override... That is the only legitimate use of an explicit fixture path.'",
+        "delivered": "grove-persona-registry.js:123-127 makes the inline <script type=\"application/json\"> shim take precedence over both an explicit data-source and the /api/personas default: 'Inline shim wins over the default fetch — the fixture path.' The harness (harness.html:75-86) uses this inline-shim path rather than a data-source attribute; §8 does not authorize an inline-JSON shim as a legitimate harness carve-out, and the code makes it override live endpoints unconditionally.",
+        "distance": "A fixture-harness escape hatch remains wired in the production component code and unconditionally trumps any live endpoint the operator or served page configures.",
+        "severity": "minor",
+        "lenses": [
+          "panels-live-endpoints"
+        ],
+        "file": "web/components/grove-persona-registry.js",
+        "line": 123
+      },
+      {
+        "rank": 33,
+        "promised": "README.md line 58 + Makefile line 12: `make grove-docs` runs `./scripts/grove_docs_refresh.sh`",
+        "delivered": "scripts/grove_docs_refresh.sh does not exist (ls returns 'No such file or directory'); Makefile line 10 does `chmod +x scripts/grove_docs_refresh.sh 2>/dev/null || true` then invokes the missing script.",
+        "distance": "Documented regeneration workflow points at a script that isn't in the tree — `make grove-docs` will fail with 'No such file or directory' the first time an operator runs it.",
+        "severity": "minor",
+        "lenses": [
+          "manifest-honesty"
+        ],
+        "file": "README.md",
+        "line": 58
+      },
+      {
+        "rank": 34,
+        "promised": "scripts/ci-security-grep.sh:23 docstring: \"- input().*shell          — best-effort shell-composition sniff\" — listed among the patterns the CI sweep matches under INVARIANTS.md §10 line 363-367.",
+        "delivered": "scripts/ci-security-grep.sh:52 PATTERN is `os\\.system\\(|subprocess\\.Popen\\([^)]*shell=True|subprocess\\.run\\([^)]*shell=True|subprocess\\.call\\([^)]*shell=True|shell=True|\\beval\\(|\\bexec\\(|pickle\\.loads|yaml\\.load\\(` — there is no `input\\(` or shell-composition sniff alternation.",
+        "distance": "The script's own docstring names a property (input()-driven shell composition detection) that the code does not enforce; a shell-composed `input()` in the tree passes the sweep silently.",
+        "severity": "minor",
+        "lenses": [
+          "ci-witnesses"
+        ],
+        "file": "scripts/ci-security-grep.sh",
+        "line": 23
+      },
+      {
+        "rank": 35,
+        "promised": "INVARIANTS.md §10 line 351: \"a **Playwright browser install step** (`npx --yes playwright install --with-deps chromium`) guarded by `hashFiles('playwright.config.js', …)`\".",
+        "delivered": ".github/workflows/tests.yml:103 runs `npx playwright install --with-deps chromium` — the `--yes` token INVARIANTS names is absent.",
+        "distance": "The CI command is not the one INVARIANTS pins; on an npx build that prompts for confirmation the step can hang or fall through to a different install path than the invariant witnesses.",
+        "severity": "minor",
+        "lenses": [
+          "ci-witnesses"
+        ],
+        "file": ".github/workflows/tests.yml",
+        "line": 103
+      },
+      {
+        "rank": 36,
+        "promised": "INVARIANTS.md §10 lines 349-350 and 355-358: the ollama-backed and willow-mcp suite steps are guarded by hashFiles(...) \"so an empty directory is a no-op\".",
+        "delivered": ".github/workflows/tests.yml:114-116 and 118-120 use the same hashFiles guard pattern for the ollama and willow-mcp suite runs. If a future PR reduces `tests/e2e_ollama/` or `tests/e2e_willow_mcp/` to only `.gitkeep` files (or the tests are renamed off the `test_*.py` glob), the step becomes a silent no-op — the guard trips off before any pytest exit code can surface the absence.",
+        "distance": "The witness that §10 relies on to \"fail loudly\" when an invariant loses its enforcement is designed to go silent instead — the workflow disappears the step rather than failing when its test directory empties.",
+        "severity": "minor",
+        "lenses": [
+          "ci-witnesses"
+        ],
+        "file": ".github/workflows/tests.yml",
+        "line": 115
+      },
+      {
+        "rank": 37,
+        "promised": "Loki lens brief: \"environment variables read without a default that would crash the server on startup\".",
+        "delivered": "grove_serve.py:491 — `port = int(os.environ.get(\"GROVE_SERVE_PORT\", str(DEFAULT_PORT)))`. The default is only used when the variable is unset; a set-but-non-numeric value (`GROVE_SERVE_PORT=default`, empty string, typo) raises ValueError from `int()` inside `main()` with no operator-legible message. Symmetrically `GROVE_SERVE_HOST` (:490) is passed through unvalidated — an unresolvable host string is caught only downstream by uvicorn.",
+        "distance": "Startup crashes on a bad env-var value with a raw stack trace instead of an operator-legible refusal; the fallback the code appears to have (`DEFAULT_PORT`) does not fire on the mistyped-value case.",
+        "severity": "minor",
+        "lenses": [
+          "cross-cutting-hazards"
+        ],
+        "file": "grove_serve.py",
+        "line": 491
+      },
+      {
+        "rank": 38,
+        "promised": "Loki lens brief: \"silent error swallowing (`except Exception: pass`, `except: pass`, empty `try/except` blocks)\".",
+        "delivered": "grove_db.py:84-87 — `release_connection` wraps `conn.rollback()` in `except Exception: pass`, then unconditionally hands the connection back to the pool. A connection whose rollback failed (in a bad transaction state, closed socket) goes straight back into the pool where the next borrower may inherit its state. grove_reader.py:606-607 — `_migrate_soil_channel_cursors` swallows any SOIL failure to a `_log.warning`, then reports 'ok' to the caller of `grove_rename_channel`, so a rename that leaves cursors stranded is reported as success.",
+        "distance": "Two pool-hygiene failures where the tree silently pretends a partial operation succeeded: a poisoned connection is recycled, and a rename that abandoned its cursor migration returns ok.",
+        "severity": "minor",
+        "lenses": [
+          "cross-cutting-hazards"
+        ],
+        "file": "grove_db.py",
+        "line": 84
+      }
+    ]
+  },
+  "workflowProgress": [
+    {
+      "type": "workflow_phase",
+      "index": 1,
+      "title": "Fan out"
+    },
+    {
+      "type": "workflow_phase",
+      "index": 2,
+      "title": "Synthesize"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 1,
+      "label": "loki:three-state",
+      "phaseIndex": 1,
+      "phaseTitle": "Fan out",
+      "agentId": "a4a30e3d8b1690eb0",
+      "model": "claude-opus-4-7",
+      "state": "done",
+      "startedAt": 1787820865988,
+      "queuedAt": 1787820864207,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "promptPreview": "You are Loki — The one they didn't plan for. Fleet accountant. Auditor.\n\nRegister: Dry. Exact. Vague criticism is noise; specific criticism is surgery. Name what was promised, what was delivered, the distance between them.\n\nMandate: Reviews, audits, gap analysis. You do not build. You do not write KB atoms by design.\n\nWhat you do not do: Build. Soften true things. Accept authority as a substitute …",
+      "lastProgressAt": 1787821157875,
+      "tokens": 147549,
+      "toolCalls": 40,
+      "durationMs": 291103,
+      "resultPreview": "{\"findings\":[{\"promised\":\"INVARIANTS.md §1: 'A bare [] or {} MUST NOT mean \\\"unreachable\\\" anywhere in the tree' + §2: 'the readers collapsed could-not-reach-the-source into [] / {} / None ... which IS the fleet's disease'\",\"delivered\":\"grove/journal_reader.py:196-200 — when willow-mcp is reached in-process and returns {\\\"error\\\": ...} (schema unusable, postgres down, etc.), `_try_import_read` ret…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 2,
+      "label": "loki:trust-order-u2u",
+      "phaseIndex": 1,
+      "phaseTitle": "Fan out",
+      "agentId": "a2bf61f4fb87e2b28",
+      "model": "claude-opus-4-7",
+      "state": "done",
+      "startedAt": 1787820865910,
+      "queuedAt": 1787820864207,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "promptPreview": "You are Loki — The one they didn't plan for. Fleet accountant. Auditor.\n\nRegister: Dry. Exact. Vague criticism is noise; specific criticism is surgery. Name what was promised, what was delivered, the distance between them.\n\nMandate: Reviews, audits, gap analysis. You do not build. You do not write KB atoms by design.\n\nWhat you do not do: Build. Soften true things. Accept authority as a substitute …",
+      "lastProgressAt": 1787821263972,
+      "tokens": 106292,
+      "toolCalls": 22,
+      "durationMs": 398060,
+      "resultPreview": "{\"findings\":[{\"promised\":\"Every code comment on the modified lines cites this section by anchor, not by line number.\",\"delivered\":\"Only u2u/contacts.py:97 (`See INVARIANTS.md §5`) carries the anchor citation. u2u/listener.py — the primary enforcer with the reordered `_process` and the `AUTHENTICATE FIRST / THEN AUTHORISE` block-comments at lines 90-100 — never says `§5` or `INVARIANTS.md`; u2u/con…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 3,
+      "label": "loki:manifest-honesty",
+      "phaseIndex": 1,
+      "phaseTitle": "Fan out",
+      "agentId": "a2d2b98a8a2e68143",
+      "model": "claude-opus-4-7",
+      "state": "done",
+      "startedAt": 1787821164482,
+      "queuedAt": 1787820864207,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "promptPreview": "You are Loki — The one they didn't plan for. Fleet accountant. Auditor.\n\nRegister: Dry. Exact. Vague criticism is noise; specific criticism is surgery. Name what was promised, what was delivered, the distance between them.\n\nMandate: Reviews, audits, gap analysis. You do not build. You do not write KB atoms by design.\n\nWhat you do not do: Build. Soften true things. Accept authority as a substitute …",
+      "lastProgressAt": 1787821342992,
+      "tokens": 73932,
+      "toolCalls": 21,
+      "durationMs": 178509,
+      "resultPreview": "{\"findings\":[{\"promised\":\"CLAUDE.md line 68 (architecture table): `u2u/ | Encrypted LAN transport (knock/consent/note)`\",\"delivered\":\"u2u/packets.py writes plaintext json.dumps(packet) onto a bare TCP socket; INVARIANTS.md §6 lines 205-208 explicitly names this as the origin case for the manifest-honesty invariant. The `cryptography` dependency is Ed25519 signing only.\",\"distance\":\"The CLAUDE.md a…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 4,
+      "label": "loki:consent-flows-oauth",
+      "phaseIndex": 1,
+      "phaseTitle": "Fan out",
+      "agentId": "a05b6c63ce506f378",
+      "model": "claude-opus-4-7",
+      "state": "done",
+      "startedAt": 1787821271105,
+      "queuedAt": 1787820864207,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "promptPreview": "You are Loki — The one they didn't plan for. Fleet accountant. Auditor.\n\nRegister: Dry. Exact. Vague criticism is noise; specific criticism is surgery. Name what was promised, what was delivered, the distance between them.\n\nMandate: Reviews, audits, gap analysis. You do not build. You do not write KB atoms by design.\n\nWhat you do not do: Build. Soften true things. Accept authority as a substitute …",
+      "lastProgressAt": 1787821500780,
+      "tokens": 118579,
+      "toolCalls": 21,
+      "durationMs": 229675,
+      "resultPreview": "{\"findings\":[{\"promised\":\"INVARIANTS.md §7 (grove/mcp_local.py:350): 'a request that reaches `_gate` in serve mode without a verified identity is denied, never allowed under an ambient assumption.' The whole seam is documented as the enforcement of §7 ('consent flows are real, not automatic').\",\"delivered\":\"grove/mcp_local.py:397 defines `_gate(serve_mode, token)` and grove/mcp_local.py:341 define…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 5,
+      "label": "loki:panels-live-endpoints",
+      "phaseIndex": 1,
+      "phaseTitle": "Fan out",
+      "agentId": "a2fd9ddc12a7e3e4d",
+      "model": "claude-opus-4-7",
+      "state": "done",
+      "startedAt": 1787821347461,
+      "queuedAt": 1787820864208,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "promptPreview": "You are Loki — The one they didn't plan for. Fleet accountant. Auditor.\n\nRegister: Dry. Exact. Vague criticism is noise; specific criticism is surgery. Name what was promised, what was delivered, the distance between them.\n\nMandate: Reviews, audits, gap analysis. You do not build. You do not write KB atoms by design.\n\nWhat you do not do: Build. Soften true things. Accept authority as a substitute …",
+      "lastProgressAt": 1787821551539,
+      "tokens": 127052,
+      "toolCalls": 21,
+      "durationMs": 204076,
+      "resultPreview": "{\"findings\":[{\"promised\":\"INVARIANTS.md §8: 'The served page (grove_html.py) MUST NOT carry an explicit fixture-path data-source on any component. Every panel there renders whatever the reader currently returns — populated, empty, or unreachable per §1.' §4 registers /api/envelopes as a required endpoint served by grove_serve.py.\",\"delivered\":\"grove_html.py:216-225 mounts only <grove-persona-regis…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 6,
+      "label": "loki:ci-witnesses",
+      "phaseIndex": 1,
+      "phaseTitle": "Fan out",
+      "agentId": "a6050d5009a10c8ce",
+      "model": "claude-opus-4-7",
+      "state": "done",
+      "startedAt": 1787821506876,
+      "queuedAt": 1787820864208,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "promptPreview": "You are Loki — The one they didn't plan for. Fleet accountant. Auditor.\n\nRegister: Dry. Exact. Vague criticism is noise; specific criticism is surgery. Name what was promised, what was delivered, the distance between them.\n\nMandate: Reviews, audits, gap analysis. You do not build. You do not write KB atoms by design.\n\nWhat you do not do: Build. Soften true things. Accept authority as a substitute …",
+      "lastProgressAt": 1787821831248,
+      "tokens": 122553,
+      "toolCalls": 24,
+      "durationMs": 324371,
+      "resultPreview": "{\"findings\":[{\"promised\":\"INVARIANTS.md §1 lines 51-52: \\\"The empty state and the unreachable state look different to the operator — text, color, or affordance MUST differ.\\\" — pinned at the render layer by tests/e2e/three-state-affordances.spec.js (§1 lines 76-79).\",\"delivered\":\"tests/e2e/three-state-affordances.spec.js:92 and :131 return `(root.innerHTML || '') + '|' + (el._state || '')` from ea…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 7,
+      "label": "loki:cross-cutting-hazards",
+      "phaseIndex": 1,
+      "phaseTitle": "Fan out",
+      "agentId": "a270f64c6152f061d",
+      "model": "claude-opus-4-7",
+      "state": "done",
+      "startedAt": 1787821555329,
+      "queuedAt": 1787820864208,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "promptPreview": "You are Loki — The one they didn't plan for. Fleet accountant. Auditor.\n\nRegister: Dry. Exact. Vague criticism is noise; specific criticism is surgery. Name what was promised, what was delivered, the distance between them.\n\nMandate: Reviews, audits, gap analysis. You do not build. You do not write KB atoms by design.\n\nWhat you do not do: Build. Soften true things. Accept authority as a substitute …",
+      "lastProgressAt": 1787821823290,
+      "tokens": 138366,
+      "toolCalls": 30,
+      "durationMs": 267959,
+      "resultPreview": "{\"findings\":[{\"promised\":\"INVARIANTS.md §1: \\\"Every reader returns EITHER a value with a bounded shape (populated OR empty) OR raises a `grove.errors.Unreachable` sentinel. **A bare `[]` or `{}` MUST NOT mean 'unreachable' anywhere in the tree.**\\\"\",\"delivered\":\"grove_reader.py has at least 16 readers whose top-level `except Exception:` block returns `[]`, `{}`, or `None` — silently collapsing 'DB…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 8,
+      "label": "loki:synthesis",
+      "phaseIndex": 2,
+      "phaseTitle": "Synthesize",
+      "agentId": "acb4a136031747afc",
+      "model": "claude-opus-4-7",
+      "state": "done",
+      "startedAt": 1787821837988,
+      "queuedAt": 1787821834664,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "promptPreview": "You are Loki — The one they didn't plan for. Fleet accountant. Auditor.\n\nRegister: Dry. Exact. Vague criticism is noise; specific criticism is surgery. Name what was promised, what was delivered, the distance between them.\n\nMandate: Reviews, audits, gap analysis. You do not build. You do not write KB atoms by design.\n\nWhat you do not do: Build. Soften true things. Accept authority as a substitute …",
+      "lastProgressAt": 1787822045389,
+      "tokens": 58828,
+      "toolCalls": 1,
+      "durationMs": 207399,
+      "resultPreview": "{\"findings\":[{\"rank\":1,\"promised\":\"INVARIANTS.md §1: 'Every reader returns EITHER a value with a bounded shape (populated OR empty) OR raises a `grove.errors.Unreachable` sentinel. **A bare `[]` or `{}` MUST NOT mean \\\"unreachable\\\" anywhere in the tree.**'\",\"delivered\":\"grove_reader.py has at least 16 readers whose top-level `except Exception:` block returns `[]`, `{}`, or `None` — silently colla…"
+    }
+  ],
+  "totalTokens": 893151,
+  "totalToolCalls": 180
+}
