@@ -22,6 +22,7 @@ from __future__ import annotations
 import json
 import os
 import subprocess
+import threading
 from pathlib import Path
 
 from starlette.applications import Starlette
@@ -36,6 +37,7 @@ from grove import kart_reader
 from grove_html import render_page
 from grove import journal_writer
 from grove import persona_roster
+from grove.nestor_client import NestorClient
 
 
 _WEB_ROOT = Path(__file__).resolve().parent / "web"
@@ -49,6 +51,29 @@ _WEB_ROOT = Path(__file__).resolve().parent / "web"
 
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 8766
+
+# Lazy-singleton NestorClient — spinning up `nestor serve` as a subprocess is
+# expensive (Python import + MCP handshake), so we reuse one child across
+# every /api/nestor/decide call. Guarded by a module-level lock so concurrent
+# first requests don't race the constructor. D11: Nestor is the decision
+# keeper; Grove is a caller, not a co-author.
+_NESTOR_CLIENT: NestorClient | None = None
+_NESTOR_CLIENT_LOCK = threading.Lock()
+
+
+def _get_nestor_client() -> NestorClient:
+    """Return the shared, lazily constructed ``NestorClient``.
+
+    The client's own ``available()`` check tells the caller whether the
+    ``nestor`` binary is reachable; construction never raises, so we can
+    hold a single instance forever and let per-call methods degrade.
+    """
+    global _NESTOR_CLIENT
+    if _NESTOR_CLIENT is None:
+        with _NESTOR_CLIENT_LOCK:
+            if _NESTOR_CLIENT is None:
+                _NESTOR_CLIENT = NestorClient()
+    return _NESTOR_CLIENT
 
 # Lenses the dispatch rail's tri-modal switch understands (C12). Any other
 # value falls through to the unfiltered queue.
@@ -206,22 +231,6 @@ async def _journal_recent(request: Request) -> JSONResponse:
     this route is the honest reader that ships before it. When Gate 5's
     watcher starts writing to ``kb_journal``, its atoms surface here
     automatically — no change on Grove's side.
-
-    Params:
-      * ``limit`` — max atoms to return (default 50, cap 200). Non-int
-        or missing values fall back to the default rather than 400ing;
-        the reader is defensive at both layers.
-      * ``since`` — atom id; if given, return only atoms strictly newer
-        than it. Absent id (server rotation, stale cursor from a page
-        reload) returns the full window — better to over-show once
-        than to silently drop the whole read-back.
-
-    Responses:
-      200 — JSON list of atoms, newest first. Each atom is
-            ``{"id", "ts", "sender", "text", "domain"}``.
-      *(No 4xx / 5xx surface today.)* An unreachable willow-mcp returns
-      an empty list per D7 — the chat panel renders "no messages yet",
-      not an error state, and keeps polling.
     """
     try:
         limit = int(request.query_params.get("limit", "50"))
@@ -236,6 +245,82 @@ async def _journal_recent(request: Request) -> JSONResponse:
     return JSONResponse(atoms)
 
 
+async def _nestor_decide(request: Request) -> JSONResponse:
+    """POST /api/nestor/decide — check a proposed act against Nestor (D11/V5).
+
+    Body: ``{"claim": "<the proposed action or assertion>"}``.
+
+    The client-side ``NestorClient`` returns one of three shapes for
+    ``decision_check(claim)``:
+
+    * ``{"verdict": "sealed", "pair": {...}}`` — a matching sealed pair.
+    * ``{"verdict": "refused", "refusal": {...}}`` — Nestor's own refusal
+      speech act, passed through **verbatim** (V5 — no paraphrase, no
+      summary, no truncation, no whitespace "cleanup"). Grove is not the
+      author of the refusal; Grove only renders it.
+    * ``None`` — no matching sealed decision, or the Nestor binary is
+      not reachable. Whether that is the ``pending`` (D7 — absence is a
+      state) or ``unavailable`` case is resolved by the client's
+      ``available()`` probe.
+
+    Responses:
+      200 — ``{"verdict": "sealed"|"refused"|"pending", ...}``.
+      400 — ``{"verdict": "invalid", "reason": "claim required"}``.
+      503 — ``{"verdict": "unavailable", "reason": "nestor binary not reachable"}``.
+    """
+    try:
+        payload = await request.json()
+    except Exception:  # noqa: BLE001 — malformed body is a 400, not a 500
+        return JSONResponse(
+            {"verdict": "invalid", "reason": "invalid json body"},
+            status_code=400,
+        )
+
+    claim = payload.get("claim") if isinstance(payload, dict) else None
+    if not isinstance(claim, str) or not claim.strip():
+        return JSONResponse(
+            {"verdict": "invalid", "reason": "claim required"},
+            status_code=400,
+        )
+
+    client = _get_nestor_client()
+    if not client.available():
+        return JSONResponse(
+            {"verdict": "unavailable", "reason": "nestor binary not reachable"},
+            status_code=503,
+        )
+
+    result = client.decision_check(claim)
+    if result is None:
+        # D7: absence of a decision is a valid state, not an error.
+        return JSONResponse(
+            {"verdict": "pending", "message": "no sealed pair for this claim"},
+            status_code=200,
+        )
+
+    verdict = result.get("verdict") if isinstance(result, dict) else None
+    if verdict == "sealed":
+        return JSONResponse(
+            {"verdict": "sealed", "pair": result.get("pair")},
+            status_code=200,
+        )
+    if verdict == "refused":
+        # V5 discipline: pass the refusal payload through unchanged —
+        # no field rename, no truncation, no whitespace cleanup. The
+        # bytes on the wire are Nestor's own.
+        return JSONResponse(
+            {"verdict": "refused", "refusal": result.get("refusal")},
+            status_code=200,
+        )
+
+    # Unknown/other shape: treat as pending (D7) — Grove never invents a
+    # verdict Nestor did not seal.
+    return JSONResponse(
+        {"verdict": "pending", "message": "no sealed pair for this claim"},
+        status_code=200,
+    )
+
+
 def build_app() -> Starlette:
     routes = [
         Route("/", _index),
@@ -245,6 +330,7 @@ def build_app() -> Starlette:
         Route("/api/dispatch", _dispatch),
         Route("/api/envelopes", _envelopes),
         Route("/api/personas", _personas),
+        Route("/api/nestor/decide", _nestor_decide, methods=["POST"]),
     ]
     # `/web` serves the vanilla-JS Web Components + libs (D9 — no build step).
     # Mounted only when the directory exists so unit tests that import this
