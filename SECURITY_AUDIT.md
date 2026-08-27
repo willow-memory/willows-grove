@@ -152,6 +152,10 @@ G-DEP-01) it is named in the finding.
 | `scripts/nestor_reseed.py` | One-shot operator script — copies sealed pairs from the design's scratch Nestor store into `$WILLOW_HOME/nestor/willows-grove.db` via `nestor.sqlite_store.SqliteStore`. Idempotent (skips existing `source_norm`). Reads `$WILLOW_HOME` and CLI paths — no other external input. | Reviewed |
 | `soil.py` | thin sqlite3 wrapper for SOIL collections used by the dashboard | Scanned |
 | `tests/__init__.py` | Empty package marker (0 bytes) | Out of scope — test code; not shipped and not reachable at runtime |
+| `tests/e2e_ollama/__init__.py` | Package marker for the Ollama-backed watcher e2e suite (INVARIANTS.md §10; Grove v0.9 PR 8) | Out of scope — test code; not shipped and not reachable at runtime |
+| `tests/e2e_ollama/conftest.py` | Fixtures for the Ollama-backed watcher e2e suite — `ollama_ready` service probe (`/api/tags` GET), `pulled_model` session-scoped model pull (tiny candidates: `qwen2.5:0.5b`, `tinyllama:latest`, `smollm:135m`), `grove_pg_schema` idempotent DDL + private test channel + cleanup, `willow_mcp_capture` `sys.modules` stub for `willow_mcp.server.kb_journal`. All fixtures skip cleanly when their service is unreachable. INVARIANTS.md §10 | Out of scope — test code; not shipped and not reachable at runtime |
+| `tests/e2e_ollama/test_watcher_ollama_e2e.py` | Pins the C11 LEFT-side write path end-to-end: real Postgres `LISTEN grove_channel` on `grove.messages` → real Ollama classification → `journal_writer.write_operator_turn` → captured `kb_journal` write. Asserts every capture carries `source="resident-watcher"` (Q3 lock), exactly one `domain:*` tag in the closed `DOMAINS` set (Q2 lock), the base tag surface (`journal`, `sender:*`, `ts:*`), and the operator's utterance verbatim inside content (V5 discipline). Widens `_OLLAMA_TIMEOUT_SECONDS` via monkeypatch for the classify path only; production defaults unchanged. INVARIANTS.md §10 | Out of scope — test code; not shipped and not reachable at runtime |
+| `tests/e2e_ollama/test_watcher_ollama_readiness.py` | Canary for the `tests/e2e_ollama/` suite — verifies `/api/tags` GET answers 200 at `$OLLAMA_HOST` and that the smallest-candidate model pulls + generates a non-empty response. If this skips, the operator can read the reason directly rather than sifting through the watcher e2e's tracebacks. INVARIANTS.md §10 | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_card_builder.py` | scripted wizard + templates | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_card_store.py` | tests/test_card_store.py | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_channel_normalize.py` | tests/test_channel_normalize.py | Out of scope — test code; not shipped and not reachable at runtime |
@@ -241,7 +245,7 @@ G-DEP-01) it is named in the finding.
 | `widgets/hero_scene.py` | HeroScene: willow tree + info panel + full-width meadow | Scanned |
 | `widgets/nav_bar.py` | NavBar with 1–7 targets + vitals line | Scanned |
 
-134 tracked source files: 16 Reviewed, 74 Scanned, 44 out of scope (`tests/`).
+138 tracked source files: 16 Reviewed, 74 Scanned, 48 out of scope (`tests/`).
 
 ### Placeholder test directories (Grove v0.9 PR 4)
 
@@ -251,8 +255,10 @@ because the audit's coverage levels apply to source files, not empty
 directories:
 
 - `tests/e2e/` — populated by Grove v0.9 PR 9 (Playwright browser suite).
-- `tests/e2e_ollama/` — populated by Grove v0.9 PR 8 (Ollama-backed watcher e2e).
 - `tests/e2e_willow_mcp/` — populated by Grove v0.9 PR 10 (willow-mcp mock e2e).
+
+The `tests/e2e_ollama/` directory was populated by Grove v0.9 PR 8; its
+files are classified in the scope table above.
 
 The scope table above is the source of truth for tracked `*.py` / `*.sh`
 files; `.gitkeep` files fall outside that classification and are noted
