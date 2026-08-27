@@ -28,6 +28,13 @@ prominent WARNING at startup — the operator has to say out loud that the
 listener is intentionally reachable. DNS-rebinding protection is ON in
 every configuration (see _transport_security); the ngrok-era https carve-out
 is gone. INVARIANTS.md §7.
+
+Reverse-proxy loopback: a same-box reverse proxy (Pangolin, nginx,
+cloudflared, tailscale) forwards traffic to 127.0.0.1:<port>, so the raw
+TCP peer of the /grove-approve POST is loopback for every off-box POST
+that reaches the app that way. The operator opts in to X-Forwarded-For
+consultation via GROVE_MCP_TRUSTED_PROXIES=<comma,ips>; default-closed
+(unset → prior behavior). INVARIANTS.md §7.
 """
 import functools
 import os
@@ -56,7 +63,7 @@ from mcp.shared.subscriptions import ResourceUpdated
 import grove_db as db
 import grove_reader as _grove_reader
 
-# ── Notification state ────────────────────────────────────────────────────────
+# ── Notification state ─────────────────────────────────────────────
 # SEP-2575 removed the standing GET stream and `subscribe_resource`. A client
 # now opts in with `subscriptions/listen`, whose RESPONSE is the stream, and
 # MCPServer registers the handler for it automatically. Fan-out is the bus's
@@ -236,7 +243,7 @@ def _public_mcp_url() -> str:
     return base if base.endswith("/mcp") else f"{base}/mcp"
 
 
-# ── Per-tool OAuth scopes (serve mode) ────────────────────────────────────────
+# ── Per-tool OAuth scopes (serve mode) ──────────────────────────────────
 # Two granular scopes, plus `grove` kept as a back-compat superscope that
 # implies both — so a 30-day token minted before this existed, or a client
 # that still asks for plain `grove`, keeps full access rather than breaking.
@@ -338,73 +345,33 @@ def _build_serve_provider(base_url: str):
     )
 
 
-def _resolve_serve_identity(token) -> str | None:
-    """Turn a verified OAuth access token into an operator app_id, or None.
-
-    Grove is single-user: a valid, in-scope access token IS the operator.
-    The `app_id` for that operator is `"grove-operator"`. This function is
-    the seam through which the serve branch of `_gate` refuses a call that
-    has no verified identity — fail-closed on a missing or malformed token.
-
-    Per INVARIANTS.md §7 (consent flows are real, not automatic), a request
-    that reaches `_gate` in serve mode without a verified identity is denied,
-    never allowed under an ambient assumption. Modelled after willow-mcp's
-    same-named helper (CODE_REVIEW.md P1 — "serve mode ... has zero tests");
-    the shape here is deliberately simple because Grove has one operator.
-
-    Args:
-        token: An mcp.server.auth.provider.AccessToken (or None). Duck-typed
-               to accept anything exposing `.client_id` and `.scopes`.
-
-    Returns:
-        The operator app_id when the token is present and carries at least
-        one recognized Grove scope; None otherwise (missing binding, malformed
-        identity, no recognized scope) — fail-closed.
-    """
-    if token is None:
-        return None
-    try:
-        client_id = getattr(token, "client_id", None)
-        scopes = getattr(token, "scopes", None) or []
-    except Exception:
-        # Malformed identity — log-once and fail closed. Refusing is the point.
-        _log_identity_malformed_once()
-        return None
-    if not client_id or not isinstance(scopes, (list, tuple, set)):
-        _log_identity_malformed_once()
-        return None
-    recognised = {SCOPE_READ, SCOPE_WRITE, SCOPE_FULL}
-    if not any(s in recognised for s in scopes):
-        return None
-    return "grove-operator"
+# NOTE — Loki v0.9 audit finding #14 (PR 12): `_gate` and
+# `_resolve_serve_identity` used to live here as a "serve-mode identity gate"
+# seam. They had zero call sites — the actual per-request refusal in serve
+# mode is done by `AuthSettings(required_scopes=REQUIRED_SCOPES)` in
+# combination with `_require_scope` on every write tool, both wired through
+# the SDK's auth middleware. Deleting the pretenders so the tree does not
+# claim an enforcement point that isn't wired. INVARIANTS.md §7.
 
 
-_identity_malformed_logged = False
+# ── Forwarded-refusal log-once (approval POST behind a trusted proxy) ────────
+# Set by `_remote_is_loopback` when GROVE_MCP_TRUSTED_PROXIES is configured
+# and an off-box X-Forwarded-For hop is refused. Log-once so a busy attacker
+# does not flood stderr, but the operator still sees a signal the first time.
+_forwarded_refusal_logged = False
 
 
-def _log_identity_malformed_once() -> None:
-    global _identity_malformed_logged
-    if _identity_malformed_logged:
+def _log_forwarded_refusal_once(effective_host: str) -> None:
+    global _forwarded_refusal_logged
+    if _forwarded_refusal_logged:
         return
-    _identity_malformed_logged = True
+    _forwarded_refusal_logged = True
     print(
-        "[grove-mcp] WARNING: malformed serve-mode identity — token missing "
-        "client_id or scopes; the request will be denied.",
+        f"[grove-mcp] WARNING: /grove-approve POST refused — X-Forwarded-For "
+        f"reports non-loopback client ({effective_host}) through a trusted "
+        "proxy (GROVE_MCP_TRUSTED_PROXIES). See INVARIANTS.md §7.",
         file=sys.stderr, flush=True,
     )
-
-
-def _gate(serve_mode: bool, token) -> bool:
-    """Serve-mode identity gate. True to allow, False to deny.
-
-    Stdio (`serve_mode=False`) is implicit-trust — the local process is the
-    operator — and returns True. Serve mode consults _resolve_serve_identity;
-    a None result denies. See tests/test_serve_mode_identity.py and
-    INVARIANTS.md §7.
-    """
-    if not serve_mode:
-        return True
-    return _resolve_serve_identity(token) is not None
 
 
 def _warn_public_tunnel_if_unacknowledged(base_url: str) -> bool:
@@ -596,7 +563,7 @@ def _msgs_to_dicts(msgs: list) -> list[dict]:
     ]
 
 
-# ── Resources (serve mode) ────────────────────────────────────────────────────
+# ── Resources (serve mode) ────────────────────────────────────────────
 
 @mcp.resource("grove://channel/{channel_name}")
 def grove_channel_resource(channel_name: str) -> str:
@@ -974,7 +941,7 @@ def grove_flagged(flag: str, channel_name: str = "") -> list[dict]:
         db.release_connection(conn)
 
 
-# ── Fleet awareness & channel management ─────────────────────────────────────
+# ── Fleet awareness & channel management ─────────────────────────────────
 # These expose read/write surfaces that already existed for the local dashboard
 # (grove_reader) to remote MCP clients (claude.ai). Each wraps a reader function
 # that owns its own connection, so there is no pool handling here. Datetimes are
@@ -1075,7 +1042,7 @@ def grove_create_channel(name: str, description: str = "") -> dict:
     return _jsonify(_grove_reader.grove_create_text_channel(name, description))
 
 
-# ── OAuth approval route (serve mode only) ───────────────────────────────────
+# ── OAuth approval route (serve mode only) ───────────────────────────────
 
 if _SERVE_MODE and _auth_provider is not None:
     from html import escape as html_escape
@@ -1100,11 +1067,41 @@ if _SERVE_MODE and _auth_provider is not None:
     _LOOPBACK_HOSTS = {"127.0.0.1", "::1", "localhost"}
 
     def _remote_is_loopback(request: Request) -> bool:
-        """The approval POST's peer must be loopback — INVARIANTS.md §7."""
+        """The approval POST's peer must be loopback — INVARIANTS.md §7.
+
+        A same-box reverse proxy (Pangolin, nginx, cloudflared, tailscale)
+        forwards traffic to 127.0.0.1:<port>, so `request.client.host` is
+        loopback for every off-box POST that reaches the app that way. To
+        keep the loopback promise real behind such a proxy, the operator
+        opts in via `GROVE_MCP_TRUSTED_PROXIES=<comma,ips>`: when set, AND
+        the raw TCP peer is in that trusted set, the leftmost hop of
+        `X-Forwarded-For` becomes the effective peer for the loopback
+        check. Unset (default) keeps prior behavior — no XFF trust, no
+        widening. Loki v0.9 audit finding #15.
+        """
         client = request.client
         if client is None or not client.host:
             return False
-        return client.host in _LOOPBACK_HOSTS
+
+        effective_host = client.host
+        trusted = set(_csv_env("GROVE_MCP_TRUSTED_PROXIES"))
+        if trusted and client.host in trusted:
+            headers = getattr(request, "headers", None)
+            xff = headers.get("x-forwarded-for", "") if headers is not None else ""
+            if xff:
+                first_hop = xff.split(",")[0].strip()
+                if first_hop:
+                    effective_host = first_hop
+
+        if effective_host in _LOOPBACK_HOSTS:
+            return True
+
+        # Refused. Log once when the refusal is specifically because a
+        # trusted proxy forwarded an off-box hop — that is the operational
+        # signal the operator wants to see.
+        if trusted and client.host in trusted and effective_host != client.host:
+            _log_forwarded_refusal_once(effective_host)
+        return False
 
     @mcp.custom_route("/grove-approve", methods=["GET", "POST"])
     async def grove_approve(request: Request) -> HTMLResponse | RedirectResponse:

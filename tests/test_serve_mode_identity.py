@@ -1,13 +1,14 @@
-# tests/test_serve_mode_identity.py — serve-mode operator identity resolution
+# tests/test_serve_mode_identity.py — serve-mode module surface (PR 6, PR 12)
 # b17: TSMI  ΔΣ=42
 #
-# CODE_REVIEW.md P1 ("willow-mcp — serve mode ... has zero tests") noted that
-# _SERVE_MODE was computed from sys.argv at module import, so the highest-value
-# branch in the auth gate could not be exercised. PR 6 makes _SERVE_MODE
-# injectable via `_detect_serve_mode(argv=...)` and introduces
-# `_resolve_serve_identity(token)` and `_gate(serve_mode, token)` — the seam
-# through which serve mode refuses a call with no verified identity. Per
-# INVARIANTS.md §7, that refusal must be real, not decorative.
+# PR 6 introduced `_detect_serve_mode(argv=...)` as an injectable seam so the
+# serve branch of the module could be exercised without a subprocess. It also
+# added `_resolve_serve_identity` + `_gate` as an "identity gate" seam — with
+# zero call sites, since actual per-request refusal in serve mode is enforced
+# by `AuthSettings(required_scopes=REQUIRED_SCOPES)` + `_require_scope`. Loki
+# v0.9 audit finding #14 (PR 12) deleted those pretenders; the file is left
+# to pin what remains real: the injectable serve-mode detection, and the
+# tunnel-warning behavior tied to WILLOW_MCP_TUNNEL_ACKNOWLEDGED. INVARIANTS.md §7.
 from __future__ import annotations
 
 import sys
@@ -21,20 +22,7 @@ sys.path.insert(0, str(REPO))
 mcp_local = pytest.importorskip("grove.mcp_local")
 
 
-class _Tok:
-    """Minimal stand-in for an mcp.server.auth.provider.AccessToken.
-
-    Duck-typed against _resolve_serve_identity's actual reads — client_id and
-    scopes. Not a Pydantic model, so tests don't drag in the SDK's model
-    lifecycle just to check identity resolution.
-    """
-
-    def __init__(self, client_id: str | None, scopes):
-        self.client_id = client_id
-        self.scopes = scopes
-
-
-# ── _detect_serve_mode / _SERVE_MODE injectability ───────────────────────────
+# ── _detect_serve_mode / _SERVE_MODE injectability ─────────────────────────
 
 
 def test_detect_serve_mode_uses_argv_by_default(monkeypatch):
@@ -59,96 +47,7 @@ def test_detect_serve_mode_accepts_explicit_argv():
     assert mcp_local._detect_serve_mode(["mcp_local", "--other"]) is False
 
 
-# ── _resolve_serve_identity — the L-AUTH-02-shaped seam ──────────────────────
-
-
-def test_resolve_identity_returns_operator_for_a_verified_token():
-    """A token carrying at least one recognised Grove scope IS the operator."""
-    tok = _Tok(client_id="claude-ai", scopes=["grove:read", "grove:write"])
-    assert mcp_local._resolve_serve_identity(tok) == "grove-operator"
-
-
-def test_resolve_identity_accepts_the_superscope():
-    """`grove` on its own is the back-compat full-access scope; it counts."""
-    tok = _Tok(client_id="legacy", scopes=["grove"])
-    assert mcp_local._resolve_serve_identity(tok) == "grove-operator"
-
-
-def test_resolve_identity_missing_binding_returns_none():
-    """No token at all is the "missing binding" case. Fail-closed.
-
-    INVARIANTS.md §7 — the gate refuses when no identity is verified.
-    """
-    assert mcp_local._resolve_serve_identity(None) is None
-
-
-def test_resolve_identity_malformed_returns_none_and_logs_once(capsys, monkeypatch):
-    """A structurally broken token (no client_id, wrong scopes shape) is
-    denied AND logged once — never allowed under an ambient assumption."""
-    monkeypatch.setattr(mcp_local, "_identity_malformed_logged", False)
-
-    # No client_id — malformed.
-    assert mcp_local._resolve_serve_identity(_Tok(client_id=None, scopes=["grove"])) is None
-    err = capsys.readouterr().err
-    assert "WARNING" in err and "malformed" in err
-
-    # A second malformed token does NOT log again (log-once).
-    assert mcp_local._resolve_serve_identity(_Tok(client_id="", scopes=["grove"])) is None
-    err_again = capsys.readouterr().err
-    assert "WARNING" not in err_again
-
-
-def test_resolve_identity_wrong_scopes_type_returns_none(monkeypatch):
-    """scopes must be an iterable of strings; a plain string is malformed."""
-    monkeypatch.setattr(mcp_local, "_identity_malformed_logged", False)
-    tok = _Tok(client_id="x", scopes="grove")  # not a list
-    assert mcp_local._resolve_serve_identity(tok) is None
-
-
-def test_resolve_identity_unknown_scopes_returns_none():
-    """A token whose scopes are all foreign to Grove is not the operator.
-
-    Refresh, revoke, and other OAuth-shaped surfaces don't grant tool access.
-    """
-    tok = _Tok(client_id="x", scopes=["some:other:scope"])
-    assert mcp_local._resolve_serve_identity(tok) is None
-
-
-def test_resolve_identity_empty_scopes_returns_none():
-    """An empty scope set is not a grant. INVARIANTS.md §7."""
-    assert mcp_local._resolve_serve_identity(_Tok(client_id="x", scopes=[])) is None
-
-
-# ── _gate — the serve branch that consults _resolve_serve_identity ──────────
-
-
-def test_gate_stdio_is_implicit_trust():
-    """Stdio mode has no request context — the local process is the operator.
-
-    The gate here is a no-op precisely because there is no request boundary
-    to enforce against; it stays True to preserve local Claude Code behavior.
-    """
-    assert mcp_local._gate(serve_mode=False, token=None) is True
-    assert mcp_local._gate(serve_mode=False, token=_Tok("x", ["grove"])) is True
-
-
-def test_gate_serve_denies_when_identity_is_none():
-    """The core assertion CODE_REVIEW.md P1 wanted to see pinned: the serve
-    branch of `_gate` denies when `_resolve_serve_identity` returns None."""
-    assert mcp_local._gate(serve_mode=True, token=None) is False
-
-
-def test_gate_serve_denies_a_malformed_token(monkeypatch):
-    monkeypatch.setattr(mcp_local, "_identity_malformed_logged", False)
-    assert mcp_local._gate(serve_mode=True, token=_Tok(None, ["grove"])) is False
-
-
-def test_gate_serve_allows_a_verified_token():
-    tok = _Tok(client_id="claude-ai", scopes=["grove:read"])
-    assert mcp_local._gate(serve_mode=True, token=tok) is True
-
-
-# ── The public-tunnel warning ─────────────────────────────────────────────────
+# ── The public-tunnel warning ────────────────────────────────────────
 
 
 def test_public_tunnel_warning_fires_without_acknowledgement(monkeypatch, capsys):
