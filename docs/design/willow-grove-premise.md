@@ -434,6 +434,22 @@ signature check, one is a source-count check).
 - evidence: 1,028 human-verified nuggets across 74 seed files (adversarial rounds included: `adv_challenge`, `adv_steelman`, `adv_factcheck`); 85+ institutional source cards with epistemic metadata (custody / review status / jurisdiction)
 - caveat: `rudi193-cmd/jeles-remote` has drifted from the canonical `Jeles` package (833 differing lines in its vendored `sources.py`, zero `_egress` references — the SSRF/key-leak fix is absent). Grove must not trust `jeles-remote` as a Jeles substitute; treat as a **known-drifted add-on**. Jeles-local is the source of truth.
 
+**D9 — Grove's framework: vanilla JS + Web Components + no build step.** *(sealed)*
+Grove ships as a single served page over the `gates_serve` pattern;
+every desk-side library the Stack section names is framework-agnostic
+except `dnd-kit`, `react-spring`, and `xyflow` — and Grove's mechanics
+(edge-summoned cards on a fixed viewport, slide-in / slide-out
+choreography, simple "which card is primary" state) don't need those.
+Web Components give component architecture natively. **Trade-off
+accepted:** no React ecosystem; if a later Grove wants shadcn or a
+deep component library, that's a rewrite. Accepted because Grove's
+interactions are simple (summon / dismiss / type / speak / hover), not
+deep component trees.
+- evidence: `willow-mcp/src/willow_mcp/gates_serve.py` — willow-mcp already serves HTML from Python without a JS build; the pattern Grove joins
+- evidence: `safe-app-store/apps/jarvis/src/willow.js` — jarvis's browser client is small vanilla JS (OAuth 2.1 PKCE + IndexedDB); fleet consistency
+- evidence: `willow-mcp/docs/PRIOR_ART.md §1` — Editor.js (Apache-2.0) is framework-agnostic; suits Grove's card content model without React coupling
+- warrant (construction): a vanilla-JS Grove can be reviewed by `curl` on `127.0.0.1:8765`; no build artifacts to inspect; every dependency is a small named library the operator can audit — the magistrate-writes-no-code discipline made legible
+
 ## Constitutional anchors
 
 - **CONST-0-3** — No self-extension of capability. Grove renders envelopes; it does not create them. Envelope creation is Operator Key.
@@ -505,12 +521,20 @@ UI libraries are Grove-specific.
 - **`jsPlumb Community`** — GPLv2. Out.
 - **`porcupine-web` (Picovoice)** — proprietary engine + AccessKey (phones home since v2.0).
 
-### Framework choice — still open (see D-open below)
+### Framework choice — sealed as D9
 
-Vanilla JS + tiny composable libs vs. React. Both fully supported by
-the stack above (dnd-kit / motion / xyflow reach further under React;
-floating-ui / hotkeys-js / mousetrap / xterm.js / figlet.js / Editor.js
-/ Cytoscape.js / Web Speech API / openWakeWord all framework-agnostic).
+**Vanilla JS (ES2020+ modules) + Web Components + no build step.** See
+D9 in the Decisions section for the sealed reasoning. Short version:
+Grove ships as a single served page (`gates_serve` pattern); 10 of the
+11 Grove-specific libs are framework-agnostic; React-only libs
+(`dnd-kit`, `react-spring`, `xyflow`) aren't needed for Grove's actual
+mechanics (edge-summoned cards, fixed viewport, simple state); Web
+Components give component architecture natively; consistent with the
+fleet's existing HTML surfaces (willow-mcp `gates_serve`, Nestor UI,
+Jarvis's browser app all vanilla). Trade-off: no React ecosystem; if a
+later Grove wants shadcn or a deep component library, that's a rewrite.
+Accepted because Grove's interactions are simple (summon / dismiss /
+type / speak / hover), not deep component trees.
 
 ## Discipline — how future Grove sessions ask before writing
 
@@ -564,43 +588,39 @@ override.
 *Reduced from the earlier list — several items settled by later
 decisions or artboards. What remains:*
 
-1. **Framework choice** — vanilla JS + tiny composable libs vs. React.
-   Both fully supported by the Stack above; vanilla is smaller and
-   composes more directly with the Cytoscape / xterm / floating-ui / Web
-   Speech surface; React unlocks dnd-kit / motion / xyflow more deeply.
-   Not yet sealed.
-2. **Chat / summoned-card interaction** — when the chat card is
+1. **Chat / summoned-card interaction** — when the chat card is
    summoned and the operator asks Willow to open envelopes, does
    Envelopes appear **beside** chat (narrowing it) or **replace** it
    with a return path? Both are viable; the modality-agnostic model
    supports either.
-3. **Full-cast render vs trust-tier orbit.** All agents visible always,
+2. **Full-cast render vs trust-tier orbit** — all agents visible always,
    or trust-tier orbits (OPERATORs closer to Willow, WORKERs outer,
    Bureau's 5 non-graduated appearing only when their app is engaged)?
-4. **Nestor integration path** — embed `nestor ui` as an iframe under
+3. **Nestor integration path** — embed `nestor ui` as an iframe under
    the Governance lens, or call `nestor serve` (MCP over stdio) from
    Grove's backend? Both viable.
-5. **Persona-roster mint location** — `fleet_personas.json` in this
+4. **Persona-roster mint location** — `fleet_personas.json` in this
    repo, in `willow-memory/willow`, or as a `willow-mcp` MCP endpoint
    served to any consumer? W1 says the file must exist; where it lives
    is open.
-6. **Voice-panel materialization discipline** — when a spoken intent
+5. **Voice-panel materialization discipline** — when a spoken intent
    lands (WO-1), which surface materializes and by what rule? Depends
    on the utterance arbiter's decision and the reaction engine's
    `surface_card` action, but the specific mapping needs a table.
-7. **Chat's home-edge (or lack of one).** Is chat a card on an edge
+6. **Chat's home-edge (or lack of one)** — is chat a card on an edge
    (probably top-center as a persistent affordance), or purely
    voice/keyboard-summoned with no visible tab?
-8. **Which desk layout ships as the default** (P9 says configurable —
+7. **Which desk layout ships as the default** (P9 says configurable —
    discord / slack / mission-control / minimal / journal-first / mobile
    / custom — but which is Grove's day-one).
-9. **The parked bloom-row overlap** on the v1 artboard (documented; the
+8. **The parked bloom-row overlap** on the v1 artboard (documented; the
    v4 quiet-desk artboard resolves it; confirm on next full redraw).
-10. **How `homestead-affairs` peer-seat coexistence renders on the
-    desk** — if the operator has both Willow's Grove and Homestead
-    running, do they cohabit or context-switch?
+9. **How `homestead-affairs` peer-seat coexistence renders on the
+   desk** — if the operator has both Willow's Grove and Homestead
+   running, do they cohabit or context-switch?
 
 *Settled since the earlier draft:*
+- ~~Framework choice~~ → **D9 sealed**: vanilla JS + Web Components + no build.
 - ~~Free-float vs grid-snap~~ → Modalities artboard + Envelopes-summoned
   artboard settled the summonable-card model (edges + slide-forward).
 - ~~Bureau's 7 alongside fleet.json's 16~~ → V-layer picked 9 in-production
