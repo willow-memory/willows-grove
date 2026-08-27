@@ -31,7 +31,18 @@ import threading
 import unittest
 from pathlib import Path
 
-from playwright.sync_api import sync_playwright
+import pytest
+
+# The Python playwright bindings are not in requirements.txt (the workflow
+# installs the browser separately for the tests/e2e/*.spec.js suite). This
+# Python-side test uses playwright as an integration harness; when the
+# bindings are absent (CI, or a lean dev env), skip cleanly rather than
+# raising ImportError at collection time. A follow-up will migrate this
+# pin into a tests/e2e/*.spec.js spec so the Python-side dep goes away.
+sync_playwright = pytest.importorskip(
+    "playwright.sync_api",
+    reason="playwright python bindings not installed",
+).sync_playwright
 
 # REPO_ROOT is overridable so this file can be pointed at a scratch checkout
 # during fix verification; in the real tree it's two directories up from
