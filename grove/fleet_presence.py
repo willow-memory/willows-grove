@@ -8,14 +8,19 @@ announced. Grove uses it under the ``"grove"`` app_id so the seat
 shows up in the fleet's own memory alongside every other app.
 
 Per D7 the seam is an add-on: if ``fleet_presence`` is not importable,
-we log-once and every call becomes a silent no-op. Grove's UI reads
-the return value and simply doesn't render presence when it is empty
-or ``None``.
+we log-once and every *write* call (``announce_grove`` / ``withdraw``)
+becomes a silent no-op returning ``False``. The *reader* ``roster()``
+is bound by INVARIANTS.md §1 three-state: it returns a list (populated
+OR empty) OR raises ``grove.errors.Unreachable``. A bare ``[]`` from
+``roster()`` means "seam reached, nobody announcing" — never "seam
+absent" and never "seam raised".
 """
 from __future__ import annotations
 
 import logging
 from typing import Any, Optional
+
+from grove.errors import Unreachable
 
 log = logging.getLogger(__name__)
 
@@ -46,7 +51,8 @@ def announce_grove(summary: str, counts: Optional[dict[str, int]] = None) -> boo
 
     Returns ``True`` if the write landed, ``False`` if the seam is
     absent OR the shared store simply is not reachable (the
-    library's own standalone-safe no-op).
+    library's own standalone-safe no-op). Writes have no empty case
+    per §1, so a bool return is faithful to the contract.
     """
     if not _available():
         return False
@@ -60,16 +66,27 @@ def announce_grove(summary: str, counts: Optional[dict[str, int]] = None) -> boo
 def roster() -> list[dict[str, Any]]:
     """Return the current fleet-presence atoms (one per announcing app).
 
-    Returns an empty list if the seam is absent or the store empty —
-    Grove's cast strip renders "no fleet reachable" in that case.
+    INVARIANTS.md §1 three-state reader:
+
+    * populated  → non-empty ``list[dict]`` from the seam
+    * empty      → ``[]`` — seam reached, no app announcing
+    * unreachable→ raises ``grove.errors.Unreachable`` — add-on not
+      importable, or the seam's own ``roster()`` raised.
+
+    A bare ``[]`` is reserved for the actually-empty store. The two
+    unreachable branches used to collapse into ``[]`` — Loki M7 — and
+    that made "no fleet reachable" look identical to "fleet reached,
+    nobody home." §1 forbids that; both are ``Unreachable`` now.
     """
     if not _available():
-        return []
+        raise Unreachable(
+            f"fleet_presence add-on not installed: {_import_error}"
+        )
     try:
         rows = _fp.roster()
-    except Exception as err:  # noqa: BLE001
+    except Exception as err:  # noqa: BLE001 — seam failure is unreachable, not empty
         log.warning("fleet_presence.roster failed: %s", err)
-        return []
+        raise Unreachable(f"fleet_presence.roster failed: {err}") from err
     return list(rows) if rows else []
 
 

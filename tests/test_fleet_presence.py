@@ -1,10 +1,19 @@
 # b17: WGRV1 ΔΣ=42
-"""Tests for grove.fleet_presence — mocked seam + absent-seam no-op."""
+"""Tests for grove.fleet_presence — mocked seam + absent-seam behavior.
+
+Updated for Loki M7: ``roster()`` is now a §1 three-state reader.
+Absent add-on and seam-fetch failure raise ``Unreachable`` — they no
+longer collapse into ``[]``. See ``test_fleet_presence_unreachable.py``
+for the dedicated §1 pin.
+"""
 from __future__ import annotations
 
 import types
 
+import pytest
+
 from grove import fleet_presence as gfp
+from grove.errors import Unreachable
 
 
 class _FakeFP:
@@ -52,15 +61,19 @@ def test_withdraw_calls_seam(monkeypatch):
     assert ("withdraw", "grove") in fake.calls
 
 
-def test_absent_seam_is_noop(monkeypatch, caplog):
+def test_absent_seam_is_noop_for_writes_and_unreachable_for_reader(monkeypatch, caplog):
+    """Writes stay bool-no-op; the reader raises ``Unreachable`` per §1."""
     monkeypatch.setattr(gfp, "_fp", None)
     monkeypatch.setattr(gfp, "_import_error", ImportError("fleet_presence not installed"))
     monkeypatch.setattr(gfp, "_logged_missing", False)
     caplog.set_level("INFO")
+
     assert gfp.announce_grove("x", {}) is False
-    assert gfp.roster() == []
+    with pytest.raises(Unreachable):
+        gfp.roster()
     assert gfp.withdraw() is False
-    # log-once discipline
+
+    # log-once discipline — all three call sites went through _available()
     info_msgs = [r for r in caplog.records if "not installed" in r.message]
     assert len(info_msgs) == 1, "seam-missing log must fire exactly once"
 
@@ -73,12 +86,14 @@ def test_announce_swallows_seam_exception(monkeypatch):
     assert gfp.announce_grove("x", {}) is False
 
 
-def test_roster_swallows_seam_exception(monkeypatch):
+def test_roster_raises_unreachable_on_seam_exception(monkeypatch):
+    """Post-M7: a seam that raises is unreachable, not empty (§1)."""
     class _Bad:
         def roster(self):
             raise RuntimeError("db locked")
     _install(monkeypatch, fake=_Bad())
-    assert gfp.roster() == []
+    with pytest.raises(Unreachable):
+        gfp.roster()
 
 
 def test_withdraw_missing_function_is_noop(monkeypatch):
