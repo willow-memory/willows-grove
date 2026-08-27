@@ -481,6 +481,40 @@ specific deep-dive views if ever needed — not the primary path.
 - evidence: composition sketch (above) — *"Governance answers via nestor decision check + evidence for + warrant for; refusal voice renders Nestor persona speech acts verbatim"* — already committed direction
 - warrant (construction): one MCP client for `nestor serve` in Grove's backend; renders its output through Grove's card + chip vocabulary; iframe path preserved as escape hatch for specific views, not primary
 
+**D12 — Summon the card.** *(sealed)*
+When something is summoned while chat is up, the new card takes focus;
+the previous card becomes secondary at reduced opacity (Modalities
+principle preserved) — not dismissed unless the operator dismisses it.
+Chat is treated exactly like any other card once it's up. No special
+rule for chat.
+- evidence: Modalities artboard principle strip — *"one card is the focus at a time; secondary cards may sit alongside at reduced opacity"*
+- evidence: composition sketch — cards summoned from edges; behavior is card-uniform, not chat-special
+
+**D13 — Cast rendered as contextual subsets.** *(sealed)*
+Grove renders the personas **relevant to what's currently in focus**:
+on a Jeles-authored card, Jeles + witnesses; on a dispatch card,
+addressee + orchestrator; on an idle desk, a slim ambient row of who's
+alive. Everyone else dim or absent. Not "render all 16 always"; not
+"trust-tier orbits." Follows the "nothing front and center that isn't
+the operator's attention" rule — applied to the cast.
+- evidence: V-layer V6 defines per-persona sigils / colors; D13 tells us WHICH personas render at a given moment, not HOW
+- evidence: P10 state glyphs (`● / ◐ / ○ / ·`) already model active vs idle; D13 extends this to whether they're rendered at all
+- evidence: `willow-memory/willow/fleet.json` (16 agents) is the full roster; subset picked at render time from `grove_fleet_status.ui_state` + current card context
+
+**D14 — OS-like pop-out with a visible home edge.** *(sealed)*
+Chat has a persistent home-edge affordance (top-center or another
+edge, like a taskbar entry). Summoned it opens as an in-desk window;
+the operator can **pop it out** — separate OS window / browser tab /
+stage — and run other cards while chat stays alive alongside.
+Multi-window is a first-class model, not modal focus. Grove behaves
+as an operating system for the seat, not a single-page dashboard.
+**Refines the Modalities principle:** default is one primary, but the
+operator can promote a card to a pop-out and keep working around it.
+- evidence: Modalities artboard principle strip — expanded from "one primary + secondaries" to "one primary + secondaries + pop-outs"
+- evidence: willow-mcp `gates_serve` pattern — served page on 127.0.0.1 already opens in a browser window; pop-out is `window.open` against the same served surface
+- evidence: `safe-app-willow-grove/docs/superpowers/specs/2026-04-24-grove-os-design.md` — the desk-as-operating-system framing is already in the repo's prior thinking
+- warrant (construction): browser-native `window.open` with the card's route; state syncs via same-origin storage; pop-out card and its representation on the main desk stay in step
+
 ## Constitutional anchors
 
 - **CONST-0-3** — No self-extension of capability. Grove renders envelopes; it does not create them. Envelope creation is Operator Key.
@@ -619,34 +653,26 @@ override.
 *Reduced from the earlier list — several items settled by later
 decisions or artboards. What remains:*
 
-1. **Chat / summoned-card interaction** — when the chat card is
-   summoned and the operator asks Willow to open envelopes, does
-   Envelopes appear **beside** chat (narrowing it) or **replace** it
-   with a return path? Both are viable; the modality-agnostic model
-   supports either.
-2. **Full-cast render vs trust-tier orbit** — all agents visible always,
-   or trust-tier orbits (OPERATORs closer to Willow, WORKERs outer,
-   Bureau's 5 non-graduated appearing only when their app is engaged)?
-3. **Voice-panel materialization discipline** — when a spoken intent
+1. **Voice-panel materialization discipline** — when a spoken intent
    lands (WO-1), which surface materializes and by what rule? Depends
    on the utterance arbiter's decision and the reaction engine's
    `surface_card` action, but the specific mapping needs a table.
-6. **Chat's home-edge (or lack of one)** — is chat a card on an edge
-   (probably top-center as a persistent affordance), or purely
-   voice/keyboard-summoned with no visible tab?
-7. **Which desk layout ships as the default** (P9 says configurable —
-   discord / slack / mission-control / minimal / journal-first / mobile
-   / custom — but which is Grove's day-one).
-8. **The parked bloom-row overlap** on the v1 artboard (documented; the
-   v4 quiet-desk artboard resolves it; confirm on next full redraw).
-9. **How `homestead-affairs` peer-seat coexistence renders on the
-   desk** — if the operator has both Willow's Grove and Homestead
-   running, do they cohabit or context-switch?
+2. **Day-one default layout** (P9 says configurable — discord / slack
+   / mission-control / minimal / journal-first / mobile / custom —
+   but which is Grove's day-one first-run experience).
+3. **Grove + Homestead peer-seat coexistence** — sibling apps
+   (operator switches tabs), federated cards, Homestead as a Grove
+   add-on, or a grove-of-groves picker. Article XIII (federation) is
+   reserved for a later Constitution version.
 
 *Settled since the earlier draft:*
 - ~~Framework choice~~ → **D9 sealed**: vanilla JS + Web Components + no build.
 - ~~Nestor integration path~~ → **D11 sealed**: `nestor serve` MCP-over-stdio; card-native rendering, not iframe.
 - ~~Persona-roster mint location~~ → **D10 sealed**: `willow-memory/willow/fleet_personas.json` (charter-adjacent to fleet.json).
+- ~~Chat / summoned-card interaction~~ → **D12 sealed**: summon-the-card; new takes focus, previous becomes secondary.
+- ~~Full-cast render vs trust-tier orbit~~ → **D13 sealed**: contextual subsets — render personas relevant to what's in focus.
+- ~~Chat's home-edge~~ → **D14 sealed**: visible home-edge affordance + OS-like pop-out to separate windows.
+- ~~Bloom-row overlap~~ → resolved on v4 Quiet Desk (meadow moved to distinct ground strip; willow became watermark; wordmark removed).
 - ~~Free-float vs grid-snap~~ → Modalities artboard + Envelopes-summoned
   artboard settled the summonable-card model (edges + slide-forward).
 - ~~Bureau's 7 alongside fleet.json's 16~~ → V-layer picked 9 in-production
