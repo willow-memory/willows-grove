@@ -140,8 +140,7 @@ disabled to make a tunnel work.
 On first connect claude.ai runs OAuth: it registers, hits `/authorize`, and your
 browser lands on the **`/grove-approve`** consent page. Click **Allow** — no
 token is issued until you do. Tokens last 30 days (claude.ai does not
-auto-refresh). Do **not** set `GROVE_MCP_AUTO_APPROVE=1` behind a tunnel; it
-hands a full-scope token to anyone who can reach `/authorize`.
+auto-refresh).
 
 Each user sets their own tunnel URL — no shared hardcoded value.
 
