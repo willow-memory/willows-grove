@@ -31,6 +31,7 @@ from starlette.routing import Mount, Route
 from starlette.staticfiles import StaticFiles
 
 from grove import envelope_reader
+from grove import journal_reader
 from grove import kart_reader
 from grove_html import render_page
 from grove import journal_writer
@@ -192,11 +193,55 @@ async def _journal(request: Request) -> JSONResponse:
     return JSONResponse(result, status_code=200)
 
 
+async def _journal_recent(request: Request) -> JSONResponse:
+    """GET /api/journal/recent?limit=<n>&since=<id> — chat card RIGHT-side (C11).
+
+    Additive read-only surface joining the served page to willow-mcp's
+    ``kb_journal`` seam. The chat card polls this endpoint and appends
+    new atoms to the RIGHT column — the read-back column D14 sealed as
+    "what Jarvis says back".
+
+    Autonomous-continuity C11 sealed the RIGHT side as *the resident
+    watcher's read-back*. The resident watcher itself lands with Gate 5;
+    this route is the honest reader that ships before it. When Gate 5's
+    watcher starts writing to ``kb_journal``, its atoms surface here
+    automatically — no change on Grove's side.
+
+    Params:
+      * ``limit`` — max atoms to return (default 50, cap 200). Non-int
+        or missing values fall back to the default rather than 400ing;
+        the reader is defensive at both layers.
+      * ``since`` — atom id; if given, return only atoms strictly newer
+        than it. Absent id (server rotation, stale cursor from a page
+        reload) returns the full window — better to over-show once
+        than to silently drop the whole read-back.
+
+    Responses:
+      200 — JSON list of atoms, newest first. Each atom is
+            ``{"id", "ts", "sender", "text", "domain"}``.
+      *(No 4xx / 5xx surface today.)* An unreachable willow-mcp returns
+      an empty list per D7 — the chat panel renders "no messages yet",
+      not an error state, and keeps polling.
+    """
+    try:
+        limit = int(request.query_params.get("limit", "50"))
+    except (TypeError, ValueError):
+        limit = 50
+    if limit <= 0:
+        limit = 50
+    if limit > 200:
+        limit = 200
+    since = request.query_params.get("since") or None
+    atoms = journal_reader.read_recent(limit=limit, since_id=since)
+    return JSONResponse(atoms)
+
+
 def build_app() -> Starlette:
     routes = [
         Route("/", _index),
         Route("/health", _health),
         Route("/api/journal", _journal, methods=["POST"]),
+        Route("/api/journal/recent", _journal_recent),
         Route("/api/dispatch", _dispatch),
         Route("/api/envelopes", _envelopes),
         Route("/api/personas", _personas),

@@ -4,13 +4,18 @@
  * Tony says to Jarvis (LEFT) and what Jarvis says back (RIGHT).
  *
  * C11 (autonomous-continuity.md) sealed the LEFT side as an operator
- * write into willow-mcp's ``kb_journal`` via the small resident model.
- * The RIGHT side is the resident watcher's read-back and lands in a
- * follow-up PR; this card ships the write path only.
+ * write into willow-mcp's ``kb_journal`` via the small resident model,
+ * and the RIGHT side as the resident watcher's read-back — atoms from
+ * ``kb_journal`` rendered newest-first. Gate 5 lands the resident
+ * watcher; this card ships the honest reader today: it tails
+ * ``kb_journal`` via ``/api/journal/recent``, so the moment the watcher
+ * starts writing there its turns surface here without a code change.
  *
  * Discipline: whatever the operator typed goes to ``/api/journal``
  * verbatim — no trim, no paraphrase, no normalize (mirrors V5's
  * refusal-verbatim discipline; operator words are also load-bearing).
+ * Atom text on the RIGHT is likewise never innerHTML-ed — the
+ * writer's bytes reach the DOM through textContent only.
  *
  * Attributes:
  *   home-edge — bottom (default) | top | left | right — D14 pop-out
@@ -18,14 +23,24 @@
  *
  * Behaviour:
  *   - Two-column layout: LEFT is the composer + scrolling history of
- *     sent turns; RIGHT is a placeholder for the resident watcher's
- *     read-back (labelled "pending resident-watcher").
+ *     sent turns; RIGHT is the live read-back — atoms from
+ *     ``/api/journal/recent`` polled every 5s (v1 cadence — slow enough
+ *     that a quiet Grove is not chatty on the network, fast enough that
+ *     a watcher turn appears within a couple of glances).
  *   - Submit POSTs {text, sender:"operator"} to ``/api/journal``.
  *     On 200: append the sent turn to the LEFT history alongside a
  *     ``<grove-cast-chip agent="operator">``, clear the textarea.
  *     On 503 or a network throw: show a subdued
  *     "kb_journal unreachable" chip and LEAVE the text in the composer
  *     so the operator can retry.
+ *   - RIGHT column polling passes the newest-seen atom id as ``since``,
+ *     so each poll fetches only new atoms. New atoms are prepended to
+ *     the top of the list; if the operator is already at the top the
+ *     view smooth-scrolls to reveal them, but if they are scrolled down
+ *     reading older turns the view stays put (no yank).
+ *   - RIGHT fetch failure shows a subdued "read-back unreachable" line
+ *     at the top of the RIGHT column; polling keeps going so the line
+ *     clears on the next successful poll.
  *   - Empty text: submit is a no-op.
  *   - Enter submits; Shift+Enter inserts a newline.
  *
@@ -33,6 +48,9 @@
  *
  * @element grove-chat
  */
+
+const READBACK_POLL_MS = 5000;
+const READBACK_INITIAL_LIMIT = 25;
 
 const OBSERVED = ["home-edge"];
 
@@ -44,6 +62,11 @@ class GroveChat extends HTMLElement {
     this._root = this.attachShadow({ mode: "open" });
     this._onSubmit = this._onSubmit.bind(this);
     this._onKeydown = this._onKeydown.bind(this);
+    this._pollReadback = this._pollReadback.bind(this);
+    // RIGHT-side polling state: newest atom id we have painted, and the
+    // interval handle so disconnectedCallback can shut it down cleanly.
+    this._newestReadbackId = null;
+    this._readbackTimer = null;
     this._render();
   }
 
@@ -53,6 +76,10 @@ class GroveChat extends HTMLElement {
     const ta = this._root.querySelector("textarea.composer");
     if (btn) btn.addEventListener("click", this._onSubmit);
     if (ta) ta.addEventListener("keydown", this._onKeydown);
+    // Fire once immediately so an operator who opens the page sees whatever
+    // is already on the wire without waiting POLL_MS for the first tick.
+    this._pollReadback();
+    this._readbackTimer = setInterval(this._pollReadback, READBACK_POLL_MS);
   }
 
   disconnectedCallback() {
@@ -60,6 +87,10 @@ class GroveChat extends HTMLElement {
     const ta = this._root.querySelector("textarea.composer");
     if (btn) btn.removeEventListener("click", this._onSubmit);
     if (ta) ta.removeEventListener("keydown", this._onKeydown);
+    if (this._readbackTimer !== null) {
+      clearInterval(this._readbackTimer);
+      this._readbackTimer = null;
+    }
   }
 
   attributeChangedCallback(name, oldVal, newVal) {
@@ -233,6 +264,37 @@ class GroveChat extends HTMLElement {
           border-radius: 6px;
           padding: 1rem;
         }
+        .readback {
+          flex: 1;
+          overflow-y: auto;
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+          padding: 0.25rem 0;
+          min-height: 120px;
+          max-height: 320px;
+          scroll-behavior: smooth;
+        }
+        .readback-status {
+          font-size: 0.72rem;
+          color: var(--chat-warn);
+          padding: 0.25rem 0.4rem;
+          border: 1px solid var(--chat-border);
+          border-radius: 4px;
+          background: var(--chat-bg-soft);
+          display: none;
+        }
+        .readback-status[data-state="unreachable"] { display: block; }
+        .readback-empty {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+          color: var(--chat-muted);
+          font-style: italic;
+          padding: 1rem;
+        }
       </style>
       <header>
         <span class="name">chat</span>
@@ -252,8 +314,9 @@ class GroveChat extends HTMLElement {
         </section>
         <section class="col right" aria-label="willow to operator">
           <h3>willow → operator</h3>
-          <div class="placeholder">
-            resident watcher read-back &mdash; pending resident-watcher
+          <div class="readback-status" part="readback-status"></div>
+          <div class="readback" part="readback" role="log" aria-live="polite">
+            <div class="readback-empty">no messages yet</div>
           </div>
         </section>
       </div>
@@ -343,6 +406,101 @@ class GroveChat extends HTMLElement {
     this._appendTurn(raw, ts);
     ta.value = "";
     this._setStatus(null);
+  }
+
+  // ---- RIGHT-side read-back ----
+  _setReadbackStatus(state, message) {
+    const el = this._root.querySelector(".readback-status");
+    if (!el) return;
+    if (!state) {
+      el.removeAttribute("data-state");
+      el.textContent = "";
+      return;
+    }
+    el.setAttribute("data-state", state);
+    el.textContent = message || "";
+  }
+
+  _renderReadbackAtom(atom) {
+    const wrap = document.createElement("div");
+    wrap.className = "turn";
+    const chip = document.createElement("grove-cast-chip");
+    // Sender falls back to "watcher" when the atom doesn't name one — the
+    // resident-watcher case, once it lands. Empty string never reaches
+    // the DOM as an agent attribute.
+    const sender = (atom && typeof atom.sender === "string" && atom.sender)
+      ? atom.sender
+      : "watcher";
+    chip.setAttribute("agent", sender);
+    const body = document.createElement("div");
+    body.className = "body";
+    // textContent — the writer's bytes reach the DOM verbatim; never innerHTML.
+    body.textContent = (atom && typeof atom.text === "string") ? atom.text : "";
+    const stamp = document.createElement("span");
+    stamp.className = "ts";
+    stamp.textContent = (atom && typeof atom.ts === "string") ? atom.ts : "";
+    wrap.appendChild(chip);
+    wrap.appendChild(body);
+    wrap.appendChild(stamp);
+    return wrap;
+  }
+
+  _prependReadbackAtoms(atoms) {
+    const list = this._root.querySelector(".readback");
+    if (!list || !atoms || atoms.length === 0) return;
+    // Kick the "no messages yet" placeholder the first time we paint.
+    const empty = list.querySelector(".readback-empty");
+    if (empty) empty.remove();
+    // atoms arrive newest-first from the reader; prepend in reverse so
+    // the newest ends up at the very top of the column.
+    const atTop = list.scrollTop <= 4;
+    for (let i = atoms.length - 1; i >= 0; i -= 1) {
+      const node = this._renderReadbackAtom(atoms[i]);
+      list.insertBefore(node, list.firstChild);
+    }
+    // Only pull the view up when the operator was already reading from
+    // the top — never yank them out of scroll-back.
+    if (atTop) list.scrollTop = 0;
+  }
+
+  async _pollReadback() {
+    // Not connected any more — belt-and-braces against a late-firing timer.
+    if (!this.isConnected) return;
+    const params = new URLSearchParams();
+    // First fetch pulls the initial window; subsequent fetches carry the
+    // newest-seen id as `since` so the server only returns new atoms.
+    if (this._newestReadbackId) {
+      params.set("since", this._newestReadbackId);
+    } else {
+      params.set("limit", String(READBACK_INITIAL_LIMIT));
+    }
+    let res;
+    try {
+      res = await fetch("/api/journal/recent?" + params.toString(), {
+        headers: { "accept": "application/json" },
+      });
+    } catch (_err) {
+      this._setReadbackStatus("unreachable", "read-back unreachable");
+      return;
+    }
+    if (!res.ok) {
+      this._setReadbackStatus("unreachable", "read-back unreachable");
+      return;
+    }
+    let atoms = null;
+    try { atoms = await res.json(); } catch (_) { atoms = null; }
+    if (!Array.isArray(atoms)) {
+      this._setReadbackStatus("unreachable", "read-back unreachable");
+      return;
+    }
+    this._setReadbackStatus(null);
+    if (atoms.length === 0) return;
+    this._prependReadbackAtoms(atoms);
+    // Update the newest-seen cursor from the first (newest) atom.
+    const head = atoms[0];
+    if (head && typeof head.id === "string" && head.id) {
+      this._newestReadbackId = head.id;
+    }
   }
 }
 

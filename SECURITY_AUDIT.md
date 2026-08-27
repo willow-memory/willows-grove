@@ -98,6 +98,7 @@ G-DEP-01) it is named in the finding.
 | `grove/apps/vitals.py` | System vitals strip for NavBar | Scanned |
 | `grove/envelope_reader.py` | Read helper for the fleet envelope registry (schema `envelope-registry/v1.1`, P1); probes `$WILLOW_HOME/envelopes` / `~/willow-memory/Willow/envelopes` / `~/.willow/envelopes` and returns the union under the `envelopes` key, later dirs overriding earlier on `id` collision; on absent dirs or malformed files logs once and returns an empty list (D7). Offline, read-only. | Reviewed |
 | `grove/fleet_presence.py` | `announce_grove` / `roster` / `withdraw` wrappers over the `fleet_presence` seam; log-once no-op when the seam is absent (D7). | Reviewed |
+| `grove/journal_reader.py` | Thin reader over willow-mcp's `kb_journal` atoms — the chat card's RIGHT-side (C11) sync reader that Grove ships pre-Gate-5. Tries (a) `willow_mcp.server.kb_journal_read` in-process when present, then (b) HTTP GET to `$WILLOW_MCP_URL/tools/kb_journal_read`, then (c) log-once no-op returning `[]` (D7 degradation — absence is a legible state, not an error). Atom text is surfaced verbatim (V5-adjacent discipline); `limit` is clamped to `[1, 200]`; `since_id` filters to strictly-newer atoms with a stale-cursor tolerance. Read-only. | Reviewed |
 | `grove/journal_writer.py` | Thin wrapper over willow-mcp's `kb_journal` write path — the chat card's LEFT-side (C11) sync writer. Tries (a) `willow_mcp.server.kb_journal` in-process, then (b) HTTP POST to `$WILLOW_MCP_URL/tools/kb_journal`, then (c) log-once no-op returning `{"ok": False, ...}` (D7 degradation). Operator text is passed through verbatim (V5 discipline). | Reviewed |
 | `grove/kart_reader.py` | Read-only helper over `public.tasks` — the Kart escalation seam (autonomous-continuity C6-C8, C12). Probes `information_schema.columns` and drops missing predicates + omits missing select expressions (D7); log-once on absent DSN, missing table, or shape drift; returns `[]` cleanly in every failure mode. Read-only — no INSERT / UPDATE / DELETE (L0 in the promotion-authority ladder). | Reviewed |
 | `grove/mcp_auth.py` | Single-user OAuth 2.0 provider for `grove.mcp_local --serve` | Reviewed |
@@ -162,11 +163,13 @@ G-DEP-01) it is named in the finding.
 | `tests/test_grove_serve_dispatch.py` | integration test for grove_serve.py's /api/dispatch route + /web/ static mount | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_grove_serve_envelopes.py` | integration test for grove_serve.py's /api/envelopes route — asserts the P1 shape (`schema` + `envelopes`) in both the degraded (no dir) and populated cases | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_grove_serve_journal.py` | POST /api/journal integration test (C11 LEFT-side); asserts 400 on missing text, 200 on success, 503 on writer degradation | Out of scope — test code; not shipped and not reachable at runtime |
+| `tests/test_grove_serve_journal_read.py` | GET /api/journal/recent integration test (C11 RIGHT-side); asserts 200 with reader-supplied list, empty-list D7 state, `limit` cap at 200, default fallback, invalid-int fallback, and `since` pass-through | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_grove_serve_personas.py` | GET /api/personas integration test (D10 unified registry); asserts empty-envelope 200 when the sidecar file is absent (D7) and a verbatim body when `$WILLOW_HOME/willow-memory/willow/fleet_personas.json` is present | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_hero_format.py` | hero band formatters | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_fleet_presence.py` | `grove/fleet_presence.py` no-op path + announce/roster/withdraw behavior | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_hero_stats.py` | hero stats bundle | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_internal_panes.py` | Home card internal pane helpers | Out of scope — test code; not shipped and not reachable at runtime |
+| `tests/test_journal_reader.py` | `grove/journal_reader.py` — degradation path, mocked HTTP read, `since_id` filter incl. stale-cursor tolerance, `limit` cap + default fallback, verbatim text preservation, direct-import path with a fake `willow_mcp.server.kb_journal_read` | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_journal_writer.py` | `grove/journal_writer.py` — degradation path, mocked HTTP write, empty-text ValueError, log-once behavior | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_kart_reader.py` | `grove/kart_reader.py` D7 shape tolerance + C12 lens filtering + log-once on missing DSN / table / column, against a real Postgres | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_mcp_auth.py` | grove/mcp_auth.py: token-state durability and the authorization decision | Out of scope — test code; not shipped and not reachable at runtime |
@@ -217,7 +220,7 @@ G-DEP-01) it is named in the finding.
 | `widgets/hero_scene.py` | HeroScene: willow tree + info panel + full-width meadow | Scanned |
 | `widgets/nav_bar.py` | NavBar with 1–7 targets + vitals line | Scanned |
 
-127 tracked source files: 13 Reviewed, 74 Scanned, 40 out of scope (`tests/`).
+130 tracked source files: 14 Reviewed, 74 Scanned, 42 out of scope (`tests/`).
 
 ---
 
