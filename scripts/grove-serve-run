@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# grove-serve-run — start the Grove served-page skeleton on 127.0.0.1:8766.
+# b17: WGRV1 · ΔΣ=42
+#
+# Small foreground wrapper for `grove_serve.py`. Sets the operator flag the
+# rest of the fleet reads (`WILLOW_HUMAN_ORCHESTRATOR=1`) and echoes the URL
+# so it is one glance to see what to open.
+#
+# Usage:
+#   scripts/grove-serve-run                      # 127.0.0.1:8766
+#   GROVE_SERVE_PORT=9001 scripts/grove-serve-run
+#   GROVE_SERVE_HOST=0.0.0.0 scripts/grove-serve-run    # widens the surface — warns
+#
+# For a persistent unit, see deploy/grove-serve.service.template + the
+# `scripts/grove-serve` toggle (this file is the interactive/foreground path).
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$REPO_ROOT"
+
+PY=""
+if [[ -n "${GROVE_VENV:-}" && -x "${GROVE_VENV}/bin/python3" ]]; then
+  PY="${GROVE_VENV}/bin/python3"
+elif [[ -x "${REPO_ROOT}/.venv/bin/python3" ]]; then
+  PY="${REPO_ROOT}/.venv/bin/python3"
+else
+  PY="$(command -v python3)"
+fi
+
+HOST="${GROVE_SERVE_HOST:-127.0.0.1}"
+PORT="${GROVE_SERVE_PORT:-8766}"
+
+export WILLOW_HUMAN_ORCHESTRATOR=1
+export PYTHONPATH="${REPO_ROOT}${PYTHONPATH:+:$PYTHONPATH}"
+export GROVE_SERVE_HOST="$HOST"
+export GROVE_SERVE_PORT="$PORT"
+
+echo "willow's grove — http://${HOST}:${PORT}"
+exec "$PY" -m grove_serve
