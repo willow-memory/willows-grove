@@ -48,6 +48,40 @@ def _release(conn, owned: bool) -> None:
         grove_db.release_connection(conn)
 
 
+def _redact_db_error(exc: BaseException) -> str:
+    """Return a caller-safe generic message for a DB exception.
+
+    Loki v0.9 audit finding M17 (cross-cutting hazard): the writer helpers
+    in this module previously returned ``str(exc)`` on failure. For
+    psycopg2 errors that string embeds internal state — schema names,
+    constraint names, DETAIL row values — which landed in the UI verbatim.
+
+    This helper maps the exception TYPE (not the message) to a short,
+    generic string. The full exception is still preserved via the caller's
+    ``_log.warning`` line so operators can debug from server logs; only
+    the caller-facing dict is redacted.
+    """
+    try:
+        import psycopg2
+        from psycopg2 import errors as _pg_errors
+        integrity = (
+            _pg_errors.UniqueViolation,
+            _pg_errors.ForeignKeyViolation,
+            _pg_errors.NotNullViolation,
+            _pg_errors.CheckViolation,
+            psycopg2.IntegrityError,
+        )
+        if isinstance(exc, integrity):
+            return "constraint violation"
+        if isinstance(exc, psycopg2.OperationalError):
+            return "database unreachable"
+        if isinstance(exc, psycopg2.Error):
+            return "database error"
+    except Exception:  # pragma: no cover — psycopg2 unavailable
+        pass
+    return "database error"
+
+
 def dashboard_grove_sender() -> str:
     """Sender name for dashboard chat + DeskPane (fleet identity).
 
@@ -608,7 +642,7 @@ def grove_create_text_channel(raw_name: str, description: str = "") -> dict:
         }
     except Exception as e:
         _log.warning("grove_reader.grove_create_text_channel: %s", e)
-        return {"ok": False, "error": str(e)}
+        return {"ok": False, "error": _redact_db_error(e)}
     finally:
         if conn is not None:
             grove_db.release_connection(conn)
@@ -637,7 +671,7 @@ def grove_archive_channel(name: str) -> dict:
         return {"ok": True, "name": name}
     except Exception as e:
         _log.warning("grove_reader.grove_archive_channel: %s", e)
-        return {"ok": False, "error": str(e)}
+        return {"ok": False, "error": _redact_db_error(e)}
     finally:
         if conn is not None:
             grove_db.release_connection(conn)
@@ -692,7 +726,7 @@ def grove_set_channel_agent(channel_name: str, agent: str | None) -> dict:
         return {"ok": True, "agent": agent, "name": row[0]}
     except Exception as e:
         _log.warning("grove_reader.grove_set_channel_agent: %s", e)
-        return {"ok": False, "error": str(e)}
+        return {"ok": False, "error": _redact_db_error(e)}
     finally:
         if conn is not None:
             grove_db.release_connection(conn)
@@ -719,7 +753,7 @@ def grove_set_channel_description(channel_name: str, description: str) -> dict:
         return {"ok": True, "name": row[0]}
     except Exception as e:
         _log.warning("grove_reader.grove_set_channel_description: %s", e)
-        return {"ok": False, "error": str(e)}
+        return {"ok": False, "error": _redact_db_error(e)}
     finally:
         if conn is not None:
             grove_db.release_connection(conn)
@@ -765,7 +799,7 @@ def grove_rename_channel(old_name: str, raw_new_name: str) -> dict:
         return {"ok": True, "name": new_name}
     except Exception as e:
         _log.warning("grove_reader.grove_rename_channel: %s", e)
-        return {"ok": False, "error": str(e)}
+        return {"ok": False, "error": _redact_db_error(e)}
     finally:
         if conn is not None:
             grove_db.release_connection(conn)
@@ -929,7 +963,7 @@ def grove_message_delete(message_id: int) -> dict:
         return {"ok": True, "id": message_id}
     except Exception as e:
         _log.warning("grove_reader.grove_message_delete: %s", e)
-        return {"ok": False, "error": str(e)}
+        return {"ok": False, "error": _redact_db_error(e)}
     finally:
         if conn is not None:
             grove_db.release_connection(conn)
@@ -955,7 +989,7 @@ def grove_message_toggle_flag(message_id: int, flag: str) -> dict:
         return {"ok": True, "on": True, "flag": flag}
     except Exception as e:
         _log.warning("grove_reader.grove_message_toggle_flag: %s", e)
-        return {"ok": False, "error": str(e)}
+        return {"ok": False, "error": _redact_db_error(e)}
     finally:
         if conn is not None:
             grove_db.release_connection(conn)
@@ -1024,7 +1058,7 @@ def grove_mark_channel_read(channel_name: str, last_id: int | None = None) -> di
         return {"ok": True, "channel": channel_name, "last_id": last_id}
     except Exception as e:
         _log.warning("grove_reader.grove_mark_channel_read: %s", e)
-        return {"ok": False, "error": str(e)}
+        return {"ok": False, "error": _redact_db_error(e)}
     finally:
         if conn is not None:
             grove_db.release_connection(conn)
