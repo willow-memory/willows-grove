@@ -9,7 +9,7 @@ from contextlib import asynccontextmanager
 from u2u import dispatcher
 from u2u.consent import ConsentGate, ConsentResult
 from u2u.identity import Identity
-from u2u.packets import Packet, PacketError, PacketType
+from u2u.packets import Packet, PacketError, PacketMalformed, PacketType
 
 log = logging.getLogger("u2u.listener")
 
@@ -87,17 +87,43 @@ class U2UListener:
             log.warning("unknown packet type %r from %s", ptype_str, peer)
             return
 
-        # ── AUTHENTICATE FIRST ───────────────────────────────────────────────
+        # ── AUTHENTICATE FIRST ──────────────────────────────────────────────────
         # Nothing below this point may be decided from, or dispatched on,
         # unverified header data. Consent used to be evaluated here instead,
         # which meant an attacker-chosen "from" address selected the policy and
         # the PENDING branch handed an entirely unverified packet to handlers.
+        #
+        # INVARIANTS.md §5 additionally forbids collapsing the error paths of
+        # verification. Packet.validate distinguishes three cases:
+        #   True                  → signature valid
+        #   False                 → well-formed, signature invalid
+        #   raise PacketMalformed → inputs so malformed verification could
+        #                           not even be attempted
+        # Each is logged distinctly so a broken peer is not indistinguishable
+        # from an attacker replaying a bad signature.
         key = self._verification_key(packet, sender_addr, ptype)
-        if not key or not Packet.validate(packet, key):
-            log.warning("invalid sig for %s from %s — dropped", ptype_str, sender_addr)
+        if not key:
+            log.warning(
+                "no verification key for %s from %s — dropped",
+                ptype_str, sender_addr,
+            )
+            return
+        try:
+            ok = Packet.validate(packet, key)
+        except PacketMalformed as e:
+            log.warning(
+                "packet malformed for %s from %s — dropped: %s",
+                ptype_str, sender_addr, e,
+            )
+            return
+        if not ok:
+            log.warning(
+                "signature invalid for %s from %s — dropped",
+                ptype_str, sender_addr,
+            )
             return
 
-        # ── THEN AUTHORISE ───────────────────────────────────────────────────
+        # ── THEN AUTHORISE ──────────────────────────────────────────────────────────
         result = self._consent.check(sender_addr, ptype, header.get("thread_id"))
         if result == ConsentResult.DENY:
             log.debug("denied %s from %s", ptype_str, sender_addr)
