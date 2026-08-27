@@ -34,7 +34,7 @@ from grove.errors import Unreachable
 
 log = logging.getLogger(__name__)
 
-_DEFAULT_STORE_ENVS = ("NESTOR_STORE", "NESTOR_STORE_PATH")
+_DEFAULT_STORE_ENVS = ("NESTOR_DB", "NESTOR_HOME", "NESTOR_STORE", "NESTOR_STORE_PATH")
 
 
 def _default_store_path() -> Optional[Path]:
@@ -42,8 +42,10 @@ def _default_store_path() -> Optional[Path]:
 
     Probe order (first existing wins):
 
-    1. ``$NESTOR_STORE`` / ``$NESTOR_STORE_PATH`` — explicit env override.
-    2. ``$WILLOW_HOME/nestor`` — per-node Grove-adjacent store.
+    1. ``$NESTOR_DB`` / ``$NESTOR_HOME`` — Nestor's own pins.
+    2. ``$NESTOR_STORE`` / ``$NESTOR_STORE_PATH`` — legacy env override.
+    2. ``~/.nestor/keep/nestor.db`` — household canonical store when present.
+    3. ``$WILLOW_HOME/nestor`` — per-node Grove-adjacent store.
     3. ``~/.willow/nestor`` — local user overlay under the Willow prefix.
     4. ``~/.nestor`` — the operator's household Nestor store (the actual
        location on our operator's box; without this probe Grove falls
@@ -55,6 +57,9 @@ def _default_store_path() -> Optional[Path]:
         val = os.environ.get(name)
         if val:
             return Path(val).expanduser()
+    household_db = Path.home() / ".nestor" / "keep" / "nestor.db"
+    if household_db.is_file():
+        return household_db
     home = os.environ.get("WILLOW_HOME")
     if home:
         cand = Path(home).expanduser() / "nestor"
@@ -67,6 +72,30 @@ def _default_store_path() -> Optional[Path]:
     if household.exists():
         return household
     return None
+
+
+def _apply_nestor_store_env(env: dict[str, str], store_path: Path) -> None:
+    """Pin the child ``nestor serve`` to the operator's household store.
+
+    Nestor reads ``NESTOR_HOME`` / ``NESTOR_DB``, not the legacy
+    ``NESTOR_STORE`` name this module used to set — without that pin the child
+    falls back to ``data/nestor.db`` in the Grove cwd (empty) while the
+    operator's sealed corpus sits in ``~/.nestor/keep/``.
+    """
+    p = store_path.expanduser()
+    if p.is_dir():
+        env["NESTOR_HOME"] = str(p)
+        keyring = p / "keep" / "verifiers.json"
+        ledger = p / "keep" / "ledger.jsonl"
+    else:
+        env["NESTOR_DB"] = str(p)
+        keyring = p.parent / "verifiers.json"
+        ledger = p.parent / "ledger.jsonl"
+    if keyring.is_file():
+        env["NESTOR_KEYRING"] = str(keyring)
+        env.setdefault("NESTOR_REQUIRE_SEAL_KEY", "1")
+    if ledger.is_file():
+        env["NESTOR_LEDGER"] = str(ledger)
 
 
 class NestorClient:
@@ -92,6 +121,7 @@ class NestorClient:
         self._proc: Optional[subprocess.Popen[str]] = None
         self._lock = threading.Lock()
         self._next_id = 0
+        self._session_ready = False
         self._available: Optional[bool] = None  # tri-state: None=unprobed, True/False cached
 
     # ---- lifecycle ----
@@ -116,7 +146,7 @@ class NestorClient:
             return
         env = os.environ.copy()
         if self._store_path is not None:
-            env["NESTOR_STORE"] = str(self._store_path)
+            _apply_nestor_store_env(env, self._store_path)
         try:
             self._proc = subprocess.Popen(  # noqa: S603 — trusted local exec
                 [self._exe, "serve"],
@@ -136,6 +166,7 @@ class NestorClient:
         with self._lock:
             proc = self._proc
             self._proc = None
+            self._session_ready = False
         if proc is None:
             return
         try:
@@ -153,8 +184,8 @@ class NestorClient:
                 pass
 
     # ---- MCP call ----
-    def _call(self, method: str, params: dict[str, Any]) -> Optional[dict[str, Any]]:
-        """One JSON-RPC round trip. Returns ``None`` on no-op / failure."""
+    def _rpc(self, method: str, params: dict[str, Any], *, notify: bool = False) -> Optional[dict[str, Any]]:
+        """One JSON-RPC request/response round trip (no response for notifications)."""
         if not self.available():
             return None
         with self._lock:
@@ -163,11 +194,15 @@ class NestorClient:
             proc = self._proc
             if proc is None or proc.stdin is None or proc.stdout is None:
                 return None
-            self._next_id += 1
-            req = {"jsonrpc": "2.0", "id": self._next_id, "method": method, "params": params}
+            req: dict[str, Any] = {"jsonrpc": "2.0", "method": method, "params": params}
+            if not notify:
+                self._next_id += 1
+                req["id"] = self._next_id
             try:
                 proc.stdin.write(json.dumps(req) + "\n")
                 proc.stdin.flush()
+                if notify:
+                    return {}
                 line = proc.stdout.readline()
             except (BrokenPipeError, OSError) as err:
                 log.warning("nestor_client: transport error on %s: %s", method, err)
@@ -179,6 +214,49 @@ class NestorClient:
             except json.JSONDecodeError as err:
                 log.warning("nestor_client: bad response for %s: %s", method, err)
                 return None
+
+    def _ensure_session(self) -> bool:
+        if self._session_ready:
+            return True
+        init = self._rpc(
+            "initialize",
+            {
+                "protocolVersion": "2025-06-18",
+                "capabilities": {},
+                "clientInfo": {"name": "grove-nestor-client", "version": "1.0"},
+            },
+        )
+        if not init or init.get("error"):
+            return False
+        self._rpc("notifications/initialized", {}, notify=True)
+        self._session_ready = True
+        return True
+
+    def _tool(self, name: str, arguments: dict[str, Any]) -> Optional[Any]:
+        """Call one Nestor MCP tool; return the decoded JSON payload."""
+        if not self._ensure_session():
+            return None
+        resp = self._rpc("tools/call", {"name": name, "arguments": arguments})
+        if not resp or resp.get("error"):
+            return None
+        result = resp.get("result") or {}
+        content = result.get("content") or []
+        if not content:
+            return None
+        text = content[0].get("text") if isinstance(content[0], dict) else None
+        if not isinstance(text, str) or not text.strip():
+            return None
+        try:
+            return json.loads(text)
+        except json.JSONDecodeError as err:
+            log.warning("nestor_client: tool %s returned non-JSON: %s", name, err)
+            return None
+
+    def _call(self, method: str, params: dict[str, Any]) -> Optional[dict[str, Any]]:
+        """Legacy wire shim for tests that still patch the old method names."""
+        if method == "nestor/decision_check":
+            return self.decision_check(str(params.get("question") or ""))
+        return self._rpc(method, params)
 
     # ---- public surface ----
     def decision_check(self, question: str) -> Optional[dict[str, Any]]:
@@ -201,7 +279,28 @@ class NestorClient:
         """
         if not self.available():
             raise Unreachable("nestor binary not on PATH")
-        return self._call("nestor/decision_check", {"question": question})
+        payload = self._tool(
+            "nestor_ask",
+            {"text": question, "source_lang": "decision", "target_lang": "decision"},
+        )
+        if not payload:
+            return None
+        passage = payload.get("passage") if isinstance(payload, dict) else None
+        if not isinstance(passage, dict):
+            return None
+        state = passage.get("state")
+        meta = passage.get("meta") if isinstance(passage.get("meta"), dict) else {}
+        if state == "sealed":
+            return {
+                "verdict": "sealed",
+                "pair": {
+                    "pair_id": meta.get("pair_id"),
+                    "source": passage.get("source"),
+                    "target": passage.get("target"),
+                    "verifier": meta.get("verifier"),
+                },
+            }
+        return None
 
     def evidence_for(self, pair_id: str) -> Optional[dict[str, Any]]:
         """Fetch evidence attached to a sealed pair, by id."""

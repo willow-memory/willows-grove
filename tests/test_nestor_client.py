@@ -76,10 +76,21 @@ def _install_fake(monkeypatch, responses):
 
 
 def test_decision_check_returns_response(monkeypatch):
-    _install_fake(monkeypatch, [{"jsonrpc": "2.0", "id": 1, "result": {"sealed": True, "pair_id": "p42"}}])
+    sealed_payload = {
+        "passage": {
+            "source": "may we merge?",
+            "target": "yes",
+            "state": "sealed",
+            "meta": {"pair_id": "p42", "verifier": "rita"},
+        }
+    }
+    monkeypatch.setattr(NestorClient, "_tool", lambda self, name, args: sealed_payload)
     with NestorClient() as nc:
         out = nc.decision_check("may we merge?")
-    assert out == {"jsonrpc": "2.0", "id": 1, "result": {"sealed": True, "pair_id": "p42"}}
+    assert out == {
+        "verdict": "sealed",
+        "pair": {"pair_id": "p42", "source": "may we merge?", "target": "yes", "verifier": "rita"},
+    }
 
 
 def test_evidence_and_warrant(monkeypatch):
@@ -140,29 +151,40 @@ def test_transport_error_returns_none(monkeypatch):
         assert nc.decision_check("q") is None
 
 
-def test_default_store_path_falls_back_cleanly(monkeypatch, tmp_path):
-    # unset envs and ensure fallback probe never raises
-    for env in ("NESTOR_STORE", "NESTOR_STORE_PATH", "WILLOW_HOME"):
+def _clear_store_env(monkeypatch):
+    for env in nestor_client._DEFAULT_STORE_ENVS + ("WILLOW_HOME",):
         monkeypatch.delenv(env, raising=False)
+
+
+def test_default_store_path_falls_back_cleanly(monkeypatch, tmp_path):
+    _clear_store_env(monkeypatch)
     monkeypatch.setattr(nestor_client.Path, "home", classmethod(lambda cls: tmp_path))
-    # tmp_path/.willow/nestor and tmp_path/.nestor both absent → returns None
+    # no candidate dirs or household db file → returns None
     assert nestor_client._default_store_path() is None
+
+
+def test_default_store_path_prefers_household_keep_db(monkeypatch, tmp_path):
+    """~/.nestor/keep/nestor.db wins when present — the canonical household pin."""
+    _clear_store_env(monkeypatch)
+    monkeypatch.setattr(nestor_client.Path, "home", classmethod(lambda cls: tmp_path))
+    household_db = tmp_path / ".nestor" / "keep" / "nestor.db"
+    household_db.parent.mkdir(parents=True)
+    household_db.touch()
+    assert nestor_client._default_store_path() == household_db
 
 
 def test_default_store_path_finds_household_dot_nestor(monkeypatch, tmp_path):
     """~/.nestor lands as the fallback when no Willow-scoped store exists.
 
-    Bug 3 (standup finding): with $NESTOR_STORE, $WILLOW_HOME, and
-    ~/.willow/nestor all absent, the client used to return ``None`` and
-    Grove fell through to Nestor's own CLI default of ``./data/nestor.db``
-    — which polluted the repo cwd on every grove_serve run. The operator's
-    actual household store lives at ~/.nestor, so probing it here keeps
-    Grove pointing at the real store instead of dropping a scratch DB.
+    Bug 3 (standup finding): with store envs and ~/.willow/nestor all absent,
+    the client used to return ``None`` and Grove fell through to Nestor's own
+    CLI default of ``./data/nestor.db`` — which polluted the repo cwd on every
+    grove_serve run. The operator's actual household store lives at ~/.nestor,
+    so probing it here keeps Grove pointing at the real store instead of
+    dropping a scratch DB.
     """
-    for env in ("NESTOR_STORE", "NESTOR_STORE_PATH", "WILLOW_HOME"):
-        monkeypatch.delenv(env, raising=False)
+    _clear_store_env(monkeypatch)
     monkeypatch.setattr(nestor_client.Path, "home", classmethod(lambda cls: tmp_path))
-    # ~/.willow/nestor absent, ~/.nestor present → returns ~/.nestor
     household = tmp_path / ".nestor"
     household.mkdir()
     resolved = nestor_client._default_store_path()
@@ -173,8 +195,7 @@ def test_default_store_path_prefers_willow_over_household(monkeypatch, tmp_path)
     """When both ~/.willow/nestor and ~/.nestor exist, the Willow-scoped
     store wins — the household store is only the belt-and-suspenders
     fallback for operators without a Willow overlay."""
-    for env in ("NESTOR_STORE", "NESTOR_STORE_PATH", "WILLOW_HOME"):
-        monkeypatch.delenv(env, raising=False)
+    _clear_store_env(monkeypatch)
     monkeypatch.setattr(nestor_client.Path, "home", classmethod(lambda cls: tmp_path))
     willow = tmp_path / ".willow" / "nestor"
     willow.mkdir(parents=True)
