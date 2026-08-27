@@ -149,7 +149,20 @@ def release_connection(conn):
     try:
         conn.rollback()
     except Exception:
-        pass
+        # A connection whose rollback failed is in an unknown transactional
+        # state. Handing it back to the pool would let the next borrower
+        # inherit that state (Loki v0.9 finding #38). Close it directly
+        # instead and let the pool open a fresh one on the next getconn().
+        log.warning(
+            "grove_db.release_connection: rollback failed, closing connection "
+            "instead of returning it to the pool",
+            exc_info=True,
+        )
+        try:
+            conn.close()
+        except Exception:
+            pass
+        return
     _get_pool().putconn(conn)
 
 

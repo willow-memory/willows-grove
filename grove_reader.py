@@ -678,20 +678,22 @@ def grove_archive_channel(name: str) -> dict:
 
 
 def _migrate_soil_channel_cursors(old_name: str, new_name: str) -> None:
-    """Move SOIL cursor records when a channel is renamed."""
-    try:
-        import soil
+    """Move SOIL cursor records when a channel is renamed.
 
-        per = soil.get("willow-dashboard/cursors", old_name)
-        if per:
-            soil.put("willow-dashboard/cursors", new_name, per)
-        bundle = soil.get("willow-dashboard/channel_cursors", "cursors") or {}
-        if isinstance(bundle, dict) and old_name in bundle:
-            bundle = dict(bundle)
-            bundle[new_name] = bundle.pop(old_name)
-            soil.put("willow-dashboard/channel_cursors", "cursors", bundle)
-    except Exception as e:
-        _log.warning("grove_reader._migrate_soil_channel_cursors: %s", e)
+    Raises on any SOIL failure — the caller (``grove_rename_channel``)
+    treats that as a partial-success case (Postgres row renamed, SOIL
+    cursors not migrated) rather than swallowing it into a fake "ok".
+    """
+    import soil
+
+    per = soil.get("willow-dashboard/cursors", old_name)
+    if per:
+        soil.put("willow-dashboard/cursors", new_name, per)
+    bundle = soil.get("willow-dashboard/channel_cursors", "cursors") or {}
+    if isinstance(bundle, dict) and old_name in bundle:
+        bundle = dict(bundle)
+        bundle[new_name] = bundle.pop(old_name)
+        soil.put("willow-dashboard/channel_cursors", "cursors", bundle)
 
 
 def grove_set_channel_agent(channel_name: str, agent: str | None) -> dict:
@@ -795,7 +797,21 @@ def grove_rename_channel(old_name: str, raw_new_name: str) -> dict:
         if not row:
             return {"ok": False, "error": "channel not found"}
         conn.commit()
-        _migrate_soil_channel_cursors(old_name, new_name)
+        try:
+            _migrate_soil_channel_cursors(old_name, new_name)
+        except Exception as e:
+            # Postgres row rename already committed above — this is a
+            # partial-success case, not a full failure. Say so instead of
+            # reporting a fake unqualified "ok" (Loki v0.9 finding #38).
+            _log.warning(
+                "grove_reader.grove_rename_channel: SOIL cursor migration "
+                "failed after rename committed: %s", e,
+            )
+            return {
+                "ok": False,
+                "name": new_name,
+                "error": "channel renamed but SOIL cursor migration failed",
+            }
         return {"ok": True, "name": new_name}
     except Exception as e:
         _log.warning("grove_reader.grove_rename_channel: %s", e)
