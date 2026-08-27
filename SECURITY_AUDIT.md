@@ -105,6 +105,8 @@ G-DEP-01) it is named in the finding.
 | `grove/nestor_client.py` | `NestorClient` wrapper around a long-lived `nestor serve` subprocess (MCP-over-stdio, D11); returns `None` cleanly when the binary is absent (D7); `refusal()` returns Nestor's speech act verbatim (V5). | Reviewed |
 | `grove/paths.py` | Resolve Willow repo root and CLI for dashboard subprocesses | Scanned |
 | `grove/persona_roster.py` | Read helper for `willow-memory/willow/fleet_personas.json` (schema `fleet-personas/v1`, D10); probes `$WILLOW_HOME` / `~/willow-memory` / `~/.willow`, returns `None` cleanly with a single log when absent (D7); rejects unknown schema versions with ValueError. Offline, read-only. | Reviewed |
+| `grove/seed_html.py` | Server-side string builders for the `/seed/` six-movement onboarding pages (D16). Two entry points (`render_seed_index`, `render_seed_movement`) and a small stdlib-only Markdown-to-HTML converter (headings, paragraphs, lists, blockquotes, bold, italic, inline code, links). Every user-visible span is HTML-escaped before inline transforms run, and `javascript:` / `data:` / `vbscript:` hrefs on links are neutralized to `#`. Offline, read-only. | Reviewed |
+| `grove/seed_reader.py` | Reader for the seed's six movements (D16 human onboarding). Probes `$WILLOW_HOME/willow-memory/willow/seed/` → `~/willow-memory/willow/seed/` → `~/.willow/seed/`; parses either the charter's `canon/NN-*.md` files or a SEED9-style `seed.py`. On absence returns the D16 six-movement stub so `/seed/` is boot-safe (autonomous-continuity C3), log-once on absence. Offline, read-only. | Reviewed |
 | `grove/theme.py` | 256-color palette, borders, draw helpers | Scanned |
 | `grove/theme_textual.py` | Textual/Rich colors from grove/theme.py palette | Scanned |
 | `grove_channel_audit.py` | find and heal shadow channels | Scanned |
@@ -165,6 +167,7 @@ G-DEP-01) it is named in the finding.
 | `tests/test_grove_serve_journal.py` | POST /api/journal integration test (C11 LEFT-side); asserts 400 on missing text, 200 on success, 503 on writer degradation | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_grove_serve_nestor.py` | POST /api/nestor/decide integration test (D11 decision keeper / V5 verbatim refusal); asserts 400 on missing/empty claim, 503 when the Nestor binary is unreachable, and 200 for the sealed / refused / pending shapes with the refusal payload preserved byte-for-byte | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_grove_serve_personas.py` | GET /api/personas integration test (D10 unified registry); asserts empty-envelope 200 when the sidecar file is absent (D7) and a verbatim body when `$WILLOW_HOME/willow-memory/willow/fleet_personas.json` is present | Out of scope — test code; not shipped and not reachable at runtime |
+| `tests/test_grove_serve_seed.py` | GET /seed/ and GET /seed/{n} integration tests (D16 six-movement onboarding); asserts the index carries links to all six movements, movement 3 renders its title with prev/next nav, and out-of-range n (0, 99) returns 404 | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_hero_format.py` | hero band formatters | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_fleet_presence.py` | `grove/fleet_presence.py` no-op path + announce/roster/withdraw behavior | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_hero_stats.py` | hero stats bundle | Out of scope — test code; not shipped and not reachable at runtime |
@@ -190,6 +193,8 @@ G-DEP-01) it is named in the finding.
 | `tests/test_panes_user_todos.py` | My Desk markup regression | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_persona_roster.py` | `grove/persona_roster.py` locate + load + get/all/by_role + schema-drift ValueError + log-once absent-file path | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_security_audit_scope.py` | SECURITY_AUDIT.md's scope table must be a bijection with the tree it audits | Out of scope — test code; not shipped and not reachable at runtime |
+| `tests/test_seed_html.py` | `grove/seed_html.py` — index card rendering + movement page rendering + Markdown headings/paragraphs/lists/inline + HTML-escape paranoia + javascript-scheme href neutralization | Out of scope — test code; not shipped and not reachable at runtime |
+| `tests/test_seed_reader.py` | `grove/seed_reader.py` — absent-dir stub-and-log-once, canon `NN-*.md` parsing, SEED9-style `seed.py` extraction, and WILLOW_HOME precedence over the home probe | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_theme_textual.py` | grove palette → Textual CSS helpers | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_think_map.py` | Think Map P0 store/validate + outline | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_tool_scopes.py` | per-tool grove:read/grove:write OAuth scope enforcement | Out of scope — test code; not shipped and not reachable at runtime |
