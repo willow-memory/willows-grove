@@ -27,7 +27,7 @@ Willow, but reached through her, never around her.
 
 ## Prior art (north star)
 
-**This document extends; it does not synthesize.** Two prior docs already
+**This document extends; it does not synthesize.** Four prior docs already
 stated the shape and are load-bearing for what follows:
 
 - **[`docs/synthesis/the-one-desk.md`](../synthesis/the-one-desk.md)** —
@@ -46,6 +46,27 @@ stated the shape and are load-bearing for what follows:
   to the third-party starter pack (nvitop, toolong, kanban-tui, calcure,
   parllama, visidata, sqlit, fast-resume, feeds.fun, dooit, botany), plus
   a prioritized P0–P3 borrow backlog with acceptance criteria per steal.
+
+- **[`willow-mcp/docs/PRIOR_ART.md`](../../../willow-mcp/docs/PRIOR_ART.md)** —
+  837-line MCP-ecosystem survey with **hard license filter** (Apache-2.0
+  compatible only; MPL/EPL flagged file-level copyleft; GPL/LGPL/AGPL
+  listed anyway so the cost is visible not invisible). 13 sections
+  covering MCP tool shapes, protocol features, observability, rate
+  limiting, workflow engines, knowledge stores, agent authorization,
+  voice ingress, safety machinery, privacy boundaries, knowledge
+  governance, developer tooling, operational infrastructure.
+  **Everything below Grove — voice pipeline, kb_journal, ledger, safety
+  machinery, human-in-the-loop primitives — Grove inherits from here.**
+  The Stack section below cites specific findings by section.
+
+- **[`safe-app-store/docs/the-house-already-knew.md`](../../../rudi193-cmd/safe-app-store/docs/the-house-already-knew.md)** —
+  Vishwakarma's field notes, 2026-08-05. Four things built one morning
+  that already existed done better. The thesis: *"the fleet's largest
+  development cost is redoing things"* — the fleet's organs (Jeles,
+  Nestor, Article IV) are all pointed *outward*, none is aimed at the
+  house's own codebase and decision history. **The Discipline section
+  below operationalizes the two moves that doc names: point memory
+  infra inward, find the second reader.**
 
 What **this** doc adds:
 1. The **constitutional framing** (`willow-memory/willow`, arrived later)
@@ -198,6 +219,52 @@ neighborhood, not a single package.
 | **Refusal voice** | Nestor persona speech acts | render verbatim (`below_threshold`, `nothing_sealed`, `forged_seal`, …); negation-guarded, never apologetic |
 | **Voice-triggered panels** | willow-mcp voice pipeline events | materialize the panel matched by `tool_oracle` intent → tool dispatch |
 
+### Surface-rung ceiling — Homestead's pattern applied to Grove cards
+
+Adopted from `homestead-affairs/homestead/docs/PHASE2-SURFACES.md` and
+`DECISION-agent-retrieval.md`. Every card renders through one `serve()`
+chokepoint; a reach past `serve()` on any surface is a build failure. The
+ceiling per surface (`(plain, with_purpose)`):
+
+| Grove surface | Homestead analog | Ceiling | Notes |
+|---|---|---|---|
+| Dispatch rail | S1_LIST | `(L1..L3, L1..L3)` | Ambient rows carry no payload; state-colored transitions only. |
+| Envelope panel | S1_DETAIL | `(L1..L4, L1..L4)` | Opens with attestation (see P1). L5 dropped without trace. |
+| kb_journal chat | S2_PROMPT | `(L2, L2)` | Purpose inert — value is auditability, no lift. Content never reaches local models beyond L2 derived. |
+| MCP calls via Nestor | S3_AGENT | `(L2, L2)` | Closed at L2 both columns because *"S3 has no human in the loop; purpose's value is auditability, not lift."* |
+| Export via envelope | S4_EGRESS | `(L2, L4)` | Purpose required, ledgered with `expected_head`. |
+
+### Attestation gate on orchestrator writes (P1)
+
+10 orchestrator write tools (`dispatch_send`, `dispatch_accept`,
+`handoff_write_v4`, `verify_handoff`, `agent_clear`, `frank_append`,
+`envelope_apply`, `envelope_propose`, `envelope_ratify`,
+`envelope_reject`) require a **5-layer gate** per
+`willow-mcp/docs/design/pgp-and-persona.md §1.3`:
+
+1. `app_id = willow`
+2. `WILLOW_HUMAN_ORCHESTRATOR=1` env
+3. Live session file present
+4. Valid sidecar signature (keyring v2 OR PGP v1 legacy)
+5. Manifest `.sig`
+
+Grove's Envelope panel **surfaces which attestation path is active** and
+distinguishes denial reasons: `orchestrator_session_attestation_missing`
+(re-attest) vs `orchestrator_session_attestation_invalid` (check keyring
+/ PGP state). Sidecar files are never rendered directly.
+
+### Voice state machine (P2)
+
+6 states — `IDLE → ARMED → CAPTURE → TRANSCRIBE → DISPATCH → SPEAK`,
+per `willow-memory/willow/design/willow-voice-ingress-membrane.md`. The
+wake-word gate **IS** the consent boundary; pre-wake audio never reaches
+the transcriber. FRANK receipts record facts, never audio. Voice adds
+no new authority — a spoken command hits the same SAFE gate as a typed
+one. The **utterance arbiter** (`willow-utterance-arbiter.md`) is the
+sibling output layer; it decides whether a candidate (commitment,
+reminder, refusal) crosses into an actual utterance, and never barges
+CAPTURE. Grove **displays which state is live** in the voice affordance.
+
 ## Decisions on record
 
 Sealed during the design exploration, each with evidence and warrant.
@@ -260,6 +327,94 @@ guarded code path that no-ops on absence.
 - evidence: `hornbook-knowledge/oakenscrolls-office/almanac_seam.py` — live cross-add-on wiring (Oakenscrolls calls almanacs), proof add-ons compose without Grove mediating
 - evidence: `rudi193-cmd/Forge/promotion.json` — graduation pattern: apps carry `author` persona forward and `host: safe-app-store` preserves roots after moving to their own repo. Forge itself is the reference case (its own promotion.json points back), and the pattern is now graduating INTO Forge as a productized build tool — safe-app-store's build/graduation half moving out, its app-collection half staying.
 
+### Patterns adopted from prior art (P1–P10)
+
+These are prior-art decisions that Grove **adopts** rather than
+re-invents. All sealed with evidence; each cites a specific fleet
+document. Compact form; see the source docs for reasoning depth.
+
+- **P1 · Orchestrator write attestation** — 5-layer gate on the 10
+  orchestrator write tools. Grove surfaces missing vs invalid distinctly.
+  (evidence: `willow-mcp/docs/design/pgp-and-persona.md §1.3` +
+  `permissions-matrix.md`).
+- **P2 · Voice state machine** — 6 states; wake-word IS consent boundary;
+  utterance arbiter is the sibling output layer that never barges
+  CAPTURE. (evidence: `willow-voice-ingress-membrane.md`,
+  `willow-utterance-arbiter.md`, `PRIOR_ART.md §8`).
+- **P3 · 5-surface rung ceiling with `serve()` chokepoint** — from
+  Homestead. See the composition sketch above. (evidence:
+  `homestead-affairs/homestead/docs/PHASE2-SURFACES.md`,
+  `DECISION-agent-retrieval.md`).
+- **P4 · Editor.js block model** — Apache-2.0, headless. Grove card
+  bodies are ordered lists of typed JSON blocks. kb_journal atoms are
+  natural blocks. (evidence: `PRIOR_ART.md §1 block-level content`).
+- **P5 · Tree / stomata UI from `ui-concepts.md`** — trunk = health,
+  sap = queue, canopy = fleet, stomata = 3-key egress gate. Grove ports
+  the pattern to the browser without reimplementing. (evidence:
+  `willow-mcp/docs/design/ui-concepts.md`, `PRIOR_ART.md §13`).
+- **P6 · Grove permission split** — `grove_read` universal; `grove_write`
+  only for hanuman/loki/jeles/ada. Grove UI dims send-affordance on
+  read-only seats (skirnir, vishwakarma). (evidence:
+  `permissions-matrix.md §1.6 + §3`).
+- **P7 · Three consent toggles** — `internet` (enforced), `cloud_llm`
+  (modeled), `lan` (modeled). Read from `settings.global.json`. Every
+  scope is an explicit UI decision; unenforced toggles marked distinctly.
+  (evidence: `consent-toggles.md`, `app_store_vision_and_gaps.md E5`
+  warning).
+- **P8 · Persona picker discipline** — only on orchestrator seat;
+  specialists get persona injected via `packet.persona_path`; locked
+  binding hides even the orchestrator picker. (evidence:
+  `pgp-and-persona.md §2 + §3`, `specialist-registry.md §9`).
+- **P9 · Configurable layouts** — discord / slack / mission-control /
+  minimal / journal-first / mobile / custom. Personalization by layout,
+  not just theme. Model switcher is a first-class app. (evidence:
+  `safe-app-willow-grove/docs/superpowers/specs/2026-04-24-grove-os-design.md`).
+- **P10 · Sender colors by hash + state glyphs** — per-persona sigil
+  (identity, V-layer) alongside per-instance state glyph
+  (`● / ◐ / ○ / ·` = running / degraded / idle / absent). Both sourced
+  from `fleet_personas.json` + `grove_fleet_status.ui_state`. (evidence:
+  `dashboard-design.md`, `grove-skins-beauty.md`).
+
+### Warnings we're carrying (W1–W4)
+
+These are fleet-wide dangers the design must not repeat.
+
+- **W1 · Persona drift** — cast has been narrative for months with no
+  central schema. Sigils and colors live in a **versioned
+  `fleet_personas.json` in SOIL**, never hard-coded per-app. (evidence:
+  `app_store_vision_and_gaps.md §3+§4, E6`).
+- **W2 · Naming style** — use homestead's *"affairs you handle
+  yourself"* framing. Avoid *"sovereignty"* language that slides into
+  political autonomy. Legal control, not preference. (evidence:
+  `homestead-affairs-face.md §1-2 + §8`).
+- **W3 · KB redundancy** — fleet KB measured ~68% redundant, no dedup
+  gate. Grove writes to `kb_journal` **hash content before insert**;
+  skip if an atom with identical hash already exists. (evidence:
+  `the-nestor-lineage.md §4.1`).
+- **W4 · No b17-as-security theater** — `b17` is a file-lineage
+  labeling convention; pub/sub sequence numbers are ordering, not
+  authentication. Grove's real security stack: the 5-layer attestation
+  gate (P1), PGP/keyring, FRANK hash-chained ledger, Nestor
+  cryptographic seals, `kb_journal` schema gate, mutation-tested refusal
+  guards. Nothing is layered on top of that as security theater.
+  (evidence: `CLAUDE.md rule 4`, Nestor decision 0099, operator
+  attestation).
+
+### Reactions and anchors (R1–R2)
+
+- **R1 · surface_card is Grove's inbound edge** — reaction engine
+  (`willow-memory/willow/design/reaction-engine.md`) fires
+  `surface_card` as one of its standard actions; Grove IS a consumer of
+  those, not an initiator. Personas propose; the dispatch rail (the
+  gateway) vets against allowlist per Jeles's `reaction-engine.md`
+  pattern.
+- **R2 · Off-machine head anchor** — if Grove ever exports records,
+  `IntegrityLog` head anchor lives in `~/.willow/grove/anchors/`, NOT
+  under `.../logs/`. Export returns head; operator records off-machine
+  (catches truncation without on-machine closure). (evidence:
+  `homestead/docs/PLAN-first-runnable.md bite 5`,
+  `apps/homestead-health/docs/DECISION-living-lane-ledger.md`).
+
 **D8 — Nestor and Jeles are the fleet's Independent Witnesses of Article 0 §0.2.** *(sealed)*
 Every factual claim carries two provenance questions. **Nestor asks
 *"did a named human check this?"*** — the sealing dimension. **Jeles asks
@@ -303,18 +458,158 @@ The v1 artboard (Home draft, pre-reframe) lives at:
 It will be redrawn as the Governance lens; PM + PA get their own artboards
 alongside.
 
+## Stack (Apache-2.0 compatible)
+
+**License filter is hard:** MIT, BSD, ISC, Zlib, Apache-2.0 are one-way
+compatible (we depend on). MPL-2.0 / EPL-2.0 fine as deps but file-level
+copyleft (want a look). GPL / LGPL / AGPL / SSPL / BUSL / Elastic / any
+"custom" or "standard" license — **out**.
+
+**Everything below Grove's own code is inherited from `willow-mcp` and
+its own `PRIOR_ART.md`.** Grove's build layers on top; the desk-side
+UI libraries are Grove-specific.
+
+### Inherited from willow-mcp (base substrate)
+
+| Layer | What | Cite |
+|---|---|---|
+| Voice pipeline | openWakeWord (Apache-2.0) + Silero VAD (MIT) + Faster Whisper (MIT) + Kokoro TTS (Apache-2.0). Wake-word-as-consent architecture (P2). | `PRIOR_ART.md §8` |
+| Journal / KB writes | `kb_journal` tool writing atoms `domain=journal` into the confirmed knowledge schema; `knowledge_search(domain=journal)` on read | `willow-mcp/src/willow_mcp/server.py:2607` |
+| Ledger | FRANK — hash-chained append-only Postgres ledger, tamper-evident, receipt-per-call | `PRIOR_ART.md §13` |
+| Safety machinery | Friction floor (deterministic sycophancy detection, external to the model), StackOne Defender (Apache-2.0, indirect prompt-injection scanning on tool responses), secret-scan on egress | `PRIOR_ART.md §9` |
+| Human-in-the-loop | `human_required` queue, priority + kind-based routing, unforgeable `attested_by`, human-only orchestrator seat | `PRIOR_ART.md §13` |
+| Observability | `opentelemetry-instrumentation-mcp` auto-instruments Python MCP SDK; per-call latency + errors via OTel backends | `PRIOR_ART.md §3` |
+| Commitment membrane | Calendar-backed, tamper-evident, receipt-not-recording, dew-rule surfacing (silent unless imminent/conflict/mismatch) | `willow-commitment-membrane.md`, `PRIOR_ART.md §13` |
+| Egress membrane | Reach over content (not just endpoints); consented projection with field-level allow-list + human attestation over payload hash; unconditional redaction floor | `egress-membrane-constitutional-map.md` |
+
+### Grove's own desk-side stack (net-new for the desk)
+
+| Category | Library | License | Notes |
+|---|---|---|---|
+| Positioning / z-stacking | `floating-ui` | MIT | The primitive for cards floating on top of the meadow. Framework-agnostic. |
+| Drag / dismiss / grid | `dnd-kit` (or `react-dnd`) | MIT | Modern lightweight; agnostic across React / Vue / Svelte. |
+| Slide-in / slide-out | `motion` (framer-motion) *or* `react-spring`; vanilla via `motion-one` | MIT | Spring physics for summon / dismiss choreography. |
+| Hotkeys / chording | `hotkeys-js` (3.8 KB) *or* `mousetrap` | MIT / **Apache-2.0** | `⌘G` / `⌘M` / `e` / `/` etc. |
+| Terminal aesthetic | `xterm.js` | MIT | Any terminal-styled card. |
+| Voice base | Web Speech API | native | No dependency. Chrome/Edge/Safari support. |
+| Wake word ("hey willow") | `openWakeWord` (browser adapter) | **Apache-2.0** | Real Apache-2.0 option; ships in Grove only as **add-on** (P7 — voice-off is valid). |
+| Infinite canvas / pan-zoom | `xyflow` (React Flow / Svelte Flow) | MIT | Only if a persona-cast or fleet graph gets a canvas view. |
+| ASCII text art | `figlet.js` | MIT | Ambient art (headers, wordmarks). |
+| Block content | **Editor.js** | **Apache-2.0** | P4. Card bodies as ordered JSON blocks. |
+| Decision graph | **Cytoscape.js** | MIT | Inlined into served page, no CDN. Nestor decision 0137 already commits Grove to this. |
+
+### Explicit avoids (surveyed and rejected)
+
+- **`tldraw`** — custom license requires paid production license keys.
+- **`GSAP`** — proprietary "standard license" with TOS restrictions on commercial use.
+- **`jsPlumb Community`** — GPLv2. Out.
+- **`porcupine-web` (Picovoice)** — proprietary engine + AccessKey (phones home since v2.0).
+
+### Framework choice — still open (see D-open below)
+
+Vanilla JS + tiny composable libs vs. React. Both fully supported by
+the stack above (dnd-kit / motion / xyflow reach further under React;
+floating-ui / hotkeys-js / mousetrap / xterm.js / figlet.js / Editor.js
+/ Cytoscape.js / Web Speech API / openWakeWord all framework-agnostic).
+
+## Discipline — how future Grove sessions ask before writing
+
+Operationalizes the two moves from `the-house-already-knew.md`: **point
+memory infra inward, find the second reader**.
+
+### Point memory infra inward (Nestor + Jeles as Grove-local witnesses)
+
+- **Grove's design decisions live in a Nestor store.** During this
+  session, decisions were seeded into a scratch store
+  (`nestor:willows-grove.db`, 31 sealed + 1 draft as of the last pass).
+  For the persistent build, a Grove-owned Nestor store on
+  `$WILLOW_HOME/nestor/willows-grove.db` holds every design decision as
+  an evidence-backed sealed pair (per D8's two-witness pattern).
+- **Before proposing any new design decision, run**
+  `nestor decision check "<question>"` — the fuzzy matcher surfaces
+  near-matches with the "read it before proposing" bounce. This is the
+  Mistletoe / anti-rediscovery pattern made runtime.
+- **Before adding an add-on, run** `jeles conflict_scan` (or the
+  corresponding tool) — search for what refutes rather than what
+  resembles.
+- **Every persistent seat opens by asking, not by writing** — Grove's
+  session-boot injects the latest sealed pairs into context so the seat
+  boots knowing what the house already decided.
+
+### Find the second reader (avoid one-witness-with-two-prompts)
+
+Article 0 §0.2's Independent Witness bar — *"separate instances of the
+same base model are presumed non-independent… three instances of one
+model are one witness, not three."* Grove's ratification path must
+route through:
+
+- **A different base model** (e.g., a local model reviewing a claim
+  sealed by a cloud model), OR
+- **A person** (the operator) via the `human_required` queue.
+
+Grove's Governance lens renders both paths distinctly and never counts
+same-base agreement as corroboration.
+
+### The runtime check surface
+
+Grove exposes a small Governance-lens sub-panel that runs
+`nestor decision check` on any proposed operator action (envelope
+create, dispatch, canon promotion) and blocks with a *"read this first"*
+card if a sealed decision is fuzzy-matched. Not a hard gate — the
+operator can override — but the seal card is visible before the
+override.
+
 ## Open decisions (still on the table)
 
-1. **Free-float vs grid-snap panels.** True Stark workshop is expensive and fussy for daily use; a tile/dock hybrid is friendlier. Not yet sealed.
-2. **Rooms replace desktop, or dock into it.** Click Rooms → does the desk go away, or does a chat panel materialize on the desk beside everything else?
-3. **Full 16-agent render vs subset.** All agents visible always, or trust-tier orbits (OPERATORs closer to Willow, WORKERs outer)?
-4. **Bureau's 7 personas alongside `fleet.json`'s 16.** Bureau's cast is not in `fleet.json` — do they appear on the desk as ambient presences too, or only when their app is engaged?
-5. **Jarvis memory integration path.** Draft-leaning: handler-call (Grove wires the JS handlers directly). Alternates: iframe embed, memory mirror. Not yet sealed.
-6. **Nestor integration path.** Embed `nestor ui` as an iframe under the Governance lens, or call `nestor serve` (MCP over stdio) from Grove's backend? Both viable.
-7. **The tri-modal desktop redraw.** The v1 artboard predates the seat reframing; needs a Governance-first pass with PM + PA as sibling artboards.
-8. **Persona-roster mint location.** Where does `fleet_personas.json` live — in this repo, in `willow-memory/willow`, or as a `willow-mcp` MCP endpoint served to any consumer?
-9. **The parked bloom-row overlap.** From the v1 artboard — expected to self-resolve under the reframe; confirm on the redraw.
-10. **Voice-panel materialization.** willow-mcp's voice pipeline (WO-1) is in flight. When a spoken intent lands, which lens does the resulting panel materialize under, and by what rule?
+*Reduced from the earlier list — several items settled by later
+decisions or artboards. What remains:*
+
+1. **Framework choice** — vanilla JS + tiny composable libs vs. React.
+   Both fully supported by the Stack above; vanilla is smaller and
+   composes more directly with the Cytoscape / xterm / floating-ui / Web
+   Speech surface; React unlocks dnd-kit / motion / xyflow more deeply.
+   Not yet sealed.
+2. **Chat / summoned-card interaction** — when the chat card is
+   summoned and the operator asks Willow to open envelopes, does
+   Envelopes appear **beside** chat (narrowing it) or **replace** it
+   with a return path? Both are viable; the modality-agnostic model
+   supports either.
+3. **Full-cast render vs trust-tier orbit.** All agents visible always,
+   or trust-tier orbits (OPERATORs closer to Willow, WORKERs outer,
+   Bureau's 5 non-graduated appearing only when their app is engaged)?
+4. **Nestor integration path** — embed `nestor ui` as an iframe under
+   the Governance lens, or call `nestor serve` (MCP over stdio) from
+   Grove's backend? Both viable.
+5. **Persona-roster mint location** — `fleet_personas.json` in this
+   repo, in `willow-memory/willow`, or as a `willow-mcp` MCP endpoint
+   served to any consumer? W1 says the file must exist; where it lives
+   is open.
+6. **Voice-panel materialization discipline** — when a spoken intent
+   lands (WO-1), which surface materializes and by what rule? Depends
+   on the utterance arbiter's decision and the reaction engine's
+   `surface_card` action, but the specific mapping needs a table.
+7. **Chat's home-edge (or lack of one).** Is chat a card on an edge
+   (probably top-center as a persistent affordance), or purely
+   voice/keyboard-summoned with no visible tab?
+8. **Which desk layout ships as the default** (P9 says configurable —
+   discord / slack / mission-control / minimal / journal-first / mobile
+   / custom — but which is Grove's day-one).
+9. **The parked bloom-row overlap** on the v1 artboard (documented; the
+   v4 quiet-desk artboard resolves it; confirm on next full redraw).
+10. **How `homestead-affairs` peer-seat coexistence renders on the
+    desk** — if the operator has both Willow's Grove and Homestead
+    running, do they cohabit or context-switch?
+
+*Settled since the earlier draft:*
+- ~~Free-float vs grid-snap~~ → Modalities artboard + Envelopes-summoned
+  artboard settled the summonable-card model (edges + slide-forward).
+- ~~Bureau's 7 alongside fleet.json's 16~~ → V-layer picked 9 in-production
+  personas; Bureau's 5 non-graduated remain in `apps/bureau`, surface
+  only when their app is engaged.
+- ~~Jarvis memory integration path~~ → D5 sealed: handler-call, not
+  iframe or mirror.
+- ~~Tri-modal desktop redraw~~ → Quiet Desk / Summoned / Modalities
+  artboards published; base-vs-add-on covered; layout under P9.
 
 ## What this doc does not do
 
@@ -325,9 +620,63 @@ alongside.
 
 ## Related work
 
-- `docs/design/forge-convergence.md` — the Forge checkpoint / human_required convergence (proposed earlier)
-- `willow-memory/willow/design/jarvis-build-orders.md` — WO-1 (voice) and WO-2 (commitment) build orders
-- `willow-memory/willow/design/willow-voice-ingress-membrane.md` — voice membrane design
-- `willow-memory/willow/design/willow-commitment-membrane.md` — commitment membrane design
+### In this repo
+- `docs/design/forge-convergence.md` — Forge checkpoint / human_required convergence
+- `docs/synthesis/the-one-desk.md` — ONEDSK (five-layer stack)
+- `docs/synthesis/grove-starter-borrow-map.md` — GSBRW (steal-vs-wrap for third-party TUIs)
+
+### In willow-mcp
+- `docs/PRIOR_ART.md` — the 837-line ecosystem survey (parent for the Stack section above)
+- `docs/design/pgp-and-persona.md` — attestation gate + persona picker discipline
+- `docs/design/permissions-matrix.md` — the grove_read/write split
+- `docs/design/consent-toggles.md` — the three toggles
+- `docs/design/specialist-registry.md` — canonical roster shape
+- `docs/design/session-lifecycle.md` — three entry modes, dispatch state machine
+- `docs/design/ui-concepts.md` — tree / stomata / trunk / sap / canopy metaphor
+- `src/willow_mcp/server.py:2607` — `kb_journal` (chat substrate)
+
+### In willow-memory/willow
+- `design/jarvis-build-orders.md` — WO-1 (voice) + WO-2 (commitment) build orders
+- `design/willow-voice-ingress-membrane.md` — the 6-state voice pipeline
+- `design/willow-utterance-arbiter.md` — the sibling output layer
+- `design/willow-commitment-membrane.md` — dew-rule surfacing
+- `design/egress-membrane-constitutional-map.md` — reach over content, not endpoints
+- `design/reaction-engine.md` — surface_card is Grove's inbound edge
+- `CONSTITUTION.md` — Article 0 + Articles I–XIII, Trace IDs
+- `envelopes/pre-approved.json` — active grants (canonical envelope registry)
+- `fleet.json` — canonical roster (16 agents, 3 trust tiers)
+
+### In safe-app-store
+- `docs/the-house-already-knew.md` — the discipline reminder
+- `docs/the-fourth-store.md` — Nestor as fleet's sole decision keeper
+- `docs/app_store_vision_and_gaps.md` — persona-drift warning, consent-unenforced warning
+- `libs/fleet-presence/` — announce/roster/withdraw seam
+- `apps/jarvis/` — memory substrate (IndexedDB + handlers)
+- `apps/ratatosk/` — sovereign Claude-Code-alt, already Grove-wired
+
+### In hornbook-knowledge
+- `Jeles/docs/design/host-cards.md` — cards carry facts, consumers hold policy
+- `Jeles/docs/design/reaction-engine.md` — `react(event, deps) → [proposal]`; gateway vets
+- `oakenscrolls-office/almanac_seam.py` — reference for lazy-import + graceful degrade
+
+### In homestead-affairs
+- `homestead/docs/PHASE2-SURFACES.md` — the 5-surface rung ceiling
+- `homestead/docs/DECISION-agent-retrieval.md` — S3_AGENT locked at L2/L2
+- `homestead/docs/PLAN-first-runnable.md` — off-machine head anchor pattern
+- `apps/homestead-health/docs/DECISION-living-lane-ledger.md` — IntegrityLog head anchor
+
+### In Nestor
+- `nestor/persona.py` — SPEECH_ACTS + NEGATIONS guard
+- `docs/dogfood/decisions/0053-two-desks.json` — pair-surfaces defense
+- `docs/dogfood/decisions/0055-jeles-bridge.json` — two-witness ledger discipline
+- `docs/dogfood/decisions/0099-mutation-guard-proves-refusals.json` — real-security pattern (see W4)
+- `docs/dogfood/decisions/0116-before-build-the-anti-rediscovery-hook.json` — advisory hook (see Discipline)
+- `docs/dogfood/decisions/0137-read-only-decision-graph-in-desk.json` — Cytoscape inline commitment
+- `docs/dogfood/decisions/0190-propose-refusal-gate.json` — seal-authority refused at surface
+
+### Live artboards (design canvases)
+- Voice Layer: <https://claude.ai/code/artifact/7454eb90-2674-4901-ae7c-7c57a9ac6f24>
+- The Desk (Quiet / Summoned / Modalities): <https://claude.ai/code/artifact/65b9be2a-40cc-4b2f-b55d-16d4e699edb2>
+- Grove Home (v1 — pre-reframe, kept for provenance): <https://claude.ai/code/artifact/25e72759-d647-4d17-aa1a-800e88741565>
 
 ΔΣ=42
