@@ -1,0 +1,33 @@
+# systemd --user unit template for Willow's Grove served-page skeleton.
+# b17: WGRV1 · ΔΣ=42
+#
+# Mirrors deploy/grove-mcp-serve.service.template but stands up the desk-facing
+# HTML surface (grove_serve.py) rather than the MCP-over-HTTP one. Different
+# port (8766 vs 8765) so both units can run side-by-side.
+#
+# Not used directly — a `scripts/grove-serve-run install` (to be added when this
+# unit graduates from foreground-run to background) or a manual `envsubst` fills
+# in the @PLACEHOLDERS@ and writes the resolved unit to
+# ~/.config/systemd/user/grove-serve.service.
+#
+# The serve process ALWAYS binds 127.0.0.1 (loopback) unless GROVE_SERVE_HOST is
+# overridden in a drop-in. This is the desk-surface, not an internet-facing app;
+# widen only via a deliberate `systemctl --user edit grove-serve` drop-in.
+[Unit]
+Description=Willow's Grove served-page (127.0.0.1:@PORT@)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=@WORKDIR@
+Environment=GROVE_VENV=@VENV_DIR@
+Environment=GROVE_SERVE_HOST=127.0.0.1
+Environment=GROVE_SERVE_PORT=@PORT@
+Environment=WILLOW_HUMAN_ORCHESTRATOR=1
+ExecStart=@WORKDIR@/scripts/grove-serve-run
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=default.target
