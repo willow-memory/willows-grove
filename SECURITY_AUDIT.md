@@ -96,6 +96,7 @@ G-DEP-01) it is named in the finding.
 | `grove/apps/upstream_steward.py` | read-only consumer for Upstream Steward (2.0 writes) | Scanned |
 | `grove/apps/user_board.py` | aggregate user desk items from SOIL + Grove + Kart | Scanned |
 | `grove/apps/vitals.py` | System vitals strip for NavBar | Scanned |
+| `grove/envelope_reader.py` | Read helper for the fleet envelope registry (schema `envelope-registry/v1.1`, P1); probes `$WILLOW_HOME/envelopes` / `~/willow-memory/Willow/envelopes` / `~/.willow/envelopes` and returns the union under the `envelopes` key, later dirs overriding earlier on `id` collision; on absent dirs or malformed files logs once and returns an empty list (D7). Offline, read-only. | Reviewed |
 | `grove/fleet_presence.py` | `announce_grove` / `roster` / `withdraw` wrappers over the `fleet_presence` seam; log-once no-op when the seam is absent (D7). | Reviewed |
 | `grove/journal_writer.py` | Thin wrapper over willow-mcp's `kb_journal` write path — the chat card's LEFT-side (C11) sync writer. Tries (a) `willow_mcp.server.kb_journal` in-process, then (b) HTTP POST to `$WILLOW_MCP_URL/tools/kb_journal`, then (c) log-once no-op returning `{"ok": False, ...}` (D7 degradation). Operator text is passed through verbatim (V5 discipline). | Reviewed |
 | `grove/kart_reader.py` | Read-only helper over `public.tasks` — the Kart escalation seam (autonomous-continuity C6-C8, C12). Probes `information_schema.columns` and drops missing predicates + omits missing select expressions (D7); log-once on absent DSN, missing table, or shape drift; returns `[]` cleanly in every failure mode. Read-only — no INSERT / UPDATE / DELETE (L0 in the promotion-authority ladder). | Reviewed |
@@ -154,9 +155,11 @@ G-DEP-01) it is named in the finding.
 | `tests/test_chat_message_mod.py` | message mod helpers | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_chat_persona.py` | Wave C persona routing + dispatch | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_content_stack.py` | nav pane wiring | Out of scope — test code; not shipped and not reachable at runtime |
+| `tests/test_envelope_reader.py` | `grove/envelope_reader.py` D7 tolerance — empty dirs, malformed-file skip + log-once, later-dir precedence on `id` collision, and the `pre_approved` charter-key shape | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_grove_lens_switch.py` | `<grove-lens-switch>` mount verification — asserts `grove_html.render_page()` references the tri-modal lens component + module, and that the JS file exists on disk | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_grove_serve.py` | Grove served-page skeleton integration test (starts uvicorn on an ephemeral loopback port; asserts /health and /) | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_grove_serve_dispatch.py` | integration test for grove_serve.py's /api/dispatch route + /web/ static mount | Out of scope — test code; not shipped and not reachable at runtime |
+| `tests/test_grove_serve_envelopes.py` | integration test for grove_serve.py's /api/envelopes route — asserts the P1 shape (`schema` + `envelopes`) in both the degraded (no dir) and populated cases | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_grove_serve_journal.py` | POST /api/journal integration test (C11 LEFT-side); asserts 400 on missing text, 200 on success, 503 on writer degradation | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_hero_format.py` | hero band formatters | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_fleet_presence.py` | `grove/fleet_presence.py` no-op path + announce/roster/withdraw behavior | Out of scope — test code; not shipped and not reachable at runtime |
@@ -212,7 +215,7 @@ G-DEP-01) it is named in the finding.
 | `widgets/hero_scene.py` | HeroScene: willow tree + info panel + full-width meadow | Scanned |
 | `widgets/nav_bar.py` | NavBar with 1–7 targets + vitals line | Scanned |
 
-124 tracked source files: 12 Reviewed, 74 Scanned, 38 out of scope (`tests/`).
+127 tracked source files: 13 Reviewed, 74 Scanned, 40 out of scope (`tests/`).
 
 ---
 
