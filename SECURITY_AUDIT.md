@@ -161,6 +161,7 @@ G-DEP-01) it is named in the finding.
 | `tests/test_chat_persona.py` | Wave C persona routing + dispatch | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_content_stack.py` | nav pane wiring | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_envelope_reader.py` | `grove/envelope_reader.py` D7 tolerance — empty dirs, malformed-file skip + log-once, later-dir precedence on `id` collision, and the `pre_approved` charter-key shape | Out of scope — test code; not shipped and not reachable at runtime |
+| `tests/test_grove_approval_page.py` | Serve-mode /grove-approve behaviors added in PR 6 — /authorize redirects (never a code), page renders client/scope/redirect, loopback-only POST completes, non-loopback refused (403), 5-min pending expiry, DNS-rebinding allowlist. INVARIANTS.md §5 | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_grove_html_boot_wire.py` | `grove_html.render_page()` mounts `/web/boot/layout-memory-boot.js` last among module scripts in `<head>` so the boot walks the DOM after all sibling component scripts have registered their custom elements | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_grove_html_refusal_boot.py` | `grove_html.render_page()` mounts the `grove-refusal-chip` component script + `/web/boot/refusal-summon-boot.js` in `<head>` (boot after chip) and ships a `<div id="refusal-chip-mount">` in `<body>` — the auto-summon wiring for D11/V5 refusals | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_grove_lens_switch.py` | `<grove-lens-switch>` mount verification — asserts `grove_html.render_page()` references the tri-modal lens component + module, and that the JS file exists on disk | Out of scope — test code; not shipped and not reachable at runtime |
@@ -203,6 +204,7 @@ G-DEP-01) it is named in the finding.
 | `tests/test_security_audit_scope.py` | SECURITY_AUDIT.md's scope table must be a bijection with the tree it audits | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_seed_html.py` | `grove/seed_html.py` — index card rendering + movement page rendering + Markdown headings/paragraphs/lists/inline + HTML-escape paranoia + javascript-scheme href neutralization | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_seed_reader.py` | `grove/seed_reader.py` — absent-dir stub-and-log-once, canon `NN-*.md` parsing, SEED9-style `seed.py` extraction, and WILLOW_HOME precedence over the home probe | Out of scope — test code; not shipped and not reachable at runtime |
+| `tests/test_serve_mode_identity.py` | serve-mode operator identity resolution (PR 6) — `_detect_serve_mode` injectability, `_resolve_serve_identity` verified / missing / malformed / unknown-scopes with log-once, `_gate` denies on missing identity, tunnel-warning behavior. INVARIANTS.md §5 | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_theme_textual.py` | grove palette → Textual CSS helpers | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_think_map.py` | Think Map P0 store/validate + outline | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_tool_scopes.py` | per-tool grove:read/grove:write OAuth scope enforcement | Out of scope — test code; not shipped and not reachable at runtime |
@@ -248,7 +250,7 @@ G-DEP-01) it is named in the finding.
 | R5 | CORS / network exposure of the MCP server | ✅ PASS (was ⚠️ P2) | **Corrected, then fixed.** Serve mode is *not* localhost-only by design, and `_transport_security` used to disable DNS-rebinding protection outright whenever `GROVE_MCP_URL` was `https://` — the intended tunnel deployment — leaving no Host or Origin check there. Now the tunnel host and origin are allowlisted alongside loopback and protection is on in every configuration. The approval click (G-OAUTH-01) remains the access control; this restores the transport check that was supposed to sit under it. See G-REBIND-01. |
 | R6 | XSS — untrusted values rendered into HTML | ✅ PASS | The repo does have one HTML surface — the `/grove-approve` consent page in `grove/mcp_local.py`. It renders `client_name`, `redirect_uri` and scopes, all supplied by whoever registered the client, and escapes them with `html.escape`. `client_id` and the `pending` key are server-generated. (The 2026-05-06 "no web frontend" rating was wrong about the page's existence, though the page was unreachable at the time.) |
 | R7 | Unsigned/unverified code execution | ✅ PASS | No task-executor in this repo. The `subprocess` sites in R2 run fixed binaries (`git`, `willow`, the configured MCP command, `python3 -m grove.mcp_local`). |
-| R8 | Missing auth on MCP tools | ⚠️ P2 (was P0) | **Corrected.** PKCE was implemented and *is* enforced (S256, by the SDK token handler), but PKCE binds a code to the requester — it does not decide whether a requester should get one. Until this branch, `authorize()` issued a code unconditionally, so open dynamic client registration plus one `/authorize` call yielded a 30-day full-scope `grove` token to any caller. The consent page existed but nothing routed to it. Fixed: approval is now required by default, auto-approve is an explicit opt-in. See G-OAUTH-01. Residual P2: registration remains open and unbounded — G-REG-01. |
+| R8 | Missing auth on MCP tools | ✅ PASS (was P0) | **Corrected, then further tightened.** PKCE was implemented and *is* enforced (S256, by the SDK token handler), but PKCE binds a code to the requester — it does not decide whether a requester should get one. Until PR 5, `authorize()` issued a code unconditionally, so open dynamic client registration plus one `/authorize` call yielded a 30-day full-scope `grove` token to any caller. PR 6 (INVARIANTS.md §5) removed the remaining unattended-approve escape hatch (`GROVE_MCP_AUTO_APPROVE`), reduced the access-token TTL from 30 days to 24 hours, disabled dynamic client registration by default, and refuses the approval POST unless the peer is on 127.0.0.1. See G-OAUTH-01, G-REG-01. |
 | R9 | Bare `except` swallowing security-critical errors | ⚠️ P2 | 140 `except Exception` handlers across 38 files. The security-relevant ones: `grove_db.py:86` (silent rollback failure on connection release — possible leak), `grove_db.py:633` (rollback failure returns `{}`, caller cannot distinguish from "no data"), `grove_db.py:682,701` (silent `pass` in channel seeding), `panes/settings.py:95` (a consent-toggle write that fails is silently not persisted), `u2u/packets.py:70` (`Packet.validate` returns `False` on any exception — fails closed, acceptable). See G-EXC-01. |
 | R10 | Predictable temp paths, world-readable state | ✅ PASS (was FAIL) | **Corrected.** `~/.willow/grove_mcp_token` holds live bearer tokens and was written with `Path.write_text` at the default umask — mode 0644 on a normal box — and non-atomically. Fixed on this branch: created 0600 via `os.open(..., O_EXCL, 0o600)` and installed with `os.replace`. See G-TOK-01. `/tmp` is used only by `hero_test.py` (a developer harness, log file only) and by test fixtures. |
 | R11 | Race conditions / missing locks | ✅ PASS | `grove_db.py` uses `ThreadedConnectionPool` behind a double-checked `threading.Lock`. `grove/mcp_local.py` guards `_subscriptions` with `_subscriptions_lock` and hands NOTIFY payloads to the event loop via `run_coroutine_threadsafe`. Token-file writes are now atomic (G-TOK-01). |
@@ -289,14 +291,21 @@ exactly the tunnelled configuration the serve mode exists for.
 
 **Fix:** `authorize()` now parks the request and redirects to
 `/grove-approve?pending=<key>`; only the human clicking Allow calls
-`issue_code()`. Unattended approval survives as an explicit opt-in,
-`GROVE_MCP_AUTO_APPROVE=1`, which is off by default and prints a warning at
-startup and on every grant. Parked requests expire after 10 minutes and their
-keys are one-shot. Docstrings in both files now describe what the code does.
+`issue_code()`. The `GROVE_MCP_AUTO_APPROVE=1` escape hatch that survived the
+first pass was removed in PR 6 — there is no unattended-approve path in this
+provider at all. The approval POST is refused unless the peer is on
+127.0.0.1 / ::1 / localhost (INVARIANTS.md §5), so an approval click cannot
+reach the server through a tunnel; the operator has to be on the box.
 
-**Residual risk:** an operator who sets `GROVE_MCP_AUTO_APPROVE=1` on a
-tunnelled server is back to the original exposure. That is now a deliberate,
-named, logged choice rather than the default.
+Parked requests expire after 5 minutes (was 10) and their keys are one-shot.
+Access tokens now live 24 hours (was 30 days), bounded for the operator seat.
+Docstrings in both files describe what the code does.
+
+**Residual risk:** none from the auto-approve line — that path is gone.
+Setting `GROVE_MCP_URL` to a public tunnel without `WILLOW_MCP_TUNNEL_ACKNOWLEDGED=1`
+logs a startup WARNING; the listener is still reachable if the operator wired
+the tunnel, but every /authorize walks through the loopback-only approval
+click (INVARIANTS.md §5).
 
 ---
 
@@ -377,10 +386,10 @@ against the previous code.
 
 ---
 
-### G-REG-01 — Dynamic Client Registration Is Open and Unbounded (P2)
+### G-REG-01 — Dynamic Client Registration Is Open and Unbounded (P2 — Closed on PR 6)
 
 **File:** `grove/mcp_auth.py` — `register_client`
-**Status:** Open
+**Status:** Closed on PR 6 (grove-v09 OAuth consent flow) — INVARIANTS.md §5.
 
 ```python
 async def register_client(self, client_info):
@@ -388,18 +397,23 @@ async def register_client(self, client_info):
     self._save_state()
 ```
 
-Any caller can register, with no cap, no expiry and no pruning; each
-registration is written to disk. Registrations are never removed, so the token
-file grows without bound and an operator reviewing it cannot tell a real client
-from noise.
+Before PR 6, `ClientRegistrationOptions(enabled=True)` was on unconditionally,
+so any caller could POST `/register` and land a persisted client record. With
+G-OAUTH-01 fixed, registration alone granted nothing — a human still had to
+approve — but the file grew without bound and the auto-approve escape hatch
+made it access-relevant again.
 
-With G-OAUTH-01 fixed, registration alone grants nothing — a human still has to
-approve. So this is a durability and reviewability problem rather than an access
-one. It becomes access-relevant again under `GROVE_MCP_AUTO_APPROVE=1`.
+**Fix (PR 6):** `ClientRegistrationOptions(enabled=…)` now reads the env
+`GROVE_MCP_ALLOW_DYNAMIC_REGISTRATION` (default off). Without the opt-in, the
+SDK refuses `/register` and only pre-enrolled clients can authorize. The
+auto-approve escape hatch is removed in the same PR (G-OAUTH-01 residual), so
+even with the opt-in on, a stranger's `/register` cannot become a token
+without a loopback-approval click.
 
-**Recommended fix:** cap the client table, expire registrations that never
-completed an authorization, and reject `redirect_uri`s outside an operator-set
-allowlist.
+**Residual (P3):** with the opt-in enabled, registrations are still not
+capped or pruned — an operator who runs this configuration should review
+`~/.willow/grove_mcp_token` periodically. The bounded 24-hour access TTL
+(INVARIANTS.md §5) means an unused registration cannot carry old tokens.
 
 ---
 
@@ -571,10 +585,10 @@ directly contradicts the previous revision's R15 PASS.
 
 | Priority | Count | Items |
 |---|---|---|
-| P0 | 0 open (1 fixed) | G-OAUTH-01 — fixed on `claude/oauth-approve-and-audit-honesty` |
+| P0 | 0 open (1 fixed, 1 further tightened) | G-OAUTH-01 — fixed on `claude/oauth-approve-and-audit-honesty`, further tightened on PR 6 (auto-approve gone, TTL bounded, loopback-only approval POST, dynamic registration off by default). INVARIANTS.md §5. |
 | P1 | 0 open (1 fixed) | G-TOK-01 — fixed on `claude/oauth-approve-and-audit-honesty` |
-| P2 | 5 | G-REBIND-01 (host check disabled behind https), G-REG-01 (open unbounded registration), G-U2U-01 (unverified packets dispatched), G-HOOK-01 (message bodies into an agent turn), G-EXC-01 (silent exceptions) |
-| P3 | 2 | G-SQL-02 (f-string schema identifier), G-PATH-01 (hardcoded home paths) |
+| P2 | 3 (was 5) | G-U2U-01 (unverified packets dispatched), G-HOOK-01 (message bodies into an agent turn), G-EXC-01 (silent exceptions). G-REBIND-01 already Closed; G-REG-01 Closed on PR 6. |
+| P3 | 3 | G-SQL-02 (f-string schema identifier), G-PATH-01 (hardcoded home paths), G-REG-01 residual (client-table pruning under the opt-in). |
 
 The two serious findings were both in `grove/mcp_auth.py` — the file the
 previous revision rated PASS. Both are fixed on this branch and pinned by

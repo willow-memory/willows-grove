@@ -16,10 +16,8 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from grove.mcp_auth import (  # noqa: E402
-    AUTO_APPROVE_ENV,
     GroveOAuthProvider,
     TokenStateError,
-    auto_approve_enabled,
 )
 from mcp.server.auth.provider import AuthorizationParams  # noqa: E402
 from mcp.shared.auth import OAuthClientInformationFull  # noqa: E402
@@ -47,11 +45,10 @@ def _params(state: str | None = "opaque-state") -> AuthorizationParams:
     )
 
 
-def _provider(tmp_path: Path, *, auto_approve: bool = False) -> GroveOAuthProvider:
+def _provider(tmp_path: Path) -> GroveOAuthProvider:
     return GroveOAuthProvider(
         token_path=tmp_path / "grove_mcp_token",
         base_url=BASE_URL,
-        auto_approve=auto_approve,
     )
 
 
@@ -218,15 +215,36 @@ def test_authorize_does_not_issue_a_code_by_default(tmp_path):
     assert provider._codes == {}
 
 
-def test_authorize_default_is_independent_of_ambient_env(tmp_path, monkeypatch):
-    """Constructed without auto_approve, the provider stays gated even if the
-    env var is set — the flag is decided once, at construction, on purpose."""
-    monkeypatch.setenv(AUTO_APPROVE_ENV, "1")
-    provider = _provider(tmp_path)  # auto_approve defaults to False
+def test_authorize_is_independent_of_ambient_env(tmp_path, monkeypatch):
+    """No env var toggles the authorize() path anymore — PR 6 removed the
+    GROVE_MCP_AUTO_APPROVE escape hatch entirely. Setting it must not
+    resurrect the behavior. Per INVARIANTS.md §7."""
+    monkeypatch.setenv("GROVE_MCP_AUTO_APPROVE", "1")
+    provider = _provider(tmp_path)
 
     redirect = asyncio.run(provider.authorize(_client(), _params()))
     assert "/grove-approve?pending=" in redirect
     assert provider._codes == {}
+
+
+def test_auto_approve_constructor_arg_no_longer_exists(tmp_path):
+    """The `auto_approve` constructor arg was removed in PR 6. If someone
+    re-adds it as a knob, this fails — INVARIANTS.md §7."""
+    with pytest.raises(TypeError):
+        GroveOAuthProvider(
+            token_path=tmp_path / "grove_mcp_token",
+            base_url=BASE_URL,
+            auto_approve=True,  # type: ignore[call-arg]
+        )
+
+
+def test_access_ttl_is_bounded_for_operator_seat():
+    """Access tokens live for the operator seat's horizon, not 30 days.
+    INVARIANTS.md §7 (bounded TTL suitable for the operator seat)."""
+    import grove.mcp_auth as mcp_auth
+    # 24 hours — bounded, defensible. Not 30 days.
+    assert mcp_auth._ACCESS_TTL == 24 * 3600
+    assert mcp_auth._PENDING_TTL == 300  # 5 minutes for the approval click
 
 
 def test_pending_request_is_parked_and_claimable_once(tmp_path):
@@ -277,36 +295,6 @@ def test_pending_requests_expire(tmp_path, monkeypatch):
     real_time = mcp_auth.time.time
     monkeypatch.setattr(mcp_auth.time, "time", lambda: real_time() + mcp_auth._PENDING_TTL + 1)
     assert provider.pop_pending(key) is None
-
-
-def test_auto_approve_is_opt_in_and_still_works(tmp_path, capsys):
-    """The escape hatch: explicit, and it does complete the flow."""
-    provider = _provider(tmp_path, auto_approve=True)
-    assert provider.auto_approve is True
-    startup = capsys.readouterr().err
-    assert "WARNING" in startup and AUTO_APPROVE_ENV in startup
-
-    redirect = asyncio.run(provider.authorize(_client(), _params()))
-    assert redirect.startswith("https://claude.ai/api/mcp/auth_callback")
-    assert "code=" in redirect
-    assert "state=opaque-state" in redirect
-
-    # Loud on every grant, not just at startup.
-    assert "auto-approved" in capsys.readouterr().err
-
-
-@pytest.mark.parametrize("raw", ["1", "true", "TRUE", "yes", "on", " 1 "])
-def test_auto_approve_env_truthy(raw):
-    assert auto_approve_enabled({AUTO_APPROVE_ENV: raw}) is True
-
-
-@pytest.mark.parametrize("raw", ["", "0", "false", "no", "off", "maybe"])
-def test_auto_approve_env_falsey(raw):
-    assert auto_approve_enabled({AUTO_APPROVE_ENV: raw}) is False
-
-
-def test_auto_approve_env_absent_is_false():
-    assert auto_approve_enabled({}) is False
 
 
 # ── Code exchange still behaves ──────────────────────────────────────────────

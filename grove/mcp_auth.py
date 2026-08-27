@@ -3,42 +3,40 @@
 """
 Single-user OAuth 2.0 provider for `grove.mcp_local --serve`.
 
-There are two authorization postures. The default is the first one.
+Authorization is never automatic. Per INVARIANTS.md §7 (consent flows are
+real, not automatic), /authorize parks the request in memory and redirects
+the browser to <base_url>/grove-approve?pending=<key>. The human at that
+browser clicks Allow (or Deny) — an authorization code exists only after a
+human clicked. The client then exchanges the code (with its PKCE verifier)
+for access + refresh tokens.
 
-Interactive approval (default — `GROVE_MCP_AUTO_APPROVE` unset or falsey):
-  1. A client hits /authorize. This provider parks the request in memory and
-     redirects the browser to <base_url>/grove-approve?pending=<key>.
-  2. The human at that browser clicks Allow (or Deny). The /grove-approve
-     route in grove/mcp_local.py is what calls issue_code() — an
-     authorization code exists only after a human clicked.
-  3. The client exchanges the code (with its PKCE verifier) for access +
-     refresh tokens.
-  4. Tokens are persisted to token_path; access tokens expire in 30 days.
-
-Unattended auto-approve (`GROVE_MCP_AUTO_APPROVE=1` — operator opt-in):
-  /authorize issues a code immediately and redirects straight back to the
-  client's callback. No human is in the loop. Because dynamic client
-  registration is open (see register_client) and register+authorize needs no
-  credential, *anyone who can reach /authorize* gets a 30-day full-scope
-  `grove` token. That is only acceptable when you are certain nobody else can
-  reach the listener — and note that grove/mcp_local.py disables DNS-rebinding
-  protection when GROVE_MCP_URL is https://, i.e. exactly the tunnelled setup
-  where "only I can reach it" is least true. The provider prints a warning to
-  stderr at construction and on every grant while this mode is on.
+There is no unattended-approve path. The prior GROVE_MCP_AUTO_APPROVE env
+opt-in was removed in PR 6: an auto-approve escape hatch on a listener the
+serve mode encourages to be tunnelled is the same open dispenser it used to
+be at /authorize itself, just with an env-var next to it. If a specific
+deployment needs unattended auth, it goes through a different mechanism —
+not a knob on this provider.
 
 PKCE (S256) is enforced by the MCP SDK's token handler, not by this module.
-PKCE binds a code to the client that requested it; it does not decide *whether*
-a requester should be authorized. The approval click is what does that.
+PKCE binds a code to the client that requested it; it does not decide
+*whether* a requester should be authorized. The approval click is what
+does that.
 
-Pending approvals and issued codes are in-memory (lost on restart, which just
-means the client re-auths). Tokens are persisted to token_path so reconnects
-work; that file is created 0600 and replaced atomically, and a corrupt one is
-a hard error rather than a silent reset — see _load_state.
+Access tokens live for 24 hours — bounded for the operator seat, not the
+30 days a shared account might carry. Refresh tokens keep their longer
+horizon (a client that reconnects the next day should not have to walk the
+consent page again for a benign session gap), but the access token itself
+is the credential that gets replayed, so it is the one that has to expire.
+See INVARIANTS.md §7.
+
+Pending approvals and issued codes are in-memory (lost on restart, which
+just means the client re-auths). Tokens are persisted to token_path so
+reconnects work; that file is created 0600 and replaced atomically, and a
+corrupt one is a hard error rather than a silent reset — see _load_state.
 """
 import json
 import os
 import secrets
-import sys
 import time
 from pathlib import Path
 from typing import Any
@@ -47,20 +45,20 @@ from mcp.server.auth.provider import (
     AccessToken,
     AuthorizationCode,
     AuthorizationParams,
-    AuthorizeError,
     RefreshToken,
-    TokenError,
     construct_redirect_uri,
 )
 from mcp.shared.auth import OAuthClientInformationFull, OAuthToken
 
-_ACCESS_TTL  = 30 * 86400  # 30 days (single-user local; claude.ai doesn't auto-refresh)
+# Access tokens are bounded for the operator seat per INVARIANTS.md §7 —
+# not the 30 days the pre-PR-6 value carried. A tunnelled listener replays
+# these; a bounded lifetime is what turns "reachable" back into "needs
+# consent again". Refresh keeps the multi-day horizon so a benign
+# reconnect the next day does not walk the consent page again.
+_ACCESS_TTL  = 24 * 3600   # 24 hours — INVARIANTS.md §7
 _CODE_TTL    = 300         # 5 minutes
-_REFRESH_TTL = 30 * 86400  # 30 days
-_PENDING_TTL = 600         # 10 minutes for a human to click Allow
-
-AUTO_APPROVE_ENV = "GROVE_MCP_AUTO_APPROVE"
-_TRUTHY = {"1", "true", "yes", "on"}
+_REFRESH_TTL = 30 * 86400  # 30 days (client reconnect horizon; still user-revocable)
+_PENDING_TTL = 300         # 5 minutes for a human to click Allow — INVARIANTS.md §7
 
 # Scope vocabulary — mirrors grove/mcp_local.py's AuthSettings. Duplicated
 # rather than imported: mcp_local imports GroveOAuthProvider from this module
@@ -77,7 +75,7 @@ def _expand_scopes(scopes: list[str] | None) -> list[str]:
 
     The MCP SDK's `RequireAuthMiddleware` checks `required_scope not in
     token.scopes` — exact string membership, no notion of implication. A
-    30-day token minted before per-tool scopes existed carries literally
+    token minted before per-tool scopes existed carries literally
     `["grove"]`; without this it would fail a `required_scopes=["grove:read"]`
     gate even though "grove" was always meant to be full access. Called at
     the token-verification boundary (`load_access_token`) so both the
@@ -126,12 +124,6 @@ class TokenStateError(RuntimeError):
     """
 
 
-def auto_approve_enabled(env: dict[str, str] | None = None) -> bool:
-    """True when the operator has explicitly opted into unattended approval."""
-    src = os.environ if env is None else env
-    return src.get(AUTO_APPROVE_ENV, "").strip().lower() in _TRUTHY
-
-
 def _empty_state() -> dict[str, Any]:
     return {key: {} for key in _STATE_KEYS}
 
@@ -144,21 +136,19 @@ class GroveOAuthProvider:
     """
     Minimal single-user OAuth provider. Clients register dynamically.
 
-    By default an authorization code is issued only by issue_code(), which is
-    called from the /grove-approve route after a human clicks Allow. Pass
-    auto_approve=True (operator opt-in, see module docstring) to skip that and
-    have authorize() issue codes unattended.
+    An authorization code is only ever issued by issue_code(), which is
+    called from the /grove-approve route after a human clicks Allow.
+    /authorize itself always redirects to that approval page. There is no
+    unattended-approve path. See INVARIANTS.md §7.
     """
 
     def __init__(
         self,
         token_path: Path,
         base_url: str,
-        auto_approve: bool = False,
     ) -> None:
         self._token_path = Path(token_path)
         self._base_url   = base_url.rstrip("/")
-        self._auto_approve = bool(auto_approve)
 
         # In-memory: pending approvals {key: (client, params, expires_at)}
         self._pending: dict[str, tuple[OAuthClientInformationFull, AuthorizationParams, float]] = {}
@@ -167,22 +157,6 @@ class GroveOAuthProvider:
 
         # Persisted state
         self._state: dict[str, Any] = self._load_state()
-
-        if self._auto_approve:
-            self._warn(
-                f"{AUTO_APPROVE_ENV} is set: /authorize will hand out 30-day "
-                "full-scope 'grove' tokens to any caller that can reach it, "
-                "with no human approval and no client vetting. Unset it to "
-                "restore the /grove-approve click."
-            )
-
-    @property
-    def auto_approve(self) -> bool:
-        return self._auto_approve
-
-    @staticmethod
-    def _warn(msg: str) -> None:
-        print(f"[grove-oauth] WARNING: {msg}", file=sys.stderr, flush=True)
 
     # ── Persistence ───────────────────────────────────────────────────────────
 
@@ -322,25 +296,12 @@ class GroveOAuthProvider:
     ) -> str:
         """Return the URL the browser should be redirected to next.
 
-        Default: the /grove-approve consent page, with the request parked
-        under a one-shot key. No authorization code exists yet — the page
-        issues one only if a human clicks Allow.
-
-        With auto_approve on (opt-in, see module docstring): the client's own
-        callback, carrying a code, with nobody consulted.
+        Always the /grove-approve consent page, with the request parked under
+        a one-shot key. No authorization code exists yet — the page issues one
+        only if a human clicks Allow, and only when that click arrives from
+        the loopback interface (see /grove-approve in mcp_local.py). There is
+        no auto-approve branch — see INVARIANTS.md §7.
         """
-        if self._auto_approve:
-            self._warn(
-                f"auto-approved OAuth grant for client_id={client.client_id!r} "
-                f"(scopes={effective_scopes(client, params)}) with no human "
-                f"approval — {AUTO_APPROVE_ENV} is set."
-            )
-            return construct_redirect_uri(
-                str(params.redirect_uri),
-                code=self.issue_code(client, params),
-                state=params.state,
-            )
-
         key = _tok()
         self.stash_pending(key, client, params)
         return f"{self._base_url}/grove-approve?pending={key}"
