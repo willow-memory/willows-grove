@@ -179,6 +179,7 @@ G-DEP-01) it is named in the finding.
 | `tests/test_journal_reader.py` | `grove/journal_reader.py` — degradation path, mocked HTTP read, `since_id` filter incl. stale-cursor tolerance, `limit` cap + default fallback, verbatim text preservation, direct-import path with a fake `willow_mcp.server.kb_journal_read` | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_journal_writer.py` | `grove/journal_writer.py` — degradation path, mocked HTTP write, empty-text ValueError, log-once behavior | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_kart_reader.py` | `grove/kart_reader.py` D7 shape tolerance + C12 lens filtering + log-once on missing DSN / table / column, against a real Postgres | Out of scope — test code; not shipped and not reachable at runtime |
+| `tests/test_manifest_honesty.py` | INVARIANTS.md §6 pin for `safe-app-manifest.json` — `dm_conversations` describes signed-not-encrypted u2u | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_mcp_auth.py` | grove/mcp_auth.py: token-state durability and the authorization decision | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_mcp_client.py` | MCP stdio client helpers | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_mcp_process.py` | grove serve process control | Out of scope — test code; not shipped and not reachable at runtime |
@@ -197,6 +198,7 @@ G-DEP-01) it is named in the finding.
 | `tests/test_panes_settings.py` | consent I/O | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_panes_user_todos.py` | My Desk markup regression | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_persona_roster.py` | `grove/persona_roster.py` locate + load + get/all/by_role + schema-drift ValueError + log-once absent-file path | Out of scope — test code; not shipped and not reachable at runtime |
+| `tests/test_readme_honesty.py` | INVARIANTS.md §6 pin for `README.md` — u2u/ row does not carry withdrawn encryption phrasings; corrected phrasing present | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_resident_watcher.py` | `grove/resident_watcher.py` — Gate 5 v1 unit tests (mocked psycopg2 via the `_on_notify` seam, mocked `urllib.request.urlopen` for Ollama, mocked `journal_writer.write_operator_turn`); covers classification → journal write with the domain tag, Ollama timeout log-once, `WILLOW_DB_URL` unset heartbeat-only mode, envelope 48h dedupe across cycles, graceful `.stop()` drain, Nestor refused/sealed/pending/unreachable branches, and the V5-adjacent `sender="resident-watcher"` invariant on every write | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_security_audit_scope.py` | SECURITY_AUDIT.md's scope table must be a bijection with the tree it audits | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_seed_html.py` | `grove/seed_html.py` — index card rendering + movement page rendering + Markdown headings/paragraphs/lists/inline + HTML-escape paranoia + javascript-scheme href neutralization | Out of scope — test code; not shipped and not reachable at runtime |
@@ -230,7 +232,7 @@ G-DEP-01) it is named in the finding.
 | `widgets/hero_scene.py` | HeroScene: willow tree + info panel + full-width meadow | Scanned |
 | `widgets/nav_bar.py` | NavBar with 1–7 targets + vitals line | Scanned |
 
-130 tracked source files: 14 Reviewed, 74 Scanned, 42 out of scope (`tests/`).
+132 tracked source files: 14 Reviewed, 74 Scanned, 44 out of scope (`tests/`).
 
 ---
 

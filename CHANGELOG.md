@@ -9,7 +9,16 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Added
 - INVARIANTS.md — single source of truth for Grove discipline.
+- INVARIANTS.md §6 — "Manifests describe code, not aspirations" (Grove v0.9 PR 7). Tests enforce.
 - CHANGELOG.md — reorganized under Keep a Changelog v1.1.0; earlier per-branch entries preserved below as historical work.
+- docs/design/u2u-security-limits.md — new doc naming what u2u guarantees (authenticity, integrity, non-repudiation within signing-key boundary) and what it does not (confidentiality). Cites `u2u/packets.py:74-75`. Encryption planned for Gate 6.
+- tests/test_manifest_honesty.py — pins INVARIANTS.md §6 for `safe-app-manifest.json`.
+- tests/test_readme_honesty.py — pins INVARIANTS.md §6 for the README's u2u row.
+
+### Fixed
+- safe-app-manifest.json: dm_conversations no longer claims encryption; u2u is signed-not-encrypted (CODE_REVIEW.md P0 corrected).
+- README.md: u2u description corrected to match code.
+- docs/design/u2u-security-limits.md: new doc naming what u2u guarantees and what it does not.
 
 ### Previous work (pre-v0.9)
 
