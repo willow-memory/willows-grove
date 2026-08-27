@@ -92,7 +92,87 @@ around line 316) carries a supersede line pointing here.
 - New Web Components state their §1 rendering states in the JSDoc
   header.
 
-## §5 — Consent flows are real, not automatic
+## §4 — Reader/endpoint coverage (v0.9 PR 1 baseline)
+
+Every reader listed below returns bounded-shape-or-`Unreachable`; every
+endpoint answers 200/populated, 200/empty, or 503/unreachable.
+
+| Reader                     | Endpoint                       |
+|----------------------------|--------------------------------|
+| `grove/persona_roster.py`  | `GET  /api/personas`           |
+| `grove/envelope_reader.py` | `GET  /api/envelopes`          |
+| `grove/kart_reader.py`     | `GET  /api/dispatch`           |
+| `grove/journal_reader.py`  | `GET  /api/journal/recent`     |
+| `grove/journal_writer.py`  | `POST /api/journal`            |
+| `grove/nestor_client.py`   | `POST /api/nestor/decide`      |
+
+Any future reader/endpoint added to Grove joins this table in the same PR.
+
+## §5 — Trust order
+
+Every u2u packet has its signature verified before consent is consulted;
+consent decisions never render on unverified data. The order is
+**signature → consent → dispatch**, in exactly that sequence.
+
+Concretely, in `u2u/listener.py._process`:
+
+1. Parse and shape-check the header.
+2. Verify the Ed25519 signature against the *correct* verification key —
+   the stored key for a known contact, or the KNOCK's own payload key for
+   an unknown peer's KNOCK (the only self-verifying admission).
+3. **Only then** consult `ConsentGate.check` with the (now-authenticated)
+   sender address, packet type, and thread_id.
+4. Dispatch on ALLOW; refuse-with-signal on DENY; refuse-with-approval-hook
+   on PENDING.
+
+Anything derived from an unauthenticated header — including a `_denied`
+notification, a `_pending` operator prompt, or a bridge admission — is a
+dispatch, and MUST NOT happen before step 2 succeeds.
+
+Two related contact-store rules protect the state that decision depends on:
+
+- `ContactStore.add()` is the ONLY path to create a new contact and refuses
+  an address it already knows. Reconstructing the dataclass silently reset
+  `blocked` and every `consent_*` flag — that was the "silent trust reset"
+  half of the P0.
+- `ContactStore.update_key()` is the ONLY path to rotate an existing
+  contact's key. It mutates the pubkey and preserves `blocked`, every
+  `consent_*` flag, `name`, `added` and `resources`. It defaults closed —
+  the caller must explicitly pass `require_confirmation=False` to attest
+  that a human authorised the rotation.
+
+Anchor witnesses: `tests/test_u2u_consent_order.py` (this invariant by
+name) and `tests/test_u2u_trust.py` (the wider matrix). Every code comment
+on the modified lines cites this section by anchor, not by line number.
+
+## §6 — Manifests describe code, not aspirations
+
+Every capability described in `safe-app-manifest.json` reflects a property the
+code demonstrably has. Aspirational descriptions belong in design docs, not in
+a manifest that claims trust from consumers. Tests enforce this.
+
+The origin case: `dm_conversations` was previously described as *"End-to-end
+encrypted, local-only"* while `u2u/packets.py:74-75` writes plaintext JSON
+onto a bare TCP socket (the `cryptography` dependency is imported only for
+Ed25519 signing). See `CODE_REVIEW.md` P0 — *"the manifest claims u2u is
+encrypted; it is not"*. The correction is in the manifest; the aspiration
+(Gate 6 confidentiality) lives in `docs/design/u2u-security-limits.md`.
+
+### Enforcement
+
+- `tests/test_manifest_honesty.py` pins the `dm_conversations` description —
+  it must contain `NOT encrypted` and must not contain `End-to-end encrypted`,
+  and any capability description that mentions `Encrypted` must sit next to a
+  disclaimer (`NOT encrypted`, `cleartext`, or `Gate 6`) in the same
+  purpose+description blob.
+- `tests/test_readme_honesty.py` pins the README's u2u row — the withdrawn
+  phrasings `Encrypted LAN transport` and `encrypted transport` may not
+  reappear, and the corrected substrings must be present.
+- New capability rows added to `safe-app-manifest.json` MUST be describable
+  in code-demonstrable terms. If the description names a property that a
+  reader can't verify by reading the tree, the row is wrong.
+
+## §7 — Consent flows are real, not automatic
 
 OAuth authorization never auto-issues a code. The operator approves via a
 loopback-only page. Access tokens have a bounded TTL suitable for the
@@ -133,23 +213,7 @@ Concretely, for `grove.mcp_local --serve` (see `grove/mcp_auth.py`,
   warning IS the security note.
 
 Every code change to `grove/mcp_auth.py` or the OAuth surface of
-`grove/mcp_local.py` cites `INVARIANTS.md §5` in the docstring or
+`grove/mcp_local.py` cites `INVARIANTS.md §7` in the docstring or
 comment that motivates it. Pinning tests: `tests/test_mcp_auth.py`,
 `tests/test_mcp_serve_oauth_flow.py`, `tests/test_serve_mode_identity.py`,
 `tests/test_grove_approval_page.py`, `tests/test_transport_security.py`.
-
-## §4 — Reader/endpoint coverage (v0.9 PR 1 baseline)
-
-Every reader listed below returns bounded-shape-or-`Unreachable`; every
-endpoint answers 200/populated, 200/empty, or 503/unreachable.
-
-| Reader                     | Endpoint                       |
-|----------------------------|--------------------------------|
-| `grove/persona_roster.py`  | `GET  /api/personas`           |
-| `grove/envelope_reader.py` | `GET  /api/envelopes`          |
-| `grove/kart_reader.py`     | `GET  /api/dispatch`           |
-| `grove/journal_reader.py`  | `GET  /api/journal/recent`     |
-| `grove/journal_writer.py`  | `POST /api/journal`            |
-| `grove/nestor_client.py`   | `POST /api/nestor/decide`      |
-
-Any future reader/endpoint added to Grove joins this table in the same PR.

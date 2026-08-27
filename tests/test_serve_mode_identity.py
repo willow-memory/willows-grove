@@ -7,7 +7,7 @@
 # injectable via `_detect_serve_mode(argv=...)` and introduces
 # `_resolve_serve_identity(token)` and `_gate(serve_mode, token)` — the seam
 # through which serve mode refuses a call with no verified identity. Per
-# INVARIANTS.md §5, that refusal must be real, not decorative.
+# INVARIANTS.md §7, that refusal must be real, not decorative.
 from __future__ import annotations
 
 import sys
@@ -77,7 +77,7 @@ def test_resolve_identity_accepts_the_superscope():
 def test_resolve_identity_missing_binding_returns_none():
     """No token at all is the "missing binding" case. Fail-closed.
 
-    INVARIANTS.md §5 — the gate refuses when no identity is verified.
+    INVARIANTS.md §7 — the gate refuses when no identity is verified.
     """
     assert mcp_local._resolve_serve_identity(None) is None
 
@@ -115,7 +115,7 @@ def test_resolve_identity_unknown_scopes_returns_none():
 
 
 def test_resolve_identity_empty_scopes_returns_none():
-    """An empty scope set is not a grant. INVARIANTS.md §5."""
+    """An empty scope set is not a grant. INVARIANTS.md §7."""
     assert mcp_local._resolve_serve_identity(_Tok(client_id="x", scopes=[])) is None
 
 

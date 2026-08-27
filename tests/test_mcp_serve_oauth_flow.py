@@ -38,7 +38,7 @@ sys.argv = ["mcp_local", "--serve"]
 os.environ["GROVE_MCP_URL"] = BASE_URL
 os.environ["HOME"] = _tmp_home
 os.environ.pop("GROVE_MCP_AUTO_APPROVE", None)
-# PR 6 (INVARIANTS.md §5): dynamic client registration is off by default.
+# PR 6 (INVARIANTS.md §7): dynamic client registration is off by default.
 # This test exercises the full OAuth flow, so enable it here explicitly.
 os.environ["GROVE_MCP_ALLOW_DYNAMIC_REGISTRATION"] = "1"
 # Silence the tunnel-warning that would otherwise fire for a non-loopback
@@ -77,7 +77,7 @@ def http():
     isolation comes from resetting the provider's state instead.
     """
     # client=("127.0.0.1", ...) so the /grove-approve POST passes the loopback
-    # check introduced by PR 6 (INVARIANTS.md §5). Default TestClient host is
+    # check introduced by PR 6 (INVARIANTS.md §7). Default TestClient host is
     # "testclient", which is deliberately NOT loopback.
     with TestClient(
         mcp_local.mcp.streamable_http_app(),
@@ -95,7 +95,7 @@ def client(http, tmp_path, monkeypatch):
     monkeypatch.setattr(provider, "_pending", {})
     monkeypatch.setattr(provider, "_codes", {})
     # `_auto_approve` no longer exists as of PR 6 — the escape hatch is gone
-    # (INVARIANTS.md §5). Nothing to reset; approval is always required.
+    # (INVARIANTS.md §7). Nothing to reset; approval is always required.
     return http
 
 

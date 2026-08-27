@@ -218,7 +218,7 @@ def test_authorize_does_not_issue_a_code_by_default(tmp_path):
 def test_authorize_is_independent_of_ambient_env(tmp_path, monkeypatch):
     """No env var toggles the authorize() path anymore — PR 6 removed the
     GROVE_MCP_AUTO_APPROVE escape hatch entirely. Setting it must not
-    resurrect the behavior. Per INVARIANTS.md §5."""
+    resurrect the behavior. Per INVARIANTS.md §7."""
     monkeypatch.setenv("GROVE_MCP_AUTO_APPROVE", "1")
     provider = _provider(tmp_path)
 
@@ -229,7 +229,7 @@ def test_authorize_is_independent_of_ambient_env(tmp_path, monkeypatch):
 
 def test_auto_approve_constructor_arg_no_longer_exists(tmp_path):
     """The `auto_approve` constructor arg was removed in PR 6. If someone
-    re-adds it as a knob, this fails — INVARIANTS.md §5."""
+    re-adds it as a knob, this fails — INVARIANTS.md §7."""
     with pytest.raises(TypeError):
         GroveOAuthProvider(
             token_path=tmp_path / "grove_mcp_token",
@@ -240,7 +240,7 @@ def test_auto_approve_constructor_arg_no_longer_exists(tmp_path):
 
 def test_access_ttl_is_bounded_for_operator_seat():
     """Access tokens live for the operator seat's horizon, not 30 days.
-    INVARIANTS.md §5 (bounded TTL suitable for the operator seat)."""
+    INVARIANTS.md §7 (bounded TTL suitable for the operator seat)."""
     import grove.mcp_auth as mcp_auth
     # 24 hours — bounded, defensible. Not 30 days.
     assert mcp_auth._ACCESS_TTL == 24 * 3600

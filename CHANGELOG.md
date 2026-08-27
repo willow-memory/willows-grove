@@ -9,18 +9,29 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Added
 - INVARIANTS.md — single source of truth for Grove discipline.
-- INVARIANTS.md §5 — Consent flows are real, not automatic. Names the /grove-approve loopback POST discipline, the 5-min pending TTL, the 24-hour access TTL, and the tunnel-acknowledgement flag.
+- INVARIANTS.md §5 "Trust order" — signature → consent → dispatch, in exactly that sequence, with the contact-store rules that protect the state consent depends on.
+- INVARIANTS.md §6 — "Manifests describe code, not aspirations" (Grove v0.9 PR 7). Tests enforce.
+- INVARIANTS.md §7 — "Consent flows are real, not automatic" (Grove v0.9 PR 6). Names the /grove-approve loopback POST discipline, the 5-min pending TTL, the 24-hour access TTL, and the tunnel-acknowledgement flag.
 - CHANGELOG.md — reorganized under Keep a Changelog v1.1.0; earlier per-branch entries preserved below as historical work.
+- docs/design/u2u-security-limits.md — new doc naming what u2u guarantees (authenticity, integrity, non-repudiation within signing-key boundary) and what it does not (confidentiality). Cites `u2u/packets.py:74-75`. Encryption planned for Gate 6.
+- tests/test_manifest_honesty.py — pins INVARIANTS.md §6 for `safe-app-manifest.json`.
+- tests/test_readme_honesty.py — pins INVARIANTS.md §6 for the README's u2u row.
 - `tests/test_serve_mode_identity.py` — pins `_detect_serve_mode` injectability, `_resolve_serve_identity` (verified / missing / malformed / unknown-scopes cases with log-once), and the serve branch of `_gate` denying when identity resolves to None. Fills the CODE_REVIEW.md P1 gap ("serve mode ... has zero tests").
 - `tests/test_grove_approval_page.py` — pins `/authorize` never issuing a code, the approval page rendering the client + scope + redirect, loopback-only completion, non-loopback POST refused (403), 5-min pending expiry, and DNS-rebinding-protection invariants on the transport allowlist.
 
 ### Fixed
-- `grove/mcp_auth.py`: `authorize()` no longer auto-issues codes; wired to the /grove-approve page (CODE_REVIEW.md P0). The `GROVE_MCP_AUTO_APPROVE` env-var escape hatch and the `auto_approve` constructor arg are removed — there is no unattended-approve path. INVARIANTS.md §5.
-- `grove/mcp_local.py`: DNS-rebinding protection stays on regardless of scheme; ngrok carve-out removed (CODE_REVIEW.md P0). The `/grove-approve` POST that completes a grant is refused unless the peer is on 127.0.0.1/::1/localhost — the operator has to be on the box. A non-loopback `GROVE_MCP_URL` without `WILLOW_MCP_TUNNEL_ACKNOWLEDGED=1` logs a WARNING at startup. INVARIANTS.md §5.
-- `client_registration.enabled` disabled by default; explicit enrollment required via `GROVE_MCP_ALLOW_DYNAMIC_REGISTRATION=1`. Closes CODE_REVIEW.md P0 ("unvalidated register_client"). INVARIANTS.md §5.
-- `_ACCESS_TTL` reduced from 30 days to 24 hours; `_PENDING_TTL` from 10 minutes to 5 minutes. Bounded for the operator seat per INVARIANTS.md §5.
+- safe-app-manifest.json: dm_conversations no longer claims encryption; u2u is signed-not-encrypted (CODE_REVIEW.md P0 corrected).
+- README.md: u2u description corrected to match code.
+- docs/design/u2u-security-limits.md: new doc naming what u2u guarantees and what it does not.
+- u2u: verify signature before consulting consent for every packet type (was: PENDING KNOCKs dispatched unverified — CODE_REVIEW.md P0). The invariant is now anchored at INVARIANTS.md §5 and pinned by name in `tests/test_u2u_consent_order.py`.
+- u2u: `contacts.update_key()` preserves blocked and consent flags on rotation; `bridge/app.py` no longer resets state via `contacts.add()`. Rotation now defaults closed — the caller MUST pass `require_confirmation=False` to attest that a human authorised the key change, and the refusal is logged.
+- u2u: REPLY packets require a correlated outstanding thread_id — the `ALLOW`-unconditional path is gone, and a REPLY without a live `open_thread` entry is DENY, per INVARIANTS.md §5.
+- `grove/mcp_auth.py`: `authorize()` no longer auto-issues codes; wired to the /grove-approve page (CODE_REVIEW.md P0). The `GROVE_MCP_AUTO_APPROVE` env-var escape hatch and the `auto_approve` constructor arg are removed — there is no unattended-approve path. INVARIANTS.md §7.
+- `grove/mcp_local.py`: DNS-rebinding protection stays on regardless of scheme; ngrok carve-out removed (CODE_REVIEW.md P0). The `/grove-approve` POST that completes a grant is refused unless the peer is on 127.0.0.1/::1/localhost — the operator has to be on the box. A non-loopback `GROVE_MCP_URL` without `WILLOW_MCP_TUNNEL_ACKNOWLEDGED=1` logs a WARNING at startup. INVARIANTS.md §7.
+- `client_registration.enabled` disabled by default; explicit enrollment required via `GROVE_MCP_ALLOW_DYNAMIC_REGISTRATION=1`. Closes CODE_REVIEW.md P0 ("unvalidated register_client"). INVARIANTS.md §7.
+- `_ACCESS_TTL` reduced from 30 days to 24 hours; `_PENDING_TTL` from 10 minutes to 5 minutes. Bounded for the operator seat per INVARIANTS.md §7.
 - `_SERVE_MODE` now derives from an injectable `_detect_serve_mode(argv=…)`; the OAuth provider is built via `_build_serve_provider(base_url)`. Makes the serve branch of the gate testable (CODE_REVIEW.md P1). New `_resolve_serve_identity(token)` and `_gate(serve_mode, token)` seams — fail-closed on missing / malformed identity.
-- `SECURITY_AUDIT.md`: G-OAUTH-01 residual risk updated to reflect the removed auto-approve path; G-REG-01 closed (dynamic registration off by default). INVARIANTS.md §5.
+- `SECURITY_AUDIT.md`: G-OAUTH-01 residual risk updated to reflect the removed auto-approve path; G-REG-01 closed (dynamic registration off by default). INVARIANTS.md §7.
 
 ### Previous work (pre-v0.9)
 

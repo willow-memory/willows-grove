@@ -3,7 +3,7 @@
 """
 Single-user OAuth 2.0 provider for `grove.mcp_local --serve`.
 
-Authorization is never automatic. Per INVARIANTS.md §5 (consent flows are
+Authorization is never automatic. Per INVARIANTS.md §7 (consent flows are
 real, not automatic), /authorize parks the request in memory and redirects
 the browser to <base_url>/grove-approve?pending=<key>. The human at that
 browser clicks Allow (or Deny) — an authorization code exists only after a
@@ -27,7 +27,7 @@ Access tokens live for 24 hours — bounded for the operator seat, not the
 horizon (a client that reconnects the next day should not have to walk the
 consent page again for a benign session gap), but the access token itself
 is the credential that gets replayed, so it is the one that has to expire.
-See INVARIANTS.md §5.
+See INVARIANTS.md §7.
 
 Pending approvals and issued codes are in-memory (lost on restart, which
 just means the client re-auths). Tokens are persisted to token_path so
@@ -50,15 +50,15 @@ from mcp.server.auth.provider import (
 )
 from mcp.shared.auth import OAuthClientInformationFull, OAuthToken
 
-# Access tokens are bounded for the operator seat per INVARIANTS.md §5 —
+# Access tokens are bounded for the operator seat per INVARIANTS.md §7 —
 # not the 30 days the pre-PR-6 value carried. A tunnelled listener replays
 # these; a bounded lifetime is what turns "reachable" back into "needs
 # consent again". Refresh keeps the multi-day horizon so a benign
 # reconnect the next day does not walk the consent page again.
-_ACCESS_TTL  = 24 * 3600   # 24 hours — INVARIANTS.md §5
+_ACCESS_TTL  = 24 * 3600   # 24 hours — INVARIANTS.md §7
 _CODE_TTL    = 300         # 5 minutes
 _REFRESH_TTL = 30 * 86400  # 30 days (client reconnect horizon; still user-revocable)
-_PENDING_TTL = 300         # 5 minutes for a human to click Allow — INVARIANTS.md §5
+_PENDING_TTL = 300         # 5 minutes for a human to click Allow — INVARIANTS.md §7
 
 # Scope vocabulary — mirrors grove/mcp_local.py's AuthSettings. Duplicated
 # rather than imported: mcp_local imports GroveOAuthProvider from this module
@@ -139,7 +139,7 @@ class GroveOAuthProvider:
     An authorization code is only ever issued by issue_code(), which is
     called from the /grove-approve route after a human clicks Allow.
     /authorize itself always redirects to that approval page. There is no
-    unattended-approve path. See INVARIANTS.md §5.
+    unattended-approve path. See INVARIANTS.md §7.
     """
 
     def __init__(
@@ -300,7 +300,7 @@ class GroveOAuthProvider:
         a one-shot key. No authorization code exists yet — the page issues one
         only if a human clicks Allow, and only when that click arrives from
         the loopback interface (see /grove-approve in mcp_local.py). There is
-        no auto-approve branch — see INVARIANTS.md §5.
+        no auto-approve branch — see INVARIANTS.md §7.
         """
         key = _tok()
         self.stash_pending(key, client, params)

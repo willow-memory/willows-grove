@@ -13,7 +13,7 @@ Modes:
                      --watch: supervise a **child** serve process; restart it when
                      `grove/*.py` changes (parent polls mtimes — works because `mcp.run` blocks).
 
-Auth in serve mode: OAuth 2.0 + PKCE. Per INVARIANTS.md §5, /authorize
+Auth in serve mode: OAuth 2.0 + PKCE. Per INVARIANTS.md §7, /authorize
                     always redirects to the /grove-approve page — no code is
                     ever issued without a human loopback click. Dynamic client
                     registration is DISABLED by default (an operator opts in
@@ -27,7 +27,7 @@ address without also setting WILLOW_MCP_TUNNEL_ACKNOWLEDGED=1 logs a
 prominent WARNING at startup — the operator has to say out loud that the
 listener is intentionally reachable. DNS-rebinding protection is ON in
 every configuration (see _transport_security); the ngrok-era https carve-out
-is gone. INVARIANTS.md §5.
+is gone. INVARIANTS.md §7.
 """
 import functools
 import os
@@ -131,7 +131,7 @@ def _detect_serve_mode(argv: list[str] | None = None) -> bool:
     Separated from the module-level import so tests can substitute their own
     argv (or set `_SERVE_MODE` outright before importing derived surfaces).
     The current CLI convention — `--serve` in argv — is preserved. See
-    tests/test_serve_mode_identity.py and INVARIANTS.md §5.
+    tests/test_serve_mode_identity.py and INVARIANTS.md §7.
     """
     src = sys.argv if argv is None else argv
     return "--serve" in src
@@ -153,7 +153,7 @@ def _is_loopback_base_url(base_url: str) -> bool:
     """`base_url`'s host is one of the loopback names — 127.0.0.1, localhost, ::1.
 
     Used only for the tunnel-warning heuristic; the transport allowlist still
-    does the authoritative check per request. See INVARIANTS.md §5.
+    does the authoritative check per request. See INVARIANTS.md §7.
     """
     try:
         host = urlparse(base_url).hostname
@@ -313,7 +313,7 @@ _common_kwargs = dict(
     subscriptions=_bus,
 )
 
-# Dynamic client registration is DISABLED by default (INVARIANTS.md §5).
+# Dynamic client registration is DISABLED by default (INVARIANTS.md §7).
 # The pre-PR-6 posture was ClientRegistrationOptions(enabled=True) — the SDK
 # would persist any `/register` payload as a legitimate client, so a stranger
 # could register-and-then-authorize themselves the moment a person clicked
@@ -346,7 +346,7 @@ def _resolve_serve_identity(token) -> str | None:
     the seam through which the serve branch of `_gate` refuses a call that
     has no verified identity — fail-closed on a missing or malformed token.
 
-    Per INVARIANTS.md §5 (consent flows are real, not automatic), a request
+    Per INVARIANTS.md §7 (consent flows are real, not automatic), a request
     that reaches `_gate` in serve mode without a verified identity is denied,
     never allowed under an ambient assumption. Modelled after willow-mcp's
     same-named helper (CODE_REVIEW.md P1 — "serve mode ... has zero tests");
@@ -400,7 +400,7 @@ def _gate(serve_mode: bool, token) -> bool:
     Stdio (`serve_mode=False`) is implicit-trust — the local process is the
     operator — and returns True. Serve mode consults _resolve_serve_identity;
     a None result denies. See tests/test_serve_mode_identity.py and
-    INVARIANTS.md §5.
+    INVARIANTS.md §7.
     """
     if not serve_mode:
         return True
@@ -412,7 +412,7 @@ def _warn_public_tunnel_if_unacknowledged(base_url: str) -> bool:
     not acknowledged the tunnel via WILLOW_MCP_TUNNEL_ACKNOWLEDGED=1.
 
     Returns True when a warning was emitted (used by tests). No `--allow-tunnel`
-    flag exists — the warning is the security note. INVARIANTS.md §5.
+    flag exists — the warning is the security note. INVARIANTS.md §7.
     """
     if _is_loopback_base_url(base_url):
         return False
@@ -423,7 +423,7 @@ def _warn_public_tunnel_if_unacknowledged(base_url: str) -> bool:
         f"({base_url}) — this listener is reachable off-box. DNS-rebinding "
         "protection stays on regardless, but the operator should set "
         "WILLOW_MCP_TUNNEL_ACKNOWLEDGED=1 to acknowledge that the tunnel is "
-        "intended. See INVARIANTS.md §5.",
+        "intended. See INVARIANTS.md §7.",
         file=sys.stderr, flush=True,
     )
     return True
@@ -1092,7 +1092,7 @@ if _SERVE_MODE and _auth_provider is not None:
         return RedirectResponse(target, status_code=307)
 
     # Loopback source addresses accepted for the approval POST. Per
-    # INVARIANTS.md §5, "the operator approves via a loopback-only page":
+    # INVARIANTS.md §7, "the operator approves via a loopback-only page":
     # this list is the enforcement of that clause. A public tunnel deployment
     # that forwards its client's public IP to the app will not match; the
     # operator has to reach /grove-approve from the box itself (SSH port-
@@ -1100,7 +1100,7 @@ if _SERVE_MODE and _auth_provider is not None:
     _LOOPBACK_HOSTS = {"127.0.0.1", "::1", "localhost"}
 
     def _remote_is_loopback(request: Request) -> bool:
-        """The approval POST's peer must be loopback — INVARIANTS.md §5."""
+        """The approval POST's peer must be loopback — INVARIANTS.md §7."""
         client = request.client
         if client is None or not client.host:
             return False
@@ -1116,7 +1116,7 @@ if _SERVE_MODE and _auth_provider is not None:
         one-shot key, which is also what stops a third party from POSTing an
         approval they were never shown.
 
-        Per INVARIANTS.md §5, the POST that completes the grant is refused
+        Per INVARIANTS.md §7, the POST that completes the grant is refused
         unless the request originates from a loopback address — the operator
         has to be on the box. GET renders normally so the operator can inspect
         the page over a tunnel if they want, but the grant itself never crosses
@@ -1160,12 +1160,12 @@ If you did not just start this from your own client, click Deny.</p>
 
         # POST — issue code or deny (entry already popped at top of function).
         # Loopback check first: a non-loopback origin is refused before the
-        # action is even inspected. INVARIANTS.md §5.
+        # action is even inspected. INVARIANTS.md §7.
         if not _remote_is_loopback(request):
             return HTMLResponse(
                 "<h2>Access denied.</h2>"
                 "<p>Approval must be submitted from the local host (127.0.0.1). "
-                "See INVARIANTS.md §5.</p>",
+                "See INVARIANTS.md §7.</p>",
                 status_code=403,
             )
 
@@ -1256,7 +1256,7 @@ def _watch_serve_supervisor() -> None:
 
 def main():
     if "--serve" in sys.argv:
-        # Approval is always required per INVARIANTS.md §5 — the pre-PR-6
+        # Approval is always required per INVARIANTS.md §7 — the pre-PR-6
         # auto-approve escape hatch is gone. Every /authorize walks through
         # /grove-approve and needs a loopback click.
         reg_hint = "dynamic-reg=ON" if _ALLOW_DYNAMIC_REG else "dynamic-reg=OFF (opt-in via GROVE_MCP_ALLOW_DYNAMIC_REGISTRATION=1)"

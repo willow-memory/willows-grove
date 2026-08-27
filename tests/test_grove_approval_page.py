@@ -5,7 +5,7 @@
 # out (safe-app-willow-grove §"Needs improvement" P0 — "the OAuth consent page
 # is dead code"). test_mcp_serve_oauth_flow.py already pinned the base flow
 # (approval page reachable, /authorize doesn't auto-issue, replay-protection,
-# escape). This file pins the new invariants — INVARIANTS.md §5:
+# escape). This file pins the new invariants — INVARIANTS.md §7:
 #
 #   - `authorize()` redirects to /grove-approve?req_id=… and does NOT issue a code
 #   - the approval page renders the requesting client + scope + redirect_uri
@@ -70,7 +70,7 @@ CHALLENGE = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM"
 @pytest.fixture(scope="module")
 def loopback_http():
     """One client per module, its ASGI client tuple set to 127.0.0.1 so the
-    approval POST passes the loopback check (INVARIANTS.md §5)."""
+    approval POST passes the loopback check (INVARIANTS.md §7)."""
     with TestClient(
         mcp_local.mcp.streamable_http_app(),
         follow_redirects=False,
@@ -135,7 +135,7 @@ def _authorize(client, client_id: str):
 
 
 def test_authorize_redirects_to_approval_page_never_a_code(loopback_http, _reset_provider):
-    """The regression guard for CODE_REVIEW.md's P0. INVARIANTS.md §5."""
+    """The regression guard for CODE_REVIEW.md's P0. INVARIANTS.md §7."""
     client_id = _register(loopback_http)
     r = _authorize(loopback_http, client_id)
 
@@ -191,7 +191,7 @@ def test_loopback_submit_allow_issues_the_code(loopback_http, _reset_provider):
 
 
 def test_non_loopback_submit_is_refused(public_http, loopback_http, _reset_provider):
-    """The loopback check added in PR 6 (INVARIANTS.md §5): the POST that
+    """The loopback check added in PR 6 (INVARIANTS.md §7): the POST that
     completes the grant must originate from 127.0.0.1 / ::1 / localhost. A
     tunnel that forwards a public IP as the peer is refused, and no code is
     issued.
@@ -217,7 +217,7 @@ def test_non_loopback_submit_is_refused(public_http, loopback_http, _reset_provi
 
 def test_pending_expires_after_5_min_no_code_issuable(loopback_http, _reset_provider, monkeypatch):
     """PR 6 dropped _PENDING_TTL to 5 minutes and _ACCESS_TTL to 24 hours
-    (INVARIANTS.md §5). After the pending window closes, the parked entry is
+    (INVARIANTS.md §7). After the pending window closes, the parked entry is
     gone and no code can be issued for it — replaying the approval URL yields
     "Invalid or expired"."""
     import grove.mcp_auth as mcp_auth
