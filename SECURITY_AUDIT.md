@@ -164,6 +164,7 @@ G-DEP-01) it is named in the finding.
 | `tests/test_card_builder.py` | scripted wizard + templates | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_card_store.py` | tests/test_card_store.py | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_channel_normalize.py` | tests/test_channel_normalize.py | Out of scope — test code; not shipped and not reachable at runtime |
+| `tests/test_claude_md_honesty.py` | Grove v0.9 PR 12 (Loki finding B3) — pins §6 for CLAUDE.md: asserts no u2u-describing row claims 'encrypted', and at least one such row cites `signed` or `docs/design/u2u-security-limits.md`. INVARIANTS.md §6. | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_chat.py` | tests/test_chat.py | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_chat_admin.py` | channel name rules + archive guards | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_chat_commands.py` | Wave B `:` mod command parser | Out of scope — test code; not shipped and not reachable at runtime |
