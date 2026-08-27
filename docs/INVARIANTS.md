@@ -280,3 +280,43 @@ Pinning tests: `tests/test_seed_reader.py`, `tests/test_seed_html.py`,
 `tests/test_grove_serve_seed.py`,
 `tests/test_seed_reader_probe_expansion.py`,
 `tests/test_seed_canon_content.py`.
+
+## §10 — CI proves the invariants
+
+Every INVARIANTS section is enforced by at least one CI step. Ollama,
+Playwright, docs-drift, and security-grep are CI-first (never
+operator-only). Tests that require services declare them in
+`.github/workflows/tests.yml`.
+
+Concretely, `.github/workflows/tests.yml` in Grove v0.9 PR 4 carries:
+
+- a `postgres` service (already present) and a new **`ollama` service**
+  container. The Ollama-backed watcher e2e (`tests/e2e_ollama/`, filled
+  by PR 8) runs against it. Until PR 8 the service idles alongside the
+  job and no tests fire — the step is guarded by
+  `hashFiles('tests/e2e_ollama/test_*.py', …)`.
+- a **Playwright browser install step**
+  (`npx --yes playwright install --with-deps chromium`) guarded by
+  `hashFiles('playwright.config.js', …)`. The suite itself
+  (`tests/e2e/`) is filled by PR 9; the run step is guarded by
+  `hashFiles('tests/e2e/*.spec.*', …)` so an empty directory is a
+  no-op.
+- a **docs-drift step** (`python3 scripts/check_docs_drift.py`) — the
+  script is a stub in PR 4 (exits 0 with a note) and is filled by
+  PR 11 to enforce §3 (every `INVARIANTS.md §N` citation resolves, every
+  CHANGELOG bullet cites its PR, every §N has a CI witness).
+- a **security-grep step** (`bash scripts/ci-security-grep.sh`) — sweeps
+  the tracked `*.py` / `*.sh` tree for `os.system(`,
+  `subprocess.*(shell=True`, bare `eval(` / `exec(`, `pickle.loads`,
+  bare `yaml.load(`, etc. False positives live in
+  `scripts/ci-security-grep.allowlist` and require a preceding comment
+  explaining why they are safe. Non-zero exit on any un-allowlisted hit.
+
+Downstream PRs (8, 9, 10) fill the empty placeholder directories
+(`tests/e2e/`, `tests/e2e_ollama/`, `tests/e2e_willow_mcp/`); PR 11
+fills the docs-drift enforcement. Each of those PRs cites this section
+in its docstrings and CHANGELOG bullet.
+
+A new INVARIANTS section that ships without a CI witness is a §10
+violation and is fixed in the same PR — either the enforcement lands,
+or a step that fails loudly ("`§N` has no CI witness yet") does.

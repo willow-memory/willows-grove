@@ -25,10 +25,30 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+      # docs/INVARIANTS.md §10 — Ollama is CI-first, never operator-only.
+      # The container comes up on every run; the Grove v0.9 PR 8 tests
+      # under `tests/e2e_ollama/` exercise it. Until PR 8 lands the
+      # service simply idles alongside the job.
+      # https://hub.docker.com/r/ollama/ollama
+      ollama:
+        image: ollama/ollama:latest
+        ports:
+          - 11434:11434
+        # Health check uses ollama's own binary (curl is not in the image).
+        # PR 8 tests wait on their own readiness probe (POST /api/tags) before
+        # actually calling Ollama; this scaffolding just needs the container up.
+        options: >-
+          --health-cmd "ollama --version || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 12
+          --health-start-period 15s
+
     env:
       # Single DSN used by grove_db.py, kart_worker, and grove_serve — overrides
       # the WILLOW_PG_DB+WILLOW_PG_USER pair so password is included.
       WILLOW_DB_URL: postgresql://postgres:postgres@localhost/willow_20_test
+      OLLAMA_HOST: http://127.0.0.1:11434
 
     steps:
       - uses: actions/checkout@v4
@@ -51,5 +71,46 @@ jobs:
           PGUSER: postgres
           PGPASSWORD: postgres
 
+      # docs/INVARIANTS.md §10 — security-grep runs on every PR. The tree
+      # is small and the sweep is cheap; the risk of a regression slipping
+      # past the manual SECURITY_AUDIT.md sweep is why this is CI-first.
+      - name: Security grep (well-known risky patterns)
+        if: ${{ hashFiles('scripts/ci-security-grep.sh') != '' }}
+        run: bash scripts/ci-security-grep.sh
+
+      # docs/INVARIANTS.md §10 — docs-drift is CI-first. PR 4 ships the
+      # stub; PR 11 fills the enforcement. Guarded so a fork without the
+      # script still builds green.
+      - name: Docs-drift check
+        if: ${{ hashFiles('scripts/check_docs_drift.py') != '' }}
+        run: python3 scripts/check_docs_drift.py
+
       - name: Run test suite
-        run: python3 -m pytest -x -q --tb=short
+        run: python3 -m pytest -x -q --tb=short --ignore=tests/e2e --ignore=tests/e2e_ollama --ignore=tests/e2e_willow_mcp
+
+      # docs/INVARIANTS.md §10 — Playwright is CI-first. Browsers only
+      # download when a `playwright.config.*` is present, which it is
+      # from PR 4 onward. The `tests/e2e/` suite is populated by PR 9;
+      # until then the install step warms the browser cache and the
+      # test run is a no-op (the guard on the run step skips it while
+      # the directory carries only `.gitkeep`).
+      - name: Install Playwright browsers (chromium)
+        if: ${{ hashFiles('playwright.config.js', 'playwright.config.ts', 'playwright.config.mjs') != '' }}
+        run: npx --yes playwright install --with-deps chromium
+
+      - name: Run Playwright e2e suite
+        if: ${{ hashFiles('playwright.config.js', 'playwright.config.ts', 'playwright.config.mjs') != '' && hashFiles('tests/e2e/*.spec.*', 'tests/e2e/**/*.spec.*') != '' }}
+        run: npx --yes playwright test
+
+      # docs/INVARIANTS.md §10 — the Ollama-backed watcher e2e (PR 8) and
+      # the willow-mcp mock e2e (PR 10) live in their own directories so
+      # the main pytest run above never accidentally sweeps them in. Each
+      # step is guarded on the presence of an actual test file — an empty
+      # directory carrying only `.gitkeep` is a no-op.
+      - name: Run Ollama-backed watcher e2e (PR 8+)
+        if: ${{ hashFiles('tests/e2e_ollama/test_*.py', 'tests/e2e_ollama/**/test_*.py') != '' }}
+        run: python3 -m pytest -x -q --tb=short tests/e2e_ollama
+
+      - name: Run willow-mcp mock e2e (PR 10+)
+        if: ${{ hashFiles('tests/e2e_willow_mcp/test_*.py', 'tests/e2e_willow_mcp/**/test_*.py') != '' }}
+        run: python3 -m pytest -x -q --tb=short tests/e2e_willow_mcp
