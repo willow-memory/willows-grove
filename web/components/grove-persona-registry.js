@@ -3,6 +3,17 @@
  * <grove-persona-registry> — the single source of truth for persona visual +
  * voice fields inside Willow's Grove served page.
  *
+ * Three-state contract (see docs/INVARIANTS.md §1):
+ *   populated   — registry.personas is a non-empty {agent: row} map.
+ *   empty       — registry.personas is an empty map (fetched, no rows).
+ *   unreachable — .state === "unreachable"; a `registry-unreachable` event
+ *                 fires; getPersona() returns null for every agent.
+ *
+ * Consumers MUST check `.state === "unreachable"` (or listen for the
+ * `registry-unreachable` event) rather than treating an empty map as
+ * "everything is fine, there are no personas" — that's the pattern
+ * INVARIANTS.md §2 supersedes.
+ *
  * D10 (premise) mandates one unified persona registry (`fleet-personas/v1`);
  * every cast chip, card, and refusal chip resolves its `visual.color`,
  * `visual.sigil`, and `voice.*` against the same store. This element is the
@@ -76,6 +87,8 @@ class GrovePersonaRegistry extends HTMLElement {
     this.personas = Object.create(null);
     this._loaded = false;
     this._loadToken = 0;
+    /** @type {"populated"|"empty"|"unreachable"|"loading"} */
+    this.state = "loading";
   }
 
   connectedCallback() {
@@ -133,29 +146,64 @@ class GrovePersonaRegistry extends HTMLElement {
   _fetch(url, token) {
     // fetch is not available in some very old sandboxes; guard anyway.
     if (typeof fetch !== "function") {
-      this._logOnce("fetch() is not available — using empty registry");
-      this._settle({}, token);
+      this._logOnce("fetch() is not available — registry is unreachable");
+      this._settleUnreachable("fetch() unavailable", token);
       return;
     }
     fetch(url, { credentials: "same-origin" })
       .then((resp) => {
-        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        if (!resp.ok) {
+          // 503 body carries {state: "unreachable", reason: ...} per
+          // INVARIANTS.md §1. Read it before we throw so the reason
+          // reaches the operator via the log-once + event.
+          return resp.json().then((body) => {
+            throw Object.assign(new Error(`HTTP ${resp.status}`), {
+              status: resp.status, body,
+            });
+          }, () => {
+            throw new Error(`HTTP ${resp.status}`);
+          });
+        }
         return resp.json();
       })
       .then((doc) => this._settle(doc, token))
       .catch((err) => {
-        this._logOnce(`fetch ${url} failed: ${err && err.message ? err.message : err}`);
-        this._settle({}, token);
+        const reason = (err && err.body && err.body.reason)
+          || (err && err.message)
+          || String(err);
+        this._logOnce(`fetch ${url} failed: ${reason}`);
+        this._settleUnreachable(reason, token);
       });
   }
 
   _settle(doc, token) {
     if (token !== this._loadToken) return; // superseded by a newer reload
+    // INVARIANTS.md §1: a 200 body may itself carry state="unreachable"
+    // if the endpoint added it — we don't produce that shape, but tolerate.
+    if (doc && doc.state === "unreachable") {
+      this._settleUnreachable(doc.reason || "endpoint reported unreachable", token);
+      return;
+    }
     this.personas = this._normalize(doc);
     this._loaded = true;
+    this.state = Object.keys(this.personas).length > 0 ? "populated" : "empty";
     this.dispatchEvent(new CustomEvent("registry-loaded", {
       bubbles: true, composed: true,
-      detail: { count: Object.keys(this.personas).length },
+      detail: { count: Object.keys(this.personas).length, state: this.state },
+    }));
+  }
+
+  _settleUnreachable(reason, token) {
+    if (token !== this._loadToken) return;
+    // Distinct from "empty" — an unreachable registry MUST render distinctly
+    // per INVARIANTS.md §1. Consumers check `.state === "unreachable"`
+    // and/or listen for the `registry-unreachable` event.
+    this.personas = Object.create(null);
+    this._loaded = true;
+    this.state = "unreachable";
+    this.dispatchEvent(new CustomEvent("registry-unreachable", {
+      bubbles: true, composed: true,
+      detail: { reason: String(reason || "unreachable") },
     }));
   }
 
@@ -197,7 +245,7 @@ class GrovePersonaRegistry extends HTMLElement {
     // is an agent row (`{_meta:{schema:"fleet-personas/v1"}, willow:{...},
     // heimdallr:{...}, ...}`). Meta keys are skipped so the registry does not
     // accidentally treat them as personas.
-    const META_KEYS = new Set(["_meta", "schema", "agents", "personas"]);
+    const META_KEYS = new Set(["_meta", "schema", "agents", "personas", "state", "reason"]);
     for (const [key, row] of Object.entries(doc)) {
       if (META_KEYS.has(key)) continue;
       if (row && typeof row === "object" && !Array.isArray(row)) {

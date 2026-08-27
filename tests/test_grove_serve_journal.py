@@ -120,7 +120,8 @@ class JournalRouteTests(unittest.TestCase):
         self.assertEqual(status, 400)
         self.assertFalse(body.get("ok"))
 
-    def test_success_returns_200_with_atom_id(self) -> None:
+    def test_success_returns_200_populated(self) -> None:
+        """Three-state (INVARIANTS.md §1): a successful write is always populated."""
         import grove_serve
 
         def _fake_write(text, *, sender="operator"):
@@ -136,24 +137,28 @@ class JournalRouteTests(unittest.TestCase):
                 {"text": "hello willow", "sender": "operator"},
             )
         self.assertEqual(status, 200)
+        self.assertEqual(body.get("state"), "populated")
         self.assertTrue(body.get("ok"))
         self.assertEqual(body.get("id"), "ABCD1234")
         self.assertEqual(body.get("ts"), "2026-08-27T00:00:00Z")
 
-    def test_writer_degrades_returns_503(self) -> None:
+    def test_writer_unreachable_returns_503_state_unreachable(self) -> None:
+        """503 + state=unreachable when the writer raises Unreachable."""
         import grove_serve
+        from grove.errors import Unreachable
 
-        def _degraded(_text, *, sender="operator"):  # noqa: ARG001
-            return {"ok": False, "reason": "willow-mcp not reachable"}
+        def _boom(_text, *, sender="operator"):  # noqa: ARG001
+            raise Unreachable("willow-mcp not reachable")
 
         with _ServerHarness() as srv, patch.object(
-            grove_serve.journal_writer, "write_operator_turn", _degraded
+            grove_serve.journal_writer, "write_operator_turn", _boom
         ):
             status, body = _post_json(
                 srv.url("/api/journal"),
                 {"text": "hi"},
             )
         self.assertEqual(status, 503)
+        self.assertEqual(body.get("state"), "unreachable")
         self.assertFalse(body.get("ok"))
         self.assertEqual(body.get("reason"), "willow-mcp not reachable")
 

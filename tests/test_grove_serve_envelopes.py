@@ -110,12 +110,35 @@ class EnvelopesRouteTests(unittest.TestCase):
             clear=False,
         )
 
-    def test_returns_empty_envelopes_when_no_dir(self) -> None:
+    def _get(self, url: str) -> tuple[int, dict]:
+        req = urllib.request.Request(url, method="GET", headers={"accept": "application/json"})
+        try:
+            with urllib.request.urlopen(req, timeout=2.0) as resp:
+                return resp.status, json.loads(resp.read().decode("utf-8"))
+        except urllib.error.HTTPError as e:
+            raw = e.read().decode("utf-8")
+            return e.code, json.loads(raw)
+
+    def test_returns_unreachable_when_no_dir(self) -> None:
+        """Three-state (INVARIANTS.md §1): no envelope dir → 503 + state=unreachable.
+        Supersedes the older read where absence collapsed to an empty list."""
         with self._env(self.empty_willow_home):
             with _ServerHarness() as srv:
-                with urllib.request.urlopen(srv.url("/api/envelopes"), timeout=2.0) as resp:
-                    self.assertEqual(resp.status, 200)
-                    body = json.loads(resp.read().decode("utf-8"))
+                status, body = self._get(srv.url("/api/envelopes"))
+        self.assertEqual(status, 503)
+        self.assertEqual(body.get("state"), "unreachable")
+        self.assertIn("envelope directory", body.get("reason", ""))
+
+    def test_returns_empty_when_dir_present_but_no_files(self) -> None:
+        """Directory exists but empty → 200 + state=empty."""
+        willow_home = Path(self.tmp.name) / "empty_dir_home"
+        env_dir = willow_home / "envelopes"
+        env_dir.mkdir(parents=True)
+        with self._env(willow_home):
+            with _ServerHarness() as srv:
+                status, body = self._get(srv.url("/api/envelopes"))
+        self.assertEqual(status, 200)
+        self.assertEqual(body.get("state"), "empty")
         self.assertEqual(body.get("schema"), "envelope-registry/v1.1")
         self.assertEqual(body.get("envelopes"), [])
 
@@ -138,10 +161,10 @@ class EnvelopesRouteTests(unittest.TestCase):
 
         with self._env(willow_home):
             with _ServerHarness() as srv:
-                with urllib.request.urlopen(srv.url("/api/envelopes"), timeout=2.0) as resp:
-                    self.assertEqual(resp.status, 200)
-                    body = json.loads(resp.read().decode("utf-8"))
+                status, body = self._get(srv.url("/api/envelopes"))
 
+        self.assertEqual(status, 200)
+        self.assertEqual(body.get("state"), "populated")
         self.assertEqual(body.get("schema"), "envelope-registry/v1.1")
         ids = sorted(e["id"] for e in body.get("envelopes", []))
         self.assertEqual(ids, ["env-a", "env-b"])

@@ -35,6 +35,8 @@ import urllib.error
 import urllib.request
 from typing import Any, Optional
 
+from grove.errors import Unreachable
+
 log = logging.getLogger(__name__)
 
 _APP_ID = "willow-grove"
@@ -161,11 +163,18 @@ def write_operator_turn(
     pass a value participate. ``None`` and empty string omit the tag.
 
     Returns:
-        On success: ``{"ok": True, "id": "<atom id>", "ts": "<iso>"}``.
-        On degradation: ``{"ok": False, "reason": "<why>"}``.
+        On success (populated — a successful write is always
+        populated): ``{"ok": True, "id": "<atom id>", "ts": "<iso>"}``.
+        The ``ok`` field is kept for backward compatibility with
+        pre-INVARIANTS callers; the endpoint layer adds the
+        ``state="populated"`` field on top.
 
     Raises:
         ValueError: if ``text`` is empty or not a string.
+        Unreachable: when willow-mcp cannot be reached, or is reached
+            but returns an error / no atom id. The endpoint layer
+            translates this into a 503 + ``state="unreachable"`` payload
+            per INVARIANTS.md §1.
     """
     if not isinstance(text, str) or not text:
         raise ValueError("journal_writer: text must be a non-empty string")
@@ -183,19 +192,18 @@ def write_operator_turn(
             result = _try_http_write(url, text, sender, ts, domain)
 
     if result is None:
-        reason = "willow-mcp not reachable"
         _log_unreachable_once(f"tried={tried}")
-        return {"ok": False, "reason": reason}
+        raise Unreachable(f"willow-mcp not reachable (tried={tried})")
 
     if isinstance(result, dict) and "error" in result:
         # Reachable but rejected — surface the truth, do not paper over it.
-        return {"ok": False, "reason": str(result.get("error"))}
+        raise Unreachable(str(result.get("error")))
 
     atom_id = None
     if isinstance(result, dict):
         atom_id = result.get("id")
     if not isinstance(atom_id, str) or not atom_id:
-        return {"ok": False, "reason": "kb_journal returned no atom id"}
+        raise Unreachable("kb_journal returned no atom id")
 
     return {"ok": True, "id": atom_id, "ts": ts}
 

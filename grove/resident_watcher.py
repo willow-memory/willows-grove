@@ -54,6 +54,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 from grove import envelope_reader, fleet_presence, journal_writer
+from grove.errors import Unreachable
 from grove.nestor_client import NestorClient
 
 log = logging.getLogger(__name__)
@@ -454,11 +455,15 @@ class ResidentWatcher:
             resp = self._get_nestor().decision_check(
                 f"resident-watcher tags this as {domain}",
             )
+        except Unreachable as err:
+            # Nestor absent — heartbeat-only proceed (INVARIANTS.md §1).
+            log.debug("resident_watcher: Nestor unreachable (%s) — proceeding.", err.reason)
+            return True
         except Exception as err:  # noqa: BLE001
-            log.debug("resident_watcher: Nestor call raised (%s) — proceeding (D7).", err)
+            log.debug("resident_watcher: Nestor call raised (%s) — proceeding.", err)
             return True
         if resp is None:
-            # Nestor absent — D7 degradation, proceed.
+            # Nestor reached but no sealed pair — proceed.
             return True
         status = _extract_nestor_status(resp)
         if status == "refused":
@@ -481,6 +486,10 @@ class ResidentWatcher:
         except ValueError:
             # Empty text guard in the writer — nothing to do.
             return
+        except Unreachable as err:
+            # willow-mcp not reachable — degrade to heartbeat-only for this
+            # atom (INVARIANTS.md §1). One log line, not per-atom noise.
+            log.debug("resident_watcher: journal_writer unreachable (%s) — dropping atom.", err.reason)
         except Exception as err:  # noqa: BLE001
             log.warning("resident_watcher: journal_writer raised (%s) — dropping atom.", err)
 
@@ -494,6 +503,11 @@ class ResidentWatcher:
 
         try:
             envelopes = envelope_reader.read_all().get("envelopes", [])
+        except Unreachable as err:
+            # No envelope directory in the probe path — heartbeat-only
+            # for this tick, matching the earlier D7 degradation.
+            log.debug("resident_watcher: envelope_reader unreachable (%s).", err.reason)
+            return
         except Exception as err:  # noqa: BLE001
             log.debug("resident_watcher: envelope_reader failed (%s).", err)
             return

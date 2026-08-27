@@ -34,6 +34,7 @@ if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
 from grove import kart_reader
+from grove.errors import Unreachable
 
 
 def _has_dsn() -> bool:
@@ -218,19 +219,23 @@ class FullShapeTests(unittest.TestCase):
 
 
 class UnsetDsnTests(unittest.TestCase):
-    """DSN missing → [] + single log, regardless of DB availability."""
+    """DSN missing → Unreachable + single log (INVARIANTS.md §1)."""
 
     def setUp(self) -> None:
         kart_reader._logged_reset()
 
-    def test_unset_dsn_returns_empty_and_logs_once(self) -> None:
+    def test_unset_dsn_raises_unreachable_and_logs_once(self) -> None:
         env = {k: v for k, v in os.environ.items() if k != "WILLOW_DB_URL"}
         with mock.patch.dict(os.environ, env, clear=True):
             with self.assertLogs(kart_reader.log, level="INFO") as caplog:
-                self.assertEqual(kart_reader.read_queue(), [])
-                self.assertEqual(kart_reader.read_by_lens("governance"), [])
-                self.assertEqual(kart_reader.read_by_lens("pa"), [])
+                with self.assertRaises(Unreachable) as ctx1:
+                    kart_reader.read_queue()
+                with self.assertRaises(Unreachable):
+                    kart_reader.read_by_lens("governance")
+                with self.assertRaises(Unreachable):
+                    kart_reader.read_by_lens("pa")
 
+        self.assertIn("WILLOW_DB_URL", ctx1.exception.reason)
         dsn_msgs = [r for r in caplog.records if "WILLOW_DB_URL" in r.getMessage()]
         self.assertEqual(
             len(dsn_msgs), 1,

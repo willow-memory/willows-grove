@@ -143,9 +143,11 @@ class NestorDecideRouteTests(unittest.TestCase):
         self.assertEqual(status, 400)
         self.assertEqual(body.get("verdict"), "invalid")
 
-    # ---- 503 shape ----
-    def test_binary_absent_returns_503(self) -> None:
-        """Default on this box: nestor binary is not on PATH → 503."""
+    # ---- 503 shape (three-state unreachable, INVARIANTS.md §1) ----
+    def test_binary_absent_returns_503_state_unreachable(self) -> None:
+        """Default on this box: nestor binary is not on PATH → 503 +
+        state=unreachable + verdict=unavailable (preserved for
+        back-compat)."""
         import grove_serve
         # Force the client's availability probe to say "no", so the
         # response is 503 regardless of local $PATH state.
@@ -156,9 +158,30 @@ class NestorDecideRouteTests(unittest.TestCase):
                 srv.url("/api/nestor/decide"), {"claim": "may we ship?"}
             )
         self.assertEqual(status, 503)
+        self.assertEqual(body.get("state"), "unreachable")
         self.assertEqual(body.get("verdict"), "unavailable")
         self.assertIn("reason", body)
         self.assertIn("nestor", body["reason"])
+
+    def test_decision_check_unreachable_returns_503(self) -> None:
+        """decision_check() raising Unreachable also lands 503 (INVARIANTS.md §1)."""
+        import grove_serve
+        from grove.errors import Unreachable
+
+        def _boom(_self, _question):
+            raise Unreachable("child process died")
+
+        with _ServerHarness() as srv, patch.object(
+            grove_serve.NestorClient, "available", return_value=True
+        ), patch.object(
+            grove_serve.NestorClient, "decision_check", _boom
+        ):
+            status, body = _post_json(
+                srv.url("/api/nestor/decide"), {"claim": "novel"}
+            )
+        self.assertEqual(status, 503)
+        self.assertEqual(body.get("state"), "unreachable")
+        self.assertEqual(body.get("reason"), "child process died")
 
     # ---- 200 shapes ----
     def test_sealed_pair_response(self) -> None:
@@ -183,6 +206,7 @@ class NestorDecideRouteTests(unittest.TestCase):
                 srv.url("/api/nestor/decide"), {"claim": "may we merge?"}
             )
         self.assertEqual(status, 200)
+        self.assertEqual(body.get("state"), "populated")
         self.assertEqual(body.get("verdict"), "sealed")
         self.assertEqual(body.get("pair"), pair)
 
@@ -215,6 +239,7 @@ class NestorDecideRouteTests(unittest.TestCase):
                 srv.url("/api/nestor/decide"), {"claim": "should we deploy?"}
             )
         self.assertEqual(status, 200)
+        self.assertEqual(body.get("state"), "populated")
         self.assertEqual(body.get("verdict"), "refused")
         # Byte-for-byte equality of the refusal dict (V5 discipline).
         self.assertEqual(body.get("refusal"), refusal)
@@ -237,6 +262,7 @@ class NestorDecideRouteTests(unittest.TestCase):
                 srv.url("/api/nestor/decide"), {"claim": "novel claim"}
             )
         self.assertEqual(status, 200)
+        self.assertEqual(body.get("state"), "populated")
         self.assertEqual(body.get("verdict"), "pending")
         self.assertIn("message", body)
 

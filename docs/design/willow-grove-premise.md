@@ -314,6 +314,9 @@ plumbing.
 - evidence: `willow-mcp/src/willow_mcp/grove_tools.py` — 20 tools already exposed
 
 **D7 — Grove's base vs its add-ons.** *(sealed)*
+
+> **Superseded 2026-08-27 (see docs/INVARIANTS.md §2):** D7's original phrasing was widely misread as "empty-on-failure is fine." The correct reading is three-state — the state exists AND rendering it distinctly is required.
+
 Grove's base is willow-mcp native (plus the `willow-memory/willow` charter
 and this repo itself). Everything else — Nestor, Forge, homestead,
 hornbook-knowledge (Jeles, Oakenscrolls, UTETY), almanac-data (13 corpora),

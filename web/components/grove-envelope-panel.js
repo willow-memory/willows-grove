@@ -2,6 +2,16 @@
 /**
  * <grove-envelope-panel> — renders the Governance-lens envelope roster.
  *
+ * Three-state contract (see docs/INVARIANTS.md §1):
+ *   populated   — one or more envelopes on file; table renders.
+ *   empty       — envelope dirs reached, no envelopes; "no envelopes on
+ *                 file" line renders in muted default color.
+ *   unreachable — 503/fetch failure; a distinct amber banner reads
+ *                 "envelopes source not reachable — showing last-known:
+ *                 none". MUST be visually distinct from the empty state
+ *                 (INVARIANTS.md §1 supersedes the older reading where
+ *                 empty and unreachable rendered the same pixels).
+ *
  * Fetches an envelope registry (schema envelope-registry/v1.1) from
  * either `/api/envelopes` (default) or a local JSON path passed via the
  * `data-source` attribute (used by the fixture harness). Rows show
@@ -16,9 +26,7 @@
  *                          the envelope id as detail.
  *   attestation_invalid  — red block glyph + refusal chip.
  *
- * Refuses to render partial state on fetch failure — shows a single
- * "registry unreachable" row instead. Vanilla JS + Web Components (D9).
- * Zero deps.
+ * Vanilla JS + Web Components (D9). Zero deps.
  */
 
 const DEFAULT_SOURCE = "/api/envelopes";
@@ -37,6 +45,8 @@ class GroveEnvelopePanel extends HTMLElement {
     super();
     this._root = this.attachShadow({ mode: "open" });
     this._envelopes = [];
+    /** @type {"populated"|"empty"|"unreachable"|null} */
+    this._state = null;
     this._error = null;
     this._render();
   }
@@ -50,19 +60,61 @@ class GroveEnvelopePanel extends HTMLElement {
 
   async _load() {
     const src = this.getAttribute("data-source") || DEFAULT_SOURCE;
+    let res;
     try {
-      const res = await fetch(src, { headers: { accept: "application/json" } });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const doc = await res.json();
-      if (!doc || doc.schema !== "envelope-registry/v1.1" || !Array.isArray(doc.pre_approved)) {
-        throw new Error("unexpected schema");
-      }
-      this._envelopes = doc.pre_approved;
-      this._error = null;
+      res = await fetch(src, { headers: { accept: "application/json" } });
     } catch (err) {
       this._envelopes = [];
+      this._state = "unreachable";
       this._error = String(err && err.message ? err.message : err);
+      this._paint();
+      return;
     }
+    // 503 body carries {state:"unreachable", reason} per INVARIANTS.md §1.
+    if (!res.ok) {
+      let reason = `HTTP ${res.status}`;
+      try {
+        const doc = await res.json();
+        if (doc && doc.reason) reason = doc.reason;
+      } catch (_) { /* body wasn't JSON — keep HTTP status */ }
+      this._envelopes = [];
+      this._state = "unreachable";
+      this._error = reason;
+      this._paint();
+      return;
+    }
+    let doc;
+    try {
+      doc = await res.json();
+    } catch (err) {
+      this._envelopes = [];
+      this._state = "unreachable";
+      this._error = "malformed response body";
+      this._paint();
+      return;
+    }
+    // Endpoint carries state directly under INVARIANTS.md §1.
+    if (doc && doc.state === "unreachable") {
+      this._envelopes = [];
+      this._state = "unreachable";
+      this._error = doc.reason || "endpoint reported unreachable";
+      this._paint();
+      return;
+    }
+    // Accept both the old (pre_approved list) and new (envelopes list) shapes.
+    const list = (doc && (Array.isArray(doc.envelopes) ? doc.envelopes
+                          : Array.isArray(doc.pre_approved) ? doc.pre_approved
+                          : null)) || null;
+    if (!doc || doc.schema !== "envelope-registry/v1.1" || list === null) {
+      this._envelopes = [];
+      this._state = "unreachable";
+      this._error = "unexpected schema";
+      this._paint();
+      return;
+    }
+    this._envelopes = list;
+    this._state = list.length > 0 ? "populated" : "empty";
+    this._error = null;
     this._paint();
   }
 
@@ -82,8 +134,18 @@ class GroveEnvelopePanel extends HTMLElement {
         .chip.warn { background: rgba(224,168,64,0.18);  color: #7a4a08; }
         .chip.err  { background: rgba(200,80,80,0.18);   color: #7a1a1a; }
         button.reattest { all: unset; cursor: pointer; margin-left: 0.4rem; text-decoration: underline; color: #7a4a08; font-size: 12px; }
-        .empty, .error { padding: 0.75rem; color: var(--grove-muted, #6a7a6a); font-style: italic; }
-        .error { color: #7a1a1a; }
+        .empty, .unreachable { padding: 0.75rem; font-style: italic; }
+        .empty { color: var(--grove-muted, #6a7a6a); }
+        /* INVARIANTS.md §1: unreachable MUST render distinctly from empty —
+           amber banner + border, distinct copy, so the operator sees the
+           difference between "no envelopes on file" and "could not reach". */
+        .unreachable {
+          color: #7a4a08;
+          background: rgba(224,168,64,0.15);
+          border: 1px solid rgba(224,168,64,0.35);
+          border-radius: 4px;
+        }
+        .unreachable .reason { color: #6a4a0a; font-size: 11px; margin-top: 2px; font-style: normal; }
         a { color: inherit; text-decoration: none; border-bottom: 1px dotted currentColor; }
       </style>
       <div class="host"></div>
@@ -100,12 +162,15 @@ class GroveEnvelopePanel extends HTMLElement {
   }
 
   _paint() {
-    if (this._error) {
-      this._host.innerHTML = `<div class="error">envelope registry unreachable — ${this._escape(this._error)}</div>`;
+    if (this._state === "unreachable") {
+      this._host.innerHTML = `<div class="unreachable" part="unreachable">
+        envelopes source not reachable — showing last-known: none
+        <div class="reason">${this._escape(this._error || "unreachable")}</div>
+      </div>`;
       return;
     }
     if (!this._envelopes.length) {
-      this._host.innerHTML = `<div class="empty">no envelopes currently registered.</div>`;
+      this._host.innerHTML = `<div class="empty" part="empty">no envelopes on file.</div>`;
       return;
     }
     const rows = this._envelopes.map((e) => this._row(e)).join("");

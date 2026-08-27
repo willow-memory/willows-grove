@@ -42,6 +42,8 @@ import urllib.parse
 import urllib.request
 from typing import Any, Optional
 
+from grove.errors import Unreachable
+
 log = logging.getLogger(__name__)
 
 _APP_ID = "willow-grove"
@@ -269,8 +271,13 @@ def read_recent(
 
     Returns:
         Zero-or-more atom dicts, each ``{"id", "ts", "sender", "text",
-        "domain"}``. Empty list is the D7 answer for "willow-mcp not
-        reachable" — a legible state, not an error.
+        "domain"}``. Empty list is a legible three-state "empty"
+        (INVARIANTS.md §1) — willow-mcp reached, nothing new.
+
+    Raises:
+        Unreachable: when neither the in-process nor the HTTP path
+            reaches willow-mcp. The endpoint layer translates this into
+            a 503 + ``state="unreachable"`` payload.
     """
     if not isinstance(limit, int) or limit <= 0:
         limit = 50
@@ -288,7 +295,7 @@ def read_recent(
 
     if atoms is None:
         _log_unreachable_once(f"tried={tried}")
-        return []
+        raise Unreachable(f"willow-mcp not reachable (tried={tried})")
 
     return atoms[:limit]
 

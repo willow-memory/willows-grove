@@ -14,6 +14,7 @@ from pathlib import Path
 from unittest import mock
 
 from grove import persona_roster as pr
+from grove.errors import Unreachable
 
 
 def _fixture_bytes(rows=None) -> str:
@@ -236,15 +237,25 @@ class PersonaRosterTests(unittest.TestCase):
             pr.PersonaRoster(path=str(bad))
         self.assertIn("fleet-personas/v1", str(ctx.exception))
 
-    # ---- missing-file degradation (D7) ----
-    def test_missing_file_returns_none_and_logs_once(self) -> None:
+    # ---- three-state: unreachable case (INVARIANTS.md §1) ----
+    def test_missing_file_raises_unreachable_and_logs_once(self) -> None:
+        """Absence is a state, and it must render distinctly (INVARIANTS.md §1
+        supersedes D7's implicit read). ``load()`` raises ``Unreachable``
+        instead of returning ``None`` — the endpoint layer translates that
+        into a 503 with ``state="unreachable"``."""
         empty_home = Path(self.tmp.name) / "empty_willow_home"
         empty_home.mkdir()
         with self._env(willow_home=str(empty_home)):
             with self.assertLogs(pr.log, level="INFO") as caplog:
-                self.assertIsNone(pr.PersonaRoster.load())
-                self.assertIsNone(pr.PersonaRoster.load())
+                with self.assertRaises(Unreachable) as ctx1:
+                    pr.PersonaRoster.load()
+                with self.assertRaises(Unreachable) as ctx2:
+                    pr.PersonaRoster.load()
                 self.assertIsNone(pr.locate_personas_file())
+
+        # Reason names the probe list so the operator can see what was tried.
+        self.assertIn("fleet_personas.json", ctx1.exception.reason)
+        self.assertIn("fleet_personas.json", ctx2.exception.reason)
 
         missing_msgs = [
             r for r in caplog.records if "not found" in r.getMessage()
@@ -254,6 +265,22 @@ class PersonaRosterTests(unittest.TestCase):
             1,
             "missing-source log must fire exactly once, not per call",
         )
+
+    # ---- three-state: empty case (INVARIANTS.md §1) ----
+    def test_empty_registry_loads_as_empty_roster(self) -> None:
+        """File present, ``agents: []`` — populated=False, roster returned.
+        This is the "empty" three-state case (reached, no data)."""
+        empty_home = Path(self.tmp.name) / "empty_registry_home"
+        target = empty_home / "willow-memory" / "willow" / "fleet_personas.json"
+        target.parent.mkdir(parents=True)
+        target.write_text(
+            json.dumps({"schema": "fleet-personas/v1", "agents": []}),
+            encoding="utf-8",
+        )
+        with self._env(willow_home=str(empty_home)):
+            roster = pr.PersonaRoster.load()
+        self.assertEqual(roster.all(), [])
+        self.assertIsNone(roster.get("willow"))
 
 
 if __name__ == "__main__":  # pragma: no cover

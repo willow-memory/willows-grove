@@ -2,6 +2,16 @@
 /**
  * <grove-dispatch-rail> — the Kart escalation surface on the operator seat.
  *
+ * Three-state contract (see docs/INVARIANTS.md §1):
+ *   populated   — one or more tasks in the queue; rows render.
+ *   empty       — queue reached, no queued rows; "quiet queue ❦" line in
+ *                 muted default color.
+ *   unreachable — 503/fetch failure; a distinct muted-red banner reads
+ *                 "queue source not reachable" with a red left border.
+ *                 MUST be visually distinct from the empty state (which
+ *                 is the plant sigil in muted color).
+ *
+ *
  * The autonomous-continuity doc (docs/design/autonomous-continuity.md,
  * C6-C8) names Kart as the seam every small-to-big handoff crosses: an
  * agent that hits its authority ceiling files a task with the
@@ -166,10 +176,20 @@ const CSS = `
     color: #7fb069;
     font-style: normal;
   }
-  .error {
-    color: #d47373;
-    padding: 0.4rem 0.3rem;
+  /* INVARIANTS.md §1: unreachable MUST render distinctly from empty. */
+  .unreachable {
+    color: #f0a3a3;
+    padding: 0.4rem 0.5rem;
     font-style: italic;
+    background: #2a1414;
+    border-left: 3px solid #d47373;
+    border-radius: 3px;
+  }
+  .unreachable .reason {
+    color: #b98080;
+    font-size: 10px;
+    font-style: normal;
+    margin-top: 2px;
   }
 `;
 
@@ -256,12 +276,41 @@ class GroveDispatchRail extends HTMLElement {
       const resp = await fetch(this._url(), {
         headers: { Accept: "application/json" },
       });
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      if (!resp.ok) {
+        // 503 body carries {state:"unreachable", reason} per INVARIANTS.md §1.
+        let reason = `HTTP ${resp.status}`;
+        try {
+          const errBody = await resp.json();
+          if (errBody && errBody.reason) reason = errBody.reason;
+        } catch (_) { /* body wasn't JSON — keep HTTP status */ }
+        this._state = "unreachable";
+        this._reason = reason;
+        this._tasks = [];
+        this._retryTimer = setTimeout(() => this._fetch(), REFRESH_MS);
+        this._paint();
+        return;
+      }
       const body = await resp.json();
-      this._tasks = Array.isArray(body) ? body : [];
+      // Endpoint returns {state, tasks} under INVARIANTS.md §1; tolerate
+      // the pre-INVARIANTS bare-list shape too so a stale server does not
+      // become the unreachable case.
+      if (body && body.state === "unreachable") {
+        this._state = "unreachable";
+        this._reason = body.reason || "endpoint reported unreachable";
+        this._tasks = [];
+        this._retryTimer = setTimeout(() => this._fetch(), REFRESH_MS);
+        this._paint();
+        return;
+      }
+      const list = Array.isArray(body)
+        ? body
+        : (body && Array.isArray(body.tasks) ? body.tasks : []);
+      this._tasks = list;
       this._state = "ready";
+      this._reason = null;
     } catch (err) {
-      this._state = "error";
+      this._state = "unreachable";
+      this._reason = (err && err.message) || String(err);
       this._tasks = [];
       // One retry in 30 s (matches the normal refresh cadence — C6-C8:
       // the seam heals itself on the next tick, no operator intervention).
@@ -289,8 +338,11 @@ class GroveDispatchRail extends HTMLElement {
     const lens = (this.getAttribute("lens") || "").trim().toLowerCase();
     this._lensEl.textContent = lens || "(all)";
 
-    if (this._state === "error") {
-      this._bodyEl.innerHTML = `<div class="error" part="error">dispatch unreachable</div>`;
+    if (this._state === "unreachable") {
+      const reasonHtml = this._reason
+        ? `<div class="reason">${escapeHtml(this._reason)}</div>` : "";
+      this._bodyEl.innerHTML =
+        `<div class="unreachable" part="unreachable">queue source not reachable${reasonHtml}</div>`;
       return;
     }
     if (this._state === "loading") {

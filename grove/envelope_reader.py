@@ -43,6 +43,8 @@ import os
 from pathlib import Path
 from typing import Any
 
+from grove.errors import Unreachable
+
 log = logging.getLogger(__name__)
 
 SCHEMA_ID = "envelope-registry/v1.1"
@@ -171,8 +173,14 @@ def read_all() -> dict:
     still returned but participate in no collision — their order is
     the order they were read.
 
-    D7: no dirs and no files both yield an empty list plus a single
-    log line; Grove boots either way.
+    Three-state contract (INVARIANTS.md §1):
+
+    * populated / empty → returns the envelope-registry payload (the
+      ``envelopes`` list may be empty when directories exist but hold no
+      usable files — that's the reader reaching its source and finding
+      nothing).
+    * unreachable       → raises ``Unreachable`` when NO envelope
+      directory exists in the probe path at all.
     """
     global _logged_missing_dirs, _logged_missing_files
 
@@ -184,10 +192,15 @@ def read_all() -> dict:
                 "locations ($WILLOW_HOME/willow-memory/willow/envelopes, "
                 "$WILLOW_HOME/envelopes, ~/willow-memory/willow/envelopes, "
                 "~/willow-memory/Willow/envelopes, ~/.willow/envelopes) — "
-                "rendering empty registry (D7)."
+                "raising Unreachable (INVARIANTS.md §1)."
             )
             _logged_missing_dirs = True
-        return {"schema": SCHEMA_ID, "envelopes": []}
+        raise Unreachable(
+            "no envelope directory found in probe path "
+            "($WILLOW_HOME/willow-memory/willow/envelopes, "
+            "$WILLOW_HOME/envelopes, ~/willow-memory/willow/envelopes, "
+            "~/willow-memory/Willow/envelopes, ~/.willow/envelopes)"
+        )
 
     # Precedence: later dirs win. Walk in probe order, keying by id.
     keyed: dict[str, dict] = {}

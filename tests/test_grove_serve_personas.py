@@ -151,14 +151,41 @@ class PersonasRouteTests(unittest.TestCase):
         pr._logged_missing = False
         return fake_home
 
-    def test_missing_registry_returns_empty_envelope(self) -> None:
+    def _get(self, url: str) -> tuple[int, dict]:
+        req = urllib.request.Request(url, method="GET", headers={"accept": "application/json"})
+        try:
+            with urllib.request.urlopen(req, timeout=2.0) as resp:
+                return resp.status, json.loads(resp.read().decode("utf-8"))
+        except urllib.error.HTTPError as e:
+            raw = e.read().decode("utf-8")
+            return e.code, json.loads(raw)
+
+    def test_missing_registry_returns_unreachable(self) -> None:
+        """Three-state (INVARIANTS.md §1): no fleet_personas.json → 503 +
+        state=unreachable. Supersedes the older read where absence collapsed
+        to an empty personas envelope."""
         self._isolate_home()
         with _ServerHarness() as srv:
-            with urllib.request.urlopen(srv.url("/api/personas"), timeout=2.0) as resp:
-                self.assertEqual(resp.status, 200)
-                body = json.loads(resp.read().decode("utf-8"))
+            status, body = self._get(srv.url("/api/personas"))
+        self.assertEqual(status, 503)
+        self.assertEqual(body.get("state"), "unreachable")
+        self.assertIn("fleet_personas.json", body.get("reason", ""))
+
+    def test_empty_registry_returns_state_empty(self) -> None:
+        """File present with agents:[] → 200 + state=empty."""
+        fake_home = self._isolate_home()
+        target = fake_home / "willow-memory" / "willow" / "fleet_personas.json"
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(
+            json.dumps({"schema": "fleet-personas/v1", "agents": []}),
+            encoding="utf-8",
+        )
+        os.environ["WILLOW_HOME"] = str(fake_home)
+        with _ServerHarness() as srv:
+            status, body = self._get(srv.url("/api/personas"))
+        self.assertEqual(status, 200)
+        self.assertEqual(body.get("state"), "empty")
         self.assertEqual(body.get("schema"), "fleet-personas/v1")
-        self.assertEqual(body.get("personas"), {})
 
     def test_present_registry_is_returned_verbatim(self) -> None:
         fake_home = self._isolate_home()
@@ -169,9 +196,9 @@ class PersonasRouteTests(unittest.TestCase):
         os.environ["WILLOW_HOME"] = str(willow_home)
 
         with _ServerHarness() as srv:
-            with urllib.request.urlopen(srv.url("/api/personas"), timeout=2.0) as resp:
-                self.assertEqual(resp.status, 200)
-                body = json.loads(resp.read().decode("utf-8"))
+            status, body = self._get(srv.url("/api/personas"))
+        self.assertEqual(status, 200)
+        self.assertEqual(body.get("state"), "populated")
         self.assertEqual(body.get("schema"), "fleet-personas/v1")
         agents = body.get("agents")
         self.assertIsInstance(agents, list)
