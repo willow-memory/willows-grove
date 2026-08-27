@@ -52,12 +52,7 @@ python3 app.py
 
 ## Enterprise documentation
 
-Grove history drives continuously refreshed artifacts (digests, ADR/incident **candidates**). Start at **[`docs/INDEX.md`](docs/INDEX.md)**. Regenerate locally:
-
-```bash
-make grove-docs
-# or: ./scripts/grove_docs_refresh.sh
-```
+Grove history drives continuously refreshed artifacts (digests, ADR/incident **candidates**). Start at **[`docs/INDEX.md`](docs/INDEX.md)**.
 
 ---
 
