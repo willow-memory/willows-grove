@@ -8,6 +8,10 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 - Three-state discipline landed for every /api/* endpoint and every Web Component (INVARIANTS.md §1). Supersedes D7's implicit read of "absence is a state" (INVARIANTS.md §2).
 
 ### Added
+- INVARIANTS.md §9 — "Seed reads real canon" (Grove v0.9 PR 3). Names the three-rung probe order, escape-on-render discipline, and the stub-on-absence proof-of-life path.
+- `tests/test_seed_canon_content.py` — integration tests boot grove_serve on an ephemeral loopback port with `WILLOW_HOME=/home/user` and pin `/seed/{1..6}` against the real canon at `willow-memory/willow/seed/canon/`. Titles are derived from each source file's first `#` heading — never hardcoded. Includes an HTML-escaping test (temp WILLOW_HOME with a synthetic body carrying `<`, `>`, `&`).
+- `tests/test_seed_reader_probe_expansion.py` — pins `locate_seed_dir()` across all three probe rungs (WILLOW_HOME, ~/willow-memory, ~/.willow) and the absence path (None + log-once + six-movement D16 stub via `load_movements()`).
+- `tests/regression/screenshots/README.md` — documents the seed baseline shape for PR 9 (Playwright e2e). Baseline PNGs at `tests/regression/screenshots/seed/{1..6}.png` when a headless browser is present on the build box.
 - INVARIANTS.md — single source of truth for Grove discipline.
 - INVARIANTS.md §5 "Trust order" — signature → consent → dispatch, in exactly that sequence, with the contact-store rules that protect the state consent depends on.
 - INVARIANTS.md §6 — "Manifests describe code, not aspirations" (Grove v0.9 PR 7). Tests enforce.

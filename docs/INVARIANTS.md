@@ -218,6 +218,41 @@ comment that motivates it. Pinning tests: `tests/test_mcp_auth.py`,
 `tests/test_mcp_serve_oauth_flow.py`, `tests/test_serve_mode_identity.py`,
 `tests/test_grove_approval_page.py`, `tests/test_transport_security.py`.
 
+## §9 — Seed reads real canon
+
+The `/seed/` route renders content from `willow-memory/willow/seed/canon/`
+when the fleet-charter probe path resolves. On absence the stub is
+served (C3 discipline). No content is invented at render time; the
+reader either quotes canon verbatim (HTML-escaped) or serves the stub.
+
+Concretely, for `grove/seed_reader.py` + `grove/seed_html.py` behind
+the `grove_serve.py` routes `/seed/` and `/seed/{n}`:
+
+- **The reader probes three paths, in order** (`_candidate_dirs()`):
+  `$WILLOW_HOME/willow-memory/willow/seed/`, then
+  `~/willow-memory/willow/seed/`, then `~/.willow/seed/`. The first
+  that exists on disk is the seed dir; if the seed dir contains a
+  `canon/` subdirectory with six `NN-*.md` files, those files ARE the
+  six movements. The reader does not fabricate the sixth chapter from
+  five — an incomplete canon degrades to the stub.
+- **The renderer escapes every body.** `<`, `>`, `&`, `"`, `'` land as
+  `&lt;`, `&gt;`, `&amp;`, `&#x27;`, `&quot;` even though the seed
+  source is local files. The discipline holds whether the reader is
+  ever repointed at a non-local source or not — the render path is the
+  escape point.
+- **The absence path is proof of life, not fiction.** When no probe
+  rung resolves, `load_movements()` returns the six-movement D16 stub
+  (one-sentence bodies from the outline) and logs the absence once per
+  process. `/seed/` still renders — C3 sealed session continuity via
+  seed's six movements, so the route must survive absence — but the
+  stub's body is short and marked in text; it is never mistaken for
+  the canon.
+
+Pinning tests: `tests/test_seed_reader.py`, `tests/test_seed_html.py`,
+`tests/test_grove_serve_seed.py`,
+`tests/test_seed_reader_probe_expansion.py`,
+`tests/test_seed_canon_content.py`.
+
 ## §10 — CI proves the invariants
 
 Every INVARIANTS section is enforced by at least one CI step. Ollama,
