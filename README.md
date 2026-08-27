@@ -98,7 +98,7 @@ See also: [`docs/grove-served-page.md`](docs/grove-served-page.md) — operator 
 | `kart_worker.py` | Task queue consumer (daemon thread) |
 | `grove/` | Curses TUI subpackage |
 | `grove_standalone.py` | Standalone Textual DM app |
-| `u2u/` | Authenticated LAN transport — signed, **not** encrypted (see Notes) |
+| `u2u/` | LAN transport for signed (Ed25519) human-to-human DMs. Message bodies are transmitted in cleartext on the LAN; anyone on the network path can read them. Encryption is planned for Gate 6. |
 | `bridge/` | Matrix bridge |
 | `grove_serve.py` | LAN HTTP command server |
 

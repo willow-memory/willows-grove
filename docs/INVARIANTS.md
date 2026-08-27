@@ -144,3 +144,30 @@ Two related contact-store rules protect the state that decision depends on:
 Anchor witnesses: `tests/test_u2u_consent_order.py` (this invariant by
 name) and `tests/test_u2u_trust.py` (the wider matrix). Every code comment
 on the modified lines cites this section by anchor, not by line number.
+
+## §6 — Manifests describe code, not aspirations
+
+Every capability described in `safe-app-manifest.json` reflects a property the
+code demonstrably has. Aspirational descriptions belong in design docs, not in
+a manifest that claims trust from consumers. Tests enforce this.
+
+The origin case: `dm_conversations` was previously described as *"End-to-end
+encrypted, local-only"* while `u2u/packets.py:74-75` writes plaintext JSON
+onto a bare TCP socket (the `cryptography` dependency is imported only for
+Ed25519 signing). See `CODE_REVIEW.md` P0 — *"the manifest claims u2u is
+encrypted; it is not"*. The correction is in the manifest; the aspiration
+(Gate 6 confidentiality) lives in `docs/design/u2u-security-limits.md`.
+
+### Enforcement
+
+- `tests/test_manifest_honesty.py` pins the `dm_conversations` description —
+  it must contain `NOT encrypted` and must not contain `End-to-end encrypted`,
+  and any capability description that mentions `Encrypted` must sit next to a
+  disclaimer (`NOT encrypted`, `cleartext`, or `Gate 6`) in the same
+  purpose+description blob.
+- `tests/test_readme_honesty.py` pins the README's u2u row — the withdrawn
+  phrasings `Encrypted LAN transport` and `encrypted transport` may not
+  reappear, and the corrected substrings must be present.
+- New capability rows added to `safe-app-manifest.json` MUST be describable
+  in code-demonstrable terms. If the description names a property that a
+  reader can't verify by reading the tree, the row is wrong.

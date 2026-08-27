@@ -19,9 +19,9 @@
     },
     {
       "id": "dm_conversations",
-      "purpose": "Signed human-to-human direct messages via u2u",
+      "purpose": "Signed (Ed25519) human-to-human direct messages via u2u — LAN-only, message bodies are NOT encrypted. See CHANGELOG.md 2026-08-27 for the honesty correction; encryption is planned for Gate 6.",
       "retention": "persistent",
-      "description": "Ed25519-authenticated, NOT encrypted — packet bodies are plaintext JSON on the LAN. Origin and integrity are verified; confidentiality is not provided. Local-only."
+      "description": "Ed25519-authenticated, NOT encrypted — packet bodies are plaintext JSON on the LAN. Origin and integrity are verified; confidentiality is not provided. Local-only. Encryption is planned for Gate 6; the withdrawn 'end-to-end' phrasing does not describe today's code (see CODE_REVIEW.md P0, docs/design/u2u-security-limits.md)."
     },
     {
       "id": "system_stats",
