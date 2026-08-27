@@ -366,7 +366,11 @@ def test_update_key_mutates_only_the_key(store, peer_id, other_id):
     before = store.get(PEER)
     added, name = before.added, before.name
 
-    assert store.update_key(PEER, peer_id.public_key_hex) is True
+    # `require_confirmation=False` is the confirmed-by-human affordance;
+    # the default refuses. See INVARIANTS.md §5 and test_u2u_consent_order.
+    assert store.update_key(
+        PEER, peer_id.public_key_hex, require_confirmation=False
+    ) is True
 
     after = store.get(PEER)
     assert after.public_key_hex == peer_id.public_key_hex
@@ -376,14 +380,18 @@ def test_update_key_mutates_only_the_key(store, peer_id, other_id):
 
 
 def test_update_key_does_not_create_contacts(store, peer_id):
-    assert store.update_key(PEER, peer_id.public_key_hex) is False
+    assert store.update_key(
+        PEER, peer_id.public_key_hex, require_confirmation=False
+    ) is False
     assert store.get(PEER) is None
 
 
 def test_update_key_survives_a_reload(store, tmp_path, peer_id, other_id):
     store.add(PEER, other_id.public_key_hex)
     store.block(PEER)
-    store.update_key(PEER, peer_id.public_key_hex)
+    store.update_key(
+        PEER, peer_id.public_key_hex, require_confirmation=False
+    )
 
     reloaded = ContactStore(tmp_path / "contacts.json").get(PEER)
     assert reloaded.public_key_hex == peer_id.public_key_hex
