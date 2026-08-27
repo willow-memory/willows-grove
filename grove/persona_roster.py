@@ -115,21 +115,78 @@ def _coerce_rows(agents: Any, path: Path) -> list[PersonaRow]:
 
 
 def _load_from_path(path: Path) -> list[PersonaRow]:
-    """Parse + validate one registry file. Raises ValueError on schema drift."""
+    """Parse + validate one registry file. Raises ValueError on schema drift.
+
+    Tolerates both document shapes seen in the wild:
+
+    * Flat wrapper: ``{"schema": "fleet-personas/v1", "agents": [...]}`` or
+      ``{"schema": "fleet-personas/v1", "personas": {agent: row, ...}}``.
+    * Charter (canonical on-disk) shape: ``{"_meta": {"schema": "...", ...},
+      "willow": {...}, "heimdallr": {...}, ...}`` — schema is nested under
+      ``_meta``, and every non-``_meta`` top-level key is an agent row.
+
+    Both must load; the charter file at ``~/willow-memory/willow/
+    fleet_personas.json`` is not migrated by Grove (D10 discipline — the
+    charter is authoritative; readers adapt).
+    """
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as err:
         raise ValueError(f"persona_roster: {path} is not valid JSON: {err}") from err
     if not isinstance(data, dict):
         raise ValueError(f"persona_roster: {path} — top level must be a JSON object")
+
+    # Resolve schema id — check top-level first, then fall back to _meta.schema
+    # for the charter shape.
     schema = data.get("schema")
+    if schema is None:
+        meta = data.get("_meta")
+        if isinstance(meta, dict):
+            schema = meta.get("schema")
     if schema != SCHEMA_ID:
         raise ValueError(
             f"persona_roster: {path} has schema {schema!r}; expected {SCHEMA_ID!r}. "
             "Unknown schema versions are rejected — bump this reader before consuming."
         )
-    agents = data.get("agents", data.get("personas", []))
-    return _coerce_rows(agents, path)
+
+    # Prefer the explicit wrapper keys when present.
+    if "agents" in data:
+        return _coerce_rows(data.get("agents"), path)
+    if "personas" in data and isinstance(data.get("personas"), dict):
+        return _coerce_rows_from_map(data["personas"], path)
+
+    # Charter shape: every non-``_meta``/non-``schema`` top-level key is an
+    # agent row. Inject the key as ``agent`` so ``PersonaRoster.get()`` can
+    # look it up regardless of whether the row carries its own ``agent``
+    # field.
+    charter_agents: dict[str, Any] = {
+        key: value
+        for key, value in data.items()
+        if key not in ("_meta", "schema") and isinstance(value, dict)
+    }
+    return _coerce_rows_from_map(charter_agents, path)
+
+
+def _coerce_rows_from_map(agents: Any, path: Path) -> list[PersonaRow]:
+    """Turn ``{agent: row, ...}`` into an ordered list of ``PersonaRow``s.
+
+    The row's key is injected as the ``agent`` field when the row does not
+    already carry one, so ``roster.get(name)`` lands regardless of shape.
+    """
+    if not isinstance(agents, dict):
+        raise ValueError(
+            f"persona_roster: {path} — expected an object mapping agent → row, "
+            f"got {type(agents).__name__}"
+        )
+    rows: list[PersonaRow] = []
+    for name, entry in agents.items():
+        if not isinstance(entry, dict):
+            continue
+        row = PersonaRow(entry)
+        if not row.get("agent"):
+            row["agent"] = name
+        rows.append(row)
+    return rows
 
 
 class PersonaRoster:

@@ -130,6 +130,101 @@ class PersonaRosterTests(unittest.TestCase):
         assert roster is not None
         self.assertIsNone(roster.get("no-such-agent"))
 
+    # ---- charter (on-disk) shape: _meta.schema + agents at top level ----
+    def test_charter_shape_loads(self) -> None:
+        """The real fleet_personas.json layout: schema nested under _meta,
+        every non-_meta top-level key is an agent row. Grove must load it
+        the same as the flat wrapper (Bug 1 — standup finding: 17 personas
+        sat on disk, /api/personas returned empty envelope until the reader
+        learned this shape)."""
+        charter_home = Path(self.tmp.name) / "charter_willow_home"
+        target = charter_home / "willow-memory" / "willow" / "fleet_personas.json"
+        target.parent.mkdir(parents=True)
+        target.write_text(
+            json.dumps(
+                {
+                    "_meta": {
+                        "schema": "fleet-personas/v1",
+                        "generated_at": "2026-08-27T00:00:00Z",
+                    },
+                    "willow": {
+                        "trust": "flagship",
+                        "role": "primary",
+                        "voice": {"register": "warm"},
+                        "visual": {"color": "#8FBC8F", "sigil": "\U0001F333"},
+                    },
+                    "heimdallr": {
+                        "trust": "watch",
+                        "role": "bridge",
+                        "voice": {"register": "measured"},
+                        "visual": {"color": "#B6A87A", "sigil": "⚡"},
+                    },
+                    "hanuman": {
+                        "trust": "utility",
+                        "role": "builder",
+                        "voice": {"register": "eager"},
+                        "visual": {"color": "#D97706", "sigil": "\U0001F412"},
+                    },
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        with self._env(willow_home=str(charter_home)):
+            roster = pr.PersonaRoster.load()
+        self.assertIsNotNone(roster)
+        assert roster is not None
+
+        # All three agents are present, in file order.
+        self.assertEqual(
+            [r.get("agent") for r in roster.all()],
+            ["willow", "heimdallr", "hanuman"],
+        )
+
+        # get() lands regardless of whether the row carried an "agent" field
+        # itself — the reader injects the top-level key.
+        willow = roster.get("willow")
+        self.assertIsNotNone(willow)
+        assert willow is not None
+        self.assertEqual(willow.trust, "flagship")
+        self.assertEqual(willow.role, "primary")
+        self.assertEqual(willow.visual["sigil"], "\U0001F333")
+        self.assertEqual(willow.voice["register"], "warm")
+
+        heim = roster.get("heimdallr")
+        self.assertIsNotNone(heim)
+        assert heim is not None
+        self.assertEqual(heim.role, "bridge")
+
+    def test_flat_personas_dict_shape_loads(self) -> None:
+        """The flat wrapper with a ``personas`` dict payload keeps working
+        alongside the ``agents`` list shape — the reader accepts both."""
+        flat_home = Path(self.tmp.name) / "flat_willow_home"
+        target = flat_home / "willow-memory" / "willow" / "fleet_personas.json"
+        target.parent.mkdir(parents=True)
+        target.write_text(
+            json.dumps(
+                {
+                    "schema": "fleet-personas/v1",
+                    "personas": {
+                        "willow": {"trust": "flagship", "role": "primary"},
+                        "loki": {"trust": "utility", "role": "scout"},
+                    },
+                }
+            ),
+            encoding="utf-8",
+        )
+        with self._env(willow_home=str(flat_home)):
+            roster = pr.PersonaRoster.load()
+        assert roster is not None
+        self.assertEqual(
+            sorted(r.get("agent") for r in roster.all()),
+            ["loki", "willow"],
+        )
+        willow = roster.get("willow")
+        assert willow is not None
+        self.assertEqual(willow.trust, "flagship")
+
     # ---- schema guard ----
     def test_wrong_schema_id_raises_value_error(self) -> None:
         bad = Path(self.tmp.name) / "bad.json"

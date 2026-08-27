@@ -192,8 +192,14 @@ class GrovePersonaRegistry extends HTMLElement {
       return out;
     }
 
-    // Shape C: bare agent → row map. Skip meta keys (`schema` etc).
+    // Shape C: bare agent → row map, OR the charter shape from the on-disk
+    // fleet_personas.json — every top-level key that isn't `_meta` / `schema`
+    // is an agent row (`{_meta:{schema:"fleet-personas/v1"}, willow:{...},
+    // heimdallr:{...}, ...}`). Meta keys are skipped so the registry does not
+    // accidentally treat them as personas.
+    const META_KEYS = new Set(["_meta", "schema", "agents", "personas"]);
     for (const [key, row] of Object.entries(doc)) {
+      if (META_KEYS.has(key)) continue;
       if (row && typeof row === "object" && !Array.isArray(row)) {
         out[key] = row;
       }
