@@ -102,18 +102,28 @@ def test_out_of_scope_rows_carry_a_reason(rows):
 
 
 def test_audit_does_not_certify_files_from_another_repo():
-    """No finding may point at grove_serve.py or kart_worker.py as if present.
+    """No finding may point at the cut `grove_serve.py` / `kart_worker.py`.
 
-    They may be *named* in the corrections section explaining their withdrawal;
-    what is banned is a line-number citation like `grove_serve.py:306`, which is
-    what the previous revision reported.
+    The 2026-05-06 revision reported line-specific findings against files that
+    lived in `willow-2.0`, not here. Those findings are withdrawn (see the
+    Corrections section); this guard pins the withdrawal by refusing any live
+    line-number citation like `grove_serve.py:306` outside a `Withdrawn` row.
+
+    Note: a NEW `grove_serve.py` was authored in this repo (the served-page
+    skeleton on 127.0.0.1:8766 — different file, different purpose from the
+    cut one). Its presence is legitimate and its scope row lives in the main
+    table; only stale line-number citations are still forbidden. The
+    `kart_worker.py` file has not returned and its non-existence is asserted
+    below.
     """
     lines = AUDIT.read_text(encoding="utf-8").splitlines()
+    # kart_worker.py: still not in this repo. Its non-existence is part of the
+    # 2026-07-28 revision's factual base and any return would need a new audit.
+    assert not (REPO / "kart_worker.py").exists(), (
+        "kart_worker.py now exists — this guard and the audit's corrections "
+        "section both need revisiting."
+    )
     for absent in ("grove_serve.py", "kart_worker.py"):
-        assert not (REPO / absent).exists(), (
-            f"{absent} now exists — this guard and the audit's corrections "
-            "section both need revisiting."
-        )
         live = [
             line
             for line in lines
@@ -121,8 +131,9 @@ def test_audit_does_not_certify_files_from_another_repo():
             and "Withdrawn" not in line
         ]
         assert not live, (
-            f"SECURITY_AUDIT.md cites line numbers in {absent}, which is not in "
-            "this repository, outside a row marked Withdrawn:\n  "
+            f"SECURITY_AUDIT.md cites line numbers in {absent} outside a row "
+            "marked Withdrawn — the 2026-05-06 findings against the cut file "
+            "must remain withdrawn:\n  "
             + "\n  ".join(live)
         )
 

@@ -104,7 +104,9 @@ G-DEP-01) it is named in the finding.
 | `grove_channel_audit.py` | find and heal shadow channels | Scanned |
 | `grove_client.py` | Send a signed command to a remote Willow Grove server | Scanned |
 | `grove_db.py` | Grove workspace messaging database | Scanned |
+| `grove_html.py` | Static placeholder HTML for the Grove served-page skeleton (`grove_serve.py`) — no user input, no template rendering, no JS; string constants concatenated in `render_page()` | Reviewed |
 | `grove_reader.py` | Direct Postgres reader for Grove and routing data | Scanned |
+| `grove_serve.py` | Willow's Grove served-page skeleton on 127.0.0.1:8766 — Starlette + uvicorn, two routes (`/`, `/health`), loopback-only by default and warns on wider bind. NOT the cut `willow-2.0` grove_serve — the 2026-05-06 revision's line citations are still withdrawn under corrections. | Reviewed |
 | `hero_test.py` | Standalone hero scene test harness | Scanned |
 | `panes/__init__.py` | Grove dashboard panes — fresh-start rebuild | Scanned |
 | `panes/agents.py` | Fleet agent view from Grove heartbeats | Scanned |
@@ -134,6 +136,7 @@ G-DEP-01) it is named in the finding.
 | `run_dev.sh` | launch Grove dashboard (fresh-start worktree) | Reviewed |
 | `run_mcp.sh` | Grove MCP server (stdio or serve) | Reviewed |
 | `scripts/mcp_entry_toggle.py` | idempotent add/remove of one http entry in an .mcp.json (used by grove-serve) | Reviewed |
+| `scripts/nestor_reseed.py` | One-shot operator script — copies sealed pairs from the design's scratch Nestor store into `$WILLOW_HOME/nestor/willows-grove.db` via `nestor.sqlite_store.SqliteStore`. Idempotent (skips existing `source_norm`). Reads `$WILLOW_HOME` and CLI paths — no other external input. | Reviewed |
 | `soil.py` | thin sqlite3 wrapper for SOIL collections used by the dashboard | Scanned |
 | `tests/__init__.py` | Empty package marker (0 bytes) | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_card_builder.py` | scripted wizard + templates | Out of scope — test code; not shipped and not reachable at runtime |
@@ -146,6 +149,7 @@ G-DEP-01) it is named in the finding.
 | `tests/test_chat_message_mod.py` | message mod helpers | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_chat_persona.py` | Wave C persona routing + dispatch | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_content_stack.py` | nav pane wiring | Out of scope — test code; not shipped and not reachable at runtime |
+| `tests/test_grove_serve.py` | Grove served-page skeleton integration test (starts uvicorn on an ephemeral loopback port; asserts /health and /) | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_hero_format.py` | hero band formatters | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_hero_stats.py` | hero stats bundle | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_internal_panes.py` | Home card internal pane helpers | Out of scope — test code; not shipped and not reachable at runtime |
