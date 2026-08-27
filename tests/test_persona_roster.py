@@ -1,0 +1,165 @@
+# b17: WGRV1 ΔΣ=42
+"""Tests for grove.persona_roster — D10 consumer + D7 degradation.
+
+stdlib unittest only; a minimal fleet-personas/v1 fixture is written
+into a tmp WILLOW_HOME per test.
+"""
+from __future__ import annotations
+
+import json
+import os
+import tempfile
+import unittest
+from pathlib import Path
+from unittest import mock
+
+from grove import persona_roster as pr
+
+
+def _fixture_bytes(rows=None) -> str:
+    return json.dumps(
+        {
+            "schema": "fleet-personas/v1",
+            "agents": rows
+            if rows is not None
+            else [
+                {
+                    "agent": "willow",
+                    "role": "primary",
+                    "trust": "flagship",
+                    "voice": {"register": "warm", "mandate": "the seat"},
+                    "visual": {
+                        "color": "#8FBC8F",
+                        "sigil": "\U0001F333",
+                        "color_token": "willow.green",
+                    },
+                    "canonical_file": "willow-memory/willow/personas/willow.md",
+                    "emission_fields": ["utterance", "state"],
+                },
+                {
+                    "agent": "loki",
+                    "role": "scout",
+                    "trust": "utility",
+                    "voice": {"register": "sharp"},
+                    "visual": {"color": "#7C1F3F", "sigil": "\U0001F98A"},
+                    "canonical_file": "personas/loki.md",
+                    "emission_fields": ["utterance"],
+                },
+                {
+                    "agent": "nestor",
+                    "role": "governance",
+                    "trust": "governance",
+                    "voice": {"register": "measured"},
+                    "visual": {"color": "#4A5568", "sigil": "⚖"},
+                    "canonical_file": "Nestor/personas/nestor.md",
+                    "emission_fields": ["speech_act", "refusal"],
+                },
+            ],
+        }
+    )
+
+
+class PersonaRosterTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.willow_home = Path(self.tmp.name) / "willow_home"
+        target = self.willow_home / "willow-memory" / "willow" / "fleet_personas.json"
+        target.parent.mkdir(parents=True)
+        target.write_text(_fixture_bytes(), encoding="utf-8")
+        self.registry_path = target
+
+        # Isolate HOME so the ~/willow-memory and ~/.willow candidates cannot
+        # accidentally match anything on the host running the test.
+        self.fake_home = Path(self.tmp.name) / "no-home"
+        self.fake_home.mkdir()
+
+        # Reset the log-once flag before every test.
+        pr._logged_missing = False
+
+    def _env(self, willow_home: str | None = None):
+        env = {"HOME": str(self.fake_home)}
+        if willow_home is not None:
+            env["WILLOW_HOME"] = willow_home
+        # Ensure any stale WILLOW_HOME from the host does not leak in.
+        return mock.patch.dict(os.environ, env, clear=False)
+
+    # ---- locate ----
+    def test_locate_prefers_willow_home(self) -> None:
+        with self._env(willow_home=str(self.willow_home)):
+            found = pr.locate_personas_file()
+        self.assertEqual(found, self.registry_path)
+
+    # ---- load + read helpers ----
+    def test_get_returns_willow_row_with_attribute_access(self) -> None:
+        with self._env(willow_home=str(self.willow_home)):
+            roster = pr.PersonaRoster.load()
+        self.assertIsNotNone(roster)
+        assert roster is not None  # for the type checker
+
+        row = roster.get("willow")
+        self.assertIsNotNone(row)
+        assert row is not None
+        self.assertEqual(row.role, "primary")
+        self.assertEqual(row.trust, "flagship")
+        self.assertEqual(row.voice["register"], "warm")
+        self.assertEqual(row.visual["color_token"], "willow.green")
+        self.assertEqual(row.canonical_file, "willow-memory/willow/personas/willow.md")
+        self.assertIn("utterance", row.emission_fields)
+
+    def test_by_role_returns_just_the_primary(self) -> None:
+        with self._env(willow_home=str(self.willow_home)):
+            roster = pr.PersonaRoster.load()
+        assert roster is not None
+        primaries = roster.by_role("primary")
+        self.assertEqual(len(primaries), 1)
+        self.assertEqual(primaries[0].get("agent"), "willow")
+
+    def test_all_preserves_fleet_order(self) -> None:
+        with self._env(willow_home=str(self.willow_home)):
+            roster = pr.PersonaRoster.load()
+        assert roster is not None
+        self.assertEqual(
+            [r.get("agent") for r in roster.all()],
+            ["willow", "loki", "nestor"],
+        )
+
+    def test_get_returns_none_for_unknown_agent(self) -> None:
+        with self._env(willow_home=str(self.willow_home)):
+            roster = pr.PersonaRoster.load()
+        assert roster is not None
+        self.assertIsNone(roster.get("no-such-agent"))
+
+    # ---- schema guard ----
+    def test_wrong_schema_id_raises_value_error(self) -> None:
+        bad = Path(self.tmp.name) / "bad.json"
+        bad.write_text(
+            json.dumps({"schema": "fleet-personas/v2", "agents": []}),
+            encoding="utf-8",
+        )
+        with self.assertRaises(ValueError) as ctx:
+            pr.PersonaRoster(path=str(bad))
+        self.assertIn("fleet-personas/v1", str(ctx.exception))
+
+    # ---- missing-file degradation (D7) ----
+    def test_missing_file_returns_none_and_logs_once(self) -> None:
+        empty_home = Path(self.tmp.name) / "empty_willow_home"
+        empty_home.mkdir()
+        with self._env(willow_home=str(empty_home)):
+            with self.assertLogs(pr.log, level="INFO") as caplog:
+                self.assertIsNone(pr.PersonaRoster.load())
+                self.assertIsNone(pr.PersonaRoster.load())
+                self.assertIsNone(pr.locate_personas_file())
+
+        missing_msgs = [
+            r for r in caplog.records if "not found" in r.getMessage()
+        ]
+        self.assertEqual(
+            len(missing_msgs),
+            1,
+            "missing-source log must fire exactly once, not per call",
+        )
+
+
+if __name__ == "__main__":  # pragma: no cover
+    unittest.main()

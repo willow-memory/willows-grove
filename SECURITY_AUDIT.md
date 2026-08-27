@@ -101,6 +101,7 @@ G-DEP-01) it is named in the finding.
 | `grove/mcp_local.py` | Modes: | Reviewed |
 | `grove/nestor_client.py` | `NestorClient` wrapper around a long-lived `nestor serve` subprocess (MCP-over-stdio, D11); returns `None` cleanly when the binary is absent (D7); `refusal()` returns Nestor's speech act verbatim (V5). | Reviewed |
 | `grove/paths.py` | Resolve Willow repo root and CLI for dashboard subprocesses | Scanned |
+| `grove/persona_roster.py` | Read helper for `willow-memory/willow/fleet_personas.json` (schema `fleet-personas/v1`, D10); probes `$WILLOW_HOME` / `~/willow-memory` / `~/.willow`, returns `None` cleanly with a single log when absent (D7); rejects unknown schema versions with ValueError. Offline, read-only. | Reviewed |
 | `grove/theme.py` | 256-color palette, borders, draw helpers | Scanned |
 | `grove/theme_textual.py` | Textual/Rich colors from grove/theme.py palette | Scanned |
 | `grove_channel_audit.py` | find and heal shadow channels | Scanned |
@@ -173,6 +174,7 @@ G-DEP-01) it is named in the finding.
 | `tests/test_panes_providers.py` | provider registry read | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_panes_settings.py` | consent I/O | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_panes_user_todos.py` | My Desk markup regression | Out of scope — test code; not shipped and not reachable at runtime |
+| `tests/test_persona_roster.py` | `grove/persona_roster.py` locate + load + get/all/by_role + schema-drift ValueError + log-once absent-file path | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_security_audit_scope.py` | SECURITY_AUDIT.md's scope table must be a bijection with the tree it audits | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_theme_textual.py` | grove palette → Textual CSS helpers | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_think_map.py` | Think Map P0 store/validate + outline | Out of scope — test code; not shipped and not reachable at runtime |
