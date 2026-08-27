@@ -22,6 +22,7 @@ from __future__ import annotations
 import json
 import os
 import subprocess
+import sys
 import threading
 from pathlib import Path
 
@@ -486,9 +487,50 @@ def run(host: str = DEFAULT_HOST, port: int = DEFAULT_PORT) -> None:
     uvicorn.run(build_app(), host=host, port=port, log_level="warning")
 
 
+def _host_looks_invalid(host: str) -> bool:
+    """Cheap sanity check on GROVE_SERVE_HOST — not a full hostname/IP
+    validator, just a filter for the obviously-wrong values an operator's
+    shell can hand us (an empty value, embedded whitespace, a stray URL
+    scheme, or a "host:port" pair pasted into the host slot by mistake).
+
+    Bare IPv6 forms (``::1``, ``2001:db8::1``) carry more than one colon
+    and are deliberately left alone — only a single, non-leading colon
+    (the "host:port" shape) is treated as a mistake.
+    """
+    if not host or host != host.strip() or " " in host:
+        return True
+    if "://" in host:
+        return True
+    if host.count(":") == 1 and not host.startswith(":"):
+        return True
+    return False
+
+
 def main() -> None:
     host = os.environ.get("GROVE_SERVE_HOST", DEFAULT_HOST)
-    port = int(os.environ.get("GROVE_SERVE_PORT", str(DEFAULT_PORT)))
+    if _host_looks_invalid(host):
+        print(
+            f"GROVE_SERVE_HOST={host!r} is not a valid host; refusing to start.",
+            file=sys.stderr,
+        )
+        sys.exit(2)
+
+    port_raw = os.environ.get("GROVE_SERVE_PORT", str(DEFAULT_PORT))
+    try:
+        port = int(port_raw)
+    except ValueError:
+        print(
+            f"GROVE_SERVE_PORT={port_raw!r} is not a valid port; refusing to start.",
+            file=sys.stderr,
+        )
+        sys.exit(2)
+    if not (0 < port < 65536):
+        print(
+            f"GROVE_SERVE_PORT={port_raw!r} is not a valid port; refusing to start.",
+            file=sys.stderr,
+        )
+        sys.exit(2)
+
     run(host=host, port=port)
 
 
