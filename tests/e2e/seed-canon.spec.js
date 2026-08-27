@@ -13,10 +13,10 @@
 // The route is server-side HTML with no animations, so the render is
 // deterministic once the palette is stable — but "deterministic" is not
 // "bit-identical" across Playwright chromium builds, so the comparator
-// uses `toMatchSnapshot` with per-pixel + max-diff-ratio tolerance
-// rather than an exact-match check. A large diff outside tolerance
-// fails the suite; Playwright writes the diff PNG under
-// test-results/ and CI surfaces it as an artifact.
+// uses raw `pixelmatch` (via `pngjs` for PNG decode) with per-pixel
+// threshold 0.3 and a 5% max diff-pixel ratio rather than an exact-match
+// check. A large diff outside tolerance fails the suite; the diff PNG
+// is written under test-results/ and CI surfaces it as an artifact.
 //
 // Baseline lifecycle is documented in
 // tests/regression/screenshots/README.md — baselines are regenerated
@@ -26,21 +26,21 @@
 // survives absence (the C3 stub still renders when canon is missing —
 // pytest already pins the wire shape of the stub). This is the
 // pixel-side witness.
+//
+// Loki finding #18 (M15-seed-canon-pixel-baseline) fix: raw pixelmatch
+// against the on-disk PR-3 baselines, no per-spec snapshot-dir
+// traversal. Baseline absent → runtime test.skip() (never a fake pass).
 
 // @ts-check
 const { test, expect } = require('@playwright/test');
 const fs = require('fs');
 const path = require('path');
+const pixelmatch = require('pixelmatch');
+const { PNG } = require('pngjs');
 
-// Path from THIS spec file up to tests/regression/screenshots/seed/,
-// expressed as segments relative to Playwright's per-file snapshot dir
-// (`<file>.spec.js-snapshots/`). Two `..` steps escape the snapshot
-// subdirectory + the `tests/e2e/` folder we live in.
-const BASELINE_SEGMENTS = ['..', '..', 'regression', 'screenshots', 'seed'];
-
-// Absolute-on-disk path to the baseline dir — used by the skip
-// precheck so a run on a box without baselines cleanly opts out rather
-// than blowing the run open on a missing-file surprise.
+// Absolute-on-disk path to the PR-3 baseline dir. Read directly rather
+// than via Playwright's per-spec snapshot dir (which refuses `..`
+// traversal on outputPath). This is Loki finding #18's fix path.
 const BASELINE_DIR_ON_DISK = path.resolve(
   __dirname,
   '..',
@@ -48,6 +48,13 @@ const BASELINE_DIR_ON_DISK = path.resolve(
   'screenshots',
   'seed'
 );
+
+// Comparator tuning. Baselines were captured at 1200×900 dark-palette
+// against the real canon (see tests/regression/screenshots/README.md).
+// A per-pixel threshold of 0.3 absorbs sub-pixel AA differences between
+// chromium builds; the max diff-pixel ratio of 5% is the fail line.
+const PIXEL_THRESHOLD = 0.3;
+const MAX_DIFF_RATIO = 0.05;
 
 const MOVEMENTS = [1, 2, 3, 4, 5, 6];
 
@@ -105,13 +112,64 @@ test.describe('/seed/ six-movement canon — content + pixel baselines', () => {
       ).toBeGreaterThan(20);
     });
 
-    // Pixel-baseline regression — skipped in this CI: Playwright refuses
-    // outputPath traversal outside the per-spec snapshot dir, and PR 3's
-    // baselines live at tests/regression/screenshots/seed/. The content
-    // pin above still runs (canon rendering is proven). Enabling this
-    // regression is a follow-up: either copy baselines under
-    // tests/e2e/seed-canon.spec.js-snapshots/, or wire pixelmatch
-    // directly and read the PR-3 baseline path by hand.
-    test.skip(`/seed/${n} matches its baseline within tolerance (pixel compare — follow-up)`, async () => {});
+    // Pixel-baseline regression — raw pixelmatch against the on-disk
+    // PR-3 baseline. Baseline absent (headless-less box) → runtime
+    // test.skip() reports SKIPPED, never a fake pass. Loki #18 fix.
+    test(`/seed/${n} pixels match PR-3 baseline within tolerance`, async ({ page }) => {
+      const baselinePath = path.join(BASELINE_DIR_ON_DISK, `${n}.png`);
+      test.skip(
+        !fs.existsSync(baselinePath),
+        `no PR-3 baseline on disk at ${baselinePath} — skip cleanly (never fake-pass)`
+      );
+
+      await page.goto(`/seed/${n}`);
+
+      const shotBuf = await page.screenshot({ fullPage: false });
+      const actual = PNG.sync.read(shotBuf);
+      const baseline = PNG.sync.read(fs.readFileSync(baselinePath));
+
+      // Dimension mismatch — fail loudly. A silently-clamped compare
+      // would smuggle a visual regression through the door.
+      expect(
+        actual.width,
+        `/seed/${n} screenshot width ${actual.width} != baseline ${baseline.width}`
+      ).toBe(baseline.width);
+      expect(
+        actual.height,
+        `/seed/${n} screenshot height ${actual.height} != baseline ${baseline.height}`
+      ).toBe(baseline.height);
+
+      const { width, height } = baseline;
+      const diff = new PNG({ width, height });
+      const diffPixels = pixelmatch(
+        baseline.data,
+        actual.data,
+        diff.data,
+        width,
+        height,
+        { threshold: PIXEL_THRESHOLD }
+      );
+      const ratio = diffPixels / (width * height);
+
+      // Write the diff PNG as a CI artifact when we fail. Best-effort:
+      // if test-results/ is not writable we still assert on the ratio.
+      if (ratio >= MAX_DIFF_RATIO) {
+        try {
+          const outDir = path.resolve(__dirname, '..', '..', 'test-results');
+          fs.mkdirSync(outDir, { recursive: true });
+          fs.writeFileSync(
+            path.join(outDir, `seed-${n}-diff.png`),
+            PNG.sync.write(diff)
+          );
+        } catch (_) {
+          // swallow — the assertion below is the load-bearing signal
+        }
+      }
+
+      expect(
+        ratio,
+        `/seed/${n} pixel diff ratio ${ratio.toFixed(4)} exceeds ${MAX_DIFF_RATIO} (${diffPixels}/${width * height} px)`
+      ).toBeLessThan(MAX_DIFF_RATIO);
+    });
   }
 });
