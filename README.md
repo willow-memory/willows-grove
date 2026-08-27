@@ -63,6 +63,8 @@ make grove-docs
 
 ## Entry points
 
+See also: [`docs/grove-served-page.md`](docs/grove-served-page.md) — operator guide for the served page (`scripts/grove-serve-run` → `127.0.0.1:8766`).
+
 | Command | What |
 |---------|------|
 | `python3 app.py` | Main Textual dashboard |
