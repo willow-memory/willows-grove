@@ -19,6 +19,7 @@ subsequent Gate work fills the inside without re-negotiating the shell.
 """
 from __future__ import annotations
 
+import json
 import os
 import subprocess
 from pathlib import Path
@@ -32,6 +33,7 @@ from starlette.staticfiles import StaticFiles
 from grove import kart_reader
 from grove_html import render_page
 from grove import journal_writer
+from grove import persona_roster
 
 
 _WEB_ROOT = Path(__file__).resolve().parent / "web"
@@ -111,6 +113,36 @@ async def _dispatch(request: Request) -> JSONResponse:
     return JSONResponse([_serialize_row(r) for r in rows])
 
 
+async def _personas(_request: Request) -> JSONResponse:
+    """GET /api/personas — the unified persona registry (D10).
+
+    Serves the ``fleet-personas/v1`` document from
+    ``willow-memory/willow/fleet_personas.json`` when present, so the
+    front-end ``<grove-persona-registry>`` component (and every consumer
+    of ``visual.{color,sigil}`` / ``voice``) reads from the same truth
+    the Python roster does.
+
+    Per D7 (*absence is a state, not a failure*), a missing registry
+    file still answers 200 — the body is an empty-personas envelope so
+    the served page keeps booting without the sidecar tree on disk.
+    """
+    path = persona_roster.locate_personas_file()
+    if path is None:
+        return JSONResponse(
+            {"schema": persona_roster.SCHEMA_ID, "personas": {}}
+        )
+    try:
+        raw = path.read_text(encoding="utf-8")
+        data = json.loads(raw)
+    except (OSError, ValueError):
+        # File was there at locate time but became unreadable / drifted —
+        # degrade the same way D7 does elsewhere.
+        return JSONResponse(
+            {"schema": persona_roster.SCHEMA_ID, "personas": {}}
+        )
+    return JSONResponse(data)
+
+
 async def _journal(request: Request) -> JSONResponse:
     """POST /api/journal — chat card LEFT-side (C11) write endpoint.
 
@@ -151,6 +183,7 @@ def build_app() -> Starlette:
         Route("/health", _health),
         Route("/api/journal", _journal, methods=["POST"]),
         Route("/api/dispatch", _dispatch),
+        Route("/api/personas", _personas),
     ]
     # `/web` serves the vanilla-JS Web Components + libs (D9 — no build step).
     # Mounted only when the directory exists so unit tests that import this

@@ -190,8 +190,14 @@ def render_page() -> str:
         '<script type="module" src="/web/components/grove-chat.js"></script>\n'
         '<script type="module" src="/web/components/grove-cast-chip.js"></script>\n'
         '<script type="module" src="/web/components/grove-dispatch-rail.js"></script>\n'
+        # D10 unified persona registry: mounted in <head> so the definition is
+        # ready before the <body> instance upgrades; the instance itself sits
+        # first in <body> so its /api/personas fetch is in flight before every
+        # other component connects and reads visual.color / visual.sigil / voice.
+        '<script type="module" src="/web/components/grove-persona-registry.js"></script>\n'
         "</head>\n"
         "<body>\n"
+        '<grove-persona-registry></grove-persona-registry>\n'
         f"{_TOP_STRIP}\n"
         f"{_LENS_SWITCH}\n"
         "<main>\n"
