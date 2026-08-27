@@ -613,9 +613,21 @@ def cursor_save(conn, agent: str, cursors: dict) -> None:
 
 
 def cursor_load(conn, agent: str) -> dict:
+    """Load cursors for ``agent``.
+
+    Three-state contract (INVARIANTS.md §1): a state reader.
+
+    * populated → the stored cursor dict for ``agent``.
+    * empty     → ``{}`` when ``agent`` has never persisted a cursor row.
+    * unreachable → raises ``grove.errors.Unreachable`` when the database
+      cannot be read. The pre-PR-12 shape here caught every exception and
+      returned ``{}``, which collapsed a real DB failure into the empty
+      state — the exact anti-pattern §1 forbids.
+    """
     import json
-    cur = conn.cursor()
+    from grove.errors import Unreachable
     try:
+        cur = conn.cursor()
         cur.execute("""
             CREATE TABLE IF NOT EXISTS agent_cursors (
                 agent      TEXT PRIMARY KEY,
@@ -626,13 +638,17 @@ def cursor_load(conn, agent: str) -> dict:
         cur.execute("SELECT cursors FROM agent_cursors WHERE agent = %s", (agent,))
         row = cur.fetchone()
         conn.commit()
-        if not row:
-            return {}
-        val = row[0]
-        return val if isinstance(val, dict) else json.loads(val)
-    except Exception:
-        conn.rollback()
+    except Exception as err:
+        # Best-effort txn hygiene so the pool does not hand out a mid-txn conn.
+        try:
+            conn.rollback()
+        except Exception:
+            pass
+        raise Unreachable(f"agent_cursors read failed: {err}")
+    if not row:
         return {}
+    val = row[0]
+    return val if isinstance(val, dict) else json.loads(val)
 
 
 # ---------------------------------------------------------------------------
