@@ -30,6 +30,7 @@ from starlette.responses import HTMLResponse, JSONResponse
 from starlette.routing import Mount, Route
 from starlette.staticfiles import StaticFiles
 
+from grove import envelope_reader
 from grove import kart_reader
 from grove_html import render_page
 from grove import journal_writer
@@ -113,6 +114,20 @@ async def _dispatch(request: Request) -> JSONResponse:
     return JSONResponse([_serialize_row(r) for r in rows])
 
 
+async def _envelopes(_request: Request) -> JSONResponse:
+    """GET /api/envelopes — P1 live envelope registry.
+
+    Additive read-only surface joining the served page to the fleet
+    envelope directories (P1 — orchestrator write attestation; D7 —
+    graceful degradation). Returns the ``envelope-registry/v1.1``
+    payload from ``grove.envelope_reader.read_all()`` verbatim; on
+    absent directories the reader emits an empty ``envelopes`` list
+    so this route still answers 200 and the panel can render an
+    "no envelopes on file" state without a fetch error.
+    """
+    return JSONResponse(envelope_reader.read_all())
+
+
 async def _personas(_request: Request) -> JSONResponse:
     """GET /api/personas — the unified persona registry (D10).
 
@@ -183,6 +198,7 @@ def build_app() -> Starlette:
         Route("/health", _health),
         Route("/api/journal", _journal, methods=["POST"]),
         Route("/api/dispatch", _dispatch),
+        Route("/api/envelopes", _envelopes),
         Route("/api/personas", _personas),
     ]
     # `/web` serves the vanilla-JS Web Components + libs (D9 — no build step).
