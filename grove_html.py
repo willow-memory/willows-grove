@@ -190,6 +190,13 @@ def render_page() -> str:
         '<script type="module" src="/web/components/grove-chat.js"></script>\n'
         '<script type="module" src="/web/components/grove-cast-chip.js"></script>\n'
         '<script type="module" src="/web/components/grove-dispatch-rail.js"></script>\n'
+        # Layout-memory boot — walks <grove-card id="…"> nodes and wires each
+        # to per-viewer localStorage so remembered edge/state persists across
+        # reloads, and pinned cards summon on boot (D12 + D14). Ordering
+        # matters: this MUST come after the grove-card component script above
+        # so ``customElements.define("grove-card", …)`` has already run by
+        # the time the boot walks the DOM by tag name.
+        '<script type="module" src="/web/boot/layout-memory-boot.js"></script>\n'
         "</head>\n"
         "<body>\n"
         f"{_TOP_STRIP}\n"
