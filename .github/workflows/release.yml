@@ -1,0 +1,145 @@
+# b17: WGRV1  ΔΣ=42
+# Release. Publishes willows-grove to PyPI when a `v*` tag is pushed.
+#
+# Same shape as willow-mcp/.github/workflows/release.yml and
+# Nestor/.github/workflows/publish.yml — the fleet's standing pattern.
+# Three things must be true for an upload, and the first is the gate:
+#
+#   1. a `v*` tag must exist, and pushing one is a human act — a
+#      session's git credentials carry `refs/heads/*` and refuse
+#      `refs/tags/*` (HTTP 403), so an agent can prepare an entire
+#      release and still not trigger it. INVARIANTS.md §12 stands.
+#   2. the `pypi` environment must exist in repo settings.
+#   3. Trusted Publishing must be configured on PyPI for this repo AND
+#      this workflow filename (`release.yml`, environment `pypi`).
+#
+# Until (3) is claimed by the first successful publish, the pending
+# publisher on PyPI holds the name `willows-grove` reserved. A
+# `workflow_dispatch` run builds and checks and stops — the publish
+# job is gated on the ref being a tag — so anyone can dry-run.
+
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  # Dry run anybody can trigger: builds and checks, never uploads.
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # hatch-vcs derives the version from the git tag, so the tags
+          # must be present. The default shallow checkout fetches none
+          # of them and the build would silently produce a `.devN`
+          # version that PyPI rejects — or worse, the wrong number.
+          # Both flags: `fetch-depth: 0` alone does not guarantee tags
+          # on every checkout action version.
+          fetch-depth: 0
+          fetch-tags: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Build sdist and wheel
+        run: |
+          python -m pip install --upgrade build
+          python -m build
+
+      # The version claim is the one thing a release cannot correct
+      # afterwards: PyPI filenames cannot be renamed, reassigned, or
+      # deleted and replaced. Read the built filename rather than any
+      # source-tree literal — pyproject no longer carries a version, so
+      # the thing that can go wrong is the build not seeing the tag at
+      # all, which yields a `.devN` version. kartikeya's v0.0.8 built
+      # 0.0.7 and only PyPI's duplicate refusal noticed.
+      - name: Refuse a tag that disagrees with the built version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          built="$(ls dist/*.tar.gz | sed -E 's|.*/willows_grove-(.+)\.tar\.gz|\1|')"
+          echo "tag=${tag}  built=${built}"
+          if [ "$tag" != "$built" ]; then
+            echo "::error::tag v${tag} builds version ${built} — refusing to publish"
+            exit 1
+          fi
+
+      # safe-app-manifest.json carries its own version string that
+      # nothing derives it from. Check at release time rather than on
+      # every dev run, because off-tag builds legitimately carry a
+      # `.devN` suffix.
+      - name: Refuse a tag that disagrees with safe-app-manifest.json
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          manifest="$(python -c 'import json;print(json.load(open("safe-app-manifest.json"))["version"])')"
+          echo "tag=${tag}  safe-app-manifest.json=${manifest}"
+          if [ "$tag" != "$manifest" ]; then
+            echo "::error::safe-app-manifest.json says ${manifest}, tag is v${tag} — bump it"
+            exit 1
+          fi
+
+      - name: Check the metadata PyPI will render
+        run: |
+          python -m pip install --upgrade twine
+          python -m twine check --strict dist/*
+
+      # Proof the artifact imports as itself, from the wheel rather than
+      # the source tree it was built in.
+      - name: Install the wheel somewhere else and ask it its version
+        run: |
+          python -m venv /tmp/verify
+          /tmp/verify/bin/pip install --quiet dist/*.whl
+          /tmp/verify/bin/python -c "import grove_serve; print('grove_serve import ok')"
+          /tmp/verify/bin/python -c "import grove; print('grove package import ok')"
+          /tmp/verify/bin/grove-serve --help >/dev/null 2>&1 \
+            || /tmp/verify/bin/python -c "import grove_serve; assert hasattr(grove_serve, 'main'), 'no main()'"
+          echo "console script resolves"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    # Tag pushes only. A workflow_dispatch run stops after `build`,
+    # which is what makes the dry run safe to hand to anyone.
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: pypi
+      url: https://pypi.org/p/willows-grove
+    permissions:
+      # Trusted Publishing (OIDC). No API token is stored in this
+      # repository, so there is no long-lived credential to leak or
+      # rotate.
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          # No existing releases on PyPI yet — this is the first claim
+          # of the pending name. Leave the flag on for defence: if a
+          # future run replays a tag PyPI already holds, it no-ops
+          # instead of failing.
+          skip-existing: true

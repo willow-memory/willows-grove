@@ -1,0 +1,132 @@
+# b17: WGRV1  ΔΣ=42
+# willow's grove — packaging + release metadata.
+#
+# Grove is distributed as `willows-grove` on PyPI (the pending Trusted
+# Publisher name on this repo). One-time PyPI setup: add a trusted
+# publisher for `willow-memory/willows-grove`, workflow `release.yml`,
+# environment `pypi`. Until that pending name is claimed by the first
+# successful publish, this file and the workflow are both inert; they
+# don't publish anything on merge.
+#
+# Version is tag-derived (hatch-vcs). Off-tag builds carry a `.devN`
+# suffix that PyPI rejects, so an accidental publish from an untagged
+# commit fails at PyPI rather than shipping a mislabelled wheel. The
+# same defence in willow-mcp caught kartikeya's v0.0.8 building 0.0.7.
+
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "willows-grove"
+dynamic = ["version"]
+description = "The operator's seat for the Willow AI fleet — loopback-only served page + MCP server"
+readme = "README.md"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Sean Campbell" }]
+requires-python = ">=3.11"
+keywords = ["willow", "dashboard", "mcp", "u2u", "grove"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+# Runtime dependencies — floors + majors-only ceilings, matching the
+# discipline in requirements.txt. That file stays authoritative for the
+# development install; this list mirrors what a `pip install
+# willows-grove` needs to run `grove_serve.py` and the MCP server.
+dependencies = [
+    "psycopg2-binary>=2.9.0,<3",
+    "cryptography>=42.0.0,<50",
+    "aiohttp>=3.9.0,<4",
+    "mcp>=2.0.0,<3.0.0",
+    "starlette>=0.37.0,<2",
+    "uvicorn>=0.30.0,<1",
+]
+
+[project.optional-dependencies]
+# Textual TUI is a separate install to keep the loopback served-page
+# path lightweight. Nothing in grove_serve.py imports textual; only the
+# legacy dashboard modules (grove_standalone.py, panes/) do.
+tui = ["textual>=0.61.0,<9"]
+test = [
+    "pytest>=8.0.0,<10",
+    "pytest-timeout",
+    "aiohttp>=3.9.0,<4",
+]
+
+[project.scripts]
+grove-serve = "grove_serve:main"
+
+[project.urls]
+Homepage = "https://github.com/willow-memory/willows-grove"
+Repository = "https://github.com/willow-memory/willows-grove"
+Issues = "https://github.com/willow-memory/willows-grove/issues"
+Changelog = "https://github.com/willow-memory/willows-grove/blob/master/CHANGELOG.md"
+
+[tool.hatch.version]
+# Derived from the git tag (hatch-vcs). At an exact tag `vX.Y.Z` the
+# version is X.Y.Z; off-tag builds get a `.devN+g<sha>` suffix. CI must
+# check out with `fetch-depth: 0` and `fetch-tags: true` — the default
+# shallow checkout carries no tags and the derived version would be
+# quietly wrong.
+source = "vcs"
+# Fallback when no tags are reachable (fresh clone with no tags,
+# release-tarball builds). Keep in sync with CHANGELOG.md's latest
+# released version.
+fallback-version = "0.9.0"
+
+[tool.hatch.build.targets.wheel]
+# Flat layout — top-level modules and their supporting packages ship
+# together. Nothing lives under a `willows_grove/` namespace, so hatch
+# needs each root the wheel should carry named explicitly.
+packages = ["grove", "u2u", "bridge", "panes"]
+
+[tool.hatch.build.targets.wheel.force-include]
+# Single-file top-level modules and the browser-loaded assets. hatch's
+# `include` is a filter for files already under a `packages` root, so it
+# can't add root-level `.py` modules on its own — force-include is the
+# knob that puts them in the wheel. The served page loads `web/` at
+# runtime through grove_serve.py's static mount; without it the browser
+# gets 404s on every component.
+"grove_serve.py" = "grove_serve.py"
+"grove_db.py" = "grove_db.py"
+"grove_html.py" = "grove_html.py"
+"grove_reader.py" = "grove_reader.py"
+"schema.sql" = "schema.sql"
+"web" = "web"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "grove/",
+    "u2u/",
+    "bridge/",
+    "panes/",
+    "web/",
+    "docs/",
+    "tests/",
+    "grove_serve.py",
+    "grove_db.py",
+    "grove_html.py",
+    "grove_reader.py",
+    "schema.sql",
+    "requirements.txt",
+    "README.md",
+    "CHANGELOG.md",
+    "CLAUDE.md",
+    "safe-app-manifest.json",
+    ".env.example",
+    "run_mcp.sh",
+    "scripts/",
+    "deploy/",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
