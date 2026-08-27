@@ -70,7 +70,7 @@ See also: [`docs/grove-served-page.md`](docs/grove-served-page.md) — operator 
 | `python3 app.py` | Main Textual dashboard |
 | `python3 -m grove` | Lightweight curses TUI (SSH / narrow terminal) |
 | `python3 -m grove_standalone` | Standalone DM app |
-| `python3 grove_serve.py` | LAN command server (HMAC-signed) |
+| `python3 grove_serve.py` | Loopback served-page host (127.0.0.1:8766) |
 
 ---
 
@@ -100,7 +100,7 @@ See also: [`docs/grove-served-page.md`](docs/grove-served-page.md) — operator 
 | `grove_standalone.py` | Standalone Textual DM app |
 | `u2u/` | LAN transport for signed (Ed25519) human-to-human DMs. Message bodies are transmitted in cleartext on the LAN; anyone on the network path can read them. Encryption is planned for Gate 6. |
 | `bridge/` | Matrix bridge |
-| `grove_serve.py` | LAN HTTP command server |
+| `grove_serve.py` | Loopback served-page host (127.0.0.1:8766) |
 
 ---
 
