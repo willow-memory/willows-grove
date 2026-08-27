@@ -34,8 +34,11 @@ jobs:
         image: ollama/ollama:latest
         ports:
           - 11434:11434
+        # Health check uses ollama's own binary (curl is not in the image).
+        # PR 8 tests wait on their own readiness probe (POST /api/tags) before
+        # actually calling Ollama; this scaffolding just needs the container up.
         options: >-
-          --health-cmd "curl -fsS http://127.0.0.1:11434/ 1>/dev/null"
+          --health-cmd "ollama --version || exit 1"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 12
