@@ -65,6 +65,27 @@ Unreachable rendering guidance (not mandate):
 `grove/errors.py`. Every reader in `grove/*.py` and every endpoint in
 `grove_serve.py` uses this vocabulary.
 
+### Pinning tests
+
+Section §1 is pinned end-to-end by the willow-mcp round-trip suite
+under `tests/e2e_willow_mcp/` (Grove v0.9 PR 10). A minimal Starlette
+mock at `tests/e2e_willow_mcp/mock_willow_mcp.py` speaks the
+`/tools/kb_journal` + `/tools/kb_journal_read` protocol; the tests
+drive `grove/journal_writer.py` and `grove/journal_reader.py` against
+it and verify:
+
+- populated: a write → read round-trip returns the same bytes;
+- empty: fresh store → the reader returns `[]` (bounded shape, never
+  collapsed into `Unreachable`);
+- unreachable: the mock's `POST /kill` toggle → both the writer and
+  the reader raise `Unreachable`, distinct from empty;
+- recovery: `POST /restore` → subsequent writes and reads succeed
+  with no latched state.
+
+The full watcher → writer → mock → reader loop is pinned by
+`tests/e2e_willow_mcp/test_watcher_chat_readback_flow.py` (the C11
+LEFT-write → RIGHT-read chat card seam).
+
 ## §2 — Supersedes D7 (premise doc)
 
 `docs/design/willow-grove-premise.md` D7 sealed the phrase *"absence is
