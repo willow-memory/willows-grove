@@ -35,6 +35,8 @@ from grove import kart_reader
 from grove_html import render_page
 from grove import journal_writer
 from grove import persona_roster
+from grove import seed_html
+from grove import seed_reader
 
 
 _WEB_ROOT = Path(__file__).resolve().parent / "web"
@@ -192,6 +194,46 @@ async def _journal(request: Request) -> JSONResponse:
     return JSONResponse(result, status_code=200)
 
 
+async def _seed_index(_request: Request) -> HTMLResponse:
+    """GET /seed/ — the six-movement onboarding landing page (D16).
+
+    Renders the seed reader's six movements as chapter cards. On any
+    absence the reader returns the D16 stub so this route still answers
+    200 with a legible page (autonomous-continuity C3 — session
+    continuity via seed's six movements must survive absence).
+    """
+    movements = seed_reader.load_movements()
+    return HTMLResponse(seed_html.render_seed_index(movements))
+
+
+async def _seed_movement(request: Request) -> HTMLResponse:
+    """GET /seed/{n} — one movement page, n in 1..6 (D16).
+
+    Any n outside 1..6 answers 404. Prev/next links use ``/seed/<n-1>``
+    and ``/seed/<n+1>`` respectively; the ends of the arc get a spacer
+    instead of a link.
+    """
+    raw = request.path_params.get("n", "")
+    try:
+        n = int(raw)
+    except (TypeError, ValueError):
+        return HTMLResponse("not found", status_code=404)
+    if n < 1 or n > 6:
+        return HTMLResponse("not found", status_code=404)
+
+    movements = seed_reader.load_movements()
+    by_n = {int(m["n"]): m for m in movements if "n" in m}
+    movement = by_n.get(n)
+    if movement is None:
+        return HTMLResponse("not found", status_code=404)
+
+    prev_url = f"/seed/{n - 1}" if n > 1 else None
+    next_url = f"/seed/{n + 1}" if n < 6 else None
+    return HTMLResponse(
+        seed_html.render_seed_movement(movement, prev_url=prev_url, next_url=next_url)
+    )
+
+
 def build_app() -> Starlette:
     routes = [
         Route("/", _index),
@@ -200,6 +242,8 @@ def build_app() -> Starlette:
         Route("/api/dispatch", _dispatch),
         Route("/api/envelopes", _envelopes),
         Route("/api/personas", _personas),
+        Route("/seed/", _seed_index),
+        Route("/seed/{n}", _seed_movement),
     ]
     # `/web` serves the vanilla-JS Web Components + libs (D9 — no build step).
     # Mounted only when the directory exists so unit tests that import this
