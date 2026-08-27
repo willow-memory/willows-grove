@@ -1,0 +1,33 @@
+{
+  "schema": "fleet-personas/v1",
+  "description": "Fixture — three-agent subset of the unified persona registry (D10). Mirrors the visual.{color, sigil} fields grove-cast-chip consumes; the full charter registry lives at willow-memory/willow/fleet_personas.json.",
+  "personas": {
+    "willow": {
+      "visual": {
+        "color": "#6faa6a",
+        "color_token": "grove-accent",
+        "sigil": "❦",
+        "sigil_kind": "glyph",
+        "note": "Willow — the grove itself. Accent green."
+      }
+    },
+    "loki": {
+      "visual": {
+        "color": "#e0a840",
+        "color_token": "loki-amber",
+        "sigil": "△",
+        "sigil_kind": "glyph",
+        "note": "Loki — fleet accountant / trickster. Amber."
+      }
+    },
+    "nestor": {
+      "visual": {
+        "color": "#7a7a7a",
+        "color_token": "nestor-stone",
+        "sigil": "¬",
+        "sigil_kind": "glyph",
+        "note": "Nestor — the refuser. Stone grey."
+      }
+    }
+  }
+}
