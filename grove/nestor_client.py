@@ -38,9 +38,16 @@ _DEFAULT_STORE_ENVS = ("NESTOR_STORE", "NESTOR_STORE_PATH")
 def _default_store_path() -> Optional[Path]:
     """Return a reasonable Nestor store path, or ``None`` if unresolvable.
 
-    Prefer explicit env; then ``$WILLOW_HOME/nestor``; then
-    ``~/.willow/nestor``. Returns ``None`` only when *no* candidate
-    directory exists — Grove degrades to no-op in that case (D7).
+    Probe order (first existing wins):
+
+    1. ``$NESTOR_STORE`` / ``$NESTOR_STORE_PATH`` — explicit env override.
+    2. ``$WILLOW_HOME/nestor`` — per-node Grove-adjacent store.
+    3. ``~/.willow/nestor`` — local user overlay under the Willow prefix.
+    4. ``~/.nestor`` — the operator's household Nestor store (the actual
+       location on our operator's box; without this probe Grove falls
+       through to Nestor's own CLI default of ``./data/nestor.db``, which
+       drops a scratch DB into the repo cwd on every run).
+    5. ``None`` — no candidate present, Grove degrades to no-op (D7).
     """
     for name in _DEFAULT_STORE_ENVS:
         val = os.environ.get(name)
@@ -51,8 +58,13 @@ def _default_store_path() -> Optional[Path]:
         cand = Path(home).expanduser() / "nestor"
         if cand.exists():
             return cand
-    fallback = Path.home() / ".willow" / "nestor"
-    return fallback if fallback.exists() else None
+    willow_fallback = Path.home() / ".willow" / "nestor"
+    if willow_fallback.exists():
+        return willow_fallback
+    household = Path.home() / ".nestor"
+    if household.exists():
+        return household
+    return None
 
 
 class NestorClient:

@@ -127,8 +127,42 @@ def test_default_store_path_falls_back_cleanly(monkeypatch, tmp_path):
     for env in ("NESTOR_STORE", "NESTOR_STORE_PATH", "WILLOW_HOME"):
         monkeypatch.delenv(env, raising=False)
     monkeypatch.setattr(nestor_client.Path, "home", classmethod(lambda cls: tmp_path))
-    # tmp_path/.willow/nestor does not exist → returns None
+    # tmp_path/.willow/nestor and tmp_path/.nestor both absent → returns None
     assert nestor_client._default_store_path() is None
+
+
+def test_default_store_path_finds_household_dot_nestor(monkeypatch, tmp_path):
+    """~/.nestor lands as the fallback when no Willow-scoped store exists.
+
+    Bug 3 (standup finding): with $NESTOR_STORE, $WILLOW_HOME, and
+    ~/.willow/nestor all absent, the client used to return ``None`` and
+    Grove fell through to Nestor's own CLI default of ``./data/nestor.db``
+    — which polluted the repo cwd on every grove_serve run. The operator's
+    actual household store lives at ~/.nestor, so probing it here keeps
+    Grove pointing at the real store instead of dropping a scratch DB.
+    """
+    for env in ("NESTOR_STORE", "NESTOR_STORE_PATH", "WILLOW_HOME"):
+        monkeypatch.delenv(env, raising=False)
+    monkeypatch.setattr(nestor_client.Path, "home", classmethod(lambda cls: tmp_path))
+    # ~/.willow/nestor absent, ~/.nestor present → returns ~/.nestor
+    household = tmp_path / ".nestor"
+    household.mkdir()
+    resolved = nestor_client._default_store_path()
+    assert resolved == household
+
+
+def test_default_store_path_prefers_willow_over_household(monkeypatch, tmp_path):
+    """When both ~/.willow/nestor and ~/.nestor exist, the Willow-scoped
+    store wins — the household store is only the belt-and-suspenders
+    fallback for operators without a Willow overlay."""
+    for env in ("NESTOR_STORE", "NESTOR_STORE_PATH", "WILLOW_HOME"):
+        monkeypatch.delenv(env, raising=False)
+    monkeypatch.setattr(nestor_client.Path, "home", classmethod(lambda cls: tmp_path))
+    willow = tmp_path / ".willow" / "nestor"
+    willow.mkdir(parents=True)
+    household = tmp_path / ".nestor"
+    household.mkdir()
+    assert nestor_client._default_store_path() == willow
 
 
 @pytest.mark.skipif(shutil.which("nestor") is None, reason="real nestor binary not installed")

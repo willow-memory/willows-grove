@@ -20,9 +20,15 @@ mirrors ``grove/persona_roster.py`` shape:
 
 The probed directories, in order:
 
-1. ``$WILLOW_HOME/envelopes/`` — per-node override (highest priority)
-2. ``~/willow-memory/Willow/envelopes/`` — fleet charter mirror
-3. ``~/.willow/envelopes/`` — local user overlay
+1. ``$WILLOW_HOME/willow-memory/willow/envelopes/`` — the charter mirror
+   under a per-node ``WILLOW_HOME`` (matches ``persona_roster``'s hop
+   through ``willow-memory/willow/``).
+2. ``$WILLOW_HOME/envelopes/`` — per-node bare override.
+3. ``~/willow-memory/willow/envelopes/`` — lowercase fleet charter mirror
+   (the operator's actual on-disk layout, matching the persona reader).
+4. ``~/willow-memory/Willow/envelopes/`` — uppercase mirror, kept for
+   older checkouts that still ship the ``Willow`` casing.
+5. ``~/.willow/envelopes/`` — local user overlay (lowest priority).
 
 Later directories in that list override earlier ones on an ``id``
 collision (last-writer-wins). Any file that fails to parse is
@@ -54,16 +60,21 @@ _logged_malformed: set[str] = set()
 
 
 def _candidate_dirs() -> list[Path]:
-    """The three directories we probe, in preference order.
+    """The directories we probe, in preference order.
 
     Order matches ``persona_roster._candidate_paths``: ``$WILLOW_HOME``
-    first, then ``~/willow-memory``, then ``~/.willow``. Later entries
-    override earlier ones on ``id`` collision (see ``read_all``).
+    (with the ``willow-memory/willow/`` hop first, then the bare form),
+    then ``~/willow-memory`` (lowercase then uppercase for legacy
+    checkouts), then ``~/.willow``. Later entries override earlier ones
+    on ``id`` collision (see ``read_all``).
     """
     dirs: list[Path] = []
     home = os.environ.get("WILLOW_HOME")
     if home:
-        dirs.append(Path(home).expanduser() / "envelopes")
+        wh = Path(home).expanduser()
+        dirs.append(wh / "willow-memory" / "willow" / "envelopes")
+        dirs.append(wh / "envelopes")
+    dirs.append(Path.home() / "willow-memory" / "willow" / "envelopes")
     dirs.append(Path.home() / "willow-memory" / "Willow" / "envelopes")
     dirs.append(Path.home() / ".willow" / "envelopes")
     return dirs
@@ -170,8 +181,10 @@ def read_all() -> dict:
         if not _logged_missing_dirs:
             log.info(
                 "[grove.envelope_reader] no envelope directory found in known "
-                "locations ($WILLOW_HOME/envelopes, ~/willow-memory/Willow/envelopes, "
-                "~/.willow/envelopes) — rendering empty registry (D7)."
+                "locations ($WILLOW_HOME/willow-memory/willow/envelopes, "
+                "$WILLOW_HOME/envelopes, ~/willow-memory/willow/envelopes, "
+                "~/willow-memory/Willow/envelopes, ~/.willow/envelopes) — "
+                "rendering empty registry (D7)."
             )
             _logged_missing_dirs = True
         return {"schema": SCHEMA_ID, "envelopes": []}

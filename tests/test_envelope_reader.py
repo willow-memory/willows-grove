@@ -183,6 +183,37 @@ class EnvelopeReaderTests(unittest.TestCase):
         self.assertEqual(len(result["envelopes"]), 1)
         self.assertEqual(result["envelopes"][0]["grantee"], "from-dot-willow")
 
+    # ---- new probe: $WILLOW_HOME/willow-memory/willow/envelopes/ ----
+    def test_willow_home_charter_probe_path(self) -> None:
+        """The reader honors ``$WILLOW_HOME/willow-memory/willow/envelopes/``
+        — the charter mirror the operator actually keeps envelopes under
+        (Bug 2 — standup finding: pre-approved.json + syscall-table.json
+        went unread because the reader only knew ``$WILLOW_HOME/envelopes``
+        and ``~/willow-memory/Willow/...``, not the lowercase charter hop)."""
+        env_dir = self.willow_home / "willow-memory" / "willow" / "envelopes"
+        env_dir.mkdir(parents=True)
+        (env_dir / "pre-approved.json").write_text(
+            json.dumps(
+                {
+                    "schema": er.SCHEMA_ID,
+                    "pre_approved": [_envelope("charter-fs-read")],
+                }
+            ),
+            encoding="utf-8",
+        )
+        (env_dir / "syscall-table.json").write_text(
+            json.dumps(
+                {"schema": er.SCHEMA_ID, "envelopes": [_envelope("syscall-exec")]}
+            ),
+            encoding="utf-8",
+        )
+
+        with self._env(willow_home=str(self.willow_home)):
+            result = er.read_all()
+
+        ids = sorted(e["id"] for e in result["envelopes"])
+        self.assertEqual(ids, ["charter-fs-read", "syscall-exec"])
+
     # ---- locator ----
     def test_locate_envelope_dirs_only_returns_existing(self) -> None:
         wh_dir = self.willow_home / "envelopes"
