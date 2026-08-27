@@ -96,8 +96,10 @@ G-DEP-01) it is named in the finding.
 | `grove/apps/upstream_steward.py` | read-only consumer for Upstream Steward (2.0 writes) | Scanned |
 | `grove/apps/user_board.py` | aggregate user desk items from SOIL + Grove + Kart | Scanned |
 | `grove/apps/vitals.py` | System vitals strip for NavBar | Scanned |
+| `grove/fleet_presence.py` | `announce_grove` / `roster` / `withdraw` wrappers over the `fleet_presence` seam; log-once no-op when the seam is absent (D7). | Reviewed |
 | `grove/mcp_auth.py` | Single-user OAuth 2.0 provider for `grove.mcp_local --serve` | Reviewed |
 | `grove/mcp_local.py` | Modes: | Reviewed |
+| `grove/nestor_client.py` | `NestorClient` wrapper around a long-lived `nestor serve` subprocess (MCP-over-stdio, D11); returns `None` cleanly when the binary is absent (D7); `refusal()` returns Nestor's speech act verbatim (V5). | Reviewed |
 | `grove/paths.py` | Resolve Willow repo root and CLI for dashboard subprocesses | Scanned |
 | `grove/theme.py` | 256-color palette, borders, draw helpers | Scanned |
 | `grove/theme_textual.py` | Textual/Rich colors from grove/theme.py palette | Scanned |
@@ -151,6 +153,7 @@ G-DEP-01) it is named in the finding.
 | `tests/test_content_stack.py` | nav pane wiring | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_grove_serve.py` | Grove served-page skeleton integration test (starts uvicorn on an ephemeral loopback port; asserts /health and /) | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_hero_format.py` | hero band formatters | Out of scope — test code; not shipped and not reachable at runtime |
+| `tests/test_fleet_presence.py` | `grove/fleet_presence.py` no-op path + announce/roster/withdraw behavior | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_hero_stats.py` | hero stats bundle | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_internal_panes.py` | Home card internal pane helpers | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_mcp_auth.py` | grove/mcp_auth.py: token-state durability and the authorization decision | Out of scope — test code; not shipped and not reachable at runtime |
@@ -161,6 +164,7 @@ G-DEP-01) it is named in the finding.
 | `tests/test_mcp_subscriptions.py` | SEP-2575 resource-update fan-out | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_mcp_serve_oauth_flow.py` | The serve-mode OAuth flow, end to end, through the real Starlette app | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_nav_bar.py` | wave 2 nav targets | Out of scope — test code; not shipped and not reachable at runtime |
+| `tests/test_nestor_client.py` | `grove/nestor_client.py` subprocess wrapper, absent-binary graceful path, verbatim-refusal guard | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_panes_home.py` | desk render + home grid cells | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_panes_knowledge.py` | KB search helpers | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_panes_knowledge_mount.py` | Knowledge pane search regression | Out of scope — test code; not shipped and not reachable at runtime |

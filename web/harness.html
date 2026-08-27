@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Grove primitives — harness</title>
+  <style>
+    :root {
+      --grove-bg: #fdfef7;
+      --grove-fg: #1a2a1a;
+      --grove-muted: #6a7a6a;
+      --grove-accent: #6faa6a;
+    }
+    body {
+      margin: 0;
+      font: 14px/1.4 system-ui, sans-serif;
+      color: var(--grove-fg);
+      background:
+        radial-gradient(circle at 20% 30%, rgba(111,170,106,0.18), transparent 60%),
+        radial-gradient(circle at 80% 70%, rgba(224,168,64,0.12), transparent 60%),
+        #f2f5ea;
+      min-height: 100vh;
+    }
+    header.harness {
+      padding: 1rem 1.5rem;
+      display: flex;
+      gap: 1rem;
+      align-items: baseline;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+      background: rgba(255,255,255,0.6);
+      backdrop-filter: blur(4px);
+    }
+    h1 { font-size: 1.1rem; margin: 0; letter-spacing: 0.02em; }
+    main { padding: 1.5rem; max-width: 900px; margin: 0 auto; }
+    .panel {
+      background: var(--grove-bg);
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 10px;
+      padding: 1rem;
+      box-shadow: 0 8px 24px rgba(24, 42, 24, 0.08);
+      margin-bottom: 1.5rem;
+    }
+    .panel h2 { margin: 0 0 0.75rem; font-size: 0.95rem; color: var(--grove-muted); text-transform: uppercase; letter-spacing: 0.08em; }
+    .controls button {
+      all: unset;
+      cursor: pointer;
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      background: var(--grove-accent);
+      color: white;
+      font-weight: 500;
+    }
+    .controls button:hover { filter: brightness(1.05); }
+  </style>
+</head>
+<body>
+  <header class="harness">
+    <h1>Willow's Grove — primitives harness</h1>
+    <span style="color: var(--grove-muted);">grove-card &middot; grove-envelope-panel</span>
+  </header>
+
+  <main>
+    <section class="panel">
+      <h2>Envelopes (Governance lens)</h2>
+      <grove-envelope-panel data-source="./fixtures/envelopes.json"></grove-envelope-panel>
+    </section>
+
+    <section class="panel controls">
+      <h2>Card summon</h2>
+      <button id="summon-nestor" type="button">summon nestor card</button>
+      <button id="summon-jeles" type="button">summon jeles card</button>
+    </section>
+  </main>
+
+  <grove-card
+    id="card-nestor"
+    name="Nestor"
+    sigil="¬"
+    color="#7a7a7a"
+    home-edge="bottom"
+    state="summoned">
+    <p><strong>refusal:</strong> no sealed pair for this act.</p>
+    <p style="color: var(--grove-muted); font-size: 12px;">Nestor's own text — never paraphrased (V5).</p>
+  </grove-card>
+
+  <grove-card
+    id="card-jeles"
+    name="Jeles"
+    sigil="§"
+    color="#4fbfa3"
+    home-edge="right"
+    state="idle">
+    <p><strong>corpus miss:</strong> not enough independent sources to answer.</p>
+  </grove-card>
+
+  <script type="module">
+    import "./components/grove-card.js";
+    import "./components/grove-envelope-panel.js";
+
+    document.getElementById("summon-nestor").addEventListener("click", () => {
+      document.getElementById("card-nestor").summon();
+    });
+    document.getElementById("summon-jeles").addEventListener("click", () => {
+      document.getElementById("card-jeles").summon();
+    });
+  </script>
+</body>
+</html>
