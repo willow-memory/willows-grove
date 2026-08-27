@@ -1,7 +1,11 @@
 # b17: WGRV1 ΔΣ=42
 """HTML string builders for the `/seed/` six-movement onboarding route (D16).
 
-D16 seals: the six-part story *IS* the human onboarding. This module
+D16 seals: the six-part story *IS* the human onboarding. INVARIANTS.md §9
+adds the render-side discipline: no content is invented here at render
+time — the movement bodies flow through this module verbatim (HTML-
+escaped), and the stub-on-absence path exists only so /seed/ is proof
+of life when the fleet_charter mirror is not mounted. This module
 renders each movement — and the landing index — as a server-side page
 that shares `grove_html.py`'s dark-warm desk palette. There is no JS
 here; the seed pages are static HTML by design (they are the human
