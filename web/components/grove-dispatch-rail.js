@@ -234,7 +234,7 @@ class GroveDispatchRail extends HTMLElement {
     this._timer = null;
     this._retryTimer = null;
     this._tasks = [];
-    this._state = "loading"; // loading | ready | error
+    this._state = "loading"; // loading | populated | empty | unreachable (INVARIANTS §1)
     this._render();
   }
 
@@ -306,7 +306,10 @@ class GroveDispatchRail extends HTMLElement {
         ? body
         : (body && Array.isArray(body.tasks) ? body.tasks : []);
       this._tasks = list;
-      this._state = "ready";
+      // INVARIANTS.md §1 three-state contract: distinguish populated from
+      // empty at the observable-state layer (the Playwright pin at
+      // tests/e2e/grove-served-page.spec.js reads `_state` directly).
+      this._state = list.length > 0 ? "populated" : "empty";
       this._reason = null;
     } catch (err) {
       this._state = "unreachable";

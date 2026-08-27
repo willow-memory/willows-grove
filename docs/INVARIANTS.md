@@ -65,6 +65,40 @@ Unreachable rendering guidance (not mandate):
 `grove/errors.py`. Every reader in `grove/*.py` and every endpoint in
 `grove_serve.py` uses this vocabulary.
 
+### Pinning tests
+
+Pytest layer: `tests/test_panel_wiring.py` +
+`tests/test_refusal_summon_shape.py` pin the reader / endpoint /
+wiring wire shape.
+
+Visual layer (Grove v0.9 PR 9): `tests/e2e/grove-served-page.spec.js`
+pins the three-state pass through every panel;
+`tests/e2e/three-state-affordances.spec.js` pins unreachable ≠ empty
+at the render layer (the data-element `<grove-persona-registry>`
+exposes its distinction via the `registry-unreachable` event and
+`.state`, not visible markup — see PR 14 carryovers);
+`tests/e2e/seed-canon.spec.js` pins that the `/seed/` route survives
+canon absence (six chapter links, per-page title + body).
+
+Round-trip layer (Grove v0.9 PR 10): §1 is pinned end-to-end by the
+willow-mcp suite under `tests/e2e_willow_mcp/`. A minimal Starlette
+mock at `tests/e2e_willow_mcp/mock_willow_mcp.py` speaks the
+`/tools/kb_journal` + `/tools/kb_journal_read` protocol; the tests
+drive `grove/journal_writer.py` and `grove/journal_reader.py` against
+it and verify:
+
+- populated: a write → read round-trip returns the same bytes;
+- empty: fresh store → the reader returns `[]` (bounded shape, never
+  collapsed into `Unreachable`);
+- unreachable: the mock's `POST /kill` toggle → both the writer and
+  the reader raise `Unreachable`, distinct from empty;
+- recovery: `POST /restore` → subsequent writes and reads succeed
+  with no latched state.
+
+The full watcher → writer → mock → reader loop is pinned by
+`tests/e2e_willow_mcp/test_watcher_chat_readback_flow.py` (the C11
+LEFT-write → RIGHT-read chat card seam).
+
 ## §2 — Supersedes D7 (premise doc)
 
 `docs/design/willow-grove-premise.md` D7 sealed the phrase *"absence is
@@ -79,6 +113,10 @@ the state (unreached) exists AND rendering it distinctly is required.
 The premise-doc D7 section (`docs/design/willow-grove-premise.md`
 around line 316) carries a supersede line pointing here.
 
+Pinning tests (§2): the D7-supersede is pinned by `tests/test_panel_wiring.py`
+(every reader raises `Unreachable` on missing source; no reader
+collapses to empty on a real failure).
+
 ## §3 — Doc discipline
 
 - Every design-doc reference in code comments cites `INVARIANTS.md
@@ -91,6 +129,12 @@ around line 316) carries a supersede line pointing here.
 - New endpoints state their §1 response shape in the handler docstring.
 - New Web Components state their §1 rendering states in the JSDoc
   header.
+
+Pinning tests (§3): `scripts/check_docs_drift.py` (called from
+`.github/workflows/tests.yml`) enforces that every `INVARIANTS.md §N`
+citation resolves, that every `[Unreleased]` CHANGELOG bullet cites
+its PR, and that every INVARIANTS section names at least one CI
+witness that exists on disk. Drift on any of these fails the build.
 
 ## §4 — Reader/endpoint coverage (v0.9 PR 1 baseline)
 
@@ -107,6 +151,12 @@ endpoint answers 200/populated, 200/empty, or 503/unreachable.
 | `grove/nestor_client.py`   | `POST /api/nestor/decide`      |
 
 Any future reader/endpoint added to Grove joins this table in the same PR.
+
+Pinning tests (§4): `tests/test_panel_wiring.py` pins the endpoint /
+reader / Web Component wire shape for every row above; the round-trip
+suite under `tests/e2e_willow_mcp/test_journal_roundtrip.py` extends
+that to the writer + reader loop for `POST /api/journal` and
+`GET /api/journal/recent`.
 
 ## §5 — Trust order
 
@@ -242,9 +292,13 @@ Concretely:
   posture.
 
 Pinning tests: `tests/test_panel_wiring.py` (endpoint side of the
-default source; three-state shape end-to-end) and
+default source; three-state shape end-to-end),
 `tests/test_refusal_summon_shape.py` (the refusal-summon boot module's
-POST target and event contract).
+POST target and event contract),
+`tests/e2e/grove-served-page.spec.js` (visual-layer live-endpoint
+consumption, Grove v0.9 PR 9), and
+`tests/e2e/three-state-affordances.spec.js` (visual-layer three-state
+distinct-render pin, Grove v0.9 PR 9).
 
 ## §9 — Seed reads real canon
 
