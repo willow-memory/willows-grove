@@ -152,6 +152,7 @@ G-DEP-01) it is named in the finding.
 | `tests/test_chat_message_mod.py` | message mod helpers | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_chat_persona.py` | Wave C persona routing + dispatch | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_content_stack.py` | nav pane wiring | Out of scope — test code; not shipped and not reachable at runtime |
+| `tests/test_grove_lens_switch.py` | `<grove-lens-switch>` mount verification — asserts `grove_html.render_page()` references the tri-modal lens component + module, and that the JS file exists on disk | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_grove_serve.py` | Grove served-page skeleton integration test (starts uvicorn on an ephemeral loopback port; asserts /health and /) | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_hero_format.py` | hero band formatters | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_fleet_presence.py` | `grove/fleet_presence.py` no-op path + announce/roster/withdraw behavior | Out of scope — test code; not shipped and not reachable at runtime |
