@@ -1,0 +1,11 @@
+{
+  "name": "safe-app-willow-grove",
+  "private": true,
+  "description": "Node dev-dependencies for Willow's Grove Playwright e2e suite (INVARIANTS.md §10). The app itself is Python + vanilla-JS Web Components with no build step — this manifest only pins the browser-driven test runner.",
+  "scripts": {
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0"
+  }
+}

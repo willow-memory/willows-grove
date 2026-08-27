@@ -67,8 +67,21 @@ Unreachable rendering guidance (not mandate):
 
 ### Pinning tests
 
-Section §1 is pinned end-to-end by the willow-mcp round-trip suite
-under `tests/e2e_willow_mcp/` (Grove v0.9 PR 10). A minimal Starlette
+Pytest layer: `tests/test_panel_wiring.py` +
+`tests/test_refusal_summon_shape.py` pin the reader / endpoint /
+wiring wire shape.
+
+Visual layer (Grove v0.9 PR 9): `tests/e2e/grove-served-page.spec.js`
+pins the three-state pass through every panel;
+`tests/e2e/three-state-affordances.spec.js` pins unreachable ≠ empty
+at the render layer (the data-element `<grove-persona-registry>`
+exposes its distinction via the `registry-unreachable` event and
+`.state`, not visible markup — see PR 14 carryovers);
+`tests/e2e/seed-canon.spec.js` pins that the `/seed/` route survives
+canon absence (six chapter links, per-page title + body).
+
+Round-trip layer (Grove v0.9 PR 10): §1 is pinned end-to-end by the
+willow-mcp suite under `tests/e2e_willow_mcp/`. A minimal Starlette
 mock at `tests/e2e_willow_mcp/mock_willow_mcp.py` speaks the
 `/tools/kb_journal` + `/tools/kb_journal_read` protocol; the tests
 drive `grove/journal_writer.py` and `grove/journal_reader.py` against
@@ -263,9 +276,13 @@ Concretely:
   posture.
 
 Pinning tests: `tests/test_panel_wiring.py` (endpoint side of the
-default source; three-state shape end-to-end) and
+default source; three-state shape end-to-end),
 `tests/test_refusal_summon_shape.py` (the refusal-summon boot module's
-POST target and event contract).
+POST target and event contract),
+`tests/e2e/grove-served-page.spec.js` (visual-layer live-endpoint
+consumption, Grove v0.9 PR 9), and
+`tests/e2e/three-state-affordances.spec.js` (visual-layer three-state
+distinct-render pin, Grove v0.9 PR 9).
 
 ## §9 — Seed reads real canon
 

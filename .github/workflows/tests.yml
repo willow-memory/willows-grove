@@ -94,13 +94,17 @@ jobs:
       # until then the install step warms the browser cache and the
       # test run is a no-op (the guard on the run step skips it while
       # the directory carries only `.gitkeep`).
+      - name: Install Playwright deps (npm)
+        if: ${{ hashFiles('package.json') != '' }}
+        run: npm install --no-audit --no-fund
+
       - name: Install Playwright browsers (chromium)
         if: ${{ hashFiles('playwright.config.js', 'playwright.config.ts', 'playwright.config.mjs') != '' }}
-        run: npx --yes playwright install --with-deps chromium
+        run: npx playwright install --with-deps chromium
 
       - name: Run Playwright e2e suite
         if: ${{ hashFiles('playwright.config.js', 'playwright.config.ts', 'playwright.config.mjs') != '' && hashFiles('tests/e2e/*.spec.*', 'tests/e2e/**/*.spec.*') != '' }}
-        run: npx --yes playwright test
+        run: npx playwright test
 
       # docs/INVARIANTS.md §10 — the Ollama-backed watcher e2e (PR 8) and
       # the willow-mcp mock e2e (PR 10) live in their own directories so
