@@ -29,6 +29,7 @@ from starlette.responses import HTMLResponse, JSONResponse
 from starlette.routing import Mount, Route
 from starlette.staticfiles import StaticFiles
 
+from grove import kart_reader
 from grove_html import render_page
 from grove import journal_writer
 
@@ -36,8 +37,18 @@ from grove import journal_writer
 _WEB_ROOT = Path(__file__).resolve().parent / "web"
 
 
+# Static home for the vanilla-JS Web Components (D9: no build step). The rail's
+# module tag in grove_html.py resolves to /web/components/grove-dispatch-rail.js;
+# StaticFiles hands it directly off the repo tree so a redeploy is a git pull.
+_WEB_ROOT = Path(__file__).resolve().parent / "web"
+
+
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 8766
+
+# Lenses the dispatch rail's tri-modal switch understands (C12). Any other
+# value falls through to the unfiltered queue.
+_DISPATCH_LENSES = {"governance", "pm", "pa"}
 
 
 def _resolve_commit() -> str:
@@ -67,6 +78,37 @@ async def _index(_request: Request) -> HTMLResponse:
 
 async def _health(_request: Request) -> JSONResponse:
     return JSONResponse({"ok": True, "commit": _resolve_commit()})
+
+
+def _serialize_row(row: dict) -> dict:
+    """JSON-safe copy of a kart row (dates → isoformat strings)."""
+    out: dict = {}
+    for key, value in row.items():
+        if hasattr(value, "isoformat"):
+            out[key] = value.isoformat()
+        else:
+            out[key] = value
+    return out
+
+
+async def _dispatch(request: Request) -> JSONResponse:
+    """GET /api/dispatch?lens=<governance|pm|pa> — Kart escalation queue.
+
+    Additive read-only surface joining the served page to the Kart seam
+    (C6-C8, C12). The operator picks the drain-tier from the rail; there
+    is no auto-drain in v1, so this route emits nothing beyond what the
+    Kart producers already put in ``public.tasks``.
+
+    An unknown / missing ``lens`` renders the unfiltered queue. Any
+    upstream failure (missing DSN, missing table, missing column) is
+    already log-once inside ``kart_reader`` and lands here as ``[]``.
+    """
+    lens = (request.query_params.get("lens") or "").strip().lower()
+    if lens in _DISPATCH_LENSES:
+        rows = kart_reader.read_by_lens(lens)
+    else:
+        rows = kart_reader.read_queue()
+    return JSONResponse([_serialize_row(r) for r in rows])
 
 
 async def _journal(request: Request) -> JSONResponse:
@@ -108,6 +150,7 @@ def build_app() -> Starlette:
         Route("/", _index),
         Route("/health", _health),
         Route("/api/journal", _journal, methods=["POST"]),
+        Route("/api/dispatch", _dispatch),
     ]
     # `/web` serves the vanilla-JS Web Components + libs (D9 — no build step).
     # Mounted only when the directory exists so unit tests that import this

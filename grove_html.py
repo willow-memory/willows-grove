@@ -169,8 +169,9 @@ def render_page() -> str:
     """Full HTML document for `GET /`.
 
     Proof-of-life: dark warm background, the willow tree at rest, an ambient
-    top strip, and a footer. No JS. This is the "the grove is here" moment
-    before any card, chip, or persona shows up.
+    top strip, and a footer. The dispatch rail (C6-C8 / C12) mounts into the
+    main region and refreshes itself — the page itself stays static beyond
+    that one Web Component.
     """
     return (
         "<!doctype html>\n"
@@ -187,6 +188,8 @@ def render_page() -> str:
         # follow-up PR (resident-watcher work). Additive only — no existing
         # markup is moved or reshaped.
         '<script type="module" src="/web/components/grove-chat.js"></script>\n'
+        '<script type="module" src="/web/components/grove-cast-chip.js"></script>\n'
+        '<script type="module" src="/web/components/grove-dispatch-rail.js"></script>\n'
         "</head>\n"
         "<body>\n"
         f"{_TOP_STRIP}\n"
@@ -195,6 +198,7 @@ def render_page() -> str:
         f"  {_tree_block()}\n"
         '  <p class="here">the grove is here.</p>\n'
         '  <grove-chat home-edge="bottom"></grove-chat>\n'
+        '  <grove-dispatch-rail lens="pa"></grove-dispatch-rail>\n'
         "</main>\n"
         f"{_FOOTER}\n"
         "</body>\n"

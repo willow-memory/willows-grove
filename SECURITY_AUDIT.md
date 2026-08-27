@@ -98,6 +98,7 @@ G-DEP-01) it is named in the finding.
 | `grove/apps/vitals.py` | System vitals strip for NavBar | Scanned |
 | `grove/fleet_presence.py` | `announce_grove` / `roster` / `withdraw` wrappers over the `fleet_presence` seam; log-once no-op when the seam is absent (D7). | Reviewed |
 | `grove/journal_writer.py` | Thin wrapper over willow-mcp's `kb_journal` write path — the chat card's LEFT-side (C11) sync writer. Tries (a) `willow_mcp.server.kb_journal` in-process, then (b) HTTP POST to `$WILLOW_MCP_URL/tools/kb_journal`, then (c) log-once no-op returning `{"ok": False, ...}` (D7 degradation). Operator text is passed through verbatim (V5 discipline). | Reviewed |
+| `grove/kart_reader.py` | Read-only helper over `public.tasks` — the Kart escalation seam (autonomous-continuity C6-C8, C12). Probes `information_schema.columns` and drops missing predicates + omits missing select expressions (D7); log-once on absent DSN, missing table, or shape drift; returns `[]` cleanly in every failure mode. Read-only — no INSERT / UPDATE / DELETE (L0 in the promotion-authority ladder). | Reviewed |
 | `grove/mcp_auth.py` | Single-user OAuth 2.0 provider for `grove.mcp_local --serve` | Reviewed |
 | `grove/mcp_local.py` | Modes: | Reviewed |
 | `grove/nestor_client.py` | `NestorClient` wrapper around a long-lived `nestor serve` subprocess (MCP-over-stdio, D11); returns `None` cleanly when the binary is absent (D7); `refusal()` returns Nestor's speech act verbatim (V5). | Reviewed |
@@ -155,12 +156,14 @@ G-DEP-01) it is named in the finding.
 | `tests/test_content_stack.py` | nav pane wiring | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_grove_lens_switch.py` | `<grove-lens-switch>` mount verification — asserts `grove_html.render_page()` references the tri-modal lens component + module, and that the JS file exists on disk | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_grove_serve.py` | Grove served-page skeleton integration test (starts uvicorn on an ephemeral loopback port; asserts /health and /) | Out of scope — test code; not shipped and not reachable at runtime |
+| `tests/test_grove_serve_dispatch.py` | integration test for grove_serve.py's /api/dispatch route + /web/ static mount | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_grove_serve_journal.py` | POST /api/journal integration test (C11 LEFT-side); asserts 400 on missing text, 200 on success, 503 on writer degradation | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_hero_format.py` | hero band formatters | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_fleet_presence.py` | `grove/fleet_presence.py` no-op path + announce/roster/withdraw behavior | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_hero_stats.py` | hero stats bundle | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_internal_panes.py` | Home card internal pane helpers | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_journal_writer.py` | `grove/journal_writer.py` — degradation path, mocked HTTP write, empty-text ValueError, log-once behavior | Out of scope — test code; not shipped and not reachable at runtime |
+| `tests/test_kart_reader.py` | `grove/kart_reader.py` D7 shape tolerance + C12 lens filtering + log-once on missing DSN / table / column, against a real Postgres | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_mcp_auth.py` | grove/mcp_auth.py: token-state durability and the authorization decision | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_mcp_client.py` | MCP stdio client helpers | Out of scope — test code; not shipped and not reachable at runtime |
 | `tests/test_mcp_process.py` | grove serve process control | Out of scope — test code; not shipped and not reachable at runtime |
