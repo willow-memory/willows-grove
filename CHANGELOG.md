@@ -9,7 +9,13 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Added
 - INVARIANTS.md — single source of truth for Grove discipline.
+- INVARIANTS.md §5 "Trust order" — signature → consent → dispatch, in exactly that sequence, with the contact-store rules that protect the state consent depends on.
 - CHANGELOG.md — reorganized under Keep a Changelog v1.1.0; earlier per-branch entries preserved below as historical work.
+
+### Fixed
+- u2u: verify signature before consulting consent for every packet type (was: PENDING KNOCKs dispatched unverified — CODE_REVIEW.md P0). The invariant is now anchored at INVARIANTS.md §5 and pinned by name in `tests/test_u2u_consent_order.py`.
+- u2u: `contacts.update_key()` preserves blocked and consent flags on rotation; `bridge/app.py` no longer resets state via `contacts.add()`. Rotation now defaults closed — the caller MUST pass `require_confirmation=False` to attest that a human authorised the key change, and the refusal is logged.
+- u2u: REPLY packets require a correlated outstanding thread_id — the `ALLOW`-unconditional path is gone, and a REPLY without a live `open_thread` entry is DENY, per INVARIANTS.md §5.
 
 ### Previous work (pre-v0.9)
 

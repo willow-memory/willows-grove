@@ -78,15 +78,39 @@ class ContactStore:
         self.save()
         return c
 
-    def update_key(self, addr: str, public_key_hex: str) -> bool:
+    def update_key(
+        self,
+        addr: str,
+        public_key_hex: str,
+        *,
+        require_confirmation: bool = True,
+    ) -> bool:
         """Rotate an existing contact's key, mutating ONLY the key.
 
         ``blocked``, every ``consent_*`` flag, ``name``, ``added`` and
         ``resources`` are preserved. Returns False for an unknown address —
         key rotation never creates a contact.
+
+        Key rotation on an existing contact is a load-bearing trust event —
+        the caller MUST explicitly assert that a human authorised it, by
+        passing ``require_confirmation=False``. The default refuses and logs.
+        Test code is the only legitimate opt-out. See INVARIANTS.md §5 —
+        signature verification happens upstream in ``u2u.listener``; this is
+        the last gate before a rotation touches ``blocked`` and the consent
+        flags.
         """
+        import logging as _logging
+        _log = _logging.getLogger("u2u.contacts")
+
         contact = self._contacts.get(addr)
         if contact is None:
+            return False
+        if require_confirmation:
+            _log.warning(
+                "REFUSED key rotation for %s — no human confirmation "
+                "(require_confirmation=True); key, blocked and consent flags kept",
+                addr,
+            )
             return False
         contact.public_key_hex = public_key_hex
         self.save()
