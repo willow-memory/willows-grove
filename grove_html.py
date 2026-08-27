@@ -156,12 +156,18 @@ def render_page() -> str:
         '<meta name="viewport" content="width=device-width,initial-scale=1">\n'
         "<title>willow's grove</title>\n"
         f"<style>{_CSS}</style>\n"
+        # C11 chat card (LEFT-side write path). Registered here as an ES module
+        # so ``<grove-chat>`` upgrades in place. The RIGHT-side read-back is a
+        # follow-up PR (resident-watcher work). Additive only — no existing
+        # markup is moved or reshaped.
+        '<script type="module" src="/web/components/grove-chat.js"></script>\n'
         "</head>\n"
         "<body>\n"
         f"{_TOP_STRIP}\n"
         "<main>\n"
         f"  {_tree_block()}\n"
         '  <p class="here">the grove is here.</p>\n'
+        '  <grove-chat home-edge="bottom"></grove-chat>\n'
         "</main>\n"
         f"{_FOOTER}\n"
         "</body>\n"
