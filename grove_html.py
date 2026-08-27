@@ -182,6 +182,11 @@ def render_page() -> str:
         f"<style>{_CSS}</style>\n"
         f"<style>{_LENS_SWITCH_CSS}</style>\n"
         f"{_LENS_SWITCH_SCRIPT}\n"
+        # C11 chat card (LEFT-side write path). Registered here as an ES module
+        # so ``<grove-chat>`` upgrades in place. The RIGHT-side read-back is a
+        # follow-up PR (resident-watcher work). Additive only — no existing
+        # markup is moved or reshaped.
+        '<script type="module" src="/web/components/grove-chat.js"></script>\n'
         "</head>\n"
         "<body>\n"
         f"{_TOP_STRIP}\n"
@@ -189,6 +194,7 @@ def render_page() -> str:
         "<main>\n"
         f"  {_tree_block()}\n"
         '  <p class="here">the grove is here.</p>\n'
+        '  <grove-chat home-edge="bottom"></grove-chat>\n'
         "</main>\n"
         f"{_FOOTER}\n"
         "</body>\n"
