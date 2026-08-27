@@ -123,7 +123,7 @@ jobs:
 
       - name: Install Playwright browsers (chromium)
         if: ${{ hashFiles('playwright.config.js', 'playwright.config.ts', 'playwright.config.mjs') != '' }}
-        run: npx playwright install --with-deps chromium
+        run: npx --yes playwright install --with-deps chromium
 
       - name: Run Playwright e2e suite
         if: ${{ hashFiles('playwright.config.js', 'playwright.config.ts', 'playwright.config.mjs') != '' && hashFiles('tests/e2e/*.spec.*', 'tests/e2e/**/*.spec.*') != '' }}
@@ -131,13 +131,16 @@ jobs:
 
       # docs/INVARIANTS.md §10 — the Ollama-backed watcher e2e (PR 8) and
       # the willow-mcp mock e2e (PR 10) live in their own directories so
-      # the main pytest run above never accidentally sweeps them in. Each
-      # step is guarded on the presence of an actual test file — an empty
-      # directory carrying only `.gitkeep` is a no-op.
+      # the main pytest run above never accidentally sweeps them in. Both
+      # steps run unconditionally now — a hashFiles('test_*.py') guard
+      # goes silently false (and the step silently no-ops) the moment
+      # tests are renamed off that naming convention, not only when the
+      # directory is genuinely empty. scripts/run_test_dir_or_fail.sh
+      # tells those two cases apart: a bare `.gitkeep` scaffold stays a
+      # clean no-op, but .py files with no `def test_` anywhere fail
+      # loud instead of silently vanishing from the run (m36).
       - name: Run Ollama-backed watcher e2e (PR 8+)
-        if: ${{ hashFiles('tests/e2e_ollama/test_*.py', 'tests/e2e_ollama/**/test_*.py') != '' }}
-        run: python3 -m pytest -x -q --tb=short tests/e2e_ollama
+        run: bash scripts/run_test_dir_or_fail.sh tests/e2e_ollama -x -q --tb=short
 
       - name: Run willow-mcp mock e2e (PR 10+)
-        if: ${{ hashFiles('tests/e2e_willow_mcp/test_*.py', 'tests/e2e_willow_mcp/**/test_*.py') != '' }}
-        run: python3 -m pytest -x -q --tb=short tests/e2e_willow_mcp
+        run: bash scripts/run_test_dir_or_fail.sh tests/e2e_willow_mcp -x -q --tb=short
