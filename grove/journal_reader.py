@@ -173,6 +173,13 @@ def _try_import_read(limit: int, since_id: Optional[str]) -> Optional[list[dict[
     is not importable / the read function is not present / the call raises.
     Gate 5 lands ``kb_journal_read`` in willow-mcp alongside the resident
     watcher; until then this returns ``None`` and the reader falls to (b).
+
+    Raises ``Unreachable`` when willow-mcp returns a ``{"error": ...}``
+    dict — reached-but-rejected is the *unreachable* three-state
+    (INVARIANTS.md §1), not empty. Mirrors ``journal_writer.py:198-200``
+    so writer and reader agree on the shape of an in-process error
+    response across the C11 seam. An honest empty result (a list with
+    zero atoms) still returns ``[]``.
     """
     try:
         from willow_mcp import server as _wms  # type: ignore
@@ -194,10 +201,11 @@ def _try_import_read(limit: int, since_id: Optional[str]) -> Optional[list[dict[
         log.warning("journal_reader: in-process kb_journal_read raised: %s", err)
         return None
     if isinstance(result, dict) and "error" in result:
-        # Reachable but rejected — that's the same D7 empty state at the
-        # UI: no messages, single log, no crash.
-        log.info("journal_reader: kb_journal_read returned error: %s", result.get("error"))
-        return []
+        # Reachable but rejected — INVARIANTS.md §1 three-state: this is
+        # the *unreachable* case, distinct from empty. Mirror
+        # journal_writer.py:198-200 so writer and reader agree on the
+        # in-process error shape across the C11 seam.
+        raise Unreachable(str(result.get("error")))
     atoms = _atoms_from_payload(result)
     # (b) fallback also filters since_id, but if the in-process function
     # ignored our since_id we still owe the caller a correct answer.
