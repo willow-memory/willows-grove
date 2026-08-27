@@ -76,7 +76,7 @@ What **this** doc adds:
    structure.
 3. The **name correction** (Willow's Grove — her space, everything routes
    through her).
-4. **Decisions D1–D6** taken during the design conversation, each with
+4. **Decisions D1–D16** taken during the design conversation, each with
    evidence and warrant.
 5. Extension of the steal-vs-wrap discipline from GSBRW's third-party
    starter pack to the **fleet's own already-built pieces**
@@ -476,7 +476,7 @@ inlined into the served page, no external CDN), so the Graph tab is
 renderable in Grove's own style. Iframe-embed remains a fallback for
 specific deep-dive views if ever needed — not the primary path.
 - evidence: V5 (this store) — Nestor's refusal must render verbatim with negation preserved; requires Grove-native rendering, not iframe
-- evidence: `Nestor/docs/dogfood/decisions/0137-read-only-decision-graph-in-desk.json` — Cytoscape.js MIT inlined into served page; Grove already carries this dep
+- evidence: `Nestor/docs/dogfood/decisions/0137-a-read-only-decision-graph-view-in-the-desk.json` — Cytoscape.js MIT inlined into served page; Grove already carries this dep
 - evidence: `willow-mcp/docs/PRIOR_ART.md §2` — MCP-over-stdio transport is stable; `nestor serve` is versioned
 - evidence: composition sketch (above) — *"Governance answers via nestor decision check + evidence for + warrant for; refusal voice renders Nestor persona speech acts verbatim"* — already committed direction
 - warrant (construction): one MCP client for `nestor serve` in Grove's backend; renders its output through Grove's card + chip vocabulary; iframe path preserved as escape hatch for specific views, not primary
@@ -778,9 +778,9 @@ decisions or artboards. What remains:*
 - `nestor/persona.py` — SPEECH_ACTS + NEGATIONS guard
 - `docs/dogfood/decisions/0053-two-desks.json` — pair-surfaces defense
 - `docs/dogfood/decisions/0055-jeles-bridge.json` — two-witness ledger discipline
-- `docs/dogfood/decisions/0099-mutation-guard-proves-refusals.json` — real-security pattern (see W4)
+- `docs/dogfood/decisions/0099-mutation-guard-proves-the-refusals.json` — real-security pattern (see W4)
 - `docs/dogfood/decisions/0116-before-build-the-anti-rediscovery-hook.json` — advisory hook (see Discipline)
-- `docs/dogfood/decisions/0137-read-only-decision-graph-in-desk.json` — Cytoscape inline commitment
+- `docs/dogfood/decisions/0137-a-read-only-decision-graph-view-in-the-desk.json` — Cytoscape inline commitment
 - `docs/dogfood/decisions/0190-propose-refusal-gate.json` — seal-authority refused at surface
 
 ### Live artboards (design canvases)
