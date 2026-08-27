@@ -50,7 +50,6 @@ This repo consolidates:
 |---------|------|
 | `python3 app.py` | Main Textual dashboard (active, full-featured) |
 | `python3 -m grove` | Lightweight curses TUI (SSH / narrow terminal) |
-| `python3 -m grove_standalone` | Standalone Textual DM app |
 | `./run_mcp.sh` | Grove MCP server (stdio — Claude/Cursor spawn this) |
 | `./run_mcp.sh --serve` | Grove MCP over HTTP+OAuth on :8765 (remote/claude.ai via a tunnel) |
 | `scripts/grove-serve {install\|on\|off\|status}` | Toggle serve mode + the local `.mcp.json` entry |
@@ -64,7 +63,6 @@ This repo consolidates:
 | `grove_reader.py` | Read helpers for dashboard (channels, messages, agents, routing) |
 | `soil.py` | SOIL local store interface |
 | `grove/` | Curses Grove subpackage (lightweight mode) |
-| `grove_standalone.py` | Standalone Textual grove DM TUI |
 | `u2u/` | Signed (Ed25519) LAN transport (knock/consent/note); message bodies travel cleartext on the LAN — see `docs/design/u2u-security-limits.md` |
 | `bridge/` | Matrix bridge |
 | `grove/mcp_local.py` | Grove MCP server — stdio (local) or `--serve` (HTTP+OAuth, remote/claude.ai) |

@@ -14,6 +14,13 @@ These tests pin the corrected CLAUDE.md rows so a future edit that
 re-introduces the encryption claim fails loudly. The full aspiration —
 Gate 6 confidentiality — lives in ``docs/design/u2u-security-limits.md``
 and is not the manifest's or CLAUDE.md's job to promise.
+
+The module-absence tests below (Grove v0.9 PR 12, Loki finding #24) extend
+the same honesty rule to CLAUDE.md: the withdrawn CLAUDE.md carried two
+rows keyed on ``grove_standalone`` — the Entry-points row
+``python3 -m grove_standalone`` (CLAUDE.md:53) and the Architecture row
+``grove_standalone.py`` (CLAUDE.md:67). Neither module exists in the tree.
+The rows must be gone and stay gone.
 """
 
 from __future__ import annotations
@@ -85,4 +92,32 @@ def test_u2u_description_names_the_honest_property() -> None:
         "no CLAUDE.md line describing u2u names 'signed' or references "
         "docs/design/u2u-security-limits.md — INVARIANTS.md §6 requires the "
         "honest property to be visible where u2u is described."
+    )
+
+
+# ---------------------------------------------------------------------------
+# Module-absence phantoms — Grove v0.9 PR 12, Loki finding #24
+# ---------------------------------------------------------------------------
+
+
+def test_claude_md_does_not_reference_phantom_grove_standalone() -> None:
+    """CLAUDE.md must not name the phantom ``grove_standalone`` module.
+
+    Loki finding #24 (Grove v0.9 PR 12): the withdrawn CLAUDE.md carried
+    two rows keyed on ``grove_standalone`` — the Entry-points row
+    ``python3 -m grove_standalone`` (CLAUDE.md:53) and the Architecture
+    row ``grove_standalone.py`` (CLAUDE.md:67). Neither module exists in
+    the tree: no ``grove_standalone.py`` file, no ``grove_standalone/``
+    package. INVARIANTS.md §6 forbids CLAUDE.md — the third cold-start
+    surface — from describing code that does not ship.
+
+    A bare substring check is deliberate: the phantom is the *name*
+    ``grove_standalone``, and any row (entry-point or architecture) that
+    revives it is an honesty violation.
+    """
+    claude_md = _load_claude_md()
+    assert "grove_standalone" not in claude_md, (
+        "CLAUDE.md still names the phantom `grove_standalone` module — "
+        "no such file or package exists in the tree (Grove v0.9 PR 12, "
+        "Loki finding #24; INVARIANTS.md §6)."
     )

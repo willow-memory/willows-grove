@@ -12,6 +12,16 @@ described as a "LAN command server (HMAC-signed)" / "LAN HTTP command
 server", but the module (`grove_serve.py` docstring) is a loopback-only
 Starlette served-page skeleton bound to 127.0.0.1:8766 — no HMAC, no
 command-server surface. The row must not carry those withdrawn claims.
+
+The module-absence tests below (Grove v0.9 PR 12, Loki findings #24/#25/#26)
+extend the same honesty rule: README rows must describe files that exist.
+The withdrawn README advertised three phantoms — a ``grove_standalone``
+module (entry-point row and architecture row), a ``kart_worker.py``
+task-queue consumer, and a ``GROVE_KNOWN_AGENTS`` environment variable
+feeding an unshipped ``ThoughtStream`` widget. None of them exist in the
+tree (``grove_standalone.py``/``grove_standalone/`` absent; ``kart_worker.py``
+absent; zero call sites read ``GROVE_KNOWN_AGENTS``; ``widgets/thought_stream.py``
+absent). The rows must be gone and stay gone.
 """
 
 from __future__ import annotations
@@ -138,3 +148,73 @@ def test_grove_serve_rows_do_not_claim_hmac_or_command_server() -> None:
                 f"loopback-only served-page host on 127.0.0.1:8766, not a "
                 f"command server, and there is no HMAC in the module."
             )
+
+
+# ---------------------------------------------------------------------------
+# Module-absence phantoms — Grove v0.9 PR 12, Loki findings #24/#25/#26
+# ---------------------------------------------------------------------------
+
+
+def test_readme_does_not_reference_phantom_grove_standalone() -> None:
+    """README.md must not name the phantom ``grove_standalone`` module.
+
+    Loki finding #24 (Grove v0.9 PR 12): the withdrawn README carried two
+    rows keyed on ``grove_standalone`` — the Entry-points row
+    ``python3 -m grove_standalone`` (README.md:72) and the Architecture row
+    ``grove_standalone.py`` (README.md:100). Neither module exists in the
+    tree: no ``grove_standalone.py`` file, no ``grove_standalone/`` package.
+    INVARIANTS.md §6 forbids describing code that does not ship.
+
+    A bare substring check is deliberate: the phantom is the *name*
+    ``grove_standalone``, and any row (entry-point or architecture) that
+    revives it is an honesty violation.
+    """
+    readme = _load_readme()
+    assert "grove_standalone" not in readme, (
+        "README.md still names the phantom `grove_standalone` module — "
+        "no such file or package exists in the tree (Grove v0.9 PR 12, "
+        "Loki finding #24; INVARIANTS.md §6)."
+    )
+
+
+def test_readme_does_not_reference_phantom_kart_worker() -> None:
+    """README.md must not name the phantom ``kart_worker.py`` module.
+
+    Loki finding #25 (Grove v0.9 PR 12): the withdrawn README Architecture
+    table (README.md:98) carried a row ``kart_worker.py | Task queue
+    consumer (daemon thread)``. No such file exists in the tree.
+    INVARIANTS.md §6 forbids describing code that does not ship.
+    """
+    readme = _load_readme()
+    assert "kart_worker" not in readme, (
+        "README.md still names the phantom `kart_worker.py` module — "
+        "no such file exists in the tree (Grove v0.9 PR 12, Loki "
+        "finding #25; INVARIANTS.md §6)."
+    )
+
+
+def test_readme_does_not_reference_phantom_grove_known_agents() -> None:
+    """README.md must not describe the phantom ``GROVE_KNOWN_AGENTS`` env var.
+
+    Loki finding #26 (Grove v0.9 PR 12): the withdrawn README described a
+    ``GROVE_KNOWN_AGENTS`` environment variable (README.md:86) feeding a
+    ``ThoughtStream`` widget (README.md:121) that reads it. Zero code in the
+    tree reads ``GROVE_KNOWN_AGENTS``, and there is no
+    ``widgets/thought_stream.py`` — the ``ThoughtStream`` widget itself does
+    not exist. INVARIANTS.md §6 forbids describing behavior the code does
+    not implement.
+
+    Both the env-var name and the ``ThoughtStream`` capability that
+    depended on it must be gone from the README.
+    """
+    readme = _load_readme()
+    assert "GROVE_KNOWN_AGENTS" not in readme, (
+        "README.md still describes the phantom `GROVE_KNOWN_AGENTS` env "
+        "var — no code reads it (Grove v0.9 PR 12, Loki finding #26; "
+        "INVARIANTS.md §6)."
+    )
+    assert "ThoughtStream" not in readme, (
+        "README.md still describes the phantom `ThoughtStream` widget — "
+        "no `widgets/thought_stream.py` exists (Grove v0.9 PR 12, Loki "
+        "finding #26; INVARIANTS.md §6)."
+    )

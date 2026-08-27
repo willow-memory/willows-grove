@@ -69,7 +69,6 @@ See also: [`docs/grove-served-page.md`](docs/grove-served-page.md) — operator 
 |---------|------|
 | `python3 app.py` | Main Textual dashboard |
 | `python3 -m grove` | Lightweight curses TUI (SSH / narrow terminal) |
-| `python3 -m grove_standalone` | Standalone DM app |
 | `python3 grove_serve.py` | Loopback served-page host (127.0.0.1:8766) |
 
 ---
@@ -83,7 +82,6 @@ See also: [`docs/grove-served-page.md`](docs/grove-served-page.md) — operator 
 | `WILLOW_PG_USER` | `$USER` | Database user |
 | `WILLOW_ROOT` | `~/github/willow-2.0` | Path to willow-2.0 repo (health scripts, skills) |
 | `WILLOW_STORE_ROOT` | `~/.willow/store` | SOIL local key-value store |
-| `GROVE_KNOWN_AGENTS` | _(auto-discovered)_ | Comma-separated agent names for ThoughtStream |
 
 ---
 
@@ -95,9 +93,7 @@ See also: [`docs/grove-served-page.md`](docs/grove-served-page.md) — operator 
 | `grove_db.py` | DB layer — pool, schema bootstrap, all grove operations |
 | `grove_reader.py` | Read helpers for dashboard widgets |
 | `schema.sql` | DB bootstrap — run once |
-| `kart_worker.py` | Task queue consumer (daemon thread) |
 | `grove/` | Curses TUI subpackage |
-| `grove_standalone.py` | Standalone Textual DM app |
 | `u2u/` | LAN transport for signed (Ed25519) human-to-human DMs. Message bodies are transmitted in cleartext on the LAN; anyone on the network path can read them. Encryption is planned for Gate 6. |
 | `bridge/` | Matrix bridge |
 | `grove_serve.py` | Loopback served-page host (127.0.0.1:8766) |
@@ -118,5 +114,4 @@ See also: [`docs/grove-served-page.md`](docs/grove-served-page.md) — operator 
   `consent_*` flag False and can deliver nothing until you grant a permission
   (`ContactStore.set_consent`). Contacts already in `grove_contacts.json` keep
   whatever flags are stored there.
-- **ThoughtStream** shows messages from agents discovered via HEARTBEAT messages. Set `GROVE_KNOWN_AGENTS` to pin the list.
 - `public.knowledge` and `public.tasks` in `schema.sql` are stubs for standalone setups. If you run willow-2.0, its migrations manage those tables instead.
