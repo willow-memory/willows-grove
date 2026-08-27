@@ -388,3 +388,44 @@ Pinning tests (populated as each downstream PR lands):
   carrying `sender="resident-watcher"`, a `domain:*` tag in the
   closed `DOMAINS` set, and the operator's text verbatim (Gate 5 Q2,
   Q3, and V5 discipline). (Grove v0.9 PR 8.)
+
+## §11 — Persona provenance
+
+Every commit that changes tracked code carries a `Persona:` trailer
+naming the fleet persona active for the work. Accountability without
+persona-provenance is aesthetic; accountability with it is measurable.
+
+- The trailer's value is a key from
+  `willow-memory/willow/fleet_personas.json` (verbatim, lowercase) —
+  `heimdallr`, `hanuman`, `loki`, `nestor`, `shiva`, `ganesha`, and the
+  rest of the fleet. The `_meta` key is not a persona and is refused.
+- Multi-persona commits (Loki authors an audit line, Heimdallr commits
+  the record) carry two `Persona:` trailers, one per line. Every trailer
+  must resolve.
+- The trailer lives in the commit-message trailer block, next to the
+  existing `Co-Authored-By` line, so `git interpret-trailers --parse`
+  reads it cleanly.
+- A commit that changes tracked code (`.py`, `.js`, `.sh`, `.md`, `.yml`,
+  `.yaml`, `.sql`, `.json`, `.html`) and carries no `Persona:` trailer is
+  drift. Merge commits are exempt (they carry no work, only structure);
+  commits that only touch untracked files (worktree scaffolding, etc.)
+  are exempt by nature.
+
+Grandfather note: every commit landed before v0.9 (before this section
+sealed) carries no persona provenance. The build corpus is therefore
+not diffable against a hypothetical persona-loaded rerun — a real cost
+of shipping this discipline late. §11 is hard from the commit that seals
+it forward; no grace period.
+
+Pinning tests (§11):
+
+- `scripts/check_persona_provenance.py` — CI-called from
+  `.github/workflows/tests.yml`. Enumerates
+  `git log $GITHUB_BASE_REF..HEAD` (or `master..HEAD` locally), reads
+  each commit's message trailer block, and fails if any code-changing
+  non-merge commit has no `Persona:` trailer or names a persona outside
+  the closed fleet set.
+- `tests/test_persona_provenance_check.py` — pins the checker
+  property-by-property against synthetic commits (clean; missing trailer
+  → fail; unknown-persona value → fail; merge commit exempt; docs-only
+  commit still requires the trailer since `.md` is tracked code under §3).

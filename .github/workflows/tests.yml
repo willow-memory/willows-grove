@@ -52,6 +52,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          # §11 persona-provenance walks the commit range past $GITHUB_BASE_REF;
+          # actions/checkout defaults to depth=1 which erases that history.
+          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
@@ -84,6 +88,17 @@ jobs:
       - name: Docs-drift check
         if: ${{ hashFiles('scripts/check_docs_drift.py') != '' }}
         run: python3 scripts/check_docs_drift.py
+
+      # docs/INVARIANTS.md §11 — persona provenance is CI-first from Grove
+      # v0.9 PR 12 forward. Fetches origin/$GITHUB_BASE_REF (the checkout
+      # action does not fetch it by default) so the range past the base is
+      # walkable, then runs the checker. Guarded so a fork without the
+      # script still builds green.
+      - name: Persona-provenance check
+        if: ${{ hashFiles('scripts/check_persona_provenance.py') != '' }}
+        run: |
+          git fetch --no-tags origin "${GITHUB_BASE_REF:-master}"
+          python3 scripts/check_persona_provenance.py
 
       - name: Run test suite
         run: python3 -m pytest -x -q --tb=short --ignore=tests/e2e --ignore=tests/e2e_ollama --ignore=tests/e2e_willow_mcp
