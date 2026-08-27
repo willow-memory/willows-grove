@@ -99,13 +99,18 @@ finally:
 
 
 def teardown_module(_module):
-    """Restore whatever grove.mcp_local was in sys.modules before this
-    file loaded, so downstream tests in the same run see the module in
-    the same import state (stdio or serve) they expected."""
-    if _saved_module is not None:
-        sys.modules["grove.mcp_local"] = _saved_module
-    else:
-        sys.modules.pop("grove.mcp_local", None)
+    """No-op. Do NOT swap sys.modules['grove.mcp_local']: sibling test
+    files (test_mcp_serve_oauth_flow.py, test_transport_security.py)
+    bind their own mcp_local name at collection time via
+    `pytest.importorskip("grove.mcp_local")`, and they use
+    `importlib.reload(mcp_local)` at test time. That reload requires
+    `sys.modules[m.__name__] is m` on the bound reference — swapping
+    the entry back to whatever was there at THIS file's collection
+    time would poison that identity for whichever sibling captured
+    the current entry. Leaving the module in place is safe: the
+    reload calls in siblings re-execute the module body against
+    whatever env they set, so the argv/env this file used at initial
+    import does not carry through."""
 
 
 def test_gate_dead_code_removed_module_surface():
