@@ -54,14 +54,14 @@ Linked from `docs/INDEX.md`.
 
 | Repo | Paths |
 |------|--------|
-| `safe-app-willow-grove` | `grove/mcp_local.py`, `kart_worker.py`, `grove_reader.py`, `docs/verify/ROUTING_OBSERVABILITY.md`, `docs/INDEX.md`, `docs/runbooks/mcp.md`, **this file** |
+| `willows-grove` | `grove/mcp_local.py`, `kart_worker.py`, `grove_reader.py`, `docs/verify/ROUTING_OBSERVABILITY.md`, `docs/INDEX.md`, `docs/runbooks/mcp.md`, **this file** |
 | `willow-2.0` | `sap/sap_mcp.py` |
 | `safe-app-store` | `apps/ratatosk/ratatosk/tools.py`, `apps/ratatosk/ratatosk/crown.py` (on `feat/ratatosk`) |
 
 ## 7. Still loose (explicit)
 
 - **Oracle `_write_decision`:** still swallows DB errors silently — would need logging inside `willow/routing/oracle.py` to fully close.
-- **Workspace noise:** unrelated dirty/untracked files in `safe-app-willow-grove` (`py`, `pyA`, `widgets/hero_scene.py`) — not introduced by this pass; clean separately.
+- **Workspace noise:** unrelated dirty/untracked files in `willows-grove` (`py`, `pyA`, `widgets/hero_scene.py`) — not introduced by this pass; clean separately.
 - **Merge:** changes live on local branches; **not** opened as GitHub PRs from this session.
 
 ## 8. How Hanuman can verify quickly

@@ -263,7 +263,7 @@ Keep in sovereign apps (do not horizontalize away):
 
 | Artifact | Location |
 |----------|----------|
-| This map | `safe-app-willow-grove/docs/synthesis/grove-starter-borrow-map.md` |
+| This map | `willows-grove/docs/synthesis/grove-starter-borrow-map.md` |
 | Scout starter pack | `safe-app-store-public/docs/willow-compatible-projects.md` |
 | Grove vitals | `grove/apps/vitals.py` |
 | Grove desk | `grove/apps/user_board.py`, `panes/user_todos.py` |

@@ -2,7 +2,7 @@
 
 **Branch:** `dashboard/fresh-start`  
 **Worktree:** `worktrees/dashboard-fresh`  
-**Parent repo:** `safe-app-willow-grove` (connected to the prior dashboard work)
+**Parent repo:** `willows-grove` (connected to the prior dashboard work)
 
 ## What survived
 

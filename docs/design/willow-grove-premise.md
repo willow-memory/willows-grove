@@ -127,7 +127,7 @@ not a failure**. See D7.
 | Voice ingress pipeline | `willow-mcp/src/willow_mcp/voice/` — WO-1 in flight; `hey_jarvis` already a wake option | **base** once WO-1 lands | listens for events |
 | Commitment / calendar membrane | `willow-mcp/src/willow_mcp/commitments/` — WO-2 in flight | **base** once WO-2 lands | listens for events |
 | Ratatosk sessions | `safe-app-store/apps/ratatosk` — already posts `session_started`/`session_ended` to a Grove channel | **add-on** | listens when installed |
-| The willow hero | `safe-app-willow-grove/widgets/hero.py` + `widgets/hero_scene.py` — ASCII willow, meadow, Gerald, pigeon, blooms, wind, per-character color | **base** (Grove's own) | ports to SVG + `<pre>` |
+| The willow hero | `willows-grove/widgets/hero.py` + `widgets/hero_scene.py` — ASCII willow, meadow, Gerald, pigeon, blooms, wind, per-character color | **base** (Grove's own) | ports to SVG + `<pre>` |
 | Served-HTML precedent | `willow-mcp/src/willow_mcp/gates_serve.py` — 127.0.0.1 + OAuth 2.1 PKCE + polling refresh | **base** (pattern) | mirrors pattern |
 | Nestor UI | `nestor ui` — Queue / Memory / Ask / Signals / Ledger / Graph (Cytoscape) | **add-on** (with Nestor) | embeds under Governance lens when present |
 | Aesthetic explorations | `willow-mcp/docs/design/willow-*.html` — 10 direction sketches | **base** (design reference) | draws on |
@@ -281,9 +281,9 @@ re-implementing them.
 - warrant (citation): `willow-memory/willow/CONSTITUTION.md` — Article 0
 
 **D2 — Which repo owns the desktop code?** *(sealed)*
-`safe-app-willow-grove` owns the desktop; `willow-memory/willow` is the
+`willows-grove` owns the desktop; `willow-memory/willow` is the
 charter; `willow-mcp` is the muscle.
-- evidence: `safe-app-willow-grove/CLAUDE.md`
+- evidence: `willows-grove/CLAUDE.md`
 - evidence: `willow-memory/willow/CLAUDE.md:3-4`
 
 **D3 — Where is the canonical fleet roster?** *(sealed)*
@@ -295,7 +295,7 @@ declared in-file (`roster-design-intent-unrecorded`).
 **D4 — May the Grove desktop run as served HTML?** *(sealed)*
 Yes, on 127.0.0.1 with OAuth 2.1 / PKCE — precedent set by
 `willow-mcp/src/willow_mcp/gates_serve.py` on `:8765`. The "no web ports"
-rule in `safe-app-willow-grove/CLAUDE.md` is renegotiated by this
+rule in `willows-grove/CLAUDE.md` is renegotiated by this
 pattern; the operator has confirmed there are examples of served surfaces
 within the rules.
 - evidence: `willow-mcp/src/willow_mcp/gates_serve.py` (127.0.0.1 admin surface with OAuth + polling refresh)
@@ -326,7 +326,7 @@ renders what's present; absence is a state, not a failure.** Personas load
 with their homes: Jeles's `§` mint sigil only appears when
 `hornbook-knowledge/Jeles` is installed. Every per-add-on renderer is a
 guarded code path that no-ops on absence.
-- evidence: `safe-app-willow-grove/docs/synthesis/the-one-desk.md` — ONEDSK's Tools layer already distinguishes flagships (sovereign) + scouts (utility belt), each one job, each optional
+- evidence: `willows-grove/docs/synthesis/the-one-desk.md` — ONEDSK's Tools layer already distinguishes flagships (sovereign) + scouts (utility belt), each one job, each optional
 - evidence: `hornbook-knowledge/oakenscrolls-office/almanac_seam.py` — live cross-add-on wiring (Oakenscrolls calls almanacs), proof add-ons compose without Grove mediating
 - evidence: `rudi193-cmd/Forge/promotion.json` — graduation pattern: apps carry `author` persona forward and `host: safe-app-store` preserves roots after moving to their own repo. Forge itself is the reference case (its own promotion.json points back), and the pattern is now graduating INTO Forge as a productized build tool — safe-app-store's build/graduation half moving out, its app-collection half staying.
 
@@ -371,7 +371,7 @@ document. Compact form; see the source docs for reasoning depth.
 - **P9 · Configurable layouts** — discord / slack / mission-control /
   minimal / journal-first / mobile / custom. Personalization by layout,
   not just theme. Model switcher is a first-class app. (evidence:
-  `safe-app-willow-grove/docs/superpowers/specs/2026-04-24-grove-os-design.md`).
+  `willows-grove/docs/superpowers/specs/2026-04-24-grove-os-design.md`).
 - **P10 · Sender colors by hash + state glyphs** — per-persona sigil
   (identity, V-layer) alongside per-instance state glyph
   (`● / ◐ / ○ / ·` = running / degraded / idle / absent). Both sourced
@@ -515,7 +515,7 @@ as an operating system for the seat, not a single-page dashboard.
 operator can promote a card to a pop-out and keep working around it.
 - evidence: Modalities artboard principle strip — expanded from "one primary + secondaries" to "one primary + secondaries + pop-outs"
 - evidence: willow-mcp `gates_serve` pattern — served page on 127.0.0.1 already opens in a browser window; pop-out is `window.open` against the same served surface
-- evidence: `safe-app-willow-grove/docs/superpowers/specs/2026-04-24-grove-os-design.md` — the desk-as-operating-system framing is already in the repo's prior thinking
+- evidence: `willows-grove/docs/superpowers/specs/2026-04-24-grove-os-design.md` — the desk-as-operating-system framing is already in the repo's prior thinking
 - warrant (construction): browser-native `window.open` with the card's route; state syncs via same-origin storage; pop-out card and its representation on the main desk stay in step
 
 **D15 — Grove + Homestead peer-seat coexistence.** *(sealed)*
@@ -558,7 +558,7 @@ reference — writes to fixed `nugget_id "42"`, never auto-run). Grove
 - evidence: `willow-memory/willow/seed/ONBOARDING.md` — operator-ratified 2026-07-22: *"the six-part story IS the human onboarding"*
 - evidence: `willow-memory/willow/seed/seed.py` (SEED10, 956 lines) — charter-rooted, zero monorepo imports; `is_first_run()` deterministic on `BOOT_CONFIG.completed`
 - evidence: `willow-memory/willow/seed/canon/` — the six chapter files (`00-the-covenant.md` through `05-the-world.md`)
-- evidence: `safe-app-willow-grove/widgets/hero.py` — the ambient meadow behavior that Movement 4 introduces and return-runs keep playing
+- evidence: `willows-grove/widgets/hero.py` — the ambient meadow behavior that Movement 4 introduces and return-runs keep playing
 - evidence: `safe-app-store/apps/ask-jeles/askjeles/seed_easter_egg.py` — the reference pattern for opt-in, idempotent app-seed easter eggs
 - warrant (construction): Grove boots by checking `BOOT_CONFIG.completed` — first-run → seed's six movements; return-run → minimal layout with operator's earned state. Deterministic branch, no ambiguity.
 

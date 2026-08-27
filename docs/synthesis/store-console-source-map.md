@@ -18,8 +18,8 @@ Map how the merged **SAFE App Store Console & Skin Design System** (SCDS1) fits 
 | Store console spec | SCDS1 · `safe-app-store-public/docs/specs/store_console_design_spec.md` | **Canonical** (merged `f13bcef`, 2026-06-15) | Control-panel UX, Era Skins, manifest→gate mapping, SAP write flows |
 | App registry spec | SAPS1 · `safe-app-store-public/docs/specs/app_registry_spec.md` | Draft backend sibling | `sap.installed_apps`, `sap.app_connections`, install/cross-app flows |
 | Vision & gaps | `safe-app-store-public/docs/app_store_vision_and_gaps.md` | Working draft (2026-06-08) | E1–E10 gap list; sovereign-first thesis |
-| Grove cross-repo bridge | `safe-app-willow-grove/docs/CROSS_REPO_BRIDGE.md` | Canonical | Grove = comms + UI surface; Willow = KB/tasks/routing |
-| Grove skins (TUI) | `safe-app-willow-grove/docs/superpowers/specs/2026-04-24-grove-skins-beauty.md` | Design ready | Terminal beauty pass — separate surface from web Era Skins |
+| Grove cross-repo bridge | `willows-grove/docs/CROSS_REPO_BRIDGE.md` | Canonical | Grove = comms + UI surface; Willow = KB/tasks/routing |
+| Grove skins (TUI) | `willows-grove/docs/superpowers/specs/2026-04-24-grove-skins-beauty.md` | Design ready | Terminal beauty pass — separate surface from web Era Skins |
 | Full stack synthesis | `sean-data-vault/professional/frameworks/full-stack-synthesis.md` | Active (2026-03-29) | Folder-at-`SAFE/Applications/` = consent; SAP library; OpenClaw outward wall |
 | KB atom | `871A1804` | Frontier | Catalog vs installed paths; Grove as user-triggered install channel |
 | Alignment synthesis | `willow-2.0/sandbox/stone_soup/reports/alignment-synthesis.md` | Final (2026-06-14) | Cross-project invariants (Rendereason / angrybob / Willow); unrelated to store UX but same "honest gap" spine |
@@ -99,7 +99,7 @@ flowchart LR
 
 | Surface | Repo | Skin system | Primary job |
 |---------|------|-------------|-------------|
-| **Grove operator place** | `safe-app-willow-grove` | TUI skins now; can echo Era names later | Fleet comms plus direct install/discovery surface |
+| **Grove operator place** | `willows-grove` | TUI skins now; can echo Era names later | Fleet comms plus direct install/discovery surface |
 | **Store apps/catalog** | `safe-app-store-public` | Era Skins design contract for web apps | Source of app manifests, app paths, design tokens |
 | **SAP terminal/API** | `willow-2.0` / SAP | TOAS1 (CLI aesthetic) | The trust/write path: `[y/N]`, registry, PGP/GPG verification |
 
@@ -165,6 +165,6 @@ The alignment report (`alignment-synthesis.md`, score 0.955) validates cross-pro
 |----------|----------|
 | SCDS1 spec | `safe-app-store-public/docs/specs/store_console_design_spec.md` @ `f13bcef` |
 | SAPS1 backend | `safe-app-store-public/docs/specs/app_registry_spec.md` |
-| This map | `safe-app-willow-grove/docs/synthesis/store-console-source-map.md` |
+| This map | `willows-grove/docs/synthesis/store-console-source-map.md` |
 
 ΔΣ=42

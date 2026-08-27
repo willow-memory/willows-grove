@@ -15,8 +15,8 @@ Welcome. This is beta software. Expect rough edges; report what you find.
 ## 1. Get the code
 
 ```bash
-git clone https://github.com/rudi193-cmd/safe-app-willow-grove.git
-cd safe-app-willow-grove
+git clone https://github.com/willow-memory/willows-grove.git
+cd willows-grove
 ```
 
 ---

@@ -6,7 +6,7 @@
 
 | Layer | Repo | Responsibility |
 |-------|------|----------------|
-| **Operator + installer surface** | `safe-app-willow-grove` | Channels/messages, dashboard/TUI, installer/store pane, MCP “Grove” tools, LISTEN/NOTIFY wiring |
+| **Operator + installer surface** | `willows-grove` | Channels/messages, dashboard/TUI, installer/store pane, MCP “Grove” tools, LISTEN/NOTIFY wiring |
 | **Catalog + app source + design contract** | `safe-app-store` | `catalog.json`, `apps/<id>/`, manifests, SCDS1 Era Skins — artifacts and vocabulary, not runtime orchestration |
 | **System layer (KB, tasks, routing, install authority)** | `willow-2.0` | `pg_bridge.py` public schema, embeddings, Kart-facing tables, routing_decisions shape, `sap.installed_apps`, SAP gate/MCP install path, PGP/GPG manifest trust |
 
@@ -45,7 +45,7 @@ Both Grove and Willow codebases assume (by default) database **`willow_20`**. Co
 
 ## What not to duplicate
 
-- **Do not** paste full `public.knowledge` DDL into `safe-app-willow-grove/schema.sql` — the standalone file documents this explicitly; drift silently breaks the dashboard.
+- **Do not** paste full `public.knowledge` DDL into `willows-grove/schema.sql` — the standalone file documents this explicitly; drift silently breaks the dashboard.
 - **Do** link to [`willow-2.0/docs/db/WILLOW_SCHEMA.md`](../../willow-2.0/docs/db/WILLOW_SCHEMA.md) for KB/task/routing truth.
 - **Do not** add a store-orchestrator service between Grove and `safe-app-store` — Grove reads the catalog directly.
 - **Do not** bypass SAP/PGP on install — copying app files without registry + trust update is a partial install and must stay `pending_trust`.
@@ -56,9 +56,9 @@ Grove MCP (`python3 -m grove.mcp_local`) exposes messaging tools; it is **not** 
 
 ## Receipts
 
-- `safe-app-willow-grove/schema.sql` — non-authoritative comment block on `public.knowledge`
+- `willows-grove/schema.sql` — non-authoritative comment block on `public.knowledge`
 - `willow-2.0/core/pg_bridge.py` — authoritative `CREATE TABLE knowledge …`
 - `safe-app-store-public/catalog.json` — app catalog index
 - `safe-app-store-public/docs/specs/store_console_design_spec.md` — SCDS1 design contract (b17: SCDS1)
-- `safe-app-willow-grove/docs/synthesis/store-console-source-map.md` — integration brief (b17: SCMAP)
-- `safe-app-willow-grove/docs/adrs/ADR-20260615-safe-app-install-trust.md` — install/trust two-phase model (b17: SITR1)
+- `willows-grove/docs/synthesis/store-console-source-map.md` — integration brief (b17: SCMAP)
+- `willows-grove/docs/adrs/ADR-20260615-safe-app-install-trust.md` — install/trust two-phase model (b17: SITR1)

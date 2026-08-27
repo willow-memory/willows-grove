@@ -34,7 +34,7 @@ persona/prompt strings verbatim (below).
 
 ## Tree state audited
 
-- Repository: `rudi193-cmd/safe-app-willow-grove`
+- Repository: `willow-memory/willows-grove`
 - Branch audited: `master` at commit `3f8aa295` (post PR 11 merge)
 - Audit branch: `claude/grove-v09-pr12-loki-audit-i62er5`
 - Working directory: `/tmp/pr12` (git worktree off master)

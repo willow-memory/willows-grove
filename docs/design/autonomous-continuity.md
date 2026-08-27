@@ -243,7 +243,7 @@ C1  source: "Session continuity is a solved problem for the Willow fleet."
     target: "Yes — via Nestor + Jeles + kb_journal + seed's six movements."
     evidence: [
       ("doc", "safe-app-store/docs/the-house-already-knew.md", "§2, four rediscoveries"),
-      ("doc", "safe-app-willow-grove/docs/design/willow-grove-premise.md", "D16"),
+      ("doc", "willows-grove/docs/design/willow-grove-premise.md", "D16"),
       ("file", "willow-memory/willow/seed/seed.py", "the six movements"),
       ("file", "willow-mcp/src/willow_mcp/server.py", "kb_journal at 2607"),
     ]
@@ -256,7 +256,7 @@ C3  source: "The fix for session continuity is discipline, not new code."
              SAPS1 rule 11 forces the pre-build lookup."
     evidence: [
       ("file", "safe-app-store/CLAUDE.md", "operating rule 11"),
-      ("doc", "safe-app-willow-grove/docs/design/willow-grove-premise.md", "D16"),
+      ("doc", "willows-grove/docs/design/willow-grove-premise.md", "D16"),
     ]
     warrant: "Article IV, Jeles conflict_scan, Nestor seal all already
              run. Adding another layer would be a fifth rediscovery."
@@ -310,7 +310,7 @@ C11 source: "Grove's served page hosts the resident local watcher as
     target: "Yes."
     evidence: [
       ("doc", "willow-grove-premise.md", "D4, D9, D12"),
-      ("PRs", "safe-app-willow-grove #38 #39 #40 #41", "primitives + scaffold landed"),
+      ("PRs", "willows-grove #38 #39 #40 #41", "primitives + scaffold landed"),
     ]
     warrant: "The Web Components already landed (grove-card,
              grove-envelope-panel, grove-refusal-chip, grove-cast-chip,

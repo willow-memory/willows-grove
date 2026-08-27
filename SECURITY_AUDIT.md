@@ -1,6 +1,6 @@
 ---
 b17: WGRV2
-title: Security Audit — safe-app-willow-grove
+title: Security Audit — willows-grove
 date: 2026-05-06
 revised: 2026-07-28
 auditor: Hanuman (Claude Code, Sonnet 4.6)
@@ -9,7 +9,7 @@ baseline: 27e123a
 status: open (tracking doc)
 ---
 
-# Security Audit — safe-app-willow-grove
+# Security Audit — willows-grove
 
 Part of the Level 2 full-fleet security audit. Tracking doc: findings are
 recorded here, patches land in their own PRs.
