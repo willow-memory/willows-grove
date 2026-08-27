@@ -530,6 +530,35 @@ later Constitution version — do not wait on it.**
 - evidence: `willow-memory/willow/CONSTITUTION.md` Article XIII — federation reserved for Version 2; coexistence must NOT wait on it
 - warrant (construction): the v1-to-v2 retrofit is small — `homestead_seam.py` slots into Grove's per-add-on renderer pattern (D7 + P3 rung ceiling + P8 persona picker are all reusable); no design lock-in from picking sibling-apps v1
 
+**D16 — Day-one experience: seed's six movements on first-run; `minimal` on return.** *(sealed)*
+**First-run** = the six-movement seed sequence from
+`willow-memory/willow/seed/seed.py` (ratified operator 2026-07-22).
+Grove hosts the pages in the browser. **Install happens inside the
+story; nothing proceeds without a `yes` per gate.** The chapters:
+- `canon/00-the-covenant` — gate + age gate; keys minted from name
+- `canon/01-be-the-other` — provider choice; no-cloud path works
+- `canon/02-the-discipline` — install behind the curtain, gate by gate
+- `canon/03-the-person` — first conversation, held only with consent
+- `canon/04-the-language` — **the fun beat: Gerald, ΔΣ=42, pigeon, 1:42, blooms cycling — Grove's hidden things are FIRST INTRODUCED here**; thereafter they play as ambient meadow behavior
+- `canon/05-the-world` — Grove handle, Jeles, Nest; cards on the dashboard
+- `handoff/seed.py` — coda: the letter to the next instance
+
+**Return-run** = **`minimal`** layout (quiet meadow, willow watermark,
+edges labeled, chat home-edge visible per D14). Easter eggs on return
+are silent — the operator has already met the myth; the meadow just
+does its thing.
+
+Each app's own `seed_easter_egg.py` pattern remains **opt-in and
+idempotent** (per `apps/ask-jeles/askjeles/seed_easter_egg.py`
+reference — writes to fixed `nugget_id "42"`, never auto-run). Grove
+**hosts**, doesn't own.
+- evidence: `willow-memory/willow/seed/ONBOARDING.md` — operator-ratified 2026-07-22: *"the six-part story IS the human onboarding"*
+- evidence: `willow-memory/willow/seed/seed.py` (SEED10, 956 lines) — charter-rooted, zero monorepo imports; `is_first_run()` deterministic on `BOOT_CONFIG.completed`
+- evidence: `willow-memory/willow/seed/canon/` — the six chapter files (`00-the-covenant.md` through `05-the-world.md`)
+- evidence: `safe-app-willow-grove/widgets/hero.py` — the ambient meadow behavior that Movement 4 introduces and return-runs keep playing
+- evidence: `safe-app-store/apps/ask-jeles/askjeles/seed_easter_egg.py` — the reference pattern for opt-in, idempotent app-seed easter eggs
+- warrant (construction): Grove boots by checking `BOOT_CONFIG.completed` — first-run → seed's six movements; return-run → minimal layout with operator's earned state. Deterministic branch, no ambiguity.
+
 ## Constitutional anchors
 
 - **CONST-0-3** — No self-extension of capability. Grove renders envelopes; it does not create them. Envelope creation is Operator Key.
@@ -672,9 +701,6 @@ decisions or artboards. What remains:*
    lands (WO-1), which surface materializes and by what rule? Depends
    on the utterance arbiter's decision and the reaction engine's
    `surface_card` action, but the specific mapping needs a table.
-2. **Day-one default layout** (P9 says configurable — discord / slack
-   / mission-control / minimal / journal-first / mobile / custom —
-   but which is Grove's day-one first-run experience).
 *Settled since the earlier draft:*
 - ~~Framework choice~~ → **D9 sealed**: vanilla JS + Web Components + no build.
 - ~~Nestor integration path~~ → **D11 sealed**: `nestor serve` MCP-over-stdio; card-native rendering, not iframe.
@@ -683,6 +709,7 @@ decisions or artboards. What remains:*
 - ~~Full-cast render vs trust-tier orbit~~ → **D13 sealed**: contextual subsets — render personas relevant to what's in focus.
 - ~~Chat's home-edge~~ → **D14 sealed**: visible home-edge affordance + OS-like pop-out to separate windows.
 - ~~Grove + Homestead coexistence~~ → **D15 sealed**: v1 sibling apps; v2 Homestead as Grove add-on.
+- ~~Day-one default layout~~ → **D16 sealed**: first-run runs the seed's six movements (operator-ratified 2026-07-22); return-run is `minimal`; hidden things introduced in Movement 4 persist as ambient meadow.
 - ~~Bloom-row overlap~~ → resolved on v4 Quiet Desk (meadow moved to distinct ground strip; willow became watermark; wordmark removed).
 - ~~Free-float vs grid-snap~~ → Modalities artboard + Envelopes-summoned
   artboard settled the summonable-card model (edges + slide-forward).
