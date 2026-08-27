@@ -32,6 +32,7 @@ from starlette.routing import Mount, Route
 from starlette.staticfiles import StaticFiles
 
 from grove import envelope_reader
+from grove import journal_reader
 from grove import kart_reader
 from grove_html import render_page
 from grove import journal_writer
@@ -219,6 +220,33 @@ async def _journal(request: Request) -> JSONResponse:
     return JSONResponse(result, status_code=200)
 
 
+async def _journal_recent(request: Request) -> JSONResponse:
+    """GET /api/journal/recent?limit=<n>&since=<id> — chat card RIGHT-side (C11).
+
+    Additive read-only surface joining the served page to willow-mcp's
+    ``kb_journal`` seam. The chat card polls this endpoint and appends
+    new atoms to the RIGHT column — the read-back column D14 sealed as
+    "what Jarvis says back".
+
+    Autonomous-continuity C11 sealed the RIGHT side as *the resident
+    watcher's read-back*. The resident watcher itself lands with Gate 5;
+    this route is the honest reader that ships before it. When Gate 5's
+    watcher starts writing to ``kb_journal``, its atoms surface here
+    automatically — no change on Grove's side.
+    """
+    try:
+        limit = int(request.query_params.get("limit", "50"))
+    except (TypeError, ValueError):
+        limit = 50
+    if limit <= 0:
+        limit = 50
+    if limit > 200:
+        limit = 200
+    since = request.query_params.get("since") or None
+    atoms = journal_reader.read_recent(limit=limit, since_id=since)
+    return JSONResponse(atoms)
+
+
 async def _seed_index(_request: Request) -> HTMLResponse:
     """GET /seed/ — the six-movement onboarding landing page (D16).
 
@@ -340,6 +368,7 @@ def build_app() -> Starlette:
         Route("/", _index),
         Route("/health", _health),
         Route("/api/journal", _journal, methods=["POST"]),
+        Route("/api/journal/recent", _journal_recent),
         Route("/api/dispatch", _dispatch),
         Route("/api/envelopes", _envelopes),
         Route("/api/personas", _personas),
