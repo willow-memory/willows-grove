@@ -4,8 +4,26 @@ b17: WGRV1  ΔΣ=42
 
 Self-contained — no sibling repo dependency. Pool, schema bootstrap,
 LISTEN helper, and all channel/message/flag/bus/cursor operations.
+
+Every psycopg2 connection this module opens is bounded by
+``connect_timeout`` and a session ``statement_timeout`` GUC. CLAUDE.md
+pins "If Postgres is down, surface it and stop." — an unbounded
+connect against a stuck-but-reachable Postgres would hang the
+dashboard instead. Timeouts are configurable via
+``GROVE_PG_CONNECT_TIMEOUT`` (seconds; default 5) and
+``GROVE_PG_STATEMENT_TIMEOUT_MS`` (milliseconds; default 30000). Loki
+v0.9 finding #21 (Grove v0.9 PR 12).
+
+The FRANK ledger writer (``_frank_ledger_append``) raises
+``grove.errors.LedgerWriteFailed`` on any failure and logs via the
+module logger. The pre-PR-12 shape swallowed every exception —
+including the anti-fork ``frank_ledger_no_fork`` UniqueViolation — to
+a bare ``print()``. That was the anti-pattern named in Loki v0.9
+finding #23. Best-effort semantics stay at the call site, not inside
+the primitive.
 """
 
+import logging
 import os
 import threading
 from datetime import datetime
@@ -13,6 +31,8 @@ from typing import Optional, List, Dict, Any
 
 _pool = None
 _pool_lock = threading.Lock()
+
+log = logging.getLogger(__name__)
 
 SCHEMA = "grove"
 
@@ -40,6 +60,44 @@ BUS_PRIORITY = {
 BUS_BROADCAST = "__all__"   # sentinel: message is addressed to every agent
 
 
+def _connect_timeout_secs() -> int:
+    """Seconds to wait for a Postgres TCP connect before giving up.
+
+    Configurable via ``GROVE_PG_CONNECT_TIMEOUT``. Default 5. A
+    non-positive or non-integer value falls back to the default so a
+    typo in a systemd unit never removes the bound.
+    """
+    raw = os.getenv("GROVE_PG_CONNECT_TIMEOUT", "5")
+    try:
+        n = int(raw)
+    except (TypeError, ValueError):
+        return 5
+    return n if n > 0 else 5
+
+
+def _statement_timeout_ms() -> int:
+    """Milliseconds to allow a single Postgres statement before killing it.
+
+    Configurable via ``GROVE_PG_STATEMENT_TIMEOUT_MS``. Default 30000
+    (30 s). Set as a session GUC via the psycopg2 ``options`` string
+    (``-c statement_timeout=<ms>``) on every connect this module opens.
+    """
+    raw = os.getenv("GROVE_PG_STATEMENT_TIMEOUT_MS", "30000")
+    try:
+        n = int(raw)
+    except (TypeError, ValueError):
+        return 30000
+    return n if n > 0 else 30000
+
+
+def _connect_kwargs() -> Dict[str, Any]:
+    """The bounded-timeout kwargs every psycopg2.connect in this module passes."""
+    return {
+        "connect_timeout": _connect_timeout_secs(),
+        "options": f"-c statement_timeout={_statement_timeout_ms()}",
+    }
+
+
 def _get_pool():
     global _pool
     if _pool is not None:
@@ -52,7 +110,14 @@ def _get_pool():
                 pg_db   = os.getenv("WILLOW_PG_DB", "willow_20")
                 pg_user = os.getenv("WILLOW_PG_USER", os.environ.get("USER", ""))
                 dsn = f"dbname={pg_db} user={pg_user}"
-            _pool = psycopg2.pool.ThreadedConnectionPool(minconn=2, maxconn=10, dsn=dsn)
+            # Timeouts pass through ThreadedConnectionPool's *args/**kwargs
+            # into every psycopg2.connect it opens.
+            _pool = psycopg2.pool.ThreadedConnectionPool(
+                minconn=2,
+                maxconn=10,
+                dsn=dsn,
+                **_connect_kwargs(),
+            )
             _bootstrap_schema(_pool)
     return _pool
 
@@ -94,12 +159,17 @@ def listen_connection():
     Callers own this connection for its lifetime and must close() it themselves.
     Pool connections must not be set autocommit; this is the correct path for
     any caller that needs LISTEN/NOTIFY.
+
+    Bounded by ``connect_timeout`` and ``statement_timeout`` per the
+    module docstring — the LISTEN statement itself returns immediately,
+    so ``statement_timeout`` does not affect the subsequent
+    ``poll_notify`` idle path.
     """
     import psycopg2
     pg_db   = os.getenv("WILLOW_PG_DB",   "willow_20")
     pg_user = os.getenv("WILLOW_PG_USER",  os.getenv("USER", ""))
     dsn     = os.getenv("WILLOW_DB_URL",   "") or f"dbname={pg_db} user={pg_user}"
-    conn    = psycopg2.connect(dsn)
+    conn    = psycopg2.connect(dsn, **_connect_kwargs())
     conn.autocommit = True
     return conn
 
@@ -328,11 +398,25 @@ def archive_channel(conn, channel_id: int) -> bool:
 # ---------------------------------------------------------------------------
 
 def _frank_ledger_append(event_type: str, content: dict) -> None:
-    """Write one tamper-evident entry to frank_ledger in willow_20. Best-effort.
+    """Write one tamper-evident entry to frank_ledger in willow_20.
 
-    Re-homed from the cut grove_serve. Opens its own short-lived connection so a
-    ledger failure can never roll back the caller's message transaction.
+    Re-homed from the cut grove_serve. Opens its own short-lived,
+    timeout-bounded connection so a ledger failure can never roll back
+    the caller's message transaction.
+
+    Failure surfaces two ways (Loki v0.9 finding #23, Grove v0.9 PR 12):
+    the module logger records an ERROR with exception info, AND
+    ``grove.errors.LedgerWriteFailed`` is raised so the caller can
+    react. The pre-fix shape caught every exception and ``print()``ed
+    it, which vanished the anti-fork ``frank_ledger_no_fork``
+    UniqueViolation to stdout — the exact anti-pattern the audit named.
+
+    Best-effort semantics stay at the call site (see ``send_message``),
+    not inside this primitive. See ``docs/INVARIANTS.md §1``.
     """
+    # Lazy import so grove_db has no import-time coupling to grove.errors
+    # (mirrors cursor_load's pattern).
+    from grove.errors import LedgerWriteFailed
     try:
         import hashlib as _hl
         import json as _j
@@ -341,7 +425,7 @@ def _frank_ledger_append(event_type: str, content: dict) -> None:
         import psycopg2.extras
         db   = os.environ.get("WILLOW_PG_DB", "willow_20")
         user = os.environ.get("WILLOW_PG_USER", os.environ.get("USER", ""))
-        conn = psycopg2.connect(dbname=db, user=user)
+        conn = psycopg2.connect(dbname=db, user=user, **_connect_kwargs())
         try:
             cur = conn.cursor()
             cur.execute("SELECT hash FROM frank_ledger ORDER BY created_at DESC LIMIT 1")
@@ -358,8 +442,13 @@ def _frank_ledger_append(event_type: str, content: dict) -> None:
             conn.commit()
         finally:
             conn.close()
+    except LedgerWriteFailed:
+        # Never wrap our own sentinel.
+        raise
     except Exception as e:
-        print(f"[frank-ledger] write error: {e}", flush=True)
+        log.error("frank_ledger append failed for event_type=%r: %s",
+                  event_type, e, exc_info=True)
+        raise LedgerWriteFailed(f"frank_ledger append failed: {e}") from e
 
 
 def _is_human_sender(sender: str) -> bool:
@@ -388,15 +477,23 @@ def send_message(conn, *, channel_id: int, sender: str, content: str,
     conn.commit()
     result = dict(zip(cols, row))
     # FRANK audit (re-scoped from grove_serve): ledger agent-originated grove
-    # posts. Best-effort; never blocks or rolls back the send.
+    # posts. Best-effort at the call site — the primitive itself now raises
+    # LedgerWriteFailed and logs (Loki v0.9 finding #23). We catch the
+    # sentinel here and log at WARNING so a ledger outage never blocks or
+    # rolls back a real message send, but it also never vanishes silently.
     if not _is_human_sender(sender):
-        _frank_ledger_append("grove_agent_message", {
-            "msg_id": result.get("id"),
-            "channel_id": channel_id,
-            "sender": sender,
-            "content": (content or "")[:500],
-            "message_type": message_type,
-        })
+        from grove.errors import LedgerWriteFailed
+        try:
+            _frank_ledger_append("grove_agent_message", {
+                "msg_id": result.get("id"),
+                "channel_id": channel_id,
+                "sender": sender,
+                "content": (content or "")[:500],
+                "message_type": message_type,
+            })
+        except LedgerWriteFailed as e:
+            log.warning("frank_ledger append skipped for msg_id=%r (best-effort): %s",
+                        result.get("id"), e.reason)
     return result
 
 
