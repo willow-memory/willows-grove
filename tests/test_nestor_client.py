@@ -84,6 +84,11 @@ def test_decision_check_returns_response(monkeypatch):
             "meta": {"pair_id": "p42", "verifier": "rita"},
         }
     }
+    # Fake stdio child so __enter__/_ensure_session do not mark the client
+    # unavailable when CI has no nestor binary (decision_check probes PATH first).
+    _install_fake(monkeypatch, [
+        {"jsonrpc": "2.0", "id": 1, "result": {"protocolVersion": "2025-06-18", "capabilities": {}}},
+    ])
     monkeypatch.setattr(NestorClient, "_tool", lambda self, name, args: sealed_payload)
     with NestorClient() as nc:
         out = nc.decision_check("may we merge?")
