@@ -13,9 +13,12 @@ receive.
 
 Endpoints exercised:
   * ``GET  /api/envelopes``        — populated | empty | unreachable via WILLOW_HOME
+  * ``GET  /api/personas``         — populated | empty | unreachable via WILLOW_HOME
   * ``POST /api/nestor/decide``    — populated (sealed | refused | pending) via mock
   * ``GET  /api/dispatch``         — populated | empty via mocked kart_reader
                                      (unreachable case pinned by kart_reader tests)
+  * ``POST /api/journal``          — populated | unreachable via mocked journal_writer
+                                     (a successful write is always populated per §1)
   * ``GET  /api/journal/recent``   — populated | empty | unreachable via mocked reader
 
 Stdlib only. Same harness shape as ``tests/test_grove_serve_envelopes.py`` and
@@ -195,6 +198,105 @@ class EnvelopesWiringTests(unittest.TestCase):
 
 
 # ---------------------------------------------------------------------------
+# /api/personas — populated | empty | unreachable via WILLOW_HOME shape
+# ---------------------------------------------------------------------------
+
+
+class PersonasWiringTests(unittest.TestCase):
+    """INVARIANTS.md §1 + §4 + §8 — the persona registry panel's live endpoint.
+
+    Mirrors ``EnvelopesWiringTests`` — tempdir + ``WILLOW_HOME`` override so the
+    real ``persona_roster.locate_personas_file()`` probe path selects the shape,
+    not a monkeypatched reader. That way the wire test also witnesses that the
+    reader honors §1 (raises ``Unreachable`` on absence, returns an empty roster
+    on a schema-valid file with no rows, returns a populated roster otherwise).
+    """
+
+    def setUp(self) -> None:
+        from grove import persona_roster as pr
+        pr._logged_missing = False
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.fake_home = Path(self.tmp.name) / "no-home"
+        self.fake_home.mkdir()
+
+    def _env(self, willow_home: Path):
+        return mock.patch.dict(
+            os.environ,
+            {"HOME": str(self.fake_home), "WILLOW_HOME": str(willow_home)},
+            clear=False,
+        )
+
+    def _write_registry(self, willow_home: Path, doc: dict) -> Path:
+        target = willow_home / "willow-memory" / "willow" / "fleet_personas.json"
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(json.dumps(doc), encoding="utf-8")
+        return target
+
+    def test_personas_unreachable_when_no_registry_file(self) -> None:
+        """No fleet_personas.json anywhere in the probe path → 503 + unreachable.
+
+        INVARIANTS.md §2 supersedes the pre-§1 read where absence collapsed to
+        an empty-personas envelope: the reader now raises ``Unreachable`` and
+        the endpoint answers 503.
+        """
+        willow_home = Path(self.tmp.name) / "no_registry"
+        willow_home.mkdir()
+        with self._env(willow_home):
+            with _ServerHarness() as srv:
+                status, body = _get(srv.url("/api/personas"))
+        self.assertEqual(status, 503)
+        self.assertEqual(body.get("state"), "unreachable")
+        self.assertIn("fleet_personas.json", body.get("reason", ""))
+
+    def test_personas_empty_when_registry_has_no_agents(self) -> None:
+        """File present with ``agents: []`` → 200 + state=empty."""
+        willow_home = Path(self.tmp.name) / "empty_registry"
+        willow_home.mkdir()
+        self._write_registry(
+            willow_home, {"schema": "fleet-personas/v1", "agents": []}
+        )
+        with self._env(willow_home):
+            with _ServerHarness() as srv:
+                status, body = _get(srv.url("/api/personas"))
+        self.assertEqual(status, 200)
+        self.assertEqual(body.get("state"), "empty")
+        self.assertEqual(body.get("schema"), "fleet-personas/v1")
+
+    def test_personas_populated_when_registry_has_agents(self) -> None:
+        """File present with one or more rows → 200 + state=populated. The
+        endpoint round-trips the file's bytes under the ``state`` wrapper so
+        the panel receives the schema and the row list verbatim."""
+        willow_home = Path(self.tmp.name) / "populated_registry"
+        willow_home.mkdir()
+        self._write_registry(
+            willow_home,
+            {
+                "schema": "fleet-personas/v1",
+                "agents": [
+                    {
+                        "agent": "willow",
+                        "role": "primary",
+                        "trust": "flagship",
+                        "voice": {"register": "warm"},
+                        "visual": {"color": "#8FBC8F", "sigil": "\U0001F333"},
+                    },
+                ],
+            },
+        )
+        with self._env(willow_home):
+            with _ServerHarness() as srv:
+                status, body = _get(srv.url("/api/personas"))
+        self.assertEqual(status, 200)
+        self.assertEqual(body.get("state"), "populated")
+        self.assertEqual(body.get("schema"), "fleet-personas/v1")
+        agents = body.get("agents")
+        self.assertIsInstance(agents, list)
+        self.assertEqual(len(agents), 1)
+        self.assertEqual(agents[0]["agent"], "willow")
+
+
+# ---------------------------------------------------------------------------
 # /api/nestor/decide — populated (sealed | refused | pending) via mocked client
 # ---------------------------------------------------------------------------
 
@@ -295,6 +397,68 @@ class DispatchWiringTests(unittest.TestCase):
         self.assertEqual(body.get("state"), "populated")
         self.assertEqual(len(body.get("tasks", [])), 1)
         self.assertEqual(body["tasks"][0]["origin"], "kart")
+
+
+# ---------------------------------------------------------------------------
+# POST /api/journal — populated | unreachable via mocked journal_writer
+# ---------------------------------------------------------------------------
+
+
+class JournalWriterWiringTests(unittest.TestCase):
+    """INVARIANTS.md §1 + §4 + §8 — the chat LEFT-side POST endpoint.
+
+    A successful write is always ``state=populated`` per §1 (writes have no
+    distinct empty case). The writer's ``Unreachable`` becomes 503 + state=
+    unreachable, distinct from the 400 bad-input codepath (which is not a
+    §1 state — it's the pre-existing validation surface).
+    """
+
+    def test_journal_write_populated_on_success(self) -> None:
+        """Atom accepted → 200 + state=populated + writer's id/ts round-tripped."""
+        import grove_serve
+
+        captured: dict = {}
+
+        def _fake_write(text, *, sender="operator"):
+            captured["text"] = text
+            captured["sender"] = sender
+            return {"ok": True, "id": "ATOM-1", "ts": "2026-08-27T00:00:00Z"}
+
+        with _ServerHarness() as srv, mock.patch.object(
+            grove_serve.journal_writer, "write_operator_turn", _fake_write
+        ):
+            status, body = _post_json(
+                srv.url("/api/journal"),
+                {"text": "hello willow", "sender": "operator"},
+            )
+        self.assertEqual(status, 200)
+        self.assertEqual(body.get("state"), "populated")
+        self.assertTrue(body.get("ok"))
+        self.assertEqual(body.get("id"), "ATOM-1")
+        self.assertEqual(body.get("ts"), "2026-08-27T00:00:00Z")
+        # The atom bytes propagate to the writer verbatim (V5 discipline).
+        self.assertEqual(captured.get("text"), "hello willow")
+        self.assertEqual(captured.get("sender"), "operator")
+
+    def test_journal_write_unreachable_when_writer_raises(self) -> None:
+        """Writer raises ``Unreachable`` → 503 + state=unreachable + reason."""
+        import grove_serve
+        from grove.errors import Unreachable
+
+        def _boom(_text, *, sender="operator"):  # noqa: ARG001
+            raise Unreachable("willow-mcp not reachable")
+
+        with _ServerHarness() as srv, mock.patch.object(
+            grove_serve.journal_writer, "write_operator_turn", _boom
+        ):
+            status, body = _post_json(
+                srv.url("/api/journal"),
+                {"text": "hi", "sender": "operator"},
+            )
+        self.assertEqual(status, 503)
+        self.assertEqual(body.get("state"), "unreachable")
+        self.assertFalse(body.get("ok"))
+        self.assertIn("willow-mcp", body.get("reason", ""))
 
 
 # ---------------------------------------------------------------------------
