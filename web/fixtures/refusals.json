@@ -1,0 +1,39 @@
+{
+  "schema": "refusal-fixture/v1",
+  "description": "Fixtures for <grove-refusal-chip>. Three shapes: (1) a Nestor durable_rejection with a verbatim body + warrant/evidence ids; (2) a Nestor pending act with an empty body — the chip MUST render nothing; (3) a Willow refusal exercising the persona lookup fallback path when no registry entry exists.",
+  "cases": [
+    {
+      "name": "nestor-durable-rejection",
+      "payload": {
+        "persona": "nestor",
+        "act": "durable_rejection",
+        "body": "No. This decision cannot be sealed: no pair matches the question, and no independent warrant survives the trust-root filter. The negation stands until a warrant is produced.",
+        "warrant_ids": ["warrant-0099-mutation-guard", "warrant-0190-propose-refusal-gate"],
+        "evidence_ids": ["evidence-0137-graph-view"],
+        "seal_sig": "ed25519:GRV1-heimdallr-2026-08-27T00:00:00Z"
+      }
+    },
+    {
+      "name": "nestor-pending-empty-body",
+      "payload": {
+        "persona": "nestor",
+        "act": "pending",
+        "body": "",
+        "warrant_ids": [],
+        "evidence_ids": [],
+        "seal_sig": ""
+      }
+    },
+    {
+      "name": "willow-lookup-fallback",
+      "payload": {
+        "persona": "willow",
+        "act": "corpus_miss",
+        "body": "Not enough independent sources to answer. The question has been logged; the answer will not be guessed.",
+        "warrant_ids": [],
+        "evidence_ids": [],
+        "seal_sig": ""
+      }
+    }
+  ]
+}

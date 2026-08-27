@@ -55,7 +55,7 @@
 <body>
   <header class="harness">
     <h1>Willow's Grove — primitives harness</h1>
-    <span style="color: var(--grove-muted);">grove-card &middot; grove-envelope-panel &middot; grove-cast-chip</span>
+    <span style="color: var(--grove-muted);">grove-card &middot; grove-envelope-panel &middot; grove-refusal-chip &middot; grove-cast-chip</span>
   </header>
 
   <main>
@@ -92,6 +92,11 @@
       </div>
     </section>
 
+    <section class="panel" id="refusal-panel">
+      <h2>Refusal chips (Nestor voice — V5, verbatim)</h2>
+      <div id="refusal-chip-list" style="display: flex; flex-direction: column; gap: 0.75rem; align-items: flex-start;"></div>
+    </section>
+
     <section class="panel controls">
       <h2>Card summon</h2>
       <button id="summon-nestor" type="button">summon nestor card</button>
@@ -124,6 +129,7 @@
     import "./components/grove-card.js";
     import "./components/grove-envelope-panel.js";
     import "./components/grove-cast-chip.js";
+    import "./components/grove-refusal-chip.js";
 
     document.getElementById("summon-nestor").addEventListener("click", () => {
       document.getElementById("card-nestor").summon();
@@ -131,6 +137,31 @@
     document.getElementById("summon-jeles").addEventListener("click", () => {
       document.getElementById("card-jeles").summon();
     });
+
+    // Load refusal fixtures and render one <grove-refusal-chip> per case.
+    (async () => {
+      const list = document.getElementById("refusal-chip-list");
+      try {
+        const res = await fetch("./fixtures/refusals.json", { headers: { accept: "application/json" } });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const doc = await res.json();
+        for (const c of (doc.cases || [])) {
+          const wrap = document.createElement("div");
+          wrap.style.cssText = "display:flex;flex-direction:column;gap:0.25rem;align-items:flex-start;";
+          const label = document.createElement("div");
+          label.textContent = c.name;
+          label.style.cssText = "color: var(--grove-muted); font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase;";
+          wrap.appendChild(label);
+          const chip = document.createElement("grove-refusal-chip");
+          chip.dataset.case = c.name;
+          chip.data = c.payload;
+          wrap.appendChild(chip);
+          list.appendChild(wrap);
+        }
+      } catch (err) {
+        list.textContent = `refusal fixtures unreachable: ${err && err.message || err}`;
+      }
+    })();
   </script>
 </body>
 </html>
