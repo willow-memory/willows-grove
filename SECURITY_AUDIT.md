@@ -146,6 +146,8 @@ G-DEP-01) it is named in the finding.
 | `panes/user_todos.py` | My Desk: user todos, projects, deadlines, atoms | Scanned |
 | `run_dev.sh` | launch Grove dashboard (fresh-start worktree) | Reviewed |
 | `run_mcp.sh` | Grove MCP server (stdio or serve) | Reviewed |
+| `scripts/check_docs_drift.py` | Grove v0.9 PR 4 stub — exits 0 with a note; PR 11 fills the enforcement. No external input beyond argv; no file writes, subprocess, network, or eval. INVARIANTS.md §10. | Reviewed |
+| `scripts/ci-security-grep.sh` | Grove v0.9 PR 4 CI sweep — greps tracked `*.py` / `*.sh` for well-known risky patterns (`os.system(`, `subprocess.*(shell=True`, bare `eval(`/`exec(`, `pickle.loads`, bare `yaml.load(`). Reads `scripts/ci-security-grep.allowlist` (see below). No mutating operations; runs under `set -u -o pipefail`; no `eval`, no dynamic shell expansion of external strings. INVARIANTS.md §10. | Reviewed |
 | `scripts/mcp_entry_toggle.py` | idempotent add/remove of one http entry in an .mcp.json (used by grove-serve) | Reviewed |
 | `scripts/nestor_reseed.py` | One-shot operator script — copies sealed pairs from the design's scratch Nestor store into `$WILLOW_HOME/nestor/willows-grove.db` via `nestor.sqlite_store.SqliteStore`. Idempotent (skips existing `source_norm`). Reads `$WILLOW_HOME` and CLI paths — no other external input. | Reviewed |
 | `soil.py` | thin sqlite3 wrapper for SOIL collections used by the dashboard | Scanned |
@@ -235,7 +237,30 @@ G-DEP-01) it is named in the finding.
 | `widgets/hero_scene.py` | HeroScene: willow tree + info panel + full-width meadow | Scanned |
 | `widgets/nav_bar.py` | NavBar with 1–7 targets + vitals line | Scanned |
 
-132 tracked source files: 14 Reviewed, 74 Scanned, 44 out of scope (`tests/`).
+134 tracked source files: 16 Reviewed, 74 Scanned, 44 out of scope (`tests/`).
+
+### Placeholder test directories (Grove v0.9 PR 4)
+
+The following directories carry only a `.gitkeep` today. Downstream PRs
+populate them; each is **Out of scope** for the audit until it does,
+because the audit's coverage levels apply to source files, not empty
+directories:
+
+- `tests/e2e/` — populated by Grove v0.9 PR 9 (Playwright browser suite).
+- `tests/e2e_ollama/` — populated by Grove v0.9 PR 8 (Ollama-backed watcher e2e).
+- `tests/e2e_willow_mcp/` — populated by Grove v0.9 PR 10 (willow-mcp mock e2e).
+
+The scope table above is the source of truth for tracked `*.py` / `*.sh`
+files; `.gitkeep` files fall outside that classification and are noted
+here so a reader tracing the tree does not mistake them for gaps.
+
+### CI allowlist file (Grove v0.9 PR 4)
+
+- `scripts/ci-security-grep.allowlist` — plain-text allowlist read by
+  `scripts/ci-security-grep.sh`. **Out of scope** for the source
+  classification (not `*.py` / `*.sh`); it is data, not executable
+  code. Empty of entries in PR 4 — the 2026-07-28 sweep found no risky
+  hits in the tracked tree.
 
 ---
 

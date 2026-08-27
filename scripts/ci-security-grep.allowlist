@@ -1,0 +1,11 @@
+# scripts/ci-security-grep.allowlist — false-positive allowlist for the
+# CI security grep step (see scripts/ci-security-grep.sh).
+#
+# Format: one entry per line, shaped `<path>:<substring-of-matched-line>`.
+# Blank lines and lines beginning with `#` are ignored. Every allowlisted
+# hit MUST carry a preceding comment explaining why it is safe.
+#
+# The 2026-07-28 SECURITY_AUDIT.md sweep found no os.system, no shell=True,
+# no bare eval/exec, no pickle.loads, and no bare yaml.load in this tree.
+# The file is intentionally empty of entries; downstream PRs add rows only
+# with a documented justification.
