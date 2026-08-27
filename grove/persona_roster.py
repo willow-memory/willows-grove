@@ -13,7 +13,10 @@ Three-state contract (see ``docs/INVARIANTS.md §1``):
 * empty        — ``PersonaRoster.load()`` returns a roster with no rows
                  (file present, ``agents`` / ``personas`` empty).
 * unreachable  — ``PersonaRoster.load()`` raises ``Unreachable`` when
-                 no registry file is found on any probe path.
+                 no registry file is found on any probe path, OR when
+                 the file exists but cannot be parsed / drifts off the
+                 known schema. Both are "the source could not be
+                 reached" from the endpoint's point of view.
 
 INVARIANTS.md §2 supersedes the earlier D7 reading: absence is a state
 AND it must render distinctly, so this module no longer returns ``None``
@@ -38,8 +41,11 @@ log = logging.getLogger(__name__)
 
 SCHEMA_ID = "fleet-personas/v1"
 
-# Module-level log-once flag. Reset by tests via ``persona_roster._logged_missing = False``.
+# Module-level log-once flags. Reset by tests via
+# ``persona_roster._logged_missing = False`` /
+# ``persona_roster._logged_drift = False``.
 _logged_missing = False
+_logged_drift = False
 
 
 def _candidate_paths() -> list[Path]:
@@ -234,24 +240,46 @@ class PersonaRoster:
 
     @classmethod
     def load(cls) -> "PersonaRoster":
-        """Locate + load. Raises ``Unreachable`` when no registry file exists.
+        """Locate + load. Raises ``Unreachable`` when the registry cannot be reached.
 
         Three-state contract (INVARIANTS.md §1):
 
         * populated / empty → returns a ``PersonaRoster`` (rows may be []).
-        * unreachable       → raises ``Unreachable`` with the probe list.
+        * unreachable       → raises ``Unreachable`` with the probe list
+                              (no file found) OR the parse / schema-drift
+                              reason (file found but unusable).
 
-        Prior behavior returned ``None`` on absence and callers checked for
-        it; INVARIANTS.md §2 supersedes that — the ``Unreachable`` sentinel
-        is what the endpoint translates into a 503 payload.
+        The direct constructor still raises ``ValueError`` on schema
+        drift so callers who point it at an explicit path can distinguish
+        "you gave me a bad file" from "the fleet's registry has drifted";
+        it is ``load()`` — the classmethod every endpoint uses — that
+        collapses both failure modes into the same ``Unreachable`` sentinel
+        the invariant expects, so ``grove_serve._personas`` can answer
+        503 without introducing a second except branch for ValueError
+        (which would risk swallowing programmer bugs elsewhere on the seam).
+
+        Log-once discipline (matches ``_logged_missing`` on the absent-file
+        path): the first drift reason lands at INFO; subsequent load()
+        calls stay silent until the process restarts or a test resets
+        the flag.
         """
+        global _logged_drift
         path = locate_personas_file()
         if path is None:
             raise Unreachable(
                 "no fleet_personas.json found in probe path "
                 "($WILLOW_HOME/willow-memory/willow, ~/willow-memory/willow, ~/.willow)"
             )
-        return cls(path=path)
+        try:
+            return cls(path=path)
+        except ValueError as err:
+            reason = (
+                f"fleet_personas.json at {path} could not be loaded: {err}"
+            )
+            if not _logged_drift:
+                log.info("persona_roster: %s — treating as unreachable", reason)
+                _logged_drift = True
+            raise Unreachable(reason) from err
 
     # ---- introspection ----
     @property

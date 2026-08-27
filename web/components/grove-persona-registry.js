@@ -24,11 +24,14 @@
  *
  * Data sources (probed in this order):
  *
- *   1. The `data-source` attribute, if present, is fetched as the registry
- *      URL. Reloads whenever the attribute changes.
- *   2. Otherwise, an inline `<script type="application/json">` child element
- *      is parsed — the fixture / harness shim path the earlier Web Components
- *      already tolerated.
+ *   1. The inline `<script type="application/json">` child element is read
+ *      ONLY when the element explicitly opts in via `data-source="_inline"`
+ *      or a `data-fixture` attribute — the fixture / harness shim path is
+ *      opt-in, never the default (INVARIANTS.md §8). Without one of those
+ *      opt-in attributes, an inline shim present in the DOM is ignored.
+ *   2. Otherwise, the `data-source` attribute, if present (and not the
+ *      `"_inline"` sentinel), is fetched as the registry URL. Reloads
+ *      whenever the attribute changes.
  *   3. Otherwise, `/api/personas` is fetched — the default backed by
  *      `grove_serve.py`'s route over the `PersonaRoster` reader.
  *
@@ -64,9 +67,16 @@
  *   failure`) on the Python side.
  *
  * Attributes:
- *   data-source — optional URL to fetch instead of the default `/api/personas`.
- *                 Attribute-reactive: setAttribute("data-source", ...) triggers
- *                 a fresh fetch and a new `registry-loaded` event.
+ *   data-source  — optional URL to fetch instead of the default
+ *                  `/api/personas`. The literal value `"_inline"` opts into
+ *                  the inline JSON shim (harness/fixture use only —
+ *                  INVARIANTS.md §8) instead of naming a URL.
+ *                  Attribute-reactive: setAttribute("data-source", ...)
+ *                  triggers a fresh fetch and a new `registry-loaded` event.
+ *   data-fixture — optional boolean-style attribute (presence only) that
+ *                  also opts into the inline JSON shim, for harness pages
+ *                  that prefer an explicit fixture-mode flag over
+ *                  overloading `data-source`.
  *
  * @element grove-persona-registry
  */
@@ -119,15 +129,24 @@ class GrovePersonaRegistry extends HTMLElement {
     // into a no-op (last-writer-wins on rapid attribute changes).
     const token = ++this._loadToken;
 
-    // 1. Inline shim wins over the default fetch — the fixture path.
-    const inline = this._readInlineShim();
-    if (inline !== null) {
-      this._settle(inline, token);
-      return;
+    // 1. The inline shim is opt-in only (INVARIANTS.md §8): it is read
+    //    ONLY when the element explicitly asked for it via
+    //    data-source="_inline" or a data-fixture attribute. Absent that
+    //    opt-in, an inline shim present in the DOM (e.g. leftover harness
+    //    markup) MUST NOT shadow the live endpoint.
+    const dataSource = this.getAttribute("data-source");
+    const fixtureOptIn = dataSource === "_inline" || this.hasAttribute("data-fixture");
+    if (fixtureOptIn) {
+      const inline = this._readInlineShim();
+      if (inline !== null) {
+        this._settle(inline, token);
+        return;
+      }
     }
 
-    // 2. Otherwise fetch `data-source` if present, else the default.
-    const source = this.getAttribute("data-source") || DEFAULT_SOURCE;
+    // 2. Otherwise fetch `data-source` if present (and not the `_inline`
+    //    sentinel), else the default live endpoint.
+    const source = (dataSource && dataSource !== "_inline") ? dataSource : DEFAULT_SOURCE;
     this._fetch(source, token);
   }
 

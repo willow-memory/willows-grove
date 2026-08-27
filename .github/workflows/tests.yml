@@ -52,6 +52,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          # §11 persona-provenance walks the commit range past $GITHUB_BASE_REF;
+          # actions/checkout defaults to depth=1 which erases that history.
+          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
@@ -85,6 +89,25 @@ jobs:
         if: ${{ hashFiles('scripts/check_docs_drift.py') != '' }}
         run: python3 scripts/check_docs_drift.py
 
+      # docs/INVARIANTS.md §12 — ratification is CI-first from Grove v0.9
+      # PR 12 forward. On pull_request events the checker reads
+      # $GITHUB_EVENT_PATH and asserts the PR body opens with a
+      # `Ratified-by: <id> — "<quote>"` line.
+      - name: Ratification check
+        if: ${{ github.event_name == 'pull_request' && hashFiles('scripts/check_ratification.py') != '' }}
+        run: python3 scripts/check_ratification.py
+
+      # docs/INVARIANTS.md §11 — persona provenance is CI-first from Grove
+      # v0.9 PR 12 forward. Fetches origin/$GITHUB_BASE_REF (the checkout
+      # action does not fetch it by default) so the range past the base is
+      # walkable, then runs the checker. Guarded so a fork without the
+      # script still builds green.
+      - name: Persona-provenance check
+        if: ${{ hashFiles('scripts/check_persona_provenance.py') != '' }}
+        run: |
+          git fetch --no-tags origin "${GITHUB_BASE_REF:-master}"
+          python3 scripts/check_persona_provenance.py
+
       - name: Run test suite
         run: python3 -m pytest -x -q --tb=short --ignore=tests/e2e --ignore=tests/e2e_ollama --ignore=tests/e2e_willow_mcp
 
@@ -100,7 +123,7 @@ jobs:
 
       - name: Install Playwright browsers (chromium)
         if: ${{ hashFiles('playwright.config.js', 'playwright.config.ts', 'playwright.config.mjs') != '' }}
-        run: npx playwright install --with-deps chromium
+        run: npx --yes playwright install --with-deps chromium
 
       - name: Run Playwright e2e suite
         if: ${{ hashFiles('playwright.config.js', 'playwright.config.ts', 'playwright.config.mjs') != '' && hashFiles('tests/e2e/*.spec.*', 'tests/e2e/**/*.spec.*') != '' }}
@@ -108,13 +131,16 @@ jobs:
 
       # docs/INVARIANTS.md §10 — the Ollama-backed watcher e2e (PR 8) and
       # the willow-mcp mock e2e (PR 10) live in their own directories so
-      # the main pytest run above never accidentally sweeps them in. Each
-      # step is guarded on the presence of an actual test file — an empty
-      # directory carrying only `.gitkeep` is a no-op.
+      # the main pytest run above never accidentally sweeps them in. Both
+      # steps run unconditionally now — a hashFiles('test_*.py') guard
+      # goes silently false (and the step silently no-ops) the moment
+      # tests are renamed off that naming convention, not only when the
+      # directory is genuinely empty. scripts/run_test_dir_or_fail.sh
+      # tells those two cases apart: a bare `.gitkeep` scaffold stays a
+      # clean no-op, but .py files with no `def test_` anywhere fail
+      # loud instead of silently vanishing from the run (m36).
       - name: Run Ollama-backed watcher e2e (PR 8+)
-        if: ${{ hashFiles('tests/e2e_ollama/test_*.py', 'tests/e2e_ollama/**/test_*.py') != '' }}
-        run: python3 -m pytest -x -q --tb=short tests/e2e_ollama
+        run: bash scripts/run_test_dir_or_fail.sh tests/e2e_ollama -x -q --tb=short
 
       - name: Run willow-mcp mock e2e (PR 10+)
-        if: ${{ hashFiles('tests/e2e_willow_mcp/test_*.py', 'tests/e2e_willow_mcp/**/test_*.py') != '' }}
-        run: python3 -m pytest -x -q --tb=short tests/e2e_willow_mcp
+        run: bash scripts/run_test_dir_or_fail.sh tests/e2e_willow_mcp -x -q --tb=short

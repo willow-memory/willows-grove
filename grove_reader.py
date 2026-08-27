@@ -1,4 +1,19 @@
 """grove_reader.py — Direct Postgres reader for Grove and routing data.
+
+Every reader in this module honors the three-state contract
+(``docs/INVARIANTS.md §1``): it returns a value with a bounded shape
+(populated or empty) OR raises ``grove.errors.Unreachable`` when its
+source cannot be reached. A bare ``[]`` / ``{}`` / ``None`` never means
+"unreachable" here.
+
+Writer helpers in this file (``grove_get_or_create_dm``,
+``grove_create_text_channel``, ``grove_archive_channel``,
+``grove_set_channel_agent``, ``grove_set_channel_description``,
+``grove_rename_channel``, ``grove_message_delete``,
+``grove_message_toggle_flag``, ``grove_mark_channel_read``) return
+``{"ok": bool, "error": str}`` — they are not readers under §1 and are
+unchanged.
+
 b17: WDASH  ΔΣ=42
 """
 import hashlib
@@ -8,6 +23,7 @@ import os
 from datetime import datetime, timezone
 
 import grove_db
+from grove.errors import Unreachable
 
 _log = logging.getLogger("grove_reader")
 
@@ -30,6 +46,40 @@ def _conn_ctx(conn):
 def _release(conn, owned: bool) -> None:
     if owned:
         grove_db.release_connection(conn)
+
+
+def _redact_db_error(exc: BaseException) -> str:
+    """Return a caller-safe generic message for a DB exception.
+
+    Loki v0.9 audit finding M17 (cross-cutting hazard): the writer helpers
+    in this module previously returned ``str(exc)`` on failure. For
+    psycopg2 errors that string embeds internal state — schema names,
+    constraint names, DETAIL row values — which landed in the UI verbatim.
+
+    This helper maps the exception TYPE (not the message) to a short,
+    generic string. The full exception is still preserved via the caller's
+    ``_log.warning`` line so operators can debug from server logs; only
+    the caller-facing dict is redacted.
+    """
+    try:
+        import psycopg2
+        from psycopg2 import errors as _pg_errors
+        integrity = (
+            _pg_errors.UniqueViolation,
+            _pg_errors.ForeignKeyViolation,
+            _pg_errors.NotNullViolation,
+            _pg_errors.CheckViolation,
+            psycopg2.IntegrityError,
+        )
+        if isinstance(exc, integrity):
+            return "constraint violation"
+        if isinstance(exc, psycopg2.OperationalError):
+            return "database unreachable"
+        if isinstance(exc, psycopg2.Error):
+            return "database error"
+    except Exception:  # pragma: no cover — psycopg2 unavailable
+        pass
+    return "database error"
 
 
 def dashboard_grove_sender() -> str:
@@ -108,6 +158,8 @@ def grove_messages_bus_addressed_to(
 
     Rows where content lacks @mentions but agents used MCP bus addressing.
     Drops HEARTBEAT/ACK noise. Does NOT include '__all__' broadcasts (use mentions + history).
+
+    §1: raises ``Unreachable`` when Postgres cannot be reached.
     """
     r = recipient.strip()
     if not r:
@@ -135,9 +187,11 @@ def grove_messages_bus_addressed_to(
             {"id": r0[0], "channel": r0[1], "sender": r0[2], "content": r0[3]}
             for r0 in cur.fetchall()
         ]
+    except Unreachable:
+        raise
     except Exception as e:
         _log.warning("grove_reader.grove_messages_bus_addressed_to: %s", e)
-        return []
+        raise Unreachable(f"grove_reader.grove_messages_bus_addressed_to: {e}") from e
     finally:
         _release(conn, owned)
 
@@ -153,6 +207,8 @@ def grove_own_channel_since(
 
     Channel name convention: lowercased sender identity (e.g. Auto → #auto).
     Skips HEARTBEAT bus noise — text posts only.
+
+    §1: raises ``Unreachable`` when Postgres cannot be reached.
     """
     ch = (channel_name or "").strip()
     if not ch:
@@ -179,9 +235,11 @@ def grove_own_channel_since(
             {"id": r[0], "channel": r[1], "sender": r[2], "content": r[3]}
             for r in cur.fetchall()
         ]
+    except Unreachable:
+        raise
     except Exception as e:
         _log.warning("grove_reader.grove_own_channel_since: %s", e)
-        return []
+        raise Unreachable(f"grove_reader.grove_own_channel_since: {e}") from e
     finally:
         _release(conn, owned)
 
@@ -199,6 +257,8 @@ def grove_inbox_bundle(
 
     Acquires a single pooled connection for all three sub-queries when conn=None,
     avoiding three separate checkout/release round-trips per call.
+
+    §1: any child reader raising ``Unreachable`` propagates cleanly.
     """
     who = agent.strip() if (agent and agent.strip()) else dashboard_grove_sender()
     handles = desk_mention_handles(who)
@@ -217,7 +277,11 @@ def grove_inbox_bundle(
 
 
 def grove_member_roster(limit: int = 30, conn=None) -> list[dict]:
-    """Discord member pane: merge heartbeat presence with recent message senders."""
+    """Discord member pane: merge heartbeat presence with recent message senders.
+
+    §1: raises ``Unreachable`` when Postgres cannot be reached (never returns
+    a partial merged snapshot on failure).
+    """
     conn, owned = _conn_ctx(conn)
     now = datetime.now(timezone.utc)
     merged: dict[str, dict] = {}
@@ -246,9 +310,11 @@ def grove_member_roster(limit: int = 30, conn=None) -> list[dict]:
             if prev is None or age_secs < prev["age_secs"]:
                 merged[sender] = row
         return sorted(merged.values(), key=lambda r: r["age_secs"])
+    except Unreachable:
+        raise
     except Exception as e:
         _log.warning("grove_reader.grove_member_roster: %s", e)
-        return list(merged.values())
+        raise Unreachable(f"grove_reader.grove_member_roster: {e}") from e
     finally:
         _release(conn, owned)
 
@@ -257,6 +323,8 @@ def grove_agents(conn=None) -> list[dict]:
     """Return agents from HEARTBEAT bus messages, most recent first.
     Each entry: {sender: str, last_seen_at: datetime, age_secs: int}
     Falls back to all-sender inference if bus_type column is absent.
+
+    §1: raises ``Unreachable`` when Postgres cannot be reached.
     """
     conn, owned = _conn_ctx(conn)
     try:
@@ -289,9 +357,11 @@ def grove_agents(conn=None) -> list[dict]:
             age_secs = int((now - last_seen).total_seconds())
             rows.append({"sender": sender, "last_seen_at": last_seen, "age_secs": age_secs})
         return rows
+    except Unreachable:
+        raise
     except Exception as e:
         _log.warning("grove_reader.grove_agents: %s", e)
-        return []
+        raise Unreachable(f"grove_reader.grove_agents: {e}") from e
     finally:
         _release(conn, owned)
 
@@ -313,7 +383,11 @@ def grove_latest_message_for_sender(
     exclude_bus_types: tuple = ("HEARTBEAT",),
     conn=None,
 ) -> dict | None:
-    """Return the latest non-HEARTBEAT message for sender, or None."""
+    """Return the latest non-HEARTBEAT message for sender, or None.
+
+    §1: ``None`` is the empty state (no such row); ``Unreachable`` is raised
+    when Postgres cannot be reached.
+    """
     conn, owned = _conn_ctx(conn)
     try:
         cur = conn.cursor()
@@ -338,9 +412,11 @@ def grove_latest_message_for_sender(
             "correlation_id": row[2],
             "reply_to_id": row[3],
         }
+    except Unreachable:
+        raise
     except Exception as e:
         _log.warning("grove_reader.grove_latest_message_for_sender: %s", e)
-        return None
+        raise Unreachable(f"grove_reader.grove_latest_message_for_sender: {e}") from e
     finally:
         _release(conn, owned)
 
@@ -351,6 +427,8 @@ def grove_agent_fleet_rows(limit: int = 50, conn=None) -> list[dict]:
     Each row: sender, last_seen_at, age_secs, ui_state, peek,
               blocked, reply_to_message_id, correlation_id.
     Two round-trips max per §7 (Phase 0).
+
+    §1: raises ``Unreachable`` when Postgres cannot be reached.
     """
     conn, owned = _conn_ctx(conn)
     try:
@@ -424,15 +502,21 @@ def grove_agent_fleet_rows(limit: int = 50, conn=None) -> list[dict]:
                 "correlation_id": peek_data.get("correlation_id"),
             })
         return rows
+    except Unreachable:
+        raise
     except Exception as e:
         _log.warning("grove_reader.grove_agent_fleet_rows: %s", e)
-        return []
+        raise Unreachable(f"grove_reader.grove_agent_fleet_rows: {e}") from e
     finally:
         _release(conn, owned)
 
 
 def coordinator_heartbeat(conn=None) -> dict | None:
-    """Return parsed HEARTBEAT content from willow-coordinator, or None."""
+    """Return parsed HEARTBEAT content from willow-coordinator, or None.
+
+    §1: ``None`` is the empty state (no heartbeat row); ``Unreachable`` is
+    raised when Postgres cannot be reached.
+    """
     conn, owned = _conn_ctx(conn)
     try:
         cur = conn.cursor()
@@ -444,8 +528,11 @@ def coordinator_heartbeat(conn=None) -> dict | None:
         """)
         row = cur.fetchone()
         return json.loads(row[0]) if row else None
-    except Exception:
-        return None
+    except Unreachable:
+        raise
+    except Exception as e:
+        _log.warning("grove_reader.coordinator_heartbeat: %s", e)
+        raise Unreachable(f"grove_reader.coordinator_heartbeat: {e}") from e
     finally:
         _release(conn, owned)
 
@@ -555,7 +642,7 @@ def grove_create_text_channel(raw_name: str, description: str = "") -> dict:
         }
     except Exception as e:
         _log.warning("grove_reader.grove_create_text_channel: %s", e)
-        return {"ok": False, "error": str(e)}
+        return {"ok": False, "error": _redact_db_error(e)}
     finally:
         if conn is not None:
             grove_db.release_connection(conn)
@@ -584,27 +671,29 @@ def grove_archive_channel(name: str) -> dict:
         return {"ok": True, "name": name}
     except Exception as e:
         _log.warning("grove_reader.grove_archive_channel: %s", e)
-        return {"ok": False, "error": str(e)}
+        return {"ok": False, "error": _redact_db_error(e)}
     finally:
         if conn is not None:
             grove_db.release_connection(conn)
 
 
 def _migrate_soil_channel_cursors(old_name: str, new_name: str) -> None:
-    """Move SOIL cursor records when a channel is renamed."""
-    try:
-        import soil
+    """Move SOIL cursor records when a channel is renamed.
 
-        per = soil.get("willow-dashboard/cursors", old_name)
-        if per:
-            soil.put("willow-dashboard/cursors", new_name, per)
-        bundle = soil.get("willow-dashboard/channel_cursors", "cursors") or {}
-        if isinstance(bundle, dict) and old_name in bundle:
-            bundle = dict(bundle)
-            bundle[new_name] = bundle.pop(old_name)
-            soil.put("willow-dashboard/channel_cursors", "cursors", bundle)
-    except Exception as e:
-        _log.warning("grove_reader._migrate_soil_channel_cursors: %s", e)
+    Raises on any SOIL failure — the caller (``grove_rename_channel``)
+    treats that as a partial-success case (Postgres row renamed, SOIL
+    cursors not migrated) rather than swallowing it into a fake "ok".
+    """
+    import soil
+
+    per = soil.get("willow-dashboard/cursors", old_name)
+    if per:
+        soil.put("willow-dashboard/cursors", new_name, per)
+    bundle = soil.get("willow-dashboard/channel_cursors", "cursors") or {}
+    if isinstance(bundle, dict) and old_name in bundle:
+        bundle = dict(bundle)
+        bundle[new_name] = bundle.pop(old_name)
+        soil.put("willow-dashboard/channel_cursors", "cursors", bundle)
 
 
 def grove_set_channel_agent(channel_name: str, agent: str | None) -> dict:
@@ -639,7 +728,7 @@ def grove_set_channel_agent(channel_name: str, agent: str | None) -> dict:
         return {"ok": True, "agent": agent, "name": row[0]}
     except Exception as e:
         _log.warning("grove_reader.grove_set_channel_agent: %s", e)
-        return {"ok": False, "error": str(e)}
+        return {"ok": False, "error": _redact_db_error(e)}
     finally:
         if conn is not None:
             grove_db.release_connection(conn)
@@ -666,7 +755,7 @@ def grove_set_channel_description(channel_name: str, description: str) -> dict:
         return {"ok": True, "name": row[0]}
     except Exception as e:
         _log.warning("grove_reader.grove_set_channel_description: %s", e)
-        return {"ok": False, "error": str(e)}
+        return {"ok": False, "error": _redact_db_error(e)}
     finally:
         if conn is not None:
             grove_db.release_connection(conn)
@@ -708,17 +797,35 @@ def grove_rename_channel(old_name: str, raw_new_name: str) -> dict:
         if not row:
             return {"ok": False, "error": "channel not found"}
         conn.commit()
-        _migrate_soil_channel_cursors(old_name, new_name)
+        try:
+            _migrate_soil_channel_cursors(old_name, new_name)
+        except Exception as e:
+            # Postgres row rename already committed above — this is a
+            # partial-success case, not a full failure. Say so instead of
+            # reporting a fake unqualified "ok" (Loki v0.9 finding #38).
+            _log.warning(
+                "grove_reader.grove_rename_channel: SOIL cursor migration "
+                "failed after rename committed: %s", e,
+            )
+            return {
+                "ok": False,
+                "name": new_name,
+                "error": "channel renamed but SOIL cursor migration failed",
+            }
         return {"ok": True, "name": new_name}
     except Exception as e:
         _log.warning("grove_reader.grove_rename_channel: %s", e)
-        return {"ok": False, "error": str(e)}
+        return {"ok": False, "error": _redact_db_error(e)}
     finally:
         if conn is not None:
             grove_db.release_connection(conn)
 
 
 def grove_list_archived_channels(conn=None) -> list[dict]:
+    """Return archived channels for the archive picker.
+
+    §1: raises ``Unreachable`` when Postgres cannot be reached.
+    """
     conn, owned = _conn_ctx(conn)
     try:
         rows = grove_db.list_channels(conn, include_archived=True)
@@ -727,9 +834,11 @@ def grove_list_archived_channels(conn=None) -> list[dict]:
             for r in rows
             if r.get("is_archived")
         ]
+    except Unreachable:
+        raise
     except Exception as e:
         _log.warning("grove_reader.grove_list_archived_channels: %s", e)
-        return []
+        raise Unreachable(f"grove_reader.grove_list_archived_channels: {e}") from e
     finally:
         _release(conn, owned)
 
@@ -743,6 +852,8 @@ def grove_channels(conn=None, last_seen_ids: dict | None = None) -> list[dict]:
     """Return channels with unread counts.
     last_seen_ids: {channel_name: last_seen_message_id}
     Each entry: {id, name, channel_type, unread, max_id, agent_name}
+
+    §1: raises ``Unreachable`` when Postgres cannot be reached.
     """
     conn, owned = _conn_ctx(conn)
     last_seen_ids = last_seen_ids or {}
@@ -783,9 +894,11 @@ def grove_channels(conn=None, last_seen_ids: dict | None = None) -> list[dict]:
                 "agent_name": agent_name,
             })
         return result
+    except Unreachable:
+        raise
     except Exception as e:
         _log.warning("grove_reader.grove_channels: %s", e)
-        return []
+        raise Unreachable(f"grove_reader.grove_channels: {e}") from e
     finally:
         _release(conn, owned)
 
@@ -808,7 +921,12 @@ def _attach_message_flags(conn, msgs: list[dict]) -> None:
 
 def grove_messages(channel_name: str, conn=None, limit: int = 50,
                    since_id: int = 0) -> list[dict]:
-    """Return messages for a channel, oldest first (with flags attached)."""
+    """Return messages for a channel, oldest first (with flags attached).
+
+    §1: raises ``Unreachable`` when Postgres cannot be reached. An empty
+    list is still the legitimate empty state (channel missing, or no rows
+    past ``since_id``).
+    """
     conn, owned = _conn_ctx(conn)
     try:
         cur = conn.cursor()
@@ -841,9 +959,11 @@ def grove_messages(channel_name: str, conn=None, limit: int = 50,
         msgs = list(reversed(msgs))
         _attach_message_flags(conn, msgs)
         return msgs
+    except Unreachable:
+        raise
     except Exception as e:
         _log.warning("grove_reader.grove_messages: %s", e)
-        return []
+        raise Unreachable(f"grove_reader.grove_messages: {e}") from e
     finally:
         _release(conn, owned)
 
@@ -859,7 +979,7 @@ def grove_message_delete(message_id: int) -> dict:
         return {"ok": True, "id": message_id}
     except Exception as e:
         _log.warning("grove_reader.grove_message_delete: %s", e)
-        return {"ok": False, "error": str(e)}
+        return {"ok": False, "error": _redact_db_error(e)}
     finally:
         if conn is not None:
             grove_db.release_connection(conn)
@@ -885,14 +1005,17 @@ def grove_message_toggle_flag(message_id: int, flag: str) -> dict:
         return {"ok": True, "on": True, "flag": flag}
     except Exception as e:
         _log.warning("grove_reader.grove_message_toggle_flag: %s", e)
-        return {"ok": False, "error": str(e)}
+        return {"ok": False, "error": _redact_db_error(e)}
     finally:
         if conn is not None:
             grove_db.release_connection(conn)
 
 
 def grove_attention_flagged(limit: int = 8, conn=None) -> list[dict]:
-    """Urgent + needs-reply rows for desk ATTENTION."""
+    """Urgent + needs-reply rows for desk ATTENTION.
+
+    §1: raises ``Unreachable`` when Postgres cannot be reached.
+    """
     conn, owned = _conn_ctx(conn)
     try:
         cur = conn.cursor()
@@ -920,9 +1043,11 @@ def grove_attention_flagged(limit: int = 8, conn=None) -> list[dict]:
             }
             for r in cur.fetchall()
         ]
+    except Unreachable:
+        raise
     except Exception as e:
         _log.warning("grove_reader.grove_attention_flagged: %s", e)
-        return []
+        raise Unreachable(f"grove_reader.grove_attention_flagged: {e}") from e
     finally:
         _release(conn, owned)
 
@@ -949,7 +1074,7 @@ def grove_mark_channel_read(channel_name: str, last_id: int | None = None) -> di
         return {"ok": True, "channel": channel_name, "last_id": last_id}
     except Exception as e:
         _log.warning("grove_reader.grove_mark_channel_read: %s", e)
-        return {"ok": False, "error": str(e)}
+        return {"ok": False, "error": _redact_db_error(e)}
     finally:
         if conn is not None:
             grove_db.release_connection(conn)
@@ -960,7 +1085,10 @@ def grove_messages_all_agents(
     last_id: int = 0,
     limit: int = 20,
 ) -> "list[dict]":
-    """Return recent grove.messages from known agent senders, id > last_id."""
+    """Return recent grove.messages from known agent senders, id > last_id.
+
+    §1: raises ``Unreachable`` when Postgres cannot be reached.
+    """
     conn, owned = _conn_ctx(None)
     try:
         cur = conn.cursor()
@@ -976,9 +1104,11 @@ def grove_messages_all_agents(
             {"id": r[0], "sender": r[1], "content": r[2], "created_at": r[3]}
             for r in reversed(rows)
         ]
+    except Unreachable:
+        raise
     except Exception as e:
         _log.warning("grove_reader.grove_messages_all_agents: %s", e)
-        return []
+        raise Unreachable(f"grove_reader.grove_messages_all_agents: {e}") from e
     finally:
         _release(conn, owned)
 
@@ -1011,6 +1141,8 @@ def grove_mentions_for_handles(handles: list[str], limit: int = 20, conn=None) -
     """Recent messages matching @<handle> for any handle (ILIKE substring, case-folded).
 
     Each entry: {id, channel, sender, content}
+
+    §1: raises ``Unreachable`` when Postgres cannot be reached.
     """
     clean: list[str] = []
     seen: set[str] = set()
@@ -1049,9 +1181,11 @@ def grove_mentions_for_handles(handles: list[str], limit: int = 20, conn=None) -
             {"id": r[0], "channel": r[1], "sender": r[2], "content": r[3]}
             for r in cur.fetchall()
         ]
+    except Unreachable:
+        raise
     except Exception as e:
         _log.warning("grove_reader.grove_mentions_for_handles: %s", e)
-        return []
+        raise Unreachable(f"grove_reader.grove_mentions_for_handles: {e}") from e
     finally:
         _release(conn, owned)
 
@@ -1089,6 +1223,8 @@ def routing_decisions(conn=None, limit: int = 8) -> list[dict]:
     ``docs/verify/ROUTING_OBSERVABILITY.md``.
 
     Each entry: {ts, prompt_snippet, routed_to, rule_matched, confidence, latency_ms}
+
+    §1: an ``Unreachable`` raised by either underlying helper propagates.
     """
     willow_rows = _routing_decisions_willow(conn, limit=limit * 2)
     public_rows = _routing_decisions_public(conn, limit=limit * 2)
@@ -1098,7 +1234,10 @@ def routing_decisions(conn=None, limit: int = 8) -> list[dict]:
 
 
 def _routing_decisions_willow(conn=None, limit: int = 8) -> list[dict]:
-    """Oracle-shaped rows from willow.routing_decisions. Auto-creates table on first call."""
+    """Oracle-shaped rows from willow.routing_decisions. Auto-creates table on first call.
+
+    §1: raises ``Unreachable`` when Postgres cannot be reached.
+    """
     conn, owned = _conn_ctx(conn)
     try:
         cur = conn.cursor()
@@ -1128,15 +1267,20 @@ def _routing_decisions_willow(conn=None, limit: int = 8) -> list[dict]:
                 "latency_ms": latency_ms,
             })
         return rows
+    except Unreachable:
+        raise
     except Exception as e:
         _log.warning("grove_reader.routing_decisions (willow): %s", e)
-        return []
+        raise Unreachable(f"grove_reader.routing_decisions (willow): {e}") from e
     finally:
         _release(conn, owned)
 
 
 def _routing_decisions_public(conn=None, limit: int = 8) -> list[dict]:
-    """MCP JSONB rows from public.routing_decisions."""
+    """MCP JSONB rows from public.routing_decisions.
+
+    §1: raises ``Unreachable`` when Postgres cannot be reached.
+    """
     conn, owned = _conn_ctx(conn)
     try:
         cur = conn.cursor()
@@ -1170,9 +1314,11 @@ def _routing_decisions_public(conn=None, limit: int = 8) -> list[dict]:
                 "latency_ms": dec.get("latency_ms"),
             })
         return rows
+    except Unreachable:
+        raise
     except Exception as e:
         _log.warning("grove_reader.routing_decisions (public): %s", e)
-        return []
+        raise Unreachable(f"grove_reader.routing_decisions (public): {e}") from e
     finally:
         _release(conn, owned)
 
@@ -1183,6 +1329,8 @@ def human_required_queue(conn=None, limit: int = 30, open_only: bool = True) -> 
 
     Each entry: {id, kind, title, summary, status, priority, source_agent,
                  source_ref, assignee, created_at}
+
+    §1: raises ``Unreachable`` when Postgres cannot be reached.
     """
     conn, owned = _conn_ctx(conn)
     try:
@@ -1204,8 +1352,10 @@ def human_required_queue(conn=None, limit: int = 30, open_only: bool = True) -> 
         )
         cols = [d[0] for d in cur.description]
         return [dict(zip(cols, r)) for r in cur.fetchall()]
+    except Unreachable:
+        raise
     except Exception as e:
         _log.warning("grove_reader.human_required_queue: %s", e)
-        return []
+        raise Unreachable(f"grove_reader.human_required_queue: {e}") from e
     finally:
         _release(conn, owned)

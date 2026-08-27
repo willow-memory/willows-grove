@@ -23,6 +23,21 @@ class PacketError(Exception):
     pass
 
 
+class PacketMalformed(PacketError):
+    """Inputs to ``Packet.validate`` were so malformed that signature
+    verification could not be attempted — e.g. missing header, non-hex
+    signature or pubkey, wrong-length pubkey, non-JSON-serialisable payload.
+
+    Distinct from a well-formed packet whose signature is simply wrong;
+    that case returns ``False`` from ``validate``. See INVARIANTS.md §5:
+    signature verification must not conflate error paths, so the listener
+    can log ``signature invalid`` vs ``packet malformed`` distinctly and
+    a broken peer is not indistinguishable from an attacker replaying a
+    bad signature.
+    """
+    pass
+
+
 class Packet:
     @staticmethod
     def build(
@@ -51,24 +66,75 @@ class Packet:
 
     @staticmethod
     def validate(packet: dict, sender_public_key_hex: str) -> bool:
+        """Verify a packet's Ed25519 signature.
+
+        INVARIANTS.md §5 forbids collapsing distinct error paths. Three cases:
+
+            (a) signature is valid                          -> return True
+            (b) inputs well-formed, signature invalid       -> return False
+            (c) inputs malformed (verification unstartable) -> raise PacketMalformed
+
+        An expired packet is a legitimate drop (well-formed, non-forensic)
+        and returns ``False`` — not a raise.
+
+        Callers MUST distinguish (b) from (c) in their logs; ``u2u/listener.py``
+        catches ``PacketMalformed`` and logs ``packet malformed`` while ``False``
+        continues to log ``signature invalid``.
+        """
+        # ── (c) preflight: packet shape ───────────────────────────────────────
+        if not isinstance(packet, dict):
+            raise PacketMalformed("packet is not a dict")
+        header_in = packet.get("header")
+        if not isinstance(header_in, dict):
+            raise PacketMalformed("packet has no header dict")
+        header = dict(header_in)
+        if "sig" not in header:
+            raise PacketMalformed("header has no sig")
+        sig_hex = header.pop("sig")
+        if not isinstance(sig_hex, str):
+            raise PacketMalformed("sig is not a string")
+        if "payload" not in packet:
+            raise PacketMalformed("packet has no payload")
+
+        # ── well-formed but expired → False (not a raise) ─────────────────────────
+        now = int(time.time())
+        if header.get("expires_at", 0) < now:
+            return False
+
+        # ── (c) preflight: pubkey and sig hex ──────────────────────────────────
+        if not isinstance(sender_public_key_hex, str) or not sender_public_key_hex:
+            raise PacketMalformed("verification key missing or not a string")
         try:
-            header = dict(packet["header"])
-            sig = header.pop("sig")
-            now = int(time.time())
-            if header.get("expires_at", 0) < now:
-                return False
+            pub_bytes = bytes.fromhex(sender_public_key_hex)
+        except ValueError as e:
+            raise PacketMalformed(f"verification key is not hex: {e}") from e
+        try:
+            sig_bytes = bytes.fromhex(sig_hex)
+        except ValueError as e:
+            raise PacketMalformed(f"sig is not hex: {e}") from e
+
+        from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
+        from cryptography.exceptions import InvalidSignature
+        try:
+            pub = Ed25519PublicKey.from_public_bytes(pub_bytes)
+        except (ValueError, Exception) as e:
+            # Ed25519 raises ValueError for wrong-length; some backends raise
+            # UnsupportedAlgorithm. Either way, verification cannot be attempted.
+            if isinstance(e, InvalidSignature):
+                raise
+            raise PacketMalformed(f"pubkey bytes rejected: {e}") from e
+
+        try:
             payload_json = json.dumps(packet["payload"], sort_keys=True)
             signing_input = (json.dumps(header, sort_keys=True) + payload_json).encode()
-            from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
-            from cryptography.exceptions import InvalidSignature
-            pub = Ed25519PublicKey.from_public_bytes(bytes.fromhex(sender_public_key_hex))
-            try:
-                pub.verify(bytes.fromhex(sig), signing_input)
-                return True
-            except InvalidSignature:
-                return False
-        except Exception:
-            return False
+        except (TypeError, ValueError) as e:
+            raise PacketMalformed(f"packet not JSON-serialisable: {e}") from e
+
+        try:
+            pub.verify(sig_bytes, signing_input)
+        except InvalidSignature:
+            return False  # (b) well-formed, sig wrong
+        return True  # (a)
 
     @staticmethod
     def serialize(packet: dict) -> bytes:

@@ -41,7 +41,7 @@ Willow Grove is the unified human+agent surface for the Willow system. Dashboard
 
 This repo consolidates:
 - `willow-dashboard` — Textual dashboard (dashboard2.py → app.py) + curses TUI (grove/)
-- `safe-app-grove` — u2u encrypted DM transport, Matrix bridge, grove_db.py
+- `safe-app-grove` — u2u signed (Ed25519) DM transport (cleartext on the LAN — see `docs/design/u2u-security-limits.md`), Matrix bridge, grove_db.py
 - `willow-2.0/core` — grove_serve.py, grove_client.py, grove_coordination.py
 
 ## Entry Points
@@ -50,7 +50,6 @@ This repo consolidates:
 |---------|------|
 | `python3 app.py` | Main Textual dashboard (active, full-featured) |
 | `python3 -m grove` | Lightweight curses TUI (SSH / narrow terminal) |
-| `python3 -m grove_standalone` | Standalone Textual DM app |
 | `./run_mcp.sh` | Grove MCP server (stdio — Claude/Cursor spawn this) |
 | `./run_mcp.sh --serve` | Grove MCP over HTTP+OAuth on :8765 (remote/claude.ai via a tunnel) |
 | `scripts/grove-serve {install\|on\|off\|status}` | Toggle serve mode + the local `.mcp.json` entry |
@@ -64,8 +63,7 @@ This repo consolidates:
 | `grove_reader.py` | Read helpers for dashboard (channels, messages, agents, routing) |
 | `soil.py` | SOIL local store interface |
 | `grove/` | Curses Grove subpackage (lightweight mode) |
-| `grove_standalone.py` | Standalone Textual grove DM TUI |
-| `u2u/` | Encrypted LAN transport (knock/consent/note) |
+| `u2u/` | Signed (Ed25519) LAN transport (knock/consent/note); message bodies travel cleartext on the LAN — see `docs/design/u2u-security-limits.md` |
 | `bridge/` | Matrix bridge |
 | `grove/mcp_local.py` | Grove MCP server — stdio (local) or `--serve` (HTTP+OAuth, remote/claude.ai) |
 | `grove/mcp_auth.py` | `GroveOAuthProvider` — OAuth 2.0/PKCE authorization server for serve mode |
@@ -83,7 +81,7 @@ This repo consolidates:
 | SOIL | `~/.willow/store` — cursors, config, active model |
 | Kart | `public.tasks` table — task queue |
 | SAP | MCP tools via `willow_knowledge_search`, etc. |
-| u2u | UDP/TCP LAN — encrypted human-to-human DMs |
+| u2u | UDP/TCP LAN — signed (Ed25519) human-to-human DMs; bodies travel cleartext on the wire (see `docs/design/u2u-security-limits.md`) |
 
 ## Rules
 

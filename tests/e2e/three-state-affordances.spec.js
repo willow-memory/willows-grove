@@ -52,7 +52,7 @@ async function assertEmptyAndUnreachableDiffer(page, { tag, endpoint, emptyBody,
   // fetch is what we control.
   await page.goto('/');
 
-  // ── Run 1: empty ─────────────────────────────────────────────────────
+  // ── Run 1: empty ──────────────────────────────────────────────
   await page.route(`**${endpoint}**`, (route) =>
     route.fulfill({
       status: 200,
@@ -89,10 +89,10 @@ async function assertEmptyAndUnreachableDiffer(page, { tag, endpoint, emptyBody,
     }
     // Read the shadow root when present — that's where the render lives.
     const root = el.shadowRoot || el;
-    return (root.innerHTML || '') + '|' + (el._state || '');
+    return root.innerHTML || '';
   }, tag);
 
-  // ── Run 2: unreachable ───────────────────────────────────────────────
+  // ── Run 2: unreachable ──────────────────────────────────────────
   await page.unroute(`**${endpoint}**`);
   await page.route(`**${endpoint}**`, (route) =>
     route.fulfill({
@@ -128,14 +128,15 @@ async function assertEmptyAndUnreachableDiffer(page, { tag, endpoint, emptyBody,
       await new Promise((r) => setTimeout(r, 50));
     }
     const root = el.shadowRoot || el;
-    return (root.innerHTML || '') + '|' + (el._state || '');
+    return root.innerHTML || '';
   }, tag);
 
   // The unreachable render must not equal the empty render — this is the
-  // §1 pin. We include the internal `_state` marker in the compared
-  // string so a component that renders identical shadow markup but
-  // exposes distinct `_state` still passes (the operator sees the state
-  // via at least one channel).
+  // §1 pin. What we compare is what the operator sees: the rendered
+  // markup. Internal JS properties (`_state`, dataset flags, etc.) are
+  // NOT what the operator sees, so they MUST NOT be part of this string
+  // — otherwise a component whose two states paint byte-identical pixels
+  // would still pass, which is exactly the collapse §1 forbids.
   expect(
     normalize(unreachableHtml),
     `${tag}: unreachable render must be visually distinct from empty per INVARIANTS §1`
@@ -254,5 +255,56 @@ test.describe('three-state affordances — every panel paints unreachable ≠ em
     ).not.toBe(normalize(chatEmpty));
 
     await page.unroute('**/api/journal/recent**');
+  });
+
+  // ── Self-check: byte-identical stub must FAIL the pin ─────────────────────────
+  //
+  // Meta-pin on the assertion itself. Mount a stub custom element whose
+  // empty and unreachable shadow renders are byte-identical markup and
+  // whose internal `_state` differs. Run the same HTML-only comparison
+  // the real panel tests use. It MUST throw — because §1 says the
+  // rendered pixels the operator sees must differ, and internal state
+  // properties are not those pixels. If this subtest can pass without
+  // the assertion throwing, the panel probes are still comparing more
+  // than the rendered HTML and the §1 pin has been silently widened.
+  test('self-check: identical HTML must fail the pin (byte-identical stub)', async ({ page }) => {
+    await page.goto('/');
+    const [stubEmpty, stubUnreachable] = await page.evaluate(async () => {
+      const TAG = 'grove-stub-identical-panel';
+      if (!customElements.get(TAG)) {
+        class GroveStubIdenticalPanel extends HTMLElement {
+          constructor() {
+            super();
+            this.attachShadow({ mode: 'open' });
+          }
+        }
+        customElements.define(TAG, GroveStubIdenticalPanel);
+      }
+      const IDENTICAL = '<div class="panel"><p>nothing here</p></div>';
+      const a = document.createElement(TAG);
+      document.body.appendChild(a);
+      a.shadowRoot.innerHTML = IDENTICAL;
+      a._state = 'empty';
+      const b = document.createElement(TAG);
+      document.body.appendChild(b);
+      b.shadowRoot.innerHTML = IDENTICAL;
+      b._state = 'unreachable';
+      return [a.shadowRoot.innerHTML || '', b.shadowRoot.innerHTML || ''];
+    });
+
+    // The real panel probes return exactly this shape (rendered HTML only)
+    // and the real assertion compares exactly this way. Byte-identical
+    // markup MUST make that assertion throw — otherwise the pin is not
+    // enforcing §1.
+    let threw = false;
+    try {
+      expect(normalize(stubUnreachable)).not.toBe(normalize(stubEmpty));
+    } catch (_assertionError) {
+      threw = true;
+    }
+    expect(
+      threw,
+      'byte-identical empty/unreachable markup MUST fail the pin — otherwise INVARIANTS §1 is not being enforced at the visual layer'
+    ).toBe(true);
   });
 });

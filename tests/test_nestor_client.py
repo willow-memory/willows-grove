@@ -118,20 +118,26 @@ def test_refusal_is_returned_verbatim(monkeypatch):
     assert out == verbatim, "V5: refusal must be VERBATIM, not paraphrased"
 
 
-def test_missing_binary_decision_check_raises_unreachable(monkeypatch):
+def test_missing_binary_raises_unreachable_on_every_read_helper(monkeypatch):
     """INVARIANTS.md §1: unreachable is a distinct sentinel, not None.
-    decision_check() raises when the binary is not on PATH; the other
-    evidence/warrant/refusal helpers keep returning None (they operate
-    on already-resolved pair ids and callers already know available()
-    is a probe)."""
+
+    All four read helpers — ``decision_check``, ``evidence_for``,
+    ``warrant_for``, ``refusal`` — raise ``Unreachable`` when the
+    binary is not on PATH. The earlier version of this test enshrined
+    the M6 collapse (``evidence_for`` / ``warrant_for`` / ``refusal``
+    returning ``None`` when unreachable); the pinning lines are
+    replaced here, not extended, per the Loki M6 remedy."""
     monkeypatch.setattr(nestor_client.shutil, "which", lambda _exe: None)
     nc = NestorClient()
     assert nc.available() is False
     with pytest.raises(Unreachable):
         nc.decision_check("anything")
-    assert nc.evidence_for("x") is None
-    assert nc.warrant_for("x") is None
-    assert nc.refusal("x") is None
+    with pytest.raises(Unreachable):
+        nc.evidence_for("x")
+    with pytest.raises(Unreachable):
+        nc.warrant_for("x")
+    with pytest.raises(Unreachable):
+        nc.refusal("x")
     nc.close()  # must not raise
 
 

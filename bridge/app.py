@@ -104,7 +104,7 @@ class GroveMatrixBridge:
         finally:
             await self.matrix.close()
 
-    # ── Grove listener ────────────────────────────────────────────────────────
+    # ── Grove listener ───────────────────────────────────────────────
 
     async def _run_grove_listener(self) -> None:
         gate = ConsentGate(self.contacts)
@@ -140,6 +140,9 @@ class GroveMatrixBridge:
         async with listener.serve():
             await asyncio.Event().wait()
 
+    # See INVARIANTS.md §5 — this is the re-KNOCK admission the section
+    # names: the caller has already verified the packet signature, but
+    # admission itself must never silently rotate a trusted key.
     def _admit_contact(self, from_addr: str, pubkey: str) -> bool:
         """Admit `from_addr` with `pubkey`, never silently rotating a key.
 
@@ -205,7 +208,7 @@ class GroveMatrixBridge:
         self.store.set_pending_knock(from_addr, pubkey)
         log.info("queued KNOCK from %s", from_addr)
 
-    # ── Matrix AS server ──────────────────────────────────────────────────────
+    # ── Matrix AS server ───────────────────────────────────────────
 
     async def _run_as_server(self) -> None:
         app   = self._as_srv.build_app()

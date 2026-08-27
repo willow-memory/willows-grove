@@ -9,3 +9,13 @@
 # no bare eval/exec, no pickle.loads, and no bare yaml.load in this tree.
 # The file is intentionally empty of entries; downstream PRs add rows only
 # with a documented justification.
+
+# Grove v0.9 PR 12 (Loki finding m34): the regression test for
+# scripts/ci-security-grep.sh pins that its PATTERN alternation matches
+# the docstring's claimed pattern list. To do that it necessarily
+# contains those pattern names verbatim inside its own docstring and
+# assertions. Legitimate false positives — this is the witness for
+# the sweep, not a shell invocation.
+tests/test_ci_security_grep_docstring_matches_pattern.py:os.system(
+tests/test_ci_security_grep_docstring_matches_pattern.py:os\.system\(
+tests/test_ci_security_grep_docstring_matches_pattern.py:subprocess.Popen(...shell=True

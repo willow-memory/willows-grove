@@ -19,7 +19,6 @@
 #   - exec(                   — arbitrary Python execution
 #   - pickle.loads            — deserialization of untrusted bytes
 #   - yaml.load(              — bare yaml.load (no SafeLoader argument)
-#   - input().*shell          — best-effort shell-composition sniff
 #
 # Allowlist
 # ---------

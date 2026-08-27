@@ -388,3 +388,96 @@ Pinning tests (populated as each downstream PR lands):
   carrying `sender="resident-watcher"`, a `domain:*` tag in the
   closed `DOMAINS` set, and the operator's text verbatim (Gate 5 Q2,
   Q3, and V5 discipline). (Grove v0.9 PR 8.)
+
+## §11 — Persona provenance
+
+Every commit that changes tracked code carries a `Persona:` trailer
+naming the fleet persona active for the work. Accountability without
+persona-provenance is aesthetic; accountability with it is measurable.
+
+- The trailer's value is a key from
+  `willow-memory/willow/fleet_personas.json` (verbatim, lowercase) —
+  `heimdallr`, `hanuman`, `loki`, `nestor`, `shiva`, `ganesha`, and the
+  rest of the fleet. The `_meta` key is not a persona and is refused.
+- Multi-persona commits (Loki authors an audit line, Heimdallr commits
+  the record) carry two `Persona:` trailers, one per line. Every trailer
+  must resolve.
+- The trailer lives in the commit-message trailer block, next to the
+  existing `Co-Authored-By` line, so `git interpret-trailers --parse`
+  reads it cleanly.
+- A commit that changes tracked code (`.py`, `.js`, `.sh`, `.md`, `.yml`,
+  `.yaml`, `.sql`, `.json`, `.html`) and carries no `Persona:` trailer is
+  drift. Merge commits are exempt (they carry no work, only structure);
+  commits that only touch untracked files (worktree scaffolding, etc.)
+  are exempt by nature.
+
+Grandfather note: every commit landed before v0.9 (before this section
+sealed) carries no persona provenance. The build corpus is therefore
+not diffable against a hypothetical persona-loaded rerun — a real cost
+of shipping this discipline late. §11 is hard from the commit that seals
+it forward; no grace period.
+
+Pinning tests (§11):
+
+- `scripts/check_persona_provenance.py` — CI-called from
+  `.github/workflows/tests.yml`. Enumerates
+  `git log $GITHUB_BASE_REF..HEAD` (or `master..HEAD` locally), reads
+  each commit's message trailer block, and fails if any code-changing
+  non-merge commit has no `Persona:` trailer or names a persona outside
+  the closed fleet set.
+- `tests/test_persona_provenance_check.py` — pins the checker
+  property-by-property against synthetic commits (clean; missing trailer
+  → fail; unknown-persona value → fail; merge commit exempt; docs-only
+  commit still requires the trailer since `.md` is tracked code under §3).
+
+## §12 — Ratification
+
+Persona provenance (§11) tracks who did the work. §12 tracks who
+authorized it to leave the branch. No fleet persona has unilateral
+authority to open a pull request, merge a pull request, or push to
+master — not Heimdallr, not Hanuman, not Loki, not even Willow.
+
+Willow's own persona (`willow-memory/willow/fleet_personas.json`)
+seals this: *"Commit, PR, merge, patch, or wire the fleet without a
+recorded authorization — [do not do]."* Willow is `trust: OPERATOR`,
+which is the operator seat where the human trust-root's authorization
+is recorded. She holds the seat; she does not sit above it.
+
+### The discipline
+
+- **Opening a PR** requires a `Ratified-by:` line as the first
+  non-blank line of the PR body, naming the human authorizer and
+  quoting verbatim the message that authorized the open. Format:
+  `Ratified-by: <identifier> — "<verbatim quote>"`.
+- **Merging a PR** requires the same discipline at the merge action.
+  When merged via API, the merge commit message must carry a
+  `Ratified-by:` trailer citing the human quote that authorized the
+  merge (separately from the PR-open authorization).
+- **Pushing to master directly** is refused. All work reaches master
+  through a ratified PR.
+- **Standing authorizations** may cover a defined scope of work (e.g.
+  "run it, keep the reorder" covering the 13-PR v0.9 plan's in-branch
+  commits). A standing authorization must be recorded once in the
+  branch's first substantive commit under its scope, with a
+  `Ratified-by:` trailer citing the verbatim standing quote; every
+  subsequent in-branch commit under that scope inherits it.
+
+### Grandfather
+
+PRs 1 through 11 in the Grove v0.9 stand-up were opened and merged
+without recorded `Ratified-by:` metadata. Same gap-class as pre-v0.9
+persona provenance: real, logged, not backfillable. See
+`docs/design/pr14-carryovers.md`. §12 is hard from the commit that
+seals it forward.
+
+### Pinning tests (§12)
+
+- `scripts/check_ratification.py` — CI-called on `pull_request` events.
+  Reads the PR body from the GitHub event context, asserts the first
+  non-blank line matches
+  `Ratified-by: <identifier> — "<verbatim quote>"`. Fails the check
+  otherwise. On merge, checks the merge commit message the same way.
+- `tests/test_ratification_check.py` — pins the checker
+  property-by-property against synthetic PR bodies (clean; missing
+  line → fail; wrong format → fail; empty body → fail; ratification
+  buried below other lines → fail).

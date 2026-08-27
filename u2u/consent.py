@@ -5,7 +5,8 @@
 Consent is an authorisation decision, not an authentication one. Callers MUST
 have verified the packet signature before asking this gate anything: a
 ConsentResult about an unauthenticated packet is a statement about a name the
-attacker chose. `u2u.listener` enforces that ordering.
+attacker chose. `u2u.listener` enforces that ordering. See INVARIANTS.md §5
+(trust order: signature → consent → dispatch).
 """
 
 import time
@@ -42,7 +43,7 @@ class ConsentGate:
     def get_contact(self, addr: str):
         return self._store.get(addr)
 
-    # ── outstanding requests ──────────────────────────────────────────────────
+    # ── outstanding requests ───────────────────────────────────────────────
 
     def open_thread(self, thread_id: str, addr: str) -> None:
         """Record that we sent `addr` a request carrying `thread_id`.
@@ -79,7 +80,7 @@ class ConsentGate:
         del self._threads[thread_id]
         return True
 
-    # ── the gate ──────────────────────────────────────────────────────────────
+    # ── the gate ──────────────────────────────────────────────────────
 
     def check(
         self,

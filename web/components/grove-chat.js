@@ -5,12 +5,21 @@
  *
  * Three-state contract (see docs/INVARIANTS.md §1) for the RIGHT column:
  *   populated   — atoms present; each turn renders with sender chip + text.
- *   empty       — willow-mcp reached, no atoms; the "no messages yet"
- *                 placeholder line renders in muted default color.
+ *   empty       — willow-mcp reached, no atoms; a muted italic
+ *                 "no messages yet" placeholder renders in the column.
  *   unreachable — 503/fetch failure; a distinct amber banner reads
  *                 "read-back unreachable" at the top of the RIGHT column.
- *                 MUST be visually distinct from the empty state
- *                 (different color, distinct copy).
+ *                 The banner is the ONLY content — the empty-state
+ *                 placeholder is removed on entry to unreachable, so
+ *                 the two states never share a pixel (INVARIANTS.md §1,
+ *                 Grove v0.9 PR 12 Loki finding M11).
+ *
+ * Initial paint (before the first /api/journal/recent poll returns):
+ * the RIGHT column shows a dashed "loading read-back…" skeleton, distinct
+ * from BOTH the empty pixel and the unreachable banner. An unreached
+ * surface must not read as "there is nothing there" (INVARIANTS.md §1,
+ * Constraint 1). The skeleton is removed the moment the first poll
+ * classifies the state as populated, empty, or unreachable.
  *
  * C11 (autonomous-continuity.md) sealed the LEFT side as an operator
  * write into willow-mcp's ``kb_journal`` via the small resident model,
@@ -49,7 +58,8 @@
  *     reading older turns the view stays put (no yank).
  *   - RIGHT fetch failure shows a subdued "read-back unreachable" line
  *     at the top of the RIGHT column; polling keeps going so the line
- *     clears on the next successful poll.
+ *     clears on the next successful poll. On entry, the loading skeleton
+ *     and any empty-state div are removed.
  *   - Empty text: submit is a no-op.
  *   - Enter submits; Shift+Enter inserts a newline.
  *
@@ -295,7 +305,7 @@ class GroveChat extends HTMLElement {
         }
         /* INVARIANTS.md §1: unreachable MUST render distinctly from empty —
            amber banner + border, distinct copy, so the operator sees the
-           difference between "no messages yet" and "read-back unreachable". */
+           difference between the empty affordance and the unreachable one. */
         .readback-status[data-state="unreachable"] {
           display: block;
           border-color: var(--chat-warn);
@@ -313,6 +323,30 @@ class GroveChat extends HTMLElement {
           color: var(--chat-muted);
           font-style: italic;
           padding: 1rem;
+        }
+        /* INVARIANTS.md §1 (Grove v0.9 PR 12, Loki finding M11): the initial
+           paint of the RIGHT column, before the first poll classifies the
+           state, is a distinct dashed skeleton — NOT the empty-state pixel.
+           An unreached surface must not read as "there is nothing there". */
+        .readback-loading {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+          color: var(--chat-muted);
+          border: 1px dashed var(--chat-accent);
+          border-radius: 6px;
+          padding: 1rem;
+          font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+          font-size: 0.78rem;
+          letter-spacing: 0.04em;
+          opacity: 0.55;
+          animation: readback-loading-pulse 1.4s ease-in-out infinite;
+        }
+        @keyframes readback-loading-pulse {
+          0%, 100% { opacity: 0.35; }
+          50%      { opacity: 0.75; }
         }
       </style>
       <header>
@@ -335,7 +369,7 @@ class GroveChat extends HTMLElement {
           <h3>willow → operator</h3>
           <div class="readback-status" part="readback-status"></div>
           <div class="readback" part="readback" role="log" aria-live="polite">
-            <div class="readback-empty">no messages yet</div>
+            <div class="readback-loading" aria-label="loading read-back">loading read-back&hellip;</div>
           </div>
         </section>
       </div>
@@ -467,7 +501,11 @@ class GroveChat extends HTMLElement {
   _prependReadbackAtoms(atoms) {
     const list = this._root.querySelector(".readback");
     if (!list || !atoms || atoms.length === 0) return;
-    // Kick the "no messages yet" placeholder the first time we paint.
+    // Populated — remove the loading skeleton (initial paint) and any
+    // stale empty-state div. INVARIANTS.md §1: the three states never
+    // share pixels.
+    const loading = list.querySelector(".readback-loading");
+    if (loading) loading.remove();
     const empty = list.querySelector(".readback-empty");
     if (empty) empty.remove();
     // atoms arrive newest-first from the reader; prepend in reverse so
@@ -480,6 +518,39 @@ class GroveChat extends HTMLElement {
     // Only pull the view up when the operator was already reading from
     // the top — never yank them out of scroll-back.
     if (atTop) list.scrollTop = 0;
+  }
+
+  _paintReadbackUnreachable() {
+    // INVARIANTS.md §1 (Grove v0.9 PR 12, Loki finding M11): unreachable
+    // renders as the amber banner ALONE — the empty-state placeholder
+    // and the loading skeleton are both removed on entry so an unreached
+    // read-back never shares a pixel with a reached-but-empty one.
+    const list = this._root.querySelector(".readback");
+    if (list) {
+      const loading = list.querySelector(".readback-loading");
+      if (loading) loading.remove();
+      const empty = list.querySelector(".readback-empty");
+      if (empty) empty.remove();
+    }
+    this._setReadbackStatus("unreachable", "read-back unreachable");
+  }
+
+  _paintReadbackEmpty() {
+    // Reached-but-empty — clear any stale unreachable banner, drop the
+    // loading skeleton, and paint the "no messages yet" placeholder if it
+    // isn't already there. Distinct pixel from the unreachable banner
+    // per INVARIANTS.md §1.
+    this._setReadbackStatus(null);
+    const list = this._root.querySelector(".readback");
+    if (!list) return;
+    const loading = list.querySelector(".readback-loading");
+    if (loading) loading.remove();
+    if (!list.querySelector(".readback-empty")) {
+      const div = document.createElement("div");
+      div.className = "readback-empty";
+      div.textContent = "no messages yet";
+      list.appendChild(div);
+    }
   }
 
   async _pollReadback() {
@@ -499,11 +570,11 @@ class GroveChat extends HTMLElement {
         headers: { "accept": "application/json" },
       });
     } catch (_err) {
-      this._setReadbackStatus("unreachable", "read-back unreachable");
+      this._paintReadbackUnreachable();
       return;
     }
     if (!res.ok) {
-      this._setReadbackStatus("unreachable", "read-back unreachable");
+      this._paintReadbackUnreachable();
       return;
     }
     let body = null;
@@ -515,17 +586,20 @@ class GroveChat extends HTMLElement {
     if (Array.isArray(body)) {
       atoms = body;
     } else if (body && body.state === "unreachable") {
-      this._setReadbackStatus("unreachable", "read-back unreachable");
+      this._paintReadbackUnreachable();
       return;
     } else if (body && Array.isArray(body.atoms)) {
       atoms = body.atoms;
     }
     if (!Array.isArray(atoms)) {
-      this._setReadbackStatus("unreachable", "read-back unreachable");
+      this._paintReadbackUnreachable();
+      return;
+    }
+    if (atoms.length === 0) {
+      this._paintReadbackEmpty();
       return;
     }
     this._setReadbackStatus(null);
-    if (atoms.length === 0) return;
     this._prependReadbackAtoms(atoms);
     // Update the newest-seen cursor from the first (newest) atom.
     const head = atoms[0];

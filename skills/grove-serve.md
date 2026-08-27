@@ -47,7 +47,6 @@ After `on` or `off`, tell the user to run `/mcp` to reconnect the local client.
 3. In claude.ai: **Settings → Connectors → Add custom connector**, URL
    `https://<public-host>/mcp`. First connect runs OAuth; approve at the
    `/grove-approve` page. Tokens last 30 days (no auto-refresh).
-4. Do **not** set `GROVE_MCP_AUTO_APPROVE=1` behind a tunnel.
 
 Full guide: [`docs/runbooks/grove.md`](../docs/runbooks/grove.md) → "Remote access".
 
