@@ -26,10 +26,14 @@ from pathlib import Path
 from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette.responses import HTMLResponse, JSONResponse
-from starlette.routing import Route
+from starlette.routing import Mount, Route
+from starlette.staticfiles import StaticFiles
 
 from grove_html import render_page
 from grove import journal_writer
+
+
+_WEB_ROOT = Path(__file__).resolve().parent / "web"
 
 
 DEFAULT_HOST = "127.0.0.1"
@@ -100,13 +104,17 @@ async def _journal(request: Request) -> JSONResponse:
 
 
 def build_app() -> Starlette:
-    return Starlette(
-        routes=[
-            Route("/", _index),
-            Route("/health", _health),
-            Route("/api/journal", _journal, methods=["POST"]),
-        ]
-    )
+    routes = [
+        Route("/", _index),
+        Route("/health", _health),
+        Route("/api/journal", _journal, methods=["POST"]),
+    ]
+    # `/web` serves the vanilla-JS Web Components + libs (D9 — no build step).
+    # Mounted only when the directory exists so unit tests that import this
+    # module from an unusual cwd don't fall over on a missing tree.
+    if _WEB_ROOT.is_dir():
+        routes.append(Mount("/web", app=StaticFiles(directory=str(_WEB_ROOT)), name="web"))
+    return Starlette(routes=routes)
 
 
 def run(host: str = DEFAULT_HOST, port: int = DEFAULT_PORT) -> None:
