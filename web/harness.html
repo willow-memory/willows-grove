@@ -70,9 +70,12 @@
         <grove-persona-registry> is assumed to exist per D10; this harness
         supplies the inline-JSON shim shape (see grove-cast-chip.js — the
         chip reads registry.getPersona(), registry.personas, or a
-        <script type="application/json"> child in that order).
+        <script type="application/json"> child in that order). The inline
+        shim is opt-in per INVARIANTS.md §8 — `data-fixture` is the
+        harness's explicit fixture-mode flag; without it the registry
+        would fetch the live /api/personas endpoint instead.
       -->
-      <grove-persona-registry id="cast-registry">
+      <grove-persona-registry id="cast-registry" data-fixture>
         <script type="application/json">
           {
             "schema": "fleet-personas/v1",
