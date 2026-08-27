@@ -12,21 +12,31 @@ willow-mcp's side of that same seam separately.
 Fixtures:
 
 * ``ollama_ready`` — session-scoped readiness probe against Ollama's
-  ``/api/tags`` endpoint. Skips the test when Ollama is not reachable,
-  never fails: an operator-only build shouldn't need Ollama to green.
+  ``/api/tags`` endpoint. Missing service is routed through
+  ``_missing_witness``: pytest.skip locally, pytest.fail on CI.
 * ``pulled_model`` — pulls the smallest known model once per session.
   Cached in ``_MODEL_CACHE`` so a suite with N tests pays the ~30-60s
-  pull cost exactly once.
+  pull cost exactly once. Failure to pull any candidate is routed
+  through ``_missing_witness``.
 * ``grove_pg_schema`` — ensures ``grove.channels`` + ``grove.messages``
   and the ``grove_channel`` NOTIFY trigger exist (idempotent, mirrors
   ``schema.sql``), then yields a fresh ``channel_id`` for the test and
-  cleans up any rows the test inserted afterwards. Skips if
-  ``WILLOW_DB_URL`` is unset or Postgres is unreachable.
+  cleans up any rows the test inserted afterwards. Missing
+  ``WILLOW_DB_URL``, ``psycopg2``, or Postgres reachability is routed
+  through ``_missing_witness``.
 * ``willow_mcp_capture`` — installs a fake ``willow_mcp.server`` in
   ``sys.modules`` with a ``kb_journal`` that appends to a captures list;
   yields the list; restores ``sys.modules`` on teardown. This is the
   seam that lets the test assert ``sender="resident-watcher"`` + the
   ``domain:*`` tag + verbatim text on every write.
+
+INVARIANTS.md §10 ("CI proves the invariants") requires CI witnesses to
+fail loudly, not silently skip: on CI the sidecars MUST be there, so a
+missing service is a broken environment, not a green-worthy skip. The
+``_missing_witness`` helper below reads ``$GITHUB_ACTIONS`` and dispatches
+to ``pytest.fail`` on CI or ``pytest.skip`` locally — preserving developer
+ergonomics on laptops while making CI honest. (Grove v0.9 PR 12, Loki
+finding M14.)
 """
 from __future__ import annotations
 
@@ -62,6 +72,28 @@ _OLLAMA_PULL_TIMEOUT_SECONDS = 300.0  # cold pull: model download + extract
 _MODEL_CACHE: dict[str, str] = {}
 
 
+def _missing_witness(reason: str) -> None:
+    """INVARIANTS.md §10 dispatch — fail loudly on CI, skip locally.
+
+    Every §10 assertion downstream is gated on the e2e_ollama fixtures
+    succeeding, so a raw ``pytest.skip`` on a missing sidecar makes CI
+    green with no witness actually run. On CI (``$GITHUB_ACTIONS=true``)
+    the runner MUST provide Ollama, Postgres, and psycopg2; their
+    absence is a broken build, not an operator-side excuse. Off CI —
+    developer laptops, ad-hoc probes — a skip is the right posture: the
+    suite is expensive and shouldn't block unrelated work.
+
+    A single ``never returns`` point of control so the three fixtures
+    below stay honest and the discipline is one line to audit.
+    (Grove v0.9 PR 12, Loki finding M14-e2e_ollama-fail-not-skip.)
+    """
+    on_ci = os.environ.get("GITHUB_ACTIONS", "").strip().lower() == "true"
+    if on_ci:
+        pytest.fail(reason)
+    else:
+        pytest.skip(reason)
+
+
 def _ollama_base_url() -> str:
     """Prefer explicit ``OLLAMA_HOST``; fall back to the loopback default."""
     raw = os.environ.get("OLLAMA_HOST", "").strip() or "http://127.0.0.1:11434"
@@ -90,17 +122,18 @@ def _http_post_json(url: str, payload: dict[str, Any], timeout: float = 30.0) ->
 
 
 # ---------------------------------------------------------------------------
-# Ollama readiness — poll /api/tags until it answers, or give up and skip.
+# Ollama readiness — poll /api/tags until it answers, or give up.
 # ---------------------------------------------------------------------------
 
 @pytest.fixture(scope="session")
 def ollama_ready() -> str:
     """Return the Ollama base URL once ``/api/tags`` answers 200.
 
-    Skips the calling test (never fails) if the service does not come up
-    within ``_OLLAMA_READY_TIMEOUT_SECONDS``. Skip reason is visible in the
-    pytest CI log — the suite is Ollama-only, so a skip is the right D7
-    posture when the operator-side build lacks the service.
+    On CI (``$GITHUB_ACTIONS=true``) fails the calling test if the
+    service does not come up within ``_OLLAMA_READY_TIMEOUT_SECONDS`` —
+    the CI Ollama sidecar MUST be there, so absence is a broken
+    environment (INVARIANTS.md §10). Off CI the same case skips so an
+    operator-only build shouldn't need Ollama to green.
     """
     base = _ollama_base_url()
     deadline = time.monotonic() + _OLLAMA_READY_TIMEOUT_SECONDS
@@ -116,12 +149,12 @@ def ollama_ready() -> str:
             return base
         last_err = f"HTTP {code}"
         time.sleep(1.0)
-    pytest.skip(
+    _missing_witness(
         f"Ollama not reachable at {base}/api/tags within "
         f"{_OLLAMA_READY_TIMEOUT_SECONDS:.0f}s (last: {last_err}) — "
         "the e2e_ollama suite requires a live Ollama service (INVARIANTS.md §10)."
     )
-    return base  # unreachable — pytest.skip raises
+    return base  # unreachable — _missing_witness raises
 
 
 # ---------------------------------------------------------------------------
@@ -180,9 +213,8 @@ def pulled_model(ollama_ready: str) -> str:
 
     Tries the ``_MODEL_CANDIDATES`` in order. Caches the winner in
     ``_MODEL_CACHE`` so a session with N tests pays the pull cost once.
-    Skips the test if none of the candidates can be pulled (e.g. no
-    network in the CI runner — the entire suite is Ollama-first, so a
-    skip is the right posture).
+    On CI a failed pull is a hard fail (the runner should have outbound
+    network for the model registry); off CI it skips.
     """
     cached = _MODEL_CACHE.get(ollama_ready)
     if cached:
@@ -203,10 +235,10 @@ def pulled_model(ollama_ready: str) -> str:
             return candidate
         failures.append(candidate)
 
-    pytest.skip(
+    _missing_witness(
         f"Ollama at {ollama_ready} could not pull any of {failures} within "
         f"{_OLLAMA_PULL_TIMEOUT_SECONDS:.0f}s — likely no outbound network. "
-        "e2e_ollama tests skip cleanly rather than fail (INVARIANTS.md §10)."
+        "On CI this is a hard failure (INVARIANTS.md §10); locally it skips."
     )
     return ""  # unreachable
 
@@ -285,14 +317,15 @@ def _ensure_grove_schema(cur: Any) -> None:
 def grove_pg_schema():
     """Yield ``{"dsn": str, "channel_id": int}`` with a private test channel.
 
-    Skips the test cleanly when ``WILLOW_DB_URL`` is unset or Postgres
-    refuses the connection — the suite is Postgres-first, so absence is
-    a skip, not a fail. Cleans up the channel + any messages it carries
-    (best-effort) on teardown.
+    Missing ``WILLOW_DB_URL``, ``psycopg2``, or Postgres reachability is
+    routed through ``_missing_witness``: pytest.skip locally, pytest.fail
+    on CI. The suite is Postgres-first (INVARIANTS.md §10), so on CI the
+    sidecar MUST be there. Cleans up the channel + any messages it
+    carries (best-effort) on teardown.
     """
     dsn = os.environ.get("WILLOW_DB_URL", "").strip()
     if not dsn:
-        pytest.skip(
+        _missing_witness(
             "WILLOW_DB_URL unset — e2e_ollama needs a live Postgres "
             "(INVARIANTS.md §10)."
         )
@@ -300,12 +333,12 @@ def grove_pg_schema():
     try:
         import psycopg2  # type: ignore
     except Exception as err:  # noqa: BLE001
-        pytest.skip(f"psycopg2 unavailable ({err}) — e2e_ollama skipped.")
+        _missing_witness(f"psycopg2 unavailable ({err}) — e2e_ollama needs it (INVARIANTS.md §10).")
 
     try:
         conn = psycopg2.connect(dsn)
     except Exception as err:  # noqa: BLE001
-        pytest.skip(f"Postgres unreachable at {dsn} ({err}) — e2e_ollama skipped.")
+        _missing_witness(f"Postgres unreachable at {dsn} ({err}) — e2e_ollama needs it (INVARIANTS.md §10).")
 
     conn.autocommit = True
     channel_id: Optional[int] = None
@@ -320,7 +353,7 @@ def grove_pg_schema():
         )
         row = cur.fetchone()
         if not row:
-            pytest.skip("Could not create test channel row — schema anomaly.")
+            _missing_witness("Could not create test channel row — schema anomaly (INVARIANTS.md §10).")
         channel_id = int(row[0])
 
         yield {"dsn": dsn, "channel_id": channel_id, "channel_name": channel_name}
