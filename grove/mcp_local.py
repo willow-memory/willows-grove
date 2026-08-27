@@ -13,14 +13,21 @@ Modes:
                      --watch: supervise a **child** serve process; restart it when
                      `grove/*.py` changes (parent polls mtimes — works because `mcp.run` blocks).
 
-Auth in serve mode: OAuth 2.0 + PKCE with open dynamic client registration.
-                    Registration is not a credential, so the thing that decides
-                    who gets a token is the /grove-approve page: /authorize
-                    parks the request and the human clicks Allow. Setting
-                    GROVE_MCP_AUTO_APPROVE=1 removes that click and hands a
-                    30-day full-scope token to any caller that can reach
-                    /authorize — off by default, and loud when on.
+Auth in serve mode: OAuth 2.0 + PKCE. Per INVARIANTS.md §5, /authorize
+                    always redirects to the /grove-approve page — no code is
+                    ever issued without a human loopback click. Dynamic client
+                    registration is DISABLED by default (an operator opts in
+                    via GROVE_MCP_ALLOW_DYNAMIC_REGISTRATION=1); otherwise
+                    only pre-enrolled clients can authorize. Access tokens
+                    last 24 hours (mcp_auth._ACCESS_TTL).
 Auth in stdio mode: implicit (local process, trusted user) — no OAuth.
+
+Tunnel deployment (production): setting GROVE_MCP_URL to a non-loopback
+address without also setting WILLOW_MCP_TUNNEL_ACKNOWLEDGED=1 logs a
+prominent WARNING at startup — the operator has to say out loud that the
+listener is intentionally reachable. DNS-rebinding protection is ON in
+every configuration (see _transport_security); the ngrok-era https carve-out
+is gone. INVARIANTS.md §5.
 """
 import functools
 import os
@@ -116,8 +123,43 @@ async def _lifespan(server: MCPServer) -> AsyncIterator[None]:
 
 
 _PORT = int(os.getenv("GROVE_MCP_PORT", "8765"))
-_SERVE_MODE = "--serve" in sys.argv
+
+
+def _detect_serve_mode(argv: list[str] | None = None) -> bool:
+    """Whether the module was launched in serve mode.
+
+    Separated from the module-level import so tests can substitute their own
+    argv (or set `_SERVE_MODE` outright before importing derived surfaces).
+    The current CLI convention — `--serve` in argv — is preserved. See
+    tests/test_serve_mode_identity.py and INVARIANTS.md §5.
+    """
+    src = sys.argv if argv is None else argv
+    return "--serve" in src
+
+
+_SERVE_MODE = _detect_serve_mode()
 _BASE_URL = os.getenv("GROVE_MCP_URL", f"http://127.0.0.1:{_PORT}")
+
+_TRUTHY = {"1", "true", "yes", "on"}
+
+
+def _env_flag(name: str, env: dict[str, str] | None = None) -> bool:
+    """A truthy env var, defensively normalised. True on "1"/"true"/"yes"/"on"."""
+    src = os.environ if env is None else env
+    return src.get(name, "").strip().lower() in _TRUTHY
+
+
+def _is_loopback_base_url(base_url: str) -> bool:
+    """`base_url`'s host is one of the loopback names — 127.0.0.1, localhost, ::1.
+
+    Used only for the tunnel-warning heuristic; the transport allowlist still
+    does the authoritative check per request. See INVARIANTS.md §5.
+    """
+    try:
+        host = urlparse(base_url).hostname
+    except (ValueError, AttributeError):
+        return False
+    return host in ("127.0.0.1", "localhost", "::1")
 
 
 def _csv_env(name: str) -> list[str]:
@@ -271,15 +313,129 @@ _common_kwargs = dict(
     subscriptions=_bus,
 )
 
+# Dynamic client registration is DISABLED by default (INVARIANTS.md §5).
+# The pre-PR-6 posture was ClientRegistrationOptions(enabled=True) — the SDK
+# would persist any `/register` payload as a legitimate client, so a stranger
+# could register-and-then-authorize themselves the moment a person clicked
+# Allow on that stranger's approval page. Off by default closes the
+# "unvalidated register_client" hole from CODE_REVIEW.md §"safe-app-willow-grove"
+# P0. An operator who genuinely wants dynamic registration (e.g. for
+# claude.ai's connector discovery) opts in explicitly:
+#     GROVE_MCP_ALLOW_DYNAMIC_REGISTRATION=1
+# and takes on the responsibility of the approval click filtering strangers.
+_ALLOW_DYNAMIC_REG = _env_flag("GROVE_MCP_ALLOW_DYNAMIC_REGISTRATION")
+
+
+def _build_serve_provider(base_url: str):
+    """Construct the OAuth provider for serve mode. Extracted so tests can
+    substitute _SERVE_MODE and rebuild the provider without re-importing the
+    module. See tests/test_serve_mode_identity.py.
+    """
+    from grove.mcp_auth import GroveOAuthProvider  # local import: serve-only dep
+    return GroveOAuthProvider(
+        token_path=Path.home() / ".willow" / "grove_mcp_token",
+        base_url=base_url,
+    )
+
+
+def _resolve_serve_identity(token) -> str | None:
+    """Turn a verified OAuth access token into an operator app_id, or None.
+
+    Grove is single-user: a valid, in-scope access token IS the operator.
+    The `app_id` for that operator is `"grove-operator"`. This function is
+    the seam through which the serve branch of `_gate` refuses a call that
+    has no verified identity — fail-closed on a missing or malformed token.
+
+    Per INVARIANTS.md §5 (consent flows are real, not automatic), a request
+    that reaches `_gate` in serve mode without a verified identity is denied,
+    never allowed under an ambient assumption. Modelled after willow-mcp's
+    same-named helper (CODE_REVIEW.md P1 — "serve mode ... has zero tests");
+    the shape here is deliberately simple because Grove has one operator.
+
+    Args:
+        token: An mcp.server.auth.provider.AccessToken (or None). Duck-typed
+               to accept anything exposing `.client_id` and `.scopes`.
+
+    Returns:
+        The operator app_id when the token is present and carries at least
+        one recognized Grove scope; None otherwise (missing binding, malformed
+        identity, no recognized scope) — fail-closed.
+    """
+    if token is None:
+        return None
+    try:
+        client_id = getattr(token, "client_id", None)
+        scopes = getattr(token, "scopes", None) or []
+    except Exception:
+        # Malformed identity — log-once and fail closed. Refusing is the point.
+        _log_identity_malformed_once()
+        return None
+    if not client_id or not isinstance(scopes, (list, tuple, set)):
+        _log_identity_malformed_once()
+        return None
+    recognised = {SCOPE_READ, SCOPE_WRITE, SCOPE_FULL}
+    if not any(s in recognised for s in scopes):
+        return None
+    return "grove-operator"
+
+
+_identity_malformed_logged = False
+
+
+def _log_identity_malformed_once() -> None:
+    global _identity_malformed_logged
+    if _identity_malformed_logged:
+        return
+    _identity_malformed_logged = True
+    print(
+        "[grove-mcp] WARNING: malformed serve-mode identity — token missing "
+        "client_id or scopes; the request will be denied.",
+        file=sys.stderr, flush=True,
+    )
+
+
+def _gate(serve_mode: bool, token) -> bool:
+    """Serve-mode identity gate. True to allow, False to deny.
+
+    Stdio (`serve_mode=False`) is implicit-trust — the local process is the
+    operator — and returns True. Serve mode consults _resolve_serve_identity;
+    a None result denies. See tests/test_serve_mode_identity.py and
+    INVARIANTS.md §5.
+    """
+    if not serve_mode:
+        return True
+    return _resolve_serve_identity(token) is not None
+
+
+def _warn_public_tunnel_if_unacknowledged(base_url: str) -> bool:
+    """Log a WARNING when the base URL is not loopback and the operator has
+    not acknowledged the tunnel via WILLOW_MCP_TUNNEL_ACKNOWLEDGED=1.
+
+    Returns True when a warning was emitted (used by tests). No `--allow-tunnel`
+    flag exists — the warning is the security note. INVARIANTS.md §5.
+    """
+    if _is_loopback_base_url(base_url):
+        return False
+    if _env_flag("WILLOW_MCP_TUNNEL_ACKNOWLEDGED"):
+        return False
+    print(
+        f"[grove-mcp] WARNING: GROVE_MCP_URL is a non-loopback address "
+        f"({base_url}) — this listener is reachable off-box. DNS-rebinding "
+        "protection stays on regardless, but the operator should set "
+        "WILLOW_MCP_TUNNEL_ACKNOWLEDGED=1 to acknowledge that the tunnel is "
+        "intended. See INVARIANTS.md §5.",
+        file=sys.stderr, flush=True,
+    )
+    return True
+
+
 if _SERVE_MODE:
-    from grove.mcp_auth import GroveOAuthProvider, auto_approve_enabled, effective_scopes
+    from grove.mcp_auth import effective_scopes
     from mcp.server.auth.settings import AuthSettings, ClientRegistrationOptions
 
-    _auth_provider = GroveOAuthProvider(
-        token_path=Path.home() / ".willow" / "grove_mcp_token",
-        base_url=_BASE_URL,
-        auto_approve=auto_approve_enabled(),
-    )
+    _auth_provider = _build_serve_provider(_BASE_URL)
+    _warn_public_tunnel_if_unacknowledged(_BASE_URL)
+
     mcp = MCPServer(
         "grove",
         **_common_kwargs,
@@ -288,7 +444,7 @@ if _SERVE_MODE:
             issuer_url=_BASE_URL.rstrip("/") + "/",
             resource_server_url=_public_mcp_url(),
             client_registration_options=ClientRegistrationOptions(
-                enabled=True,
+                enabled=_ALLOW_DYNAMIC_REG,
                 valid_scopes=VALID_SCOPES,
                 default_scopes=DEFAULT_SCOPES,
             ),
@@ -935,6 +1091,21 @@ if _SERVE_MODE and _auth_provider is not None:
         target = "/mcp" + (url if url and url != "/" else "")
         return RedirectResponse(target, status_code=307)
 
+    # Loopback source addresses accepted for the approval POST. Per
+    # INVARIANTS.md §5, "the operator approves via a loopback-only page":
+    # this list is the enforcement of that clause. A public tunnel deployment
+    # that forwards its client's public IP to the app will not match; the
+    # operator has to reach /grove-approve from the box itself (SSH port-
+    # forward, `xdg-open http://127.0.0.1:8765/grove-approve?pending=…`).
+    _LOOPBACK_HOSTS = {"127.0.0.1", "::1", "localhost"}
+
+    def _remote_is_loopback(request: Request) -> bool:
+        """The approval POST's peer must be loopback — INVARIANTS.md §5."""
+        client = request.client
+        if client is None or not client.host:
+            return False
+        return client.host in _LOOPBACK_HOSTS
+
     @mcp.custom_route("/grove-approve", methods=["GET", "POST"])
     async def grove_approve(request: Request) -> HTMLResponse | RedirectResponse:
         """Single-user OAuth approval page — the authorization decision itself.
@@ -944,6 +1115,12 @@ if _SERVE_MODE and _auth_provider is not None:
         simply closing the tab denies the grant. `pending` is a 256-bit
         one-shot key, which is also what stops a third party from POSTing an
         approval they were never shown.
+
+        Per INVARIANTS.md §5, the POST that completes the grant is refused
+        unless the request originates from a loopback address — the operator
+        has to be on the box. GET renders normally so the operator can inspect
+        the page over a tunnel if they want, but the grant itself never crosses
+        the network.
         """
         pending_key = request.query_params.get("pending", "")
         entry = _auth_provider.pop_pending(pending_key)
@@ -972,7 +1149,8 @@ code{{word-break:break-all}}
 <p><strong>{name}</strong> is requesting access to read and send Grove messages.</p>
 <p>Scopes: <code>{scopes}</code><br>
 Codes will be sent to: <code>{target}</code></p>
-<p>If you did not just start this from your own client, click Deny.</p>
+<p>This approval only completes when submitted from the local box (127.0.0.1).
+If you did not just start this from your own client, click Deny.</p>
 <form method="post" action="/grove-approve?pending={pending_key}">
   <button class="allow" type="submit" name="action" value="allow">Allow</button>
   <button class="deny" type="submit" name="action" value="deny">Deny</button>
@@ -980,7 +1158,17 @@ Codes will be sent to: <code>{target}</code></p>
 </body></html>"""
             return HTMLResponse(page)
 
-        # POST — issue code or deny (entry already popped at top of function)
+        # POST — issue code or deny (entry already popped at top of function).
+        # Loopback check first: a non-loopback origin is refused before the
+        # action is even inspected. INVARIANTS.md §5.
+        if not _remote_is_loopback(request):
+            return HTMLResponse(
+                "<h2>Access denied.</h2>"
+                "<p>Approval must be submitted from the local host (127.0.0.1). "
+                "See INVARIANTS.md §5.</p>",
+                status_code=403,
+            )
+
         form = await request.form()
         action = form.get("action", "deny")
         if not entry or action != "allow":
@@ -1068,10 +1256,11 @@ def _watch_serve_supervisor() -> None:
 
 def main():
     if "--serve" in sys.argv:
-        if _auth_provider is not None and _auth_provider.auto_approve:
-            gate = "OAuth: enabled, AUTO-APPROVE (no human approval, no client vetting)"
-        else:
-            gate = "OAuth: enabled, approval required at /grove-approve"
+        # Approval is always required per INVARIANTS.md §5 — the pre-PR-6
+        # auto-approve escape hatch is gone. Every /authorize walks through
+        # /grove-approve and needs a loopback click.
+        reg_hint = "dynamic-reg=ON" if _ALLOW_DYNAMIC_REG else "dynamic-reg=OFF (opt-in via GROVE_MCP_ALLOW_DYNAMIC_REGISTRATION=1)"
+        gate = f"OAuth: enabled, approval required at /grove-approve, {reg_hint}"
         print(f"[grove-mcp] serving on http://127.0.0.1:{_PORT}/mcp  ({gate})", flush=True)
         # SDK 2.x: host/port/transport_security/path all belong to the
         # transport now, not the server object — the stateless core making

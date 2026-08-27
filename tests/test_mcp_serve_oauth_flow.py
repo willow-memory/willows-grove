@@ -22,13 +22,28 @@ BASE_URL = "https://grove.example.test"
 # grove.mcp_local decides serve mode at import time from sys.argv and the
 # environment, so both have to be in place before the import.
 _saved_argv = list(sys.argv)
-_saved_env = {k: os.environ.get(k) for k in ("GROVE_MCP_URL", "HOME", "GROVE_MCP_AUTO_APPROVE")}
+_saved_env = {
+    k: os.environ.get(k)
+    for k in (
+        "GROVE_MCP_URL",
+        "HOME",
+        "GROVE_MCP_AUTO_APPROVE",
+        "GROVE_MCP_ALLOW_DYNAMIC_REGISTRATION",
+        "WILLOW_MCP_TUNNEL_ACKNOWLEDGED",
+    )
+}
 _tmp_home = tempfile.mkdtemp(prefix="grove-oauth-test-home-")
 
 sys.argv = ["mcp_local", "--serve"]
 os.environ["GROVE_MCP_URL"] = BASE_URL
 os.environ["HOME"] = _tmp_home
 os.environ.pop("GROVE_MCP_AUTO_APPROVE", None)
+# PR 6 (INVARIANTS.md §5): dynamic client registration is off by default.
+# This test exercises the full OAuth flow, so enable it here explicitly.
+os.environ["GROVE_MCP_ALLOW_DYNAMIC_REGISTRATION"] = "1"
+# Silence the tunnel-warning that would otherwise fire for a non-loopback
+# BASE_URL — the tests don't care about it, only that the code runs cleanly.
+os.environ["WILLOW_MCP_TUNNEL_ACKNOWLEDGED"] = "1"
 try:
     # Serve mode is decided at import time, so this file must re-execute the
     # module under --serve rather than accept a copy another test file already
@@ -61,7 +76,14 @@ def http():
     is a module-level singleton, so the app is built and entered once. Per-test
     isolation comes from resetting the provider's state instead.
     """
-    with TestClient(mcp_local.mcp.streamable_http_app(), follow_redirects=False) as c:
+    # client=("127.0.0.1", ...) so the /grove-approve POST passes the loopback
+    # check introduced by PR 6 (INVARIANTS.md §5). Default TestClient host is
+    # "testclient", which is deliberately NOT loopback.
+    with TestClient(
+        mcp_local.mcp.streamable_http_app(),
+        follow_redirects=False,
+        client=("127.0.0.1", 12345),
+    ) as c:
         yield c
 
 
@@ -72,7 +94,8 @@ def client(http, tmp_path, monkeypatch):
     monkeypatch.setattr(provider, "_state", {"clients": {}, "access_tokens": {}, "refresh_tokens": {}})
     monkeypatch.setattr(provider, "_pending", {})
     monkeypatch.setattr(provider, "_codes", {})
-    monkeypatch.setattr(provider, "_auto_approve", False)
+    # `_auto_approve` no longer exists as of PR 6 — the escape hatch is gone
+    # (INVARIANTS.md §5). Nothing to reset; approval is always required.
     return http
 
 

@@ -9,7 +9,18 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Added
 - INVARIANTS.md — single source of truth for Grove discipline.
+- INVARIANTS.md §5 — Consent flows are real, not automatic. Names the /grove-approve loopback POST discipline, the 5-min pending TTL, the 24-hour access TTL, and the tunnel-acknowledgement flag.
 - CHANGELOG.md — reorganized under Keep a Changelog v1.1.0; earlier per-branch entries preserved below as historical work.
+- `tests/test_serve_mode_identity.py` — pins `_detect_serve_mode` injectability, `_resolve_serve_identity` (verified / missing / malformed / unknown-scopes cases with log-once), and the serve branch of `_gate` denying when identity resolves to None. Fills the CODE_REVIEW.md P1 gap ("serve mode ... has zero tests").
+- `tests/test_grove_approval_page.py` — pins `/authorize` never issuing a code, the approval page rendering the client + scope + redirect, loopback-only completion, non-loopback POST refused (403), 5-min pending expiry, and DNS-rebinding-protection invariants on the transport allowlist.
+
+### Fixed
+- `grove/mcp_auth.py`: `authorize()` no longer auto-issues codes; wired to the /grove-approve page (CODE_REVIEW.md P0). The `GROVE_MCP_AUTO_APPROVE` env-var escape hatch and the `auto_approve` constructor arg are removed — there is no unattended-approve path. INVARIANTS.md §5.
+- `grove/mcp_local.py`: DNS-rebinding protection stays on regardless of scheme; ngrok carve-out removed (CODE_REVIEW.md P0). The `/grove-approve` POST that completes a grant is refused unless the peer is on 127.0.0.1/::1/localhost — the operator has to be on the box. A non-loopback `GROVE_MCP_URL` without `WILLOW_MCP_TUNNEL_ACKNOWLEDGED=1` logs a WARNING at startup. INVARIANTS.md §5.
+- `client_registration.enabled` disabled by default; explicit enrollment required via `GROVE_MCP_ALLOW_DYNAMIC_REGISTRATION=1`. Closes CODE_REVIEW.md P0 ("unvalidated register_client"). INVARIANTS.md §5.
+- `_ACCESS_TTL` reduced from 30 days to 24 hours; `_PENDING_TTL` from 10 minutes to 5 minutes. Bounded for the operator seat per INVARIANTS.md §5.
+- `_SERVE_MODE` now derives from an injectable `_detect_serve_mode(argv=…)`; the OAuth provider is built via `_build_serve_provider(base_url)`. Makes the serve branch of the gate testable (CODE_REVIEW.md P1). New `_resolve_serve_identity(token)` and `_gate(serve_mode, token)` seams — fail-closed on missing / malformed identity.
+- `SECURITY_AUDIT.md`: G-OAUTH-01 residual risk updated to reflect the removed auto-approve path; G-REG-01 closed (dynamic registration off by default). INVARIANTS.md §5.
 
 ### Previous work (pre-v0.9)
 
