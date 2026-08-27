@@ -98,16 +98,28 @@ jobs:
           python -m twine check --strict dist/*
 
       # Proof the artifact imports as itself, from the wheel rather than
-      # the source tree it was built in.
+      # the source tree it was built in. Runs from /tmp so no path
+      # accident lets the installed source shadow the wheel.
+      #
+      # `grove-serve` is NOT invoked with `--help` (or anything else):
+      # grove_serve.main() has no argparse, it starts uvicorn on 8766
+      # and blocks. The first draft ran `grove-serve --help >/dev/null
+      # 2>&1 || fallback` — the server would boot and block, and the
+      # fallback never fired because uvicorn does not exit. Result: a
+      # 15-minute-timeout hang on the first workflow_dispatch dry run.
+      # Prove the console script exists and its entry point resolves,
+      # do not run the script.
       - name: Install the wheel somewhere else and ask it its version
         run: |
           python -m venv /tmp/verify
           /tmp/verify/bin/pip install --quiet dist/*.whl
-          /tmp/verify/bin/python -c "import grove_serve; print('grove_serve import ok')"
-          /tmp/verify/bin/python -c "import grove; print('grove package import ok')"
-          /tmp/verify/bin/grove-serve --help >/dev/null 2>&1 \
-            || /tmp/verify/bin/python -c "import grove_serve; assert hasattr(grove_serve, 'main'), 'no main()'"
-          echo "console script resolves"
+          cd /tmp
+          /tmp/verify/bin/python -c "import grove_serve, grove_db, grove_html, grove_reader"
+          /tmp/verify/bin/python -c "import grove, u2u, bridge, panes"
+          /tmp/verify/bin/python -c "from importlib.metadata import version; print('willows-grove', version('willows-grove'))"
+          test -x /tmp/verify/bin/grove-serve
+          /tmp/verify/bin/python -c "import grove_serve; assert callable(grove_serve.main), 'grove_serve.main missing'"
+          echo "wheel install smoke: ok"
 
       - uses: actions/upload-artifact@v4
         with:
