@@ -6,6 +6,7 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Changed
 - Three-state discipline landed for every /api/* endpoint and every Web Component (INVARIANTS.md §1). Supersedes D7's implicit read of "absence is a state" (INVARIANTS.md §2).
+- `<grove-envelope-panel>` default `data-source` moved to `/api/envelopes` — the served page now consumes the live envelope registry, not the fixture harness's JSON. Fixture-based rendering is opt-in via an explicit `data-source` attribute (harness use only). INVARIANTS.md §8.
 
 ### Added
 - INVARIANTS.md §9 — "Seed reads real canon" (Grove v0.9 PR 3). Names the three-rung probe order, escape-on-render discipline, and the stub-on-absence proof-of-life path.
@@ -16,7 +17,12 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 - INVARIANTS.md §5 "Trust order" — signature → consent → dispatch, in exactly that sequence, with the contact-store rules that protect the state consent depends on.
 - INVARIANTS.md §6 — "Manifests describe code, not aspirations" (Grove v0.9 PR 7). Tests enforce.
 - INVARIANTS.md §7 — "Consent flows are real, not automatic" (Grove v0.9 PR 6). Names the /grove-approve loopback POST discipline, the 5-min pending TTL, the 24-hour access TTL, and the tunnel-acknowledgement flag.
+- INVARIANTS.md §8 — "Panels consume live endpoints by default" (Grove v0.9 PR 2). Every Web Component consumes its matching `/api/*` endpoint by default; fixture-based rendering is opt-in (harness use only); the served page renders live state, not curated data.
 - INVARIANTS.md §10 — "CI proves the invariants" (Grove v0.9 PR 4). Every INVARIANTS section is enforced by at least one CI step; Ollama, Playwright, docs-drift, and security-grep are CI-first (never operator-only).
+- `window.groveNestorAsk(claim)` now handles the `state="unreachable"` branch distinctly — summons a subdued `<grove-refusal-chip>` in a new `mode: "unreachable"` variant so the operator sees when the L4 Nestor seam is down instead of the 503 being swallowed silently. INVARIANTS.md §1 + §8.
+- `<grove-refusal-chip>` gains a `mode` field: `"refusal"` (default, verbatim Nestor speech act) or `"unreachable"` (dashed border + subdued render, distinct from a real refusal). V5 discipline is unchanged for the `refusal` mode.
+- `tests/test_panel_wiring.py` — pins the three-state shape end-to-end for every endpoint the panels consume: `/api/envelopes`, `/api/nestor/decide`, `/api/dispatch`, `/api/journal/recent`. INVARIANTS.md §1 + §8.
+- `tests/test_refusal_summon_shape.py` — pins the refusal-summon boot module's contract with the chip: POSTs to `/api/nestor/decide`, dispatches `nestor-refusal` on `refused`, dispatches the same event with `mode: "unreachable"` on 503/state=unreachable.
 - CI: Ollama service container in `.github/workflows/tests.yml`, health-checked at `:11434`, exercised by `tests/e2e_ollama/` (populated in Grove v0.9 PR 8). INVARIANTS.md §10.
 - CI: Playwright browser install step (chromium) guarded on `playwright.config.js`; the e2e suite under `tests/e2e/` is populated in Grove v0.9 PR 9. INVARIANTS.md §10.
 - CI: docs-drift step calling `scripts/check_docs_drift.py`; the stub exits 0 with a note in PR 4 and is filled by Grove v0.9 PR 11 to enforce §3 (every `INVARIANTS.md §N` citation resolves, every CHANGELOG bullet cites its PR). INVARIANTS.md §10.

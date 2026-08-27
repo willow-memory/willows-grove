@@ -218,6 +218,34 @@ comment that motivates it. Pinning tests: `tests/test_mcp_auth.py`,
 `tests/test_mcp_serve_oauth_flow.py`, `tests/test_serve_mode_identity.py`,
 `tests/test_grove_approval_page.py`, `tests/test_transport_security.py`.
 
+## §8 — Panels consume live endpoints by default
+
+Every Web Component consumes its live `/api/*` endpoint by default.
+Fixture-based rendering is opt-in (harness use only). The served page
+renders live state, not curated data.
+
+Concretely:
+
+- Every Web Component's `data-source` (or equivalent) default resolves
+  to the matching endpoint from the §4 coverage table — never a JSON
+  fixture path.
+- The harness page `web/harness.html` MAY carry an explicit
+  `data-source="./fixtures/..."` override so a design pass can inspect
+  the populated shape without a running server. That is the only
+  legitimate use of an explicit fixture path.
+- The served page (`grove_html.py`) MUST NOT carry an explicit
+  fixture-path `data-source` on any component. Every panel there
+  renders whatever the reader currently returns — populated, empty, or
+  unreachable per §1.
+- New Web Components state their live-endpoint default (and the
+  harness carve-out) in the JSDoc header, alongside their §1 three-state
+  posture.
+
+Pinning tests: `tests/test_panel_wiring.py` (endpoint side of the
+default source; three-state shape end-to-end) and
+`tests/test_refusal_summon_shape.py` (the refusal-summon boot module's
+POST target and event contract).
+
 ## §9 — Seed reads real canon
 
 The `/seed/` route renders content from `willow-memory/willow/seed/canon/`

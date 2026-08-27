@@ -2,7 +2,8 @@
 /**
  * refusal-summon-boot — page-side auto-summon wiring for Nestor refusals.
  *
- * This module keeps two contracts:
+ * This module keeps two contracts (INVARIANTS.md §1 + §8 — panels
+ * consume the live `/api/nestor/decide` endpoint by default):
  *
  *  1. Listen for a global ``window`` ``nestor-refusal`` CustomEvent whose
  *     ``detail`` is a verbatim Nestor refusal payload (as shaped by
@@ -14,9 +15,15 @@
  *     element defines one — call ``.summon()`` so the chip un-hides.
  *
  *  2. Expose ``window.groveNestorAsk(claim)`` — a console/operator helper
- *     that POSTs ``{"claim": ...}`` to ``/api/nestor/decide`` and, when
- *     the verdict is ``refused``, dispatches the ``nestor-refusal``
- *     window CustomEvent with the refusal payload as the event detail.
+ *     that POSTs ``{"claim": ...}`` to ``/api/nestor/decide`` and, per
+ *     the three-state contract (INVARIANTS.md §1):
+ *       - ``verdict === "refused"`` → dispatch ``nestor-refusal`` with
+ *         the verbatim refusal payload (V5).
+ *       - 503 with ``state === "unreachable"`` → dispatch
+ *         ``nestor-refusal`` with a distinct ``mode: "unreachable"``
+ *         payload so the chip renders a subdued "Nestor unreachable"
+ *         banner. The 503 is NEVER swallowed silently — the operator
+ *         must see when the L4 seam is down.
  *     A proper UI hook (button on a card, form on a page) is a follow-up.
  *
  * V5 discipline: the refusal payload is neither reshaped nor summarised
@@ -126,6 +133,25 @@ async function _groveNestorAsk(claim) {
     body = await resp.json();
   } catch (_e) {
     body = null;
+  }
+  // INVARIANTS.md §1: a 503 with state="unreachable" MUST NOT collapse
+  // into a silent return. Summon a distinct "unreachable" chip so the
+  // operator sees the L4 seam is down.
+  if (!resp.ok && body && body.state === "unreachable") {
+    const reason = (typeof body.reason === "string" && body.reason)
+      ? body.reason
+      : "nestor unreachable";
+    try {
+      window.dispatchEvent(new CustomEvent(EVENT_NAME, {
+        detail: {
+          persona: "nestor",
+          act: "unreachable",
+          body: reason,
+          mode: "unreachable",
+        },
+      }));
+    } catch (_e) { /* dispatch failing should not shadow the caller */ }
+    return body;
   }
   if (body && body.verdict === "refused" && body.refusal) {
     try {

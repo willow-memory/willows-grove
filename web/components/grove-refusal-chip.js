@@ -96,10 +96,16 @@ class GroveRefusalChip extends HTMLElement {
     if (!value || typeof value !== "object") return null;
     const body = typeof value.body === "string" ? value.body : "";
     if (!body) return null;
+    // INVARIANTS.md §1: mode="unreachable" is the L4-seam-down variant;
+    // the chip renders it subdued and distinct from a real refusal so
+    // the operator can tell "Nestor refused" apart from "could not
+    // reach Nestor". Every other value falls to "refusal" (default).
+    const mode = value.mode === "unreachable" ? "unreachable" : "refusal";
     return {
       persona: typeof value.persona === "string" ? value.persona : "",
       act: typeof value.act === "string" ? value.act : "",
       body: body,
+      mode: mode,
       warrant_ids: Array.isArray(value.warrant_ids) ? value.warrant_ids.slice() : [],
       evidence_ids: Array.isArray(value.evidence_ids) ? value.evidence_ids.slice() : [],
       seal_sig: typeof value.seal_sig === "string" ? value.seal_sig : "",
@@ -165,6 +171,15 @@ class GroveRefusalChip extends HTMLElement {
         }
         .chip:hover { filter: brightness(1.1); }
         .chip:focus-visible { outline: 2px solid var(--chip-border); outline-offset: 2px; }
+        /* INVARIANTS.md §1: unreachable mode is visually distinct from
+           a real refusal — dashed border + subdued opacity so the
+           operator reads "seam down" and not "Nestor refused". */
+        .chip.mode-unreachable {
+          border-style: dashed;
+          opacity: 0.78;
+          background: #14100a;
+        }
+        .chip.mode-unreachable .act { color: var(--grove-warm-muted, #8a7d5f); font-weight: 500; }
         .sigil {
           font-size: 13px;
           color: var(--chip-border);
@@ -225,6 +240,13 @@ class GroveRefusalChip extends HTMLElement {
     }
     this.classList.remove("empty");
     this._chip.removeAttribute("hidden");
+    // Toggle the visual distinction between refusal and unreachable
+    // (INVARIANTS.md §1) so the operator reads the two states apart.
+    if (this._data.mode === "unreachable") {
+      this._chip.classList.add("mode-unreachable");
+    } else {
+      this._chip.classList.remove("mode-unreachable");
+    }
 
     const persona = this._lookupPersona(this._data.persona);
     const color = persona.color || PIGEON;
