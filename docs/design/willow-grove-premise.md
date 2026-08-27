@@ -515,6 +515,21 @@ operator can promote a card to a pop-out and keep working around it.
 - evidence: `safe-app-willow-grove/docs/superpowers/specs/2026-04-24-grove-os-design.md` — the desk-as-operating-system framing is already in the repo's prior thinking
 - warrant (construction): browser-native `window.open` with the card's route; state syncs via same-origin storage; pop-out card and its representation on the main desk stay in step
 
+**D15 — Grove + Homestead peer-seat coexistence.** *(sealed)*
+**v1 = sibling apps.** Grove and Homestead each their own served page;
+operator switches browser tabs. Honest to the two-seats-for-two-domains
+reality; nothing new to build. **v2 = Homestead as a Grove add-on.**
+Homestead ships a `homestead_seam.py` (like Oakenscroll's
+`almanac_seam.py`); Grove renders Homestead's rungs / ledger /
+DECISION cards as first-class Grove cards via the D7 add-on pattern.
+**Grove-of-groves picker** is the eventual endgame but not a v2
+problem. **Federation (Constitution Article XIII) is reserved for a
+later Constitution version — do not wait on it.**
+- evidence: D7 base + add-ons — the graduation pattern applies; Homestead becomes an add-on when the operator wants coexistence
+- evidence: `hornbook-knowledge/oakenscrolls-office/almanac_seam.py` — reference implementation of a peer service seaming into a consumer; Homestead → Grove follows the same shape
+- evidence: `willow-memory/willow/CONSTITUTION.md` Article XIII — federation reserved for Version 2; coexistence must NOT wait on it
+- warrant (construction): the v1-to-v2 retrofit is small — `homestead_seam.py` slots into Grove's per-add-on renderer pattern (D7 + P3 rung ceiling + P8 persona picker are all reusable); no design lock-in from picking sibling-apps v1
+
 ## Constitutional anchors
 
 - **CONST-0-3** — No self-extension of capability. Grove renders envelopes; it does not create them. Envelope creation is Operator Key.
@@ -660,11 +675,6 @@ decisions or artboards. What remains:*
 2. **Day-one default layout** (P9 says configurable — discord / slack
    / mission-control / minimal / journal-first / mobile / custom —
    but which is Grove's day-one first-run experience).
-3. **Grove + Homestead peer-seat coexistence** — sibling apps
-   (operator switches tabs), federated cards, Homestead as a Grove
-   add-on, or a grove-of-groves picker. Article XIII (federation) is
-   reserved for a later Constitution version.
-
 *Settled since the earlier draft:*
 - ~~Framework choice~~ → **D9 sealed**: vanilla JS + Web Components + no build.
 - ~~Nestor integration path~~ → **D11 sealed**: `nestor serve` MCP-over-stdio; card-native rendering, not iframe.
@@ -672,6 +682,7 @@ decisions or artboards. What remains:*
 - ~~Chat / summoned-card interaction~~ → **D12 sealed**: summon-the-card; new takes focus, previous becomes secondary.
 - ~~Full-cast render vs trust-tier orbit~~ → **D13 sealed**: contextual subsets — render personas relevant to what's in focus.
 - ~~Chat's home-edge~~ → **D14 sealed**: visible home-edge affordance + OS-like pop-out to separate windows.
+- ~~Grove + Homestead coexistence~~ → **D15 sealed**: v1 sibling apps; v2 Homestead as Grove add-on.
 - ~~Bloom-row overlap~~ → resolved on v4 Quiet Desk (meadow moved to distinct ground strip; willow became watermark; wordmark removed).
 - ~~Free-float vs grid-snap~~ → Modalities artboard + Envelopes-summoned
   artboard settled the summonable-card model (edges + slide-forward).
