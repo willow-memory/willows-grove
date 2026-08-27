@@ -450,6 +450,37 @@ deep component trees.
 - evidence: `willow-mcp/docs/PRIOR_ART.md §1` — Editor.js (Apache-2.0) is framework-agnostic; suits Grove's card content model without React coupling
 - warrant (construction): a vanilla-JS Grove can be reviewed by `curl` on `127.0.0.1:8765`; no build artifacts to inspect; every dependency is a small named library the operator can audit — the magistrate-writes-no-code discipline made legible
 
+**D10 — Where the unified persona registry lives.** *(sealed)*
+`willow-memory/willow/fleet_personas.json` — charter-adjacent to
+`fleet.json` (its parent). Schema extends fleet.json with `visual`
+(color, sigil, color_token), `voice` (register, mandate, not_do parsed
+from `personas/{name}.md`), `emission_fields`, and `canonical_file`
+pointer. Writes are governance acts (per W1 — persona drift is the
+danger this closes); charter placement makes each edit follow Article
+VIII amendment discipline. All consumers (Grove, Nestor UI, jarvis,
+homestead) read this one file. Grove reads at boot, caches, degrades
+to bare `fleet.json` fields if the extended file is absent (per D7).
+- evidence: `willow-memory/willow/fleet.json` — the parent (16 agents, 3 trust tiers, schema `fleet-roster/v1`); `fleet_personas.json` extends this shape
+- evidence: `safe-app-store/docs/app_store_vision_and_gaps.md §3+§4 + E6` — W1: persona drift is documented; central schema is the fix
+- evidence: `willow-memory/willow/CONSTITUTION.md` Article VIII — amendments to charter-carried data follow the ratify pipeline; matches the governance-act framing
+- warrant (construction): consumers read the file directly (offline-safe); a `willow-mcp` read-through MCP endpoint may be added later, but the file remains canonical
+
+**D11 — How Grove reaches Nestor.** *(sealed)*
+Call `nestor serve` (MCP over stdio) from Grove's backend; render
+Nestor's data in Grove's own card-native UI. **NOT iframe embed.**
+Composes with the summonable-card model (Governance lens summons Nestor
+cards); persona colors (V-layer) apply to Nestor-sourced content;
+Nestor's refusal chip (V5) renders verbatim inside Grove's own chip.
+Cytoscape.js is already a Grove dep (Nestor decision 0137 sealed it
+inlined into the served page, no external CDN), so the Graph tab is
+renderable in Grove's own style. Iframe-embed remains a fallback for
+specific deep-dive views if ever needed — not the primary path.
+- evidence: V5 (this store) — Nestor's refusal must render verbatim with negation preserved; requires Grove-native rendering, not iframe
+- evidence: `Nestor/docs/dogfood/decisions/0137-read-only-decision-graph-in-desk.json` — Cytoscape.js MIT inlined into served page; Grove already carries this dep
+- evidence: `willow-mcp/docs/PRIOR_ART.md §2` — MCP-over-stdio transport is stable; `nestor serve` is versioned
+- evidence: composition sketch (above) — *"Governance answers via nestor decision check + evidence for + warrant for; refusal voice renders Nestor persona speech acts verbatim"* — already committed direction
+- warrant (construction): one MCP client for `nestor serve` in Grove's backend; renders its output through Grove's card + chip vocabulary; iframe path preserved as escape hatch for specific views, not primary
+
 ## Constitutional anchors
 
 - **CONST-0-3** — No self-extension of capability. Grove renders envelopes; it does not create them. Envelope creation is Operator Key.
@@ -596,14 +627,7 @@ decisions or artboards. What remains:*
 2. **Full-cast render vs trust-tier orbit** — all agents visible always,
    or trust-tier orbits (OPERATORs closer to Willow, WORKERs outer,
    Bureau's 5 non-graduated appearing only when their app is engaged)?
-3. **Nestor integration path** — embed `nestor ui` as an iframe under
-   the Governance lens, or call `nestor serve` (MCP over stdio) from
-   Grove's backend? Both viable.
-4. **Persona-roster mint location** — `fleet_personas.json` in this
-   repo, in `willow-memory/willow`, or as a `willow-mcp` MCP endpoint
-   served to any consumer? W1 says the file must exist; where it lives
-   is open.
-5. **Voice-panel materialization discipline** — when a spoken intent
+3. **Voice-panel materialization discipline** — when a spoken intent
    lands (WO-1), which surface materializes and by what rule? Depends
    on the utterance arbiter's decision and the reaction engine's
    `surface_card` action, but the specific mapping needs a table.
@@ -621,6 +645,8 @@ decisions or artboards. What remains:*
 
 *Settled since the earlier draft:*
 - ~~Framework choice~~ → **D9 sealed**: vanilla JS + Web Components + no build.
+- ~~Nestor integration path~~ → **D11 sealed**: `nestor serve` MCP-over-stdio; card-native rendering, not iframe.
+- ~~Persona-roster mint location~~ → **D10 sealed**: `willow-memory/willow/fleet_personas.json` (charter-adjacent to fleet.json).
 - ~~Free-float vs grid-snap~~ → Modalities artboard + Envelopes-summoned
   artboard settled the summonable-card model (edges + slide-forward).
 - ~~Bureau's 7 alongside fleet.json's 16~~ → V-layer picked 9 in-production
@@ -635,7 +661,6 @@ decisions or artboards. What remains:*
 
 - Does not create envelopes, sign anything, or ratify a decision.
 - Does not touch code — no imports changed, no wiring done.
-- Does not commit Grove to any specific integration path (Jarvis / Nestor); those decisions remain open.
 - Does not speak for the operator. The seat proposes. USER ratifies.
 
 ## Related work
