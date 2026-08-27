@@ -7,11 +7,15 @@ into it for decision-checks, evidence lookups, warrant lookups, and to
 render Nestor's persona refusal speech act *verbatim* (V5 negation
 guard — the refusal must never be paraphrased on our side).
 
-Discipline (D7): if the ``nestor`` executable is not installed on the
-operator's machine, every method returns ``None`` and the wrapper is a
-silent no-op — Grove renders "no Nestor add-on present" state rather
-than crashing. The probe-once + cache pattern follows
-``hornbook-knowledge/oakenscrolls-office/almanac_seam.py``.
+Three-state posture (INVARIANTS.md §1): every public read helper on
+this client either returns a bounded value (populated or empty — the
+JSON-RPC response dict, ``None`` for the reachable-but-no-match empty
+branch) OR raises ``grove.errors.Unreachable`` when the Nestor binary
+is not on PATH. A bare ``None`` NEVER means "could not reach": that
+state is the ``Unreachable`` sentinel, always. The old D7 no-op
+("binary absent → return None everywhere") is superseded by §2; Grove
+renders the unreached state distinctly rather than collapsing it into
+empty.
 
 The stdio JSON-RPC framing here is the minimal MCP-lines subset used
 by the reference client wrappers in the fleet (one JSON object per
@@ -77,9 +81,10 @@ class NestorClient:
         with NestorClient() as nc:
             check = nc.decision_check("may we merge?")
 
-    All methods return ``None`` when the ``nestor`` executable is
-    missing (D7). Every method is thread-safe via a single mutex; the
-    stdio protocol is inherently serial per child.
+    Every read helper raises ``Unreachable`` when the ``nestor``
+    executable is missing (INVARIANTS.md §1); the reachable-but-no-data
+    branch stays as ``None``. Every method is thread-safe via a single
+    mutex; the stdio protocol is inherently serial per child.
     """
 
     def __init__(
@@ -204,11 +209,38 @@ class NestorClient:
         return self._call("nestor/decision_check", {"question": question})
 
     def evidence_for(self, pair_id: str) -> Optional[dict[str, Any]]:
-        """Fetch evidence attached to a sealed pair, by id."""
+        """Fetch evidence attached to a sealed pair, by id.
+
+        Three-state contract (INVARIANTS.md §1):
+
+        * populated → the raw JSON-RPC response dict with the evidence
+          payload under ``result``.
+        * empty → ``None`` when Nestor is reachable but no evidence is
+          attached (the "reachable but no match" case).
+        * unreachable → raises ``Unreachable`` when ``available()`` is
+          False (nestor binary not on PATH). §1 forbids collapsing
+          "could-not-reach" into ``None``; the M6 finding pinned that
+          collapse and this branch replaces it.
+        """
+        if not self.available():
+            raise Unreachable("nestor binary not on PATH")
         return self._call("nestor/evidence_for", {"pair_id": pair_id})
 
     def warrant_for(self, pair_id: str) -> Optional[dict[str, Any]]:
-        """Fetch the warrant (citation or construction) for a sealed pair."""
+        """Fetch the warrant (citation or construction) for a sealed pair.
+
+        Three-state contract (INVARIANTS.md §1):
+
+        * populated → the raw JSON-RPC response dict with the warrant
+          payload under ``result``.
+        * empty → ``None`` when Nestor is reachable but no warrant is
+          attached.
+        * unreachable → raises ``Unreachable`` when ``available()`` is
+          False (nestor binary not on PATH). Was the M6 collapse; now
+          the same distinct sentinel every other reader raises.
+        """
+        if not self.available():
+            raise Unreachable("nestor binary not on PATH")
         return self._call("nestor/warrant_for", {"pair_id": pair_id})
 
     def refusal(self, act: str, **facts: Any) -> Optional[str]:
@@ -217,7 +249,18 @@ class NestorClient:
         The value returned is Nestor's own text — negation preserved,
         no paraphrasing done here. Grove displays it inside its own
         chip vocabulary but the string content stays untouched.
+
+        Three-state contract (INVARIANTS.md §1):
+
+        * populated → Nestor's verbatim refusal string.
+        * empty → ``None`` when Nestor is reachable but returns no
+          refusal text (result shape absent / malformed).
+        * unreachable → raises ``Unreachable`` when ``available()`` is
+          False (nestor binary not on PATH). The M6 finding pinned the
+          old None-collapse; the distinct sentinel replaces it.
         """
+        if not self.available():
+            raise Unreachable("nestor binary not on PATH")
         resp = self._call("nestor/refusal", {"act": act, "facts": facts})
         if not resp:
             return None
