@@ -5,6 +5,14 @@ on:
     branches: ["master", "main"]
   pull_request:
     branches: ["master", "main"]
+    # docs/INVARIANTS.md §12 — the ratification check reads the PR body out of
+    # the event payload. GitHub's default types are opened/synchronize/reopened,
+    # and re-running a run replays the ORIGINAL payload, so a PR whose
+    # `Ratified-by:` line arrives by body edit could never reach green: the
+    # only ways out were an empty commit or a close/reopen, both of which
+    # forge a code event to satisfy a governance gate. `edited` re-fires the
+    # check against the corrected body, which is the honest signal.
+    types: [opened, synchronize, reopened, edited]
 
 jobs:
   test:
