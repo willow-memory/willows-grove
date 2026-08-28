@@ -37,12 +37,12 @@ class EnvelopeReaderTests(unittest.TestCase):
         self.addCleanup(self.tmp.cleanup)
         root = Path(self.tmp.name)
 
-        # Isolate HOME so ~/willow-memory/Willow/envelopes and ~/.willow/envelopes
-        # never resolve to anything the host machine owns.
+        # Isolate HOME so ~/.willow/constitutional never resolves to anything
+        # the host machine owns.
         self.fake_home = root / "no-home"
         self.fake_home.mkdir()
 
-        # $WILLOW_HOME/envelopes lives here when a test wants it populated.
+        # $WILLOW_HOME/constitutional lives here when a test wants it populated.
         self.willow_home = root / "willow_home"
 
         # Reset module-level log-once state before every test.
@@ -88,7 +88,7 @@ class EnvelopeReaderTests(unittest.TestCase):
     def test_dir_present_but_no_files_returns_empty_envelope_list(self) -> None:
         """Directory exists but holds no usable json → empty list (reached).
         This is the "empty" three-state case, distinct from unreachable."""
-        env_dir = self.willow_home / "envelopes"
+        env_dir = self.willow_home / "constitutional"
         env_dir.mkdir(parents=True)
         with self._env(willow_home=str(self.willow_home)):
             result = er.read_all()
@@ -97,7 +97,7 @@ class EnvelopeReaderTests(unittest.TestCase):
 
     # ---- normal path: two files in one dir ----
     def test_two_files_in_one_dir_merge(self) -> None:
-        env_dir = self.willow_home / "envelopes"
+        env_dir = self.willow_home / "constitutional"
         env_dir.mkdir(parents=True)
         (env_dir / "a.json").write_text(
             json.dumps({"schema": er.SCHEMA_ID, "envelopes": [_envelope("env-a")]}),
@@ -117,7 +117,7 @@ class EnvelopeReaderTests(unittest.TestCase):
 
     def test_pre_approved_key_shape_is_read(self) -> None:
         """The charter file uses ``pre_approved`` — reader must find it."""
-        env_dir = self.willow_home / "envelopes"
+        env_dir = self.willow_home / "constitutional"
         env_dir.mkdir(parents=True)
         (env_dir / "pre-approved.json").write_text(
             json.dumps(
@@ -137,7 +137,7 @@ class EnvelopeReaderTests(unittest.TestCase):
 
     # ---- malformed file discipline ----
     def test_malformed_file_is_skipped_and_logged_once(self) -> None:
-        env_dir = self.willow_home / "envelopes"
+        env_dir = self.willow_home / "constitutional"
         env_dir.mkdir(parents=True)
         good = env_dir / "good.json"
         good.write_text(
@@ -166,10 +166,10 @@ class EnvelopeReaderTests(unittest.TestCase):
 
     # ---- precedence: later dir wins on id collision ----
     def test_later_dir_overrides_earlier_on_id_collision(self) -> None:
-        # $WILLOW_HOME/envelopes is candidate index 0; ~/.willow/envelopes is index 2.
-        # Precedence rule: later probe order wins on collision, so the ~/.willow
-        # payload should replace the $WILLOW_HOME one.
-        wh_dir = self.willow_home / "envelopes"
+        # $WILLOW_HOME/constitutional is candidate index 0; ~/.willow/constitutional
+        # is index 1. Precedence rule: later probe order wins on collision, so the
+        # ~/.willow payload should replace the $WILLOW_HOME one.
+        wh_dir = self.willow_home / "constitutional"
         wh_dir.mkdir(parents=True)
         (wh_dir / "src.json").write_text(
             json.dumps(
@@ -181,7 +181,7 @@ class EnvelopeReaderTests(unittest.TestCase):
             encoding="utf-8",
         )
 
-        dot_dir = self.fake_home / ".willow" / "envelopes"
+        dot_dir = self.fake_home / ".willow" / "constitutional"
         dot_dir.mkdir(parents=True)
         (dot_dir / "src.json").write_text(
             json.dumps(
@@ -200,13 +200,17 @@ class EnvelopeReaderTests(unittest.TestCase):
         self.assertEqual(result["envelopes"][0]["grantee"], "from-dot-willow")
 
     # ---- new probe: $WILLOW_HOME/willow-memory/willow/envelopes/ ----
-    def test_willow_home_charter_probe_path(self) -> None:
-        """The reader honors ``$WILLOW_HOME/willow-memory/willow/envelopes/``
-        — the charter mirror the operator actually keeps envelopes under
-        (Bug 2 — standup finding: pre-approved.json + syscall-table.json
-        went unread because the reader only knew ``$WILLOW_HOME/envelopes``
-        and ``~/willow-memory/Willow/...``, not the lowercase charter hop)."""
-        env_dir = self.willow_home / "willow-memory" / "willow" / "envelopes"
+    def test_the_registry_is_read_from_constitutional(self) -> None:
+        """The reader resolves ``$WILLOW_HOME/constitutional/`` — the same
+        directory willow-mcp's ``paths.envelope_registry_path()`` names and
+        ``trusted_read()`` authenticates.
+
+        Replaces an earlier test that pinned ``$WILLOW_HOME/willow-memory/
+        willow/envelopes/``. That hop was a pre-migration path: willow-mcp
+        moved the registry to constitutional/ (repointing its syscall table's
+        `registry` field in the same change) and this reader was left behind,
+        so Grove displayed a registry the engine did not enforce."""
+        env_dir = self.willow_home / "constitutional"
         env_dir.mkdir(parents=True)
         (env_dir / "pre-approved.json").write_text(
             json.dumps(
@@ -217,22 +221,50 @@ class EnvelopeReaderTests(unittest.TestCase):
             ),
             encoding="utf-8",
         )
-        (env_dir / "syscall-table.json").write_text(
+        with self._env(str(self.willow_home)):
+            result = er.read_all()
+        self.assertEqual([e["id"] for e in result["envelopes"]], ["charter-fs-read"])
+
+    def test_an_empty_earlier_key_does_not_shadow_a_populated_later_one(self) -> None:
+        """The registry carries pre_approved/active/proposals as siblings.
+        Matching on "is a list" let an empty pre_approved return [] while
+        active held an envelope in force — measured against the real migrated
+        registry, where pre_approved is [] and active holds THE PLANTING."""
+        env_dir = self.willow_home / "constitutional"
+        env_dir.mkdir(parents=True)
+        (env_dir / "pre-approved.json").write_text(
             json.dumps(
-                {"schema": er.SCHEMA_ID, "envelopes": [_envelope("syscall-exec")]}
+                {
+                    "schema": er.SCHEMA_ID,
+                    "pre_approved": [],
+                    "active": [_envelope("env-in-force")],
+                    "proposals": [],
+                }
             ),
             encoding="utf-8",
         )
-
-        with self._env(willow_home=str(self.willow_home)):
+        with self._env(str(self.willow_home)):
             result = er.read_all()
+        self.assertEqual([e["id"] for e in result["envelopes"]], ["env-in-force"])
 
-        ids = sorted(e["id"] for e in result["envelopes"])
-        self.assertEqual(ids, ["charter-fs-read", "syscall-exec"])
+    def test_all_keys_present_but_empty_reads_as_none_in_force(self) -> None:
+        """Distinct from an unreadable file: every known key present and empty
+        is a real answer, and must not raise or log as malformed."""
+        env_dir = self.willow_home / "constitutional"
+        env_dir.mkdir(parents=True)
+        (env_dir / "pre-approved.json").write_text(
+            json.dumps(
+                {"schema": er.SCHEMA_ID, "pre_approved": [], "active": [],
+                 "proposals": []}
+            ),
+            encoding="utf-8",
+        )
+        with self._env(str(self.willow_home)):
+            result = er.read_all()
+        self.assertEqual(result["envelopes"], [])
 
-    # ---- locator ----
     def test_locate_envelope_dirs_only_returns_existing(self) -> None:
-        wh_dir = self.willow_home / "envelopes"
+        wh_dir = self.willow_home / "constitutional"
         wh_dir.mkdir(parents=True)
         # ~/willow-memory/Willow/envelopes and ~/.willow/envelopes deliberately absent.
 

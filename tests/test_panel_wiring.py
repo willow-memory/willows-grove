@@ -170,7 +170,7 @@ class EnvelopesWiringTests(unittest.TestCase):
 
     def test_envelopes_empty_when_dir_present_but_no_files(self) -> None:
         willow_home = Path(self.tmp.name) / "empty_env_dir"
-        (willow_home / "envelopes").mkdir(parents=True)
+        (willow_home / "constitutional").mkdir(parents=True)
         with self._env(willow_home):
             with _ServerHarness() as srv:
                 status, body = _get(srv.url("/api/envelopes"))
@@ -180,7 +180,7 @@ class EnvelopesWiringTests(unittest.TestCase):
 
     def test_envelopes_populated_when_files_present(self) -> None:
         willow_home = Path(self.tmp.name) / "populated"
-        env_dir = willow_home / "envelopes"
+        env_dir = willow_home / "constitutional"
         env_dir.mkdir(parents=True)
         (env_dir / "a.json").write_text(
             json.dumps({

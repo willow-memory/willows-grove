@@ -20,14 +20,10 @@ mirrors ``grove/persona_roster.py`` shape:
 
 The probed directories, in order:
 
-1. ``$WILLOW_HOME/willow-memory/willow/envelopes/`` — the charter mirror
-   under a per-node ``WILLOW_HOME`` (matches ``persona_roster``'s hop
-   through ``willow-memory/willow/``).
-2. ``$WILLOW_HOME/envelopes/`` — per-node bare override.
-3. ``~/willow-memory/willow/envelopes/`` — lowercase fleet charter mirror
-   (the operator's actual on-disk layout, matching the persona reader).
-4. ``~/willow-memory/Willow/envelopes/`` — uppercase mirror, kept for
-   older checkouts that still ship the ``Willow`` casing.
+1. ``$WILLOW_HOME/constitutional/`` — where willow-mcp keeps and
+   authenticates the Article III.2 registry.
+2. ``~/.willow/constitutional/`` — the same place when ``WILLOW_HOME``
+   is unset.
 5. ``~/.willow/envelopes/`` — local user overlay (lowest priority).
 
 Later directories in that list override earlier ones on an ``id``
@@ -64,21 +60,27 @@ _logged_malformed: set[str] = set()
 def _candidate_dirs() -> list[Path]:
     """The directories we probe, in preference order.
 
-    Order matches ``persona_roster._candidate_paths``: ``$WILLOW_HOME``
-    (with the ``willow-memory/willow/`` hop first, then the bare form),
-    then ``~/willow-memory`` (lowercase then uppercase for legacy
-    checkouts), then ``~/.willow``. Later entries override earlier ones
-    on ``id`` collision (see ``read_all``).
+    ``$WILLOW_HOME/constitutional/`` is where the registry lives. willow-mcp's
+    ``paths.envelope_registry_path()`` resolves there and its
+    ``trusted_read()`` authenticates it there, so this reader and the engine
+    that enforces the law now name the same file.
+
+    Every earlier candidate was a pre-migration path — ``envelopes/`` in the
+    sibling ``willow`` charter repo, and hops through ``willow-memory/willow/``
+    that never existed after the 2026-08-10 org-folder move. willow-mcp had
+    already migrated (its syscall table's ``registry`` field was repointed at
+    the same time, and THE PLANTING carried over with its ``registry_path``
+    rewritten); this reader had not, so Grove displayed a registry the engine
+    did not enforce — 15 active envelopes bound to ``willow-2.0`` paths that
+    were deleted at greenfield.
+
+    Later entries override earlier ones on ``id`` collision (see ``read_all``).
     """
     dirs: list[Path] = []
     home = os.environ.get("WILLOW_HOME")
     if home:
-        wh = Path(home).expanduser()
-        dirs.append(wh / "willow-memory" / "willow" / "envelopes")
-        dirs.append(wh / "envelopes")
-    dirs.append(Path.home() / "willow-memory" / "willow" / "envelopes")
-    dirs.append(Path.home() / "willow-memory" / "Willow" / "envelopes")
-    dirs.append(Path.home() / ".willow" / "envelopes")
+        dirs.append(Path(home).expanduser() / "constitutional")
+    dirs.append(Path.home() / ".willow" / "constitutional")
     return dirs
 
 
@@ -115,8 +117,19 @@ def _entries_from_payload(data: Any, path: Path) -> list[dict]:
     if isinstance(data, dict):
         for key in _LIST_KEYS:
             value = data.get(key)
-            if isinstance(value, list):
+            # An EMPTY list is not an answer. The registry carries all of
+            # pre_approved/active/proposals as sibling keys, so matching on
+            # "is a list" made an empty earlier key shadow a populated later
+            # one. Measured against the migrated registry: pre_approved is []
+            # and active holds THE PLANTING, and this returned nothing while
+            # the file plainly had an envelope in force.
+            if isinstance(value, list) and value:
                 return [e for e in value if isinstance(e, dict)]
+        # Every known key present but all empty is a real, readable "none in
+        # force" — distinct from the unknown-shape error below, which the
+        # caller logs as unreadable.
+        if any(isinstance(data.get(k), list) for k in _LIST_KEYS):
+            return []
         if "id" in data:
             return [data]
     raise ValueError(f"no envelope entries found (unknown top-level shape)")

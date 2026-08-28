@@ -132,7 +132,7 @@ class EnvelopesRouteTests(unittest.TestCase):
     def test_returns_empty_when_dir_present_but_no_files(self) -> None:
         """Directory exists but empty → 200 + state=empty."""
         willow_home = Path(self.tmp.name) / "empty_dir_home"
-        env_dir = willow_home / "envelopes"
+        env_dir = willow_home / "constitutional"
         env_dir.mkdir(parents=True)
         with self._env(willow_home):
             with _ServerHarness() as srv:
@@ -144,7 +144,7 @@ class EnvelopesRouteTests(unittest.TestCase):
 
     def test_returns_populated_envelopes_from_willow_home(self) -> None:
         willow_home = Path(self.tmp.name) / "populated_willow_home"
-        env_dir = willow_home / "envelopes"
+        env_dir = willow_home / "constitutional"
         env_dir.mkdir(parents=True)
         (env_dir / "a.json").write_text(
             json.dumps(
