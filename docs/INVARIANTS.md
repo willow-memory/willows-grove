@@ -476,3 +476,12 @@ seals it forward.
   property-by-property against synthetic PR bodies (clean; missing
   line → fail; wrong format → fail; empty body → fail; ratification
   buried below other lines → fail).
+- `tests/test_ci_ratification_edited_trigger.py` — pins
+  `.github/workflows/tests.yml` firing on `edited` pull_request events.
+  The checker reads the body from the event payload, and a re-run
+  replays the *original* payload, so without `edited` a PR that adds
+  its `Ratified-by:` line by body edit stays red forever — reachable
+  only by an empty commit or a close/reopen, i.e. forging a code event
+  to satisfy a governance gate. The pin also holds
+  `opened`/`synchronize`/`reopened` in the list, since naming `types:`
+  replaces the default set rather than extending it.
