@@ -49,7 +49,6 @@ FLEET_PERSONAS = frozenset({
     "jeles",
     "binder",
     "publius",
-    "schmidt",
     "nestor",
 })
 
