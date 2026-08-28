@@ -15,7 +15,7 @@ on:
     types: [opened, synchronize, reopened, edited]
 
 jobs:
-  test:
+  test-suite:
     runs-on: ubuntu-latest
 
     services:
@@ -152,3 +152,28 @@ jobs:
 
       - name: Run willow-mcp mock e2e (PR 10+)
         run: bash scripts/run_test_dir_or_fail.sh tests/e2e_willow_mcp -x -q --tb=short
+
+  # Aggregate gate: branch protection requires a single check named exactly
+  # "test" across the whole fleet, so the ruleset never has to name the job
+  # that happens to run the suite. This job's name is the contract; what
+  # feeds it is free to change. Green only when test-suite is.
+  test:
+    needs: [test-suite]
+    # `if: always()` is load-bearing, not boilerplate. Without it a failing
+    # dependency does not fail this job — it SKIPS it, because that is what
+    # `needs:` means. GitHub does not treat a skipped required check as a
+    # blocker, so the one check branch protection trusts goes quiet at exactly
+    # the moment it matters. The first revision of this PR proved it: the
+    # persona-provenance gate failed test-suite, `test` reported `skipping`,
+    # and the pull request read MERGEABLE with a red suite underneath.
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Assert test-suite actually succeeded
+        # skipped and cancelled count as failures: a leg that did not run has
+        # told us nothing, and this gate speaks for it.
+        if: ${{ needs.test-suite.result != 'success' }}
+        run: |
+          echo "::error::test-suite did not succeed (result: ${{ needs.test-suite.result }})"
+          exit 1
+      - run: echo "test-suite green"
