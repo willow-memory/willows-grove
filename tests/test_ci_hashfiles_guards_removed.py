@@ -36,6 +36,7 @@ does not exist yet.
 from __future__ import annotations
 
 import os
+import re
 import stat
 import subprocess
 import sys
@@ -67,9 +68,21 @@ def _extract_step(text: str, step_name: str) -> str:
     start = text.find(marker)
     assert start != -1, f"workflow no longer has a step named {step_name!r}"
     body_start = start + len(marker)
+    ends = []
     next_step = text.find("\n      - name:", body_start)
-    body = text[body_start:] if next_step == -1 else text[body_start:next_step]
-    return body
+    if next_step != -1:
+        ends.append(next_step)
+    # ...and at the next top-level job key (two-space indent). The last step's
+    # body used to run to end-of-file, which silently swallowed anything added
+    # to the workflow after it: appending an aggregate `test:` job carrying its
+    # own `if: always()` put that `if:` inside this slice and failed the guard
+    # assertion for a step nobody had touched. Narrowing the slice can only
+    # remove false positives — a real guard on this step cannot live past the
+    # next job key.
+    next_job = re.search(r"\n  [A-Za-z_][A-Za-z0-9_-]*:", text[body_start:])
+    if next_job:
+        ends.append(body_start + next_job.start())
+    return text[body_start:min(ends)] if ends else text[body_start:]
 
 
 def _workflow_text() -> str:
