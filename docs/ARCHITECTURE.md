@@ -1,4 +1,4 @@
-# Canonical Architecture Reference — Willow Grove (safe-app-willow-grove)
+# Canonical Architecture Reference — Willow's Grove (willow-memory/willows-grove)
 
 **b17:** CARWG · ΔΣ=42  
 
