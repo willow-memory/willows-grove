@@ -1,7 +1,7 @@
 # Willow's Grove — the operator seat, composed not built
 
 b17: WGRV1 ΔΣ=42
-Status: **PROPOSED** — Heimdallr proposes, USER ratifies (CLAUDE.md rule 5). No code changed by this note.
+Status: **PROPOSED** — Heimdallr proposes, USER ratifies (CLAUDE.md rule 4). No code changed by this note.
 
 ## The reframe
 
@@ -400,8 +400,9 @@ These are fleet-wide dangers the design must not repeat.
   gate (P1), PGP/keyring, FRANK hash-chained ledger, Nestor
   cryptographic seals, `kb_journal` schema gate, mutation-tested refusal
   guards. Nothing is layered on top of that as security theater.
-  (evidence: `CLAUDE.md rule 4`, Nestor decision 0099, operator
-  attestation).
+  (evidence: the retired `CLAUDE.md` b17 rule — the marker was never
+  a security control, and is no longer required on new files at all;
+  Nestor decision 0099; operator attestation).
 
 ### Reactions and anchors (R1–R2)
 

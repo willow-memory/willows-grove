@@ -1,5 +1,3 @@
-// b17: WGRV1 ΔΣ=42
-//
 // Playwright pin for docs/INVARIANTS.md §8 — fixture-based rendering is
 // opt-in, harness use only. Closes PR-14 carryover #11a
 // (docs/design/pr14-carryovers.md): this spec replaces

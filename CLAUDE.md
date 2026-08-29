@@ -62,13 +62,12 @@ distinctly.
 1. **No web ports for the dashboard.** Portless means portless.
 2. **grove_db.py owns the schema.** Don't duplicate schema definitions elsewhere.
 3. **grove_reader.py is read-only.** Writes go through grove_db.py.
-4. **b17 on every new file before it is closed.**
-5. **Propose before acting — for new work.** The human trust root ratifies
+4. **Propose before acting — for new work.** The human trust root ratifies
    the start of new work. Neither party acts alone on new scope. But an
    authorized running task continues to completion without re-ratification
    at each sub-item. "Propose before acting" governs starting, not
    continuing. The only valid mid-task stops are genuine blockers.
-6. **Willow's own not_do binds every fleet persona.** Commit, PR, merge,
+5. **Willow's own not_do binds every fleet persona.** Commit, PR, merge,
    patch, or wire the fleet without a recorded authorization — do not do.
    INVARIANTS.md §12.
 

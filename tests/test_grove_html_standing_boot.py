@@ -1,4 +1,3 @@
-# b17: WGRV1 ΔΣ=42
 """tests/test_grove_html_standing_boot.py — the ambient strip has a source.
 
 INVARIANTS.md §8: "The served page renders live state, not curated

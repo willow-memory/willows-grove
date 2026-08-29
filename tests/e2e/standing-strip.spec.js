@@ -1,5 +1,3 @@
-// b17: WGRV1 ΔΣ=42
-//
 // Playwright pin for the ambient top strip's live state — the browser
 // half of tests/test_grove_html_standing_boot.py.
 //

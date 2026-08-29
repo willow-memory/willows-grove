@@ -1,4 +1,3 @@
-# b17: WGRV1 ΔΣ=42
 """tests/test_state_vocabulary_audit.py — one grep for INVARIANTS.md §1.
 
 PR-14 carryover #4 / #11 (docs/design/pr14-carryovers.md). PR 9 caught

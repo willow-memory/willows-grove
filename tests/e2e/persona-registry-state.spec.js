@@ -1,5 +1,3 @@
-// b17: WGRV1 ΔΣ=42
-//
 // Playwright pin for docs/INVARIANTS.md §1 — the three-state contract —
 // on <grove-persona-registry>, closing PR-14 carryover #2
 // (docs/design/pr14-carryovers.md).

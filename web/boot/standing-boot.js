@@ -1,4 +1,3 @@
-// b17: WGRV1 ΔΣ=42
 /**
  * standing-boot — the ambient top strip's live state.
  *
