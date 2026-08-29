@@ -594,7 +594,8 @@ def main() -> None:  # pragma: no cover — foreground process entry
         level=os.environ.get("GROVE_WATCHER_LOGLEVEL", "INFO"),
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
     )
-    watcher = ResidentWatcher()
+    ollama_url = os.environ.get("GROVE_WATCHER_OLLAMA", "").strip() or DEFAULT_OLLAMA_URL
+    watcher = ResidentWatcher(ollama_url=ollama_url)
     watcher.start()
     log.info(
         "resident_watcher: at post — model=%s ollama=%s heartbeat=%ss",

@@ -235,6 +235,83 @@ the persona.
 
 ---
 
+## Actual scope of claim
+
+Every score above was earned at one layer. Naming that layer precisely
+— and naming the layers it does not reach — is part of the
+measurement, not a caveat bolted on after it.
+
+**What was exercised: the prompt-injection layer.** Eight Claude
+subagents (7 lens Lokis + 1 synthesis Loki) each received the Loki
+persona string verbatim as the leading part of their prompt
+(`docs/audits/loki-swarm-metadata.md`, "Persona — verbatim") and were
+scored on whether their output honored that string's register, its
+deny-list, and its three-column schema. The evidence for the seven
+dimensions above is the raw `StructuredOutput` each agent returned —
+`docs/audits/loki-swarm-raw.json` — cross-checked against the
+per-agent runtime metrics in `loki-swarm-metadata.md` (tokens, tool
+calls, findings per agent). That chain — persona string in, JSON
+findings out, scored against the persona's own text — is real and the
+scores above stand. What it proves is that a Claude subagent, told to
+be Loki, stays Loki under seven different lens prompts. It says
+nothing about how that subagent was invoked.
+
+**What was not exercised: fleet dispatch.** These eight agents were a
+workflow's subagent fan-out, not a fleet dispatch. Specifically, none
+of the following were touched by this run, and neither
+`loki-swarm-raw.json` nor `loki-swarm-metadata.md` shows a single
+reference to any of them:
+
+- **Grove MCP tools.** No agent called `grove_send_message` or any
+  other Grove MCP tool. For the stronger claim ("the fleet did this
+  work") to hold, the Loki personas would have had to be dispatched
+  *through* Grove MCP rather than injected as a subagent system
+  prompt — i.e. the run would show up as MCP tool-call traffic against
+  `grove/mcp_local.py`, not as a workflow script's agent fan-out.
+- **willow-mcp `kb_journal` writes.** No `kb_journal` atom was written
+  for this audit; `kb_journal` appears nowhere in the raw findings or
+  the metadata at all. What does appear, twice, is
+  `grove/journal_writer.py` — as an audited subject, not as a write
+  this run performed. For the stronger claim to hold, each lens's work
+  would need a corresponding `kb_journal` atom recording it as fleet
+  work product.
+- **Nestor's seal-and-verify pipeline.** No finding was sealed by
+  Nestor; `nestor_client.py` appears in the findings only as an
+  *audited file* (a three-state gap in `evidence_for` /
+  `warrant_for` / `refusal`, `loki-swarm-raw.json` line 50). For the
+  stronger claim to hold, the ranked output the synthesis Loki
+  produced would need to have passed through seal-and-verify before
+  being treated as an accountable artifact.
+- **`willow.routing_decisions`.** No row was written to
+  `willow.routing_decisions` for this audit; the table appears
+  elsewhere in the tree (`docs/design/pr14-carryovers.md` #3) as a
+  hydration-schema gap, unrelated to this run. For the stronger claim
+  to hold, each lens dispatch would need a routing decision recorded
+  there, naming which persona was routed to which lens and why.
+
+None of the four is present because none was in scope for this run —
+the workflow's script instantiated eight subagents directly, the way
+`docs/audits/loki-swarm-metadata.md` describes it ("Fan the seven
+lens-Lokis out in parallel"). That is a legitimate way to measure
+persona-injection discipline. It is not a way to measure fleet
+dispatch, because the fleet-dispatch machinery was never in the
+critical path.
+
+**What this bounds the claim to.** "Persona-discipline is enforceable
+and measurable" is true and demonstrated — at the prompt-injection
+layer, for this persona, under these seven lenses. "The fleet
+performed this audit" is not demonstrated by this document. Reading
+this measurement as evidence of the latter is the overclaim this
+section forecloses.
+
+A fleet-dispatch demonstration — the four items above, run for real
+against a real lens or work-item — is future work. See
+`docs/design/pr14-carryovers.md` #12, "Actual fleet dispatch wiring
+(v1.0)", which names the same four layers as the substantial-design-work
+item this measurement cannot substitute for.
+
+---
+
 ## What we would compare against
 
 Comparable measurements this run makes possible in the future:

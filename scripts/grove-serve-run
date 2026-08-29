@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# grove-serve-run — foreground launcher for Willow's Grove served page.
+#
+# docs/grove-served-page.md "Run it":
+#   ./scripts/grove-serve-run
+#
+# Foreground process. Loopback-only by default (127.0.0.1:8766). Ctrl-C
+# stops it. For a persistent unit see deploy/grove-serve.service.template
+# and the scripts/grove-serve toggle.
+#
+# Resolves the interpreter, in order:
+#   1. $GROVE_VENV/bin/python3   — explicit override (set by systemd/the unit)
+#   2. ./.venv/bin/python3       — a repo-local venv, the conventional home
+#   3. python3 on PATH           — last resort; may lack the pinned deps
+# then exports WILLOW_HUMAN_ORCHESTRATOR=1 and execs `python3 -m grove_serve`.
+#
+#   GROVE_SERVE_HOST   bind host (default 127.0.0.1; read by grove_serve.py)
+#   GROVE_SERVE_PORT   bind port (default 8766; read by grove_serve.py)
+#   GROVE_VENV         alternate venv root for this launcher
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$REPO_ROOT"
+
+PY=""
+if [[ -n "${GROVE_VENV:-}" && -x "${GROVE_VENV}/bin/python3" ]]; then
+  PY="${GROVE_VENV}/bin/python3"
+elif [[ -x "$REPO_ROOT/.venv/bin/python3" ]]; then
+  PY="$REPO_ROOT/.venv/bin/python3"
+elif command -v python3 >/dev/null 2>&1; then
+  PY="$(command -v python3)"
+else
+  echo "error: no python3 interpreter found (checked \$GROVE_VENV, ./.venv, PATH)." >&2
+  echo "       install python3, or set GROVE_VENV to a venv that has one." >&2
+  exit 1
+fi
+
+if ! "$PY" -c "import grove_serve" >/dev/null 2>&1; then
+  echo "error: $PY cannot import grove_serve." >&2
+  echo "       run this from the repo root, or create a venv and install deps:" >&2
+  echo "         python3 -m venv .venv && ./.venv/bin/pip install -r requirements.txt" >&2
+  exit 1
+fi
+
+export PYTHONPATH="$REPO_ROOT${PYTHONPATH:+:$PYTHONPATH}"
+export WILLOW_HUMAN_ORCHESTRATOR=1
+
+echo "willow's grove: $PY -m grove_serve" >&2
+exec "$PY" -m grove_serve

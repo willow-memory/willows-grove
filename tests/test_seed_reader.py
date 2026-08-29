@@ -8,15 +8,23 @@ Covers three shapes:
   in order.
 * Seed dir present with a single ``seed.py`` (SEED9 shape) → parsed
   movements via docstring extraction.
+
+The seed reader now falls back to the in-repo canon at
+``governance/seed/`` (see ``grove/seed_reader.py``), so every test here
+that means to exercise "no seed dir on any probe path" points the
+in-repo fallback (``seed_reader._IN_REPO_SEED_PATH``) at an empty tmp
+dir first — otherwise it would silently pick up this repo's real
+canon and the absence case would no longer be reachable in tests
+(INVARIANTS.md §1: absence must stay a tested, reachable state).
 """
 from __future__ import annotations
 
-import logging
 import os
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -28,10 +36,11 @@ from grove import seed_reader  # noqa: E402
 
 
 class _EnvSandbox:
-    """Push WILLOW_HOME to a scratch path and HOME to another empty dir.
+    """Push WILLOW_HOME to a scratch path, isolate HOME/USERPROFILE too.
 
-    Together these force ``_candidate_dirs()`` to resolve to paths inside
-    the sandbox — nothing on the real filesystem leaks in.
+    ``_candidate_dirs()`` only consults ``$WILLOW_HOME`` and the in-repo
+    fallback now, but HOME/USERPROFILE are still isolated defensively so
+    nothing on the real filesystem leaks in via an unrelated code path.
     """
 
     def __init__(self, willow_home: Path | None, home: Path) -> None:
@@ -71,6 +80,19 @@ class SeedReaderTests(unittest.TestCase):
         # Reset log-once so each test's log assertion is independent.
         seed_reader._logged_absent = False
 
+        # Point the in-repo fallback at an empty tmp dir by default, so
+        # these tests exercise only the $WILLOW_HOME override and stay
+        # isolated from this repo's real governance/seed/ canon. Tests
+        # that specifically want the fallback path patch this themselves.
+        self._fallback_tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._fallback_tmp.cleanup)
+        no_fallback_dir = Path(self._fallback_tmp.name) / "no-fallback" / "seed"
+        self._fallback_patch = mock.patch.object(
+            seed_reader, "_IN_REPO_SEED_PATH", no_fallback_dir
+        )
+        self._fallback_patch.start()
+        self.addCleanup(self._fallback_patch.stop)
+
     # ── absence ──────────────────────────────────────────────────────────
     def test_absent_seed_dir_returns_stub_and_logs_once(self) -> None:
         with tempfile.TemporaryDirectory() as td:
@@ -101,7 +123,7 @@ class SeedReaderTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
             home = root / "home"
-            seed = home / "willow-memory" / "willow" / "seed"
+            seed = root / "willow-home" / "seed"
             canon = seed / "canon"
             canon.mkdir(parents=True)
 
@@ -116,7 +138,7 @@ class SeedReaderTests(unittest.TestCase):
             for name, body in titles:
                 (canon / name).write_text(body, encoding="utf-8")
 
-            with _EnvSandbox(willow_home=None, home=home):
+            with _EnvSandbox(willow_home=root / "willow-home", home=home):
                 movements = seed_reader.load_movements()
 
         self.assertEqual([m["n"] for m in movements], [1, 2, 3, 4, 5, 6])
@@ -134,7 +156,7 @@ class SeedReaderTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
             home = root / "home"
-            seed = home / "willow-memory" / "willow" / "seed"
+            seed = root / "willow-home" / "seed"
             seed.mkdir(parents=True)
 
             # Minimal SEED9-shape seed.py — six movement_N_<slug> defs
@@ -173,7 +195,7 @@ def movement_5_world(ui):
 '''
             (seed / "seed.py").write_text(content, encoding="utf-8")
 
-            with _EnvSandbox(willow_home=None, home=home):
+            with _EnvSandbox(willow_home=root / "willow-home", home=home):
                 movements = seed_reader.load_movements()
 
         self.assertEqual([m["n"] for m in movements], [1, 2, 3, 4, 5, 6])
@@ -192,13 +214,27 @@ def movement_5_world(ui):
             root = Path(td)
             home = root / "home"
             wh = root / "wh"
-            preferred = wh / "willow-memory" / "willow" / "seed"
-            fallback = home / "willow-memory" / "willow" / "seed"
+            preferred = wh / "seed"
             preferred.mkdir(parents=True)
-            fallback.mkdir(parents=True)
             with _EnvSandbox(willow_home=wh, home=home):
                 located = seed_reader.locate_seed_dir()
             self.assertEqual(located, preferred)
+
+    def test_locate_seed_dir_falls_back_to_in_repo_canon_when_unset(self) -> None:
+        """With no ``$WILLOW_HOME`` and no fallback patch, the reader finds
+        this repo's real canon at ``governance/seed/`` — the "reliable
+        fallback" the relocation exists to provide."""
+        self._fallback_patch.stop()  # restore the real in-repo path
+        try:
+            with tempfile.TemporaryDirectory() as td:
+                home = Path(td) / "home"
+                home.mkdir()
+                with _EnvSandbox(willow_home=None, home=home):
+                    located = seed_reader.locate_seed_dir()
+            self.assertEqual(located, seed_reader._IN_REPO_SEED_PATH)
+            self.assertTrue((located / "canon").is_dir())
+        finally:
+            self._fallback_patch.start()
 
 
 if __name__ == "__main__":

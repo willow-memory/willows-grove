@@ -114,6 +114,24 @@ CREATE TABLE IF NOT EXISTS willow.routing_decisions (
 CREATE INDEX IF NOT EXISTS idx_routing_decisions_ts
     ON willow.routing_decisions (ts DESC);
 
+-- public.routing_decisions — MCP-path JSONB decisions (sap/sap_mcp.py's
+-- `willow_route` tool writes here). grove_reader._routing_decisions_public
+-- reads {created_at, prompt_hash, decision} and merges with the willow.*
+-- rows above; see docs/verify/ROUTING_OBSERVABILITY.md. Unlike
+-- willow.routing_decisions this reader has no auto-create fallback — a
+-- missing table here is the exact PR 9 CI symptom (relation does not
+-- exist), so it must exist from bootstrap.
+CREATE TABLE IF NOT EXISTS public.routing_decisions (
+    id            BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+    session_id    TEXT,
+    prompt_hash   TEXT,
+    decision      JSONB
+);
+
+CREATE INDEX IF NOT EXISTS idx_routing_decisions_public_created
+    ON public.routing_decisions (created_at DESC);
+
 -- ────────────────────────────────────────────────────────────
 -- Public schema — tasks and knowledge
 -- (Willow system tables — created here for standalone setups;
@@ -133,6 +151,31 @@ CREATE TABLE IF NOT EXISTS public.tasks (
 );
 
 CREATE INDEX IF NOT EXISTS idx_tasks_status ON public.tasks (status);
+
+-- public.human_required_queue — work that pauses automation until a human
+-- acts (consent, attestation, review, onboarding). Written by the wider
+-- fleet, read here by grove_reader.human_required_queue for the dashboard.
+-- No auto-create fallback on the reader side, so — like
+-- public.routing_decisions above — a missing table here is the exact PR 9
+-- CI symptom (relation does not exist), not a live Unreachable.
+CREATE TABLE IF NOT EXISTS public.human_required_queue (
+    id            BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    kind          TEXT NOT NULL,
+    title         TEXT NOT NULL,
+    summary       TEXT,
+    status        TEXT NOT NULL DEFAULT 'open',
+    priority      TEXT NOT NULL DEFAULT 'normal'
+                      CHECK (priority IN ('critical','high','normal','low')),
+    source_agent  TEXT,
+    source_ref    TEXT,
+    assignee      TEXT,
+    created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_human_required_queue_status
+    ON public.human_required_queue (status);
+CREATE INDEX IF NOT EXISTS idx_human_required_queue_created
+    ON public.human_required_queue (created_at DESC);
 
 -- ────────────────────────────────────────────────────────────
 -- Binder schema — proposed edges and filed JSONLs

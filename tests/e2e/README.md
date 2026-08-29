@@ -64,9 +64,11 @@ npm run test:e2e
 
 The `webServer` block in `playwright.config.js` boots grove_serve on
 `http://127.0.0.1:8766` for the duration of the run and tears it down
-when the suite exits. Set `WILLOW_HOME=/path/to/willow-memory-parent`
-to point the seed reader at the real canon; otherwise `/seed/` renders
-the six-movement stub and the content pins still pass.
+when the suite exits. The seed reader finds the real canon on its own
+now that it ships in this repo (`governance/seed/`); set
+`WILLOW_HOME=/path/to/a/dir/containing/seed` only if you need to
+override it with a per-node copy. Otherwise `/seed/` renders the
+six-movement stub and the content pins still pass.
 
 ## Run in CI
 

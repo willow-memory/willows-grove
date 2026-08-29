@@ -18,6 +18,7 @@ The grove is the charter's home now because the grove is the watchman's seat
 | the `governance/` tree (proposals, decisions, flags, compliance, materialized-mcp-apps, layout and migration docs) | **here** |
 | `FINDINGS-2026-08-20-charter-docs-drift.md` | **here** — the audit that governs how the paths below were handled |
 | `fleet.json` | `$WILLOW_HOME/fleet.json` — relocated earlier, not duplicated here |
+| `fleet_personas.json` | **here**, at `governance/fleet_personas.json` — see the 2026-08-29 addendum below |
 | `mem_ratify/` | `willow-mcp/src/willow_mcp/mem_ratify` |
 | `seed/` | `$WILLOW_HOME/seed` and `willow-mcp/seed` |
 | `envelopes/` | **stayed in the archive.** Its own `MOVED.md` records that its default-path role went to `$WILLOW_HOME/constitutional/`; the archived `pre-approved.json` / `syscall-table.json` are the operator's real grants as of 2026-07-22 / 2026-07-06, kept as historical record. They differ from the live files because the live ones are current. Moving them here would have put a superseded copy beside a live one. |
@@ -51,3 +52,25 @@ outstanding. Both are now overtaken — by this relocation, and by both remotes
 (`rudi193-cmd/Willow` and `willow-memory/Willow`) being archived. They are left
 for the operator to amend, because deciding what a draft's open items now say is
 a ratification, not a path repair.
+
+## Addendum — 2026-08-29
+
+The 2026-08-28 move above left two live dependencies pointing into the
+archived repository: `grove/persona_roster.py` probed
+`~/willow-memory/willow/fleet_personas.json`, and `grove/seed_reader.py`
+probed `~/willow-memory/willow/seed/`. The persona registry therefore had
+no live home here at all, and `/seed/` fell back to its stub on any box
+without a charter mirror mounted.
+
+Both are now in this repo — `governance/fleet_personas.json` and
+`governance/seed/canon/`, byte-identical to the archived originals — and
+both readers probe `$WILLOW_HOME` first, then `~/.willow`, then the
+in-repo copy. No archived-repo path remains in either.
+
+What still deliberately did NOT move: the archived `envelopes/`. The
+reasoning in the table above holds and is not weakened by the archiving —
+those files are the operator's grants as of 2026-07-22 / 2026-07-06 and
+are superseded by the live ones at `$WILLOW_HOME/constitutional/`, which
+is where `grove/envelope_reader.py` already reads. Bringing a stale copy
+of the real grants in beside the live ones would be the one move that
+makes this worse.

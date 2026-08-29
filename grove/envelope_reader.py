@@ -180,9 +180,9 @@ def read_all() -> dict:
         {"schema": "envelope-registry/v1.1", "envelopes": [ ... ]}
 
     Precedence: ``_candidate_dirs()`` order. Later directories override
-    earlier ones on ``id`` collision — a per-node override in
-    ``$WILLOW_HOME/envelopes/`` wins over the fleet charter mirror at
-    ``~/willow-memory/Willow/envelopes/``. Files without an ``id`` are
+    earlier ones on ``id`` collision — the per-user registry at
+    ``~/.willow/constitutional/`` wins over a ``$WILLOW_HOME`` override.
+    Files without an ``id`` are
     still returned but participate in no collision — their order is
     the order they were read.
 
@@ -202,17 +202,14 @@ def read_all() -> dict:
         if not _logged_missing_dirs:
             log.info(
                 "[grove.envelope_reader] no envelope directory found in known "
-                "locations ($WILLOW_HOME/willow-memory/willow/envelopes, "
-                "$WILLOW_HOME/envelopes, ~/willow-memory/willow/envelopes, "
-                "~/willow-memory/Willow/envelopes, ~/.willow/envelopes) — "
+                "locations ($WILLOW_HOME/constitutional, "
+                "~/.willow/constitutional) — "
                 "raising Unreachable (INVARIANTS.md §1)."
             )
             _logged_missing_dirs = True
         raise Unreachable(
             "no envelope directory found in probe path "
-            "($WILLOW_HOME/willow-memory/willow/envelopes, "
-            "$WILLOW_HOME/envelopes, ~/willow-memory/willow/envelopes, "
-            "~/willow-memory/Willow/envelopes, ~/.willow/envelopes)"
+            "($WILLOW_HOME/constitutional, ~/.willow/constitutional)"
         )
 
     # Precedence: later dirs win. Walk in probe order, keying by id.
