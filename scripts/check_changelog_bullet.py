@@ -130,6 +130,9 @@ def _is_tracked_code(path: str) -> bool:
     return Path(path).suffix.lower() in TRACKED_CODE_EXTS
 
 
+RELEASE_VERSION_HEADING_RE = re.compile(r"^##\s*\[\d+\.\d+\.\d+\]", re.MULTILINE)
+
+
 def _unreleased_block(text: str) -> str | None:
     """Return the `[Unreleased]` section body, or None if absent."""
     m = UNRELEASED_HEADING_RE.search(text)
@@ -140,20 +143,48 @@ def _unreleased_block(text: str) -> str | None:
     return rest[: nxt.start()] if nxt else rest
 
 
+def _newest_release_block(text: str) -> str | None:
+    """Return the body of the newest `## [X.Y.Z]` section, or None.
+
+    A release-cut commit moves everything out of `[Unreleased]` into a
+    fresh release section and leaves `[Unreleased]` empty. Any code it
+    carries — including the release tooling itself — is documented in
+    that new section, which is correct: the change ships in that
+    release, not the next one. Reading only `[Unreleased]` would fail
+    such a commit for documenting itself in the right place. This check
+    was written by a release that then tripped over exactly that.
+    """
+    m = RELEASE_VERSION_HEADING_RE.search(text)
+    if not m:
+        return None
+    rest = text[m.end():]
+    nxt = NEXT_RELEASE_HEADING_RE.search(rest)
+    return rest[: nxt.start()] if nxt else rest
+
+
 def _named_subsection_bullets(text: str) -> set[str]:
-    """Bullets under `[Unreleased]`, restricted to the four named
-    Keep-a-Changelog subsections (`### Changed/Added/Fixed/Removed`).
+    """Bullets under `[Unreleased]` OR the newest released section,
+    restricted to the four named Keep-a-Changelog subsections
+    (`### Changed/Added/Fixed/Removed`).
+
+    The newest release section counts so that a release-cut commit — one
+    that empties `[Unreleased]` into a fresh `## [X.Y.Z]` — can document
+    its own changes in the release they actually ship in.
 
     A bullet parked under some other heading (e.g. a grandfathered
     `### Previous work` section) does not count — §3 names the four
     subsections explicitly.
     """
-    block = _unreleased_block(text)
-    if block is None:
+    blocks = [_unreleased_block(text), _newest_release_block(text)]
+    lines: list[str] = []
+    for block in blocks:
+        if block is not None:
+            lines.extend(block.splitlines())
+    if not lines:
         return set()
     bullets: set[str] = set()
     in_named_subsection = False
-    for line in block.splitlines():
+    for line in lines:
         stripped = line.strip()
         if SUBSECTION_RE.match(line) or (
             stripped.startswith("### ") and stripped[4:].strip() in {"Changed", "Added", "Fixed", "Removed"}

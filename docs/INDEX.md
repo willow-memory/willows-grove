@@ -1,6 +1,6 @@
 # Willow's Grove — documentation index
 
-Ground truth is the code (this repo at v0.9.0, published to PyPI as
+Ground truth is the code (this repo at v0.10.0, published to PyPI as
 [`willows-grove`](https://pypi.org/project/willows-grove/)) plus the
 tables Postgres actually holds (`grove.*` and `willow.*`). This tree
 adds human-readable architecture, contracts, runbooks, and the design
