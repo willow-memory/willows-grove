@@ -1,0 +1,38 @@
+# systemd --user unit template for Willow's Grove served page.
+#
+# Not used directly — fill in the @PLACEHOLDERS@ before installing, e.g.:
+#
+#   sed -e "s#@WORKDIR@#$(pwd)#g" \
+#       -e "s#@VENV_DIR@#$(pwd)/.venv#g" \
+#       -e "s#@HOST@#127.0.0.1#g" \
+#       -e "s#@PORT@#8766#g" \
+#       deploy/grove-serve.service.template \
+#       > ~/.config/systemd/user/grove-serve.service
+#   systemctl --user daemon-reload
+#   systemctl --user start grove-serve
+#
+# No absolute path is baked into this template itself — @WORKDIR@ and
+# @VENV_DIR@ resolve at install time from the operator's actual checkout and
+# venv, so a later move of $WILLOW_HOME or the repo does not strand the unit.
+#
+# The served page ALWAYS binds loopback by default (127.0.0.1:8766); a
+# non-loopback @HOST@ still runs but grove_serve.py prints a warning at
+# start — the seat is designed for the desk, not the internet.
+[Unit]
+Description=Willow's Grove served page
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=@WORKDIR@
+Environment=GROVE_VENV=@VENV_DIR@
+Environment=GROVE_SERVE_HOST=@HOST@
+Environment=GROVE_SERVE_PORT=@PORT@
+Environment=WILLOW_HUMAN_ORCHESTRATOR=1
+ExecStart=@WORKDIR@/scripts/grove-serve-run
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=default.target

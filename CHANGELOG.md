@@ -24,6 +24,23 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
   PR 14 carryover #9. All five OPERATOR personas, not the three the
   carryover named — Loki's tier was unaccounted for.
 
+### Fixed
+
+- The four launcher and unit files `docs/grove-served-page.md` tells an
+  operator to run — `scripts/grove-serve-run`, `scripts/grove-watcher-run`,
+  `deploy/grove-serve.service.template`, `deploy/grove-watcher.service.template`
+  — did not exist. They were never committed here, lost in the v0.9
+  clean-build port, so the product had not started the way its own
+  operator guide says since v0.9. Restored, built to the behavior the doc
+  already specified. `tests/test_documented_entrypoints_exist.py` now
+  parses the guide for `scripts/*` and `deploy/*` references and asserts
+  each exists and is executable, so a doc cannot promise a missing file
+  for a release again. PR 14.
+- `grove/resident_watcher.py` documented `GROVE_WATCHER_OLLAMA` as the
+  override for its Ollama endpoint but never read it — `main()` always
+  used the hardcoded default, so the documented override was a dead
+  letter no matter how it was set. It is now honored. PR 14.
+
 ### Changed
 
 - The fleet persona registry and the seed canon now live in this repo —

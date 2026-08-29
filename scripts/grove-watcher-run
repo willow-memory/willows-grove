@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# grove-watcher-run — foreground launcher for the Grove resident watcher.
+#
+# docs/grove-served-page.md "The resident watcher":
+#   scripts/grove-watcher-run
+#
+# Foreground process, separate from the served page (grove_serve.py). LISTENs
+# on grove.messages, classifies with the operator's SOIL active model via
+# Ollama, and writes one kb_journal atom per classification
+# (sender="resident-watcher"). Ctrl-C stops it. For a persistent unit see
+# deploy/grove-watcher.service.template.
+#
+# Resolves the interpreter, in order:
+#   1. $GROVE_VENV/bin/python3   — explicit override (set by systemd/the unit)
+#   2. ./.venv/bin/python3       — a repo-local venv, the conventional home
+#   3. python3 on PATH           — last resort; may lack the pinned deps
+# then execs `python3 -m grove.resident_watcher`.
+#
+#   WILLOW_DB_URL        Postgres DSN for LISTEN/NOTIFY (unset -> heartbeat-only, D7)
+#   GROVE_WATCHER_OLLAMA local Ollama endpoint (default http://localhost:11434)
+#   GROVE_VENV            alternate venv root for this launcher
+#
+# The SOIL active-model file (~/.willow/store/active_model, fallback
+# llama3.2:3b with a log-once) is read by grove/resident_watcher.py itself,
+# not by this wrapper.
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$REPO_ROOT"
+
+PY=""
+if [[ -n "${GROVE_VENV:-}" && -x "${GROVE_VENV}/bin/python3" ]]; then
+  PY="${GROVE_VENV}/bin/python3"
+elif [[ -x "$REPO_ROOT/.venv/bin/python3" ]]; then
+  PY="$REPO_ROOT/.venv/bin/python3"
+elif command -v python3 >/dev/null 2>&1; then
+  PY="$(command -v python3)"
+else
+  echo "error: no python3 interpreter found (checked \$GROVE_VENV, ./.venv, PATH)." >&2
+  echo "       install python3, or set GROVE_VENV to a venv that has one." >&2
+  exit 1
+fi
+
+if ! "$PY" -c "import grove.resident_watcher" >/dev/null 2>&1; then
+  echo "error: $PY cannot import grove.resident_watcher." >&2
+  echo "       run this from the repo root, or create a venv and install deps:" >&2
+  echo "         python3 -m venv .venv && ./.venv/bin/pip install -r requirements.txt" >&2
+  exit 1
+fi
+
+export PYTHONPATH="$REPO_ROOT${PYTHONPATH:+:$PYTHONPATH}"
+
+echo "grove resident watcher: $PY -m grove.resident_watcher" >&2
+exec "$PY" -m grove.resident_watcher
