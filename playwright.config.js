@@ -17,17 +17,38 @@
 
 // @ts-check
 const { defineConfig } = require('@playwright/test');
-const { existsSync } = require('fs');
+const { existsSync, readdirSync } = require('fs');
+const { join } = require('path');
 
-// Reuse the pre-installed Chromium image ship (see the CI image build)
-// when it is present; otherwise fall through to Playwright's own
-// download path.
-const PREINSTALLED_CHROMIUM =
-  '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+// Reuse a pre-installed Chromium from the image (see the CI image build)
+// when one is present; otherwise fall through to Playwright's own
+// download path. The browsers root is overridable via
+// PLAYWRIGHT_BROWSERS_PATH, and the build number is NOT pinned — an
+// image carrying `chromium-1194` today may carry a newer build
+// tomorrow, and a hardcoded number silently stops matching.
+const BROWSERS_ROOT = process.env.PLAYWRIGHT_BROWSERS_PATH || '/opt/pw-browsers';
 
+function preinstalledChromium() {
+  if (!existsSync(BROWSERS_ROOT)) return null;
+  const builds = readdirSync(BROWSERS_ROOT)
+    // headless-shell builds are a different binary layout; full chromium only.
+    .filter((name) => /^chromium-\d+$/.test(name))
+    // Highest build number first, so a refreshed image wins over a stale one.
+    .sort((a, b) => Number(b.split('-')[1]) - Number(a.split('-')[1]));
+  for (const build of builds) {
+    const candidate = join(BROWSERS_ROOT, build, 'chrome-linux', 'chrome');
+    if (existsSync(candidate)) return candidate;
+  }
+  return null;
+}
+
+// `executablePath` is a launch option, not a top-level `use` key — set
+// directly on `use` it is silently ignored and Playwright goes looking
+// for the headless shell of whatever build its own version pins.
 const chromiumUse = {};
-if (existsSync(PREINSTALLED_CHROMIUM)) {
-  chromiumUse.executablePath = PREINSTALLED_CHROMIUM;
+const preinstalled = preinstalledChromium();
+if (preinstalled) {
+  chromiumUse.launchOptions = { executablePath: preinstalled };
 }
 
 module.exports = defineConfig({

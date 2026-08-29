@@ -21,6 +21,25 @@ pins (readers, endpoints) are met at the visual layer.
   markup is not the same string. "I could not reach the source" must
   never collapse into "there is nothing there" — this spec fails loudly
   the day a panel starts painting them identically.
+- **`persona-registry-state.spec.js`** — INVARIANTS.md §1 for
+  `<grove-persona-registry>`. The registry is a data element
+  (`:host { display: none }`), so its three states are observable as the
+  `.state` property and the `registry-loaded` / `registry-unreachable`
+  window events, not as markup. Pins that an empty roster never fires
+  `registry-unreachable`, that a 503 does and carries the endpoint's
+  reason verbatim, and that an unreachable declared in a 200 body is
+  honored rather than read as empty.
+- **`persona-registry-inline-shim.spec.js`** — INVARIANTS.md §8. An
+  inline `<script type="application/json">` shim only wins when the
+  element opted in via `data-fixture` or `data-source="_inline"`;
+  otherwise the live `/api/personas` endpoint wins. (Replaces the
+  Python-bindings test that skipped on every CI run.)
+- **`standing-strip.spec.js`** — INVARIANTS.md §1 / §8 for the ambient
+  top strip. `web/boot/standing-boot.js` polls `GET /health`; the spec
+  fixtures that endpoint live, `ok:false`, and failed, and asserts the
+  strip reads `seat live · <sha>` vs `seat unreachable — <why>`, carries
+  a `commit: "unknown"` through verbatim, and paints the status dot
+  differently in the two states.
 - **`seed-canon.spec.js`** — INVARIANTS.md §9. `/seed/` lists six
   chapter links; `/seed/1` … `/seed/6` each render a titled body; each
   page's screenshot matches the PR 3 baseline at

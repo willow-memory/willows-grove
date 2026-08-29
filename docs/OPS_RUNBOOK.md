@@ -209,23 +209,16 @@ backfillable.
 See `docs/design/pr14-carryovers.md` — the durable list of what
 v0.9 punt to v0.10 or later. Key items:
 
-- Pixel-baseline regression re-enable on `/seed/{1..6}` (deferred in
-  PR 9).
-- `<grove-persona-registry>` §1 event pin (deferred in PR 9).
 - CI schema completeness so §1 populated branch is exercised, not just
   §1 unreachable branch (v0.9 CI logs show `public.human_required_queue`
   and `public.routing_decisions` do not exist in the bootstrap
   schema).
-- Sibling panels' `_state` vocabulary audit (dispatch-rail was on the
-  pre-§1 vocabulary; PR 9 fixed it; every other panel is a candidate).
 - Durable fleet-model-map (`model_hint_session` field on every entry
   in `willow-memory/willow/fleet_personas.json` — Sonnet 5 for
   Hanuman, Opus for Loki + Heimdallr, Haiku 4.5 for WORKER tier,
   Fable reserved).
 - `specialists.json` deny-lists for every ENGINEER+ persona (only Loki
   has one today).
-- Migrate `test_persona_registry_inline_shim_opt_in.py` from Python
-  playwright to a `tests/e2e/*.spec.js` spec (item 11a).
 - OPERATOR-tier `not_do` audit (Ada, Steve, Skirnir).
 - Actual fleet dispatch wiring (Grove MCP + willow-mcp + Nestor +
   `willow.routing_decisions` + `frank_ledger`) — v1.0 shape.

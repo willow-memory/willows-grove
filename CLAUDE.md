@@ -48,7 +48,7 @@ distinctly.
 | `grove_reader.py` | Reader helpers (channels, messages, agents, routing) |
 | `grove/` | Grove Python package (readers + endpoints + serve-mode auth) |
 | `web/components/*.js` | Web Components (persona-registry, envelope-panel, dispatch-rail, chat, refusal-chip, cast-chip, lens-switch, card, dispatch-rail, envelope-panel) |
-| `web/boot/*.js` | Page-level boot modules (refusal-summon, layout-memory, registry-unreachable) |
+| `web/boot/*.js` | Page-level boot modules (refusal-summon, layout-memory, standing) |
 | `u2u/` | LAN transport for knock/consent/note messages — signed (Ed25519), plaintext on the wire; see `docs/design/u2u-security-limits.md` for what u2u guarantees and what it does not. Confidentiality planned for Gate 6. |
 | `bridge/` | Matrix bridge |
 | `grove/mcp_local.py` | Grove MCP server — stdio (local) or `--serve` (HTTP+OAuth on :8765) |
@@ -62,13 +62,12 @@ distinctly.
 1. **No web ports for the dashboard.** Portless means portless.
 2. **grove_db.py owns the schema.** Don't duplicate schema definitions elsewhere.
 3. **grove_reader.py is read-only.** Writes go through grove_db.py.
-4. **b17 on every new file before it is closed.**
-5. **Propose before acting — for new work.** The human trust root ratifies
+4. **Propose before acting — for new work.** The human trust root ratifies
    the start of new work. Neither party acts alone on new scope. But an
    authorized running task continues to completion without re-ratification
    at each sub-item. "Propose before acting" governs starting, not
    continuing. The only valid mid-task stops are genuine blockers.
-6. **Willow's own not_do binds every fleet persona.** Commit, PR, merge,
+5. **Willow's own not_do binds every fleet persona.** Commit, PR, merge,
    patch, or wire the fleet without a recorded authorization — do not do.
    INVARIANTS.md §12.
 
