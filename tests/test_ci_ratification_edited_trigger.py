@@ -10,9 +10,9 @@ That creates a trap the gate cannot escape on its own. GitHub's default
 body edit fires ``edited`` and triggers nothing. Re-running the failed
 run does not help either: a re-run replays the ORIGINAL event payload,
 carrying the original body. Measured on Grove PR 3 — the body was
-corrected to open with a well-formed `Ratified-by:` line, the checker
+corrected to carry a well-formed `Ratified-by:` line, the checker
 passed against that body locally, and the re-run still failed quoting
-the pre-edit first line.
+the pre-edit body.
 
 So a PR whose ratification arrives by body edit could only reach green
 through an empty commit or a close-and-reopen — forging a code event to

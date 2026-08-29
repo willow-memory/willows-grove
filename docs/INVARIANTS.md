@@ -440,10 +440,16 @@ is recorded. She holds the seat; she does not sit above it.
 
 ### The discipline
 
-- **Opening a PR** requires a `Ratified-by:` line as the first
+- **Opening a PR** requires a `Ratified-by:` line as the last
   non-blank line of the PR body, naming the human authorizer and
   quoting verbatim the message that authorized the open. Format:
-  `Ratified-by: <identifier> — "<verbatim quote>"`.
+  `Ratified-by: <identifier> — "<verbatim quote>"`. It goes at the
+  bottom — beneath the description and beneath the marks the agents
+  left on the work (§11 `Persona:` trailers, attribution footers) —
+  because it is the human's signature on what sits above it, and a
+  signature goes last. Position is load-bearing either way: pinning it
+  to one line means a `Ratified-by:` mentioned in passing mid-body
+  cannot pass for a sign-off.
 - **Merging a PR** requires the same discipline at the merge action.
   When merged via API, the merge commit message must carry a
   `Ratified-by:` trailer citing the human quote that authorized the
@@ -468,14 +474,15 @@ seals it forward.
 ### Pinning tests (§12)
 
 - `scripts/check_ratification.py` — CI-called on `pull_request` events.
-  Reads the PR body from the GitHub event context, asserts the first
+  Reads the PR body from the GitHub event context, asserts the last
   non-blank line matches
   `Ratified-by: <identifier> — "<verbatim quote>"`. Fails the check
   otherwise. On merge, checks the merge commit message the same way.
 - `tests/test_ratification_check.py` — pins the checker
-  property-by-property against synthetic PR bodies (clean; missing
-  line → fail; wrong format → fail; empty body → fail; ratification
-  buried below other lines → fail).
+  property-by-property against synthetic PR bodies (clean, including
+  the real shape with `Persona:` and attribution above it; missing
+  line → fail; wrong format → fail; empty body → fail; ratification at
+  the top → fail; ratification buried mid-body → fail).
 - `tests/test_ci_ratification_edited_trigger.py` — pins
   `.github/workflows/tests.yml` firing on `edited` pull_request events.
   The checker reads the body from the event payload, and a re-run

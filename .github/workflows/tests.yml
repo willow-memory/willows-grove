@@ -99,8 +99,9 @@ jobs:
 
       # docs/INVARIANTS.md §12 — ratification is CI-first from Grove v0.9
       # PR 12 forward. On pull_request events the checker reads
-      # $GITHUB_EVENT_PATH and asserts the PR body opens with a
-      # `Ratified-by: <id> — "<quote>"` line.
+      # $GITHUB_EVENT_PATH and asserts the PR body CLOSES with a
+      # `Ratified-by: <id> — "<quote>"` line — the human's sign-off goes
+      # last, below the agents' marks.
       - name: Ratification check
         if: ${{ github.event_name == 'pull_request' && hashFiles('scripts/check_ratification.py') != '' }}
         run: python3 scripts/check_ratification.py

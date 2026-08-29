@@ -4,8 +4,14 @@
 
 Enforces INVARIANTS.md §12: PR-open and merge require a recorded
 human authorization. The mechanism is a `Ratified-by:` line as the
-first non-blank line of the PR body (open case) or the merge commit
+LAST non-blank line of the PR body (open case) or the merge commit
 message (merge case).
+
+Last, not first, and deliberately so: the authorizing quote is the
+human's, and it signs off beneath the work and beneath the marks the
+agents left on it (`Persona:` trailers, attribution footers) — the
+same place a signature goes on anything else. A body that opens with
+the authorization buries the description under its own paperwork.
 
 Line format:
     Ratified-by: <identifier> — "<verbatim quote>"
@@ -46,8 +52,8 @@ RATIFICATION_RE = re.compile(
 )
 
 
-def _first_nonblank_line(text: str) -> str:
-    for raw in text.splitlines():
+def _last_nonblank_line(text: str) -> str:
+    for raw in reversed(text.splitlines()):
         s = raw.strip()
         if s:
             return s
@@ -58,13 +64,13 @@ def check_body(body: str) -> tuple[bool, str]:
     """Return (ok, message)."""
     if not body or not body.strip():
         return False, "body is empty — no Ratified-by line possible"
-    first = _first_nonblank_line(body)
-    m = RATIFICATION_RE.match(first)
+    last = _last_nonblank_line(body)
+    m = RATIFICATION_RE.match(last)
     if not m:
         return False, (
-            "first non-blank line does not match "
+            "last non-blank line does not match "
             "'Ratified-by: <identifier> — \"<verbatim quote>\"' — got:\n  "
-            + first
+            + last
         )
     identifier, quote = m.group(1), m.group(2).strip()
     if not identifier:
