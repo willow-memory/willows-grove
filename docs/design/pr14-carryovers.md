@@ -115,19 +115,33 @@ PR 12 itself belong here.
 
 ## Surfaced during the PR 12 build session
 
-### 6. Grandfather: PRs 1-11 opened without `Ratified-by` metadata
+### 6. Grandfather: PRs 1-11 opened without `Ratified-by` metadata — **CLOSED (recorded); one part not achievable**
 
-§12 (ratification) sealed in PR 12 requires a `Ratified-by:` line at
-the top of every PR body and every merge commit. PRs 1 through 11
-were opened and merged before §12 existed — they carry no ratification
-record. Same gap-class as pre-v0.9 persona provenance (§11): real,
-logged, not backfillable (history rewrites on merged branches are
-forbidden). Note this in the v0.9 tag release notes so v0.10 opens
-under the discipline that was missing in v0.9.
+§12 (ratification) sealed in PR 12 requires a `Ratified-by:` line on
+every PR body and merge commit. PRs 1 through 11 predate it and carry no
+ratification record. Real, logged, not backfillable — merged history is
+not rewritten.
 
-**Acceptance:** the v0.9 CHANGELOG's release-notes section names the
-gap; no history rewrite; the tag itself carries `Ratified-by:` in
-the annotated tag message.
+**Recorded** in the `[0.10.0]` release notes in `CHANGELOG.md`, which
+names the gap and its class (same as pre-v0.9 persona provenance, §11).
+
+**The tag half of the acceptance is not achievable as written.** This
+item asked that "the tag itself carries `Ratified-by:` in the annotated
+tag message". Two corrections to the assumptions behind it:
+
+- `v0.9.0` **does exist** on the remote, at `2a15323`. Earlier notes in
+  this file and elsewhere said the repo carried no tags; that came from
+  reading `git tag` in a clone that had not fetched them.
+- It is a **lightweight** tag, so it has no message and can carry no
+  ratification line. Making it annotated means moving a tag already
+  published to PyPI as `willows-grove 0.9.0`, which would change what
+  that version means for anyone who has fetched it, and PyPI refuses a
+  re-upload of an existing version regardless.
+
+So `v0.9.0` stays as it is and the gap is named in the release notes.
+`v0.10.0` is annotated and carries `Ratified-by:` — the discipline holds
+from this release forward, which is the same shape as §12 itself: hard
+from the commit that seals it, honest about what came before.
 
 ### 7. Durable fleet-model-map (session field on every persona)
 

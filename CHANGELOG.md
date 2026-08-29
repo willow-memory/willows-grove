@@ -4,8 +4,26 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ## [Unreleased]
 
+## [0.10.0] — 2026-08-29
+
+The PR-14 batch: the operator guide's launchers restored, the archived
+charter repository cut out of every live probe path, four carryovers
+closed, and two invariants that were written but unenforced given CI
+witnesses.
+
 ### Added
 
+- `scripts/check_changelog_bullet.py` now also reads the newest released
+  section, not only `[Unreleased]`. A release-cut commit empties
+  `[Unreleased]` into a fresh `## [X.Y.Z]`, so its own changes are
+  documented in the release they ship in — and the check failed such a
+  commit for putting the bullet in the right place. Caught when this
+  release tripped over it. PR 14.
+- `tests/test_version_changelog_sync.py` — pins `pyproject.toml`'s
+  `fallback-version` to CHANGELOG.md's latest released version. Its own
+  comment always required the sync and nothing enforced it, so a release
+  that bumped one and forgot the other would ship a wheel claiming the
+  previous version to any tagless build, silently. PR 14.
 - `public.routing_decisions` and `public.human_required_queue` in
   `schema.sql`, so CI exercises the `populated` and `empty` branches of
   INVARIANTS.md §1 rather than only `unreachable` — those readers had no
@@ -69,6 +87,24 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
   prompt-injection layer it actually measured, naming Grove MCP dispatch,
   `kb_journal` writes, Nestor seal-and-verify, and `willow.routing_decisions`
   as unexercised. Closes PR 14 carryover #10.
+
+### Release notes
+
+**Ratification (§12) was not in force for PRs 1–11.** §12 requires a
+recorded `Ratified-by:` line at PR-open and at merge. It was sealed in
+PR 12; the eleven PRs before it were opened and merged without one and
+carry no ratification record. This is not backfillable — merged history
+is not rewritten — so it is named here instead. Same gap-class as
+pre-v0.9 persona provenance (§11). Every PR from 12 forward carries the
+record, and `scripts/check_ratification.py` enforces it in CI.
+
+**The `v0.9.0` tag is lightweight, not annotated.** PR-14 carryover #6
+asked for the release tag to carry `Ratified-by:` in its annotated
+message. `v0.9.0` (`2a15323`) has no message to carry one, and it is
+already published to PyPI as `willows-grove 0.9.0` — moving it would
+change what that version means for anyone who has fetched it. It stays
+as it is, and the gap is recorded here rather than papered over.
+`v0.10.0` is annotated and carries the line.
 
 ## [0.9.0] — 2026-08-27
 
