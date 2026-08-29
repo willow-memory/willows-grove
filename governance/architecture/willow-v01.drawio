@@ -1,0 +1,167 @@
+<mxfile host="Electron">
+  <diagram name="Page-1" id="KAbDS9mLzzDcW6J9hxDg">
+    <mxGraphModel dx="693" dy="844" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="a0p3Xkdq_-kAvXX-QuTJ-1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="User" vertex="1">
+          <mxGeometry height="40" width="120" x="365" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="a0p3Xkdq_-kAvXX-QuTJ-6" edge="1" parent="1" source="a0p3Xkdq_-kAvXX-QuTJ-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.599;exitY=0.027;exitDx=0;exitDy=0;exitPerimeter=0;" target="a0p3Xkdq_-kAvXX-QuTJ-1" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a0p3Xkdq_-kAvXX-QuTJ-2" parent="1" style="ellipse;whiteSpace=wrap;html=1;" value="Willow&lt;br&gt;Persona and Folder for orchistration&lt;div&gt;via CLI or Dashboard&lt;/div&gt;" vertex="1">
+          <mxGeometry height="50" width="120" x="305" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="a0p3Xkdq_-kAvXX-QuTJ-9" parent="1" style="shape=internalStorage;whiteSpace=wrap;html=1;dx=15;dy=15;rounded=1;arcSize=8;strokeWidth=2;" value="SAFE&amp;nbsp;" vertex="1">
+          <mxGeometry height="70" width="70" x="550" y="195" as="geometry" />
+        </mxCell>
+        <mxCell id="a0p3Xkdq_-kAvXX-QuTJ-10" parent="1" style="verticalLabelPosition=middle;verticalAlign=middle;html=1;shape=trapezoid;perimeter=trapezoidPerimeter;whiteSpace=wrap;size=0.23;arcSize=10;flipV=1;labelPosition=center;align=center;legacyAnchorPoints=0;" value="Kart" vertex="1">
+          <mxGeometry height="60" width="100" x="190" y="170" as="geometry" />
+        </mxCell>
+        <mxCell id="a0p3Xkdq_-kAvXX-QuTJ-11" parent="1" style="verticalLabelPosition=middle;verticalAlign=middle;html=1;shape=trapezoid;perimeter=trapezoidPerimeter;whiteSpace=wrap;size=0.23;arcSize=10;flipV=1;labelPosition=center;align=center;legacyAnchorPoints=0;" value="Willow web search or Jeles search&lt;div&gt;&lt;br&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="100" x="180" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="a0p3Xkdq_-kAvXX-QuTJ-14" edge="1" parent="1" source="a0p3Xkdq_-kAvXX-QuTJ-10" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;startArrow=classic;endSize=8;startSize=8;rounded=0;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=-0.018;entryY=0.213;entryDx=0;entryDy=0;entryPerimeter=0;" target="a0p3Xkdq_-kAvXX-QuTJ-19" value="">
+          <mxGeometry relative="1" width="100" as="geometry">
+            <Array as="points" />
+            <mxPoint x="250" y="120" as="sourcePoint" />
+            <mxPoint x="310" y="210" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="a0p3Xkdq_-kAvXX-QuTJ-15" edge="1" parent="1" source="a0p3Xkdq_-kAvXX-QuTJ-19" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;startArrow=classic;endSize=8;startSize=8;rounded=0;exitX=0.05;exitY=0.884;exitDx=0;exitDy=0;exitPerimeter=0;" target="a0p3Xkdq_-kAvXX-QuTJ-11" value="">
+          <mxGeometry relative="1" width="100" as="geometry">
+            <Array as="points" />
+            <mxPoint x="370" y="200" as="sourcePoint" />
+            <mxPoint x="540" y="110" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="a0p3Xkdq_-kAvXX-QuTJ-16" edge="1" parent="1" style="edgeStyle=segmentEdgeStyle;endArrow=classic;html=1;curved=0;rounded=0;endSize=8;startSize=8;sourcePerimeterSpacing=0;targetPerimeterSpacing=0;" target="a0p3Xkdq_-kAvXX-QuTJ-2" value="">
+          <mxGeometry relative="1" width="100" as="geometry">
+            <Array as="points">
+              <mxPoint x="440" y="60" />
+              <mxPoint x="440" y="100" />
+            </Array>
+            <mxPoint x="390" y="60" as="sourcePoint" />
+            <mxPoint x="490" y="100" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="a0p3Xkdq_-kAvXX-QuTJ-17" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="SSH, PGP, egress permissionss" vertex="1">
+          <mxGeometry height="60" width="120" x="510" y="10" as="geometry" />
+        </mxCell>
+        <mxCell id="a0p3Xkdq_-kAvXX-QuTJ-18" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="External Projects" vertex="1">
+          <mxGeometry height="60" width="120" x="130" y="10" as="geometry" />
+        </mxCell>
+        <mxCell id="a0p3Xkdq_-kAvXX-QuTJ-19" parent="1" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.direct_data;whiteSpace=wrap;" value="willow-mcp&lt;div&gt;&lt;br&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="100" x="315" y="200" as="geometry" />
+        </mxCell>
+        <mxCell id="a0p3Xkdq_-kAvXX-QuTJ-22" edge="1" parent="1" source="a0p3Xkdq_-kAvXX-QuTJ-19" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;startArrow=classic;endSize=8;startSize=8;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;exitPerimeter=0;" target="a0p3Xkdq_-kAvXX-QuTJ-2" value="">
+          <mxGeometry relative="1" width="100" as="geometry">
+            <Array as="points" />
+            <mxPoint x="320" y="170" as="sourcePoint" />
+            <mxPoint x="420" y="170" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="a0p3Xkdq_-kAvXX-QuTJ-24" edge="1" parent="1" source="a0p3Xkdq_-kAvXX-QuTJ-19" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;startArrow=classic;endSize=8;startSize=8;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="a0p3Xkdq_-kAvXX-QuTJ-17" value="">
+          <mxGeometry relative="1" width="100" as="geometry">
+            <Array as="points" />
+            <mxPoint x="450" y="140" as="sourcePoint" />
+            <mxPoint x="550" y="140" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="a0p3Xkdq_-kAvXX-QuTJ-37" connectable="0" parent="a0p3Xkdq_-kAvXX-QuTJ-24" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="Gate" vertex="1">
+          <mxGeometry relative="1" x="-0.232" y="-2" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="a0p3Xkdq_-kAvXX-QuTJ-25" edge="1" parent="1" source="a0p3Xkdq_-kAvXX-QuTJ-1" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;startArrow=classic;endSize=8;startSize=8;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=-0.005;entryY=0.621;entryDx=0;entryDy=0;entryPerimeter=0;" target="a0p3Xkdq_-kAvXX-QuTJ-17" value="">
+          <mxGeometry relative="1" width="100" as="geometry">
+            <Array as="points" />
+            <mxPoint x="450" y="70" as="sourcePoint" />
+            <mxPoint x="520" y="90" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="a0p3Xkdq_-kAvXX-QuTJ-26" edge="1" parent="1" source="a0p3Xkdq_-kAvXX-QuTJ-18" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;startArrow=classic;endSize=8;startSize=8;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" target="a0p3Xkdq_-kAvXX-QuTJ-1" value="">
+          <mxGeometry relative="1" width="100" as="geometry">
+            <Array as="points" />
+            <mxPoint x="250" y="40" as="sourcePoint" />
+            <mxPoint x="350" y="40" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="a0p3Xkdq_-kAvXX-QuTJ-27" edge="1" parent="1" source="a0p3Xkdq_-kAvXX-QuTJ-17" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;startArrow=classic;endSize=8;startSize=8;rounded=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.667;exitY=1.034;exitDx=0;exitDy=0;exitPerimeter=0;" target="a0p3Xkdq_-kAvXX-QuTJ-9" value="">
+          <mxGeometry relative="1" width="100" as="geometry">
+            <Array as="points" />
+            <mxPoint x="550" y="130" as="sourcePoint" />
+            <mxPoint x="650" y="130" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="a0p3Xkdq_-kAvXX-QuTJ-36" connectable="0" parent="a0p3Xkdq_-kAvXX-QuTJ-27" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="Everything in this folder must cary&amp;nbsp;&lt;div&gt;the manifest and keys&lt;/div&gt;" vertex="1">
+          <mxGeometry relative="1" x="0.1374" y="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="a0p3Xkdq_-kAvXX-QuTJ-28" edge="1" parent="1" source="a0p3Xkdq_-kAvXX-QuTJ-19" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;startArrow=classic;endSize=8;startSize=8;rounded=0;entryX=0.049;entryY=0.624;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.994;exitY=0.748;exitDx=0;exitDy=0;exitPerimeter=0;" target="a0p3Xkdq_-kAvXX-QuTJ-9" value="">
+          <mxGeometry relative="1" width="100" as="geometry">
+            <Array as="points" />
+            <mxPoint x="420" y="250" as="sourcePoint" />
+            <mxPoint x="520" y="250" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="a0p3Xkdq_-kAvXX-QuTJ-29" parent="1" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.database;whiteSpace=wrap;" value="(USER)-data-vault&lt;div&gt;Postgres and Soil&amp;nbsp;&lt;/div&gt;&lt;div&gt;are in here.&amp;nbsp;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="663" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="a0p3Xkdq_-kAvXX-QuTJ-30" edge="1" parent="1" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;startArrow=classic;endSize=8;startSize=8;rounded=0;exitX=0.357;exitY=-0.033;exitDx=0;exitDy=0;exitPerimeter=0;" value="">
+          <mxGeometry relative="1" width="100" as="geometry">
+            <Array as="points" />
+            <mxPoint x="704.8399999999999" y="318.02" as="sourcePoint" />
+            <mxPoint x="619" y="255.49404170804382" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="a0p3Xkdq_-kAvXX-QuTJ-34" connectable="0" parent="a0p3Xkdq_-kAvXX-QuTJ-30" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="User granted paths&lt;div&gt;&lt;br&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry relative="1" x="0.0448" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="a0p3Xkdq_-kAvXX-QuTJ-32" parent="1" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.multi-document;whiteSpace=wrap;boundedLbl=1;" value="Apps&amp;nbsp;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;and&lt;/span&gt;&lt;div&gt;Documents for Willow&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="88" x="526" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="a0p3Xkdq_-kAvXX-QuTJ-33" edge="1" parent="1" source="a0p3Xkdq_-kAvXX-QuTJ-9" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;startArrow=classic;endSize=8;startSize=8;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" target="a0p3Xkdq_-kAvXX-QuTJ-32" value="">
+          <mxGeometry relative="1" width="100" as="geometry">
+            <Array as="points" />
+            <mxPoint x="540" y="340" as="sourcePoint" />
+            <mxPoint x="630" y="360" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="a0p3Xkdq_-kAvXX-QuTJ-38" edge="1" parent="1" source="a0p3Xkdq_-kAvXX-QuTJ-40" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;startArrow=classic;endSize=8;startSize=8;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;exitPerimeter=0;" target="a0p3Xkdq_-kAvXX-QuTJ-19" value="">
+          <mxGeometry relative="1" width="100" as="geometry">
+            <Array as="points" />
+            <mxPoint x="340" y="360" as="sourcePoint" />
+            <mxPoint x="390" y="320" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="a0p3Xkdq_-kAvXX-QuTJ-40" parent="1" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.multi-document;whiteSpace=wrap;boundedLbl=1;" value="Dev Repos&lt;div&gt;User Projects&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="88" x="270" y="370" as="geometry" />
+        </mxCell>
+        <mxCell id="a0p3Xkdq_-kAvXX-QuTJ-42" edge="1" parent="1" source="a0p3Xkdq_-kAvXX-QuTJ-1" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;exitX=0.812;exitY=1.026;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" target="a0p3Xkdq_-kAvXX-QuTJ-32" value="">
+          <mxGeometry relative="1" width="100" as="geometry">
+            <Array as="points" />
+            <mxPoint x="400" y="280" as="sourcePoint" />
+            <mxPoint x="522.5" y="195" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="a0p3Xkdq_-kAvXX-QuTJ-44" connectable="0" parent="a0p3Xkdq_-kAvXX-QuTJ-42" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="Uses app directly" vertex="1">
+          <mxGeometry relative="1" x="-0.0723" y="-3" as="geometry">
+            <mxPoint x="-9" y="-42" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="a0p3Xkdq_-kAvXX-QuTJ-47" edge="1" parent="1" source="a0p3Xkdq_-kAvXX-QuTJ-19" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;startArrow=classic;endSize=8;startSize=8;rounded=0;exitX=0.63;exitY=0.965;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" target="a0p3Xkdq_-kAvXX-QuTJ-32" value="">
+          <mxGeometry relative="1" width="100" as="geometry">
+            <Array as="points" />
+            <mxPoint x="440" y="390" as="sourcePoint" />
+            <mxPoint x="540" y="390" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
