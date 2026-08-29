@@ -76,6 +76,20 @@ _CSS = """
     flex-shrink: 0;
   }
   .strip .name { color: var(--text); font-weight: 600; }
+  /* INVARIANTS.md §1 at the visual layer: a seat that answered and a
+     seat that did not must not paint the same pixels. The dot carries
+     the distinction alongside the wording. */
+  .strip[data-standing-state="loading"] .dot {
+    background: var(--muted);
+    box-shadow: none;
+    opacity: .5;
+  }
+  .strip[data-standing-state="unreachable"] .dot {
+    background: transparent;
+    box-shadow: none;
+    border: 1px solid var(--accent);
+  }
+  .strip[data-standing-state="unreachable"] .standing { color: var(--accent); }
   main {
     flex: 1;
     display: flex;
@@ -120,16 +134,22 @@ _CSS = """
 # reach the source" must never collapse into "there is nothing there."
 # This strip used to render "standing" / "grove stable" as static
 # markup — no endpoint, no state check — so the operator read "grove
-# stable" whether or not any seam was reachable. Until a follow-up PR
-# adds a boot module that polls a status endpoint (a new /api/health
-# is out of scope here), the strip carries a neutral placeholder that
-# makes no claim either way.
+# stable" whether or not any seam was reachable. It then carried a
+# permanent neutral placeholder, which was honest but told the operator
+# nothing in either direction. ``/web/boot/standing-boot.js`` now polls
+# ``GET /health`` and paints the slot below: "seat live · <sha>" when
+# the seat answers, "seat unreachable — <why>" when it does not. The
+# markup here is only the pre-fetch sentinel.
 _TOP_STRIP = (
-    '<div class="strip">'
+    '<div class="strip" data-standing-state="loading">'
     '<span class="dot"></span>'
     '<span class="name">ƒ willow</span>'
     '<span>·</span>'
-    '<span>reading standing…</span>'
+    # `data-standing` is the slot ``/web/boot/standing-boot.js`` paints
+    # from ``GET /health``. The served markup carries the pre-fetch
+    # sentinel so there is no flash of a status claim before the first
+    # answer — and so the page still makes no claim if JS never runs.
+    '<span class="standing" data-standing>reading standing…</span>'
     '</div>'
 )
 
@@ -273,6 +293,14 @@ def render_page() -> str:
         # so it does NOT participate in the module-src ordering pinned by
         # `tests/test_grove_html_boot_wire.py`.
         f'{_REGISTRY_UNREACHABLE_LISTENER}\n'
+        # Ambient-strip standing boot — polls GET /health and paints the
+        # top strip's `data-standing` slot with the seat's live state
+        # (INVARIANTS.md §1 / §8). Touches only the strip, defines no
+        # custom element, so it carries no ordering constraint against
+        # the component scripts above; it stays ahead of the layout
+        # boot, which `tests/test_grove_html_boot_wire.py` pins as the
+        # last module script in <head>.
+        '<script type="module" src="/web/boot/standing-boot.js"></script>\n'
         # Layout-memory boot — walks <grove-card id="…"> nodes and wires each
         # to per-viewer localStorage so remembered edge/state persists across
         # reloads, and pinned cards summon on boot (D12 + D14). Ordering

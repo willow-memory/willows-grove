@@ -34,6 +34,12 @@ pins (readers, endpoints) are met at the visual layer.
   element opted in via `data-fixture` or `data-source="_inline"`;
   otherwise the live `/api/personas` endpoint wins. (Replaces the
   Python-bindings test that skipped on every CI run.)
+- **`standing-strip.spec.js`** — INVARIANTS.md §1 / §8 for the ambient
+  top strip. `web/boot/standing-boot.js` polls `GET /health`; the spec
+  fixtures that endpoint live, `ok:false`, and failed, and asserts the
+  strip reads `seat live · <sha>` vs `seat unreachable — <why>`, carries
+  a `commit: "unknown"` through verbatim, and paints the status dot
+  differently in the two states.
 - **`seed-canon.spec.js`** — INVARIANTS.md §9. `/seed/` lists six
   chapter links; `/seed/1` … `/seed/6` each render a titled body; each
   page's screenshot matches the PR 3 baseline at

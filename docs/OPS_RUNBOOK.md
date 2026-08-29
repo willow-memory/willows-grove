@@ -209,14 +209,10 @@ backfillable.
 See `docs/design/pr14-carryovers.md` — the durable list of what
 v0.9 punt to v0.10 or later. Key items:
 
-- Pixel-baseline regression re-enable on `/seed/{1..6}` (deferred in
-  PR 9).
 - CI schema completeness so §1 populated branch is exercised, not just
   §1 unreachable branch (v0.9 CI logs show `public.human_required_queue`
   and `public.routing_decisions` do not exist in the bootstrap
   schema).
-- Sibling panels' `_state` vocabulary audit (dispatch-rail was on the
-  pre-§1 vocabulary; PR 9 fixed it; every other panel is a candidate).
 - Durable fleet-model-map (`model_hint_session` field on every entry
   in `willow-memory/willow/fleet_personas.json` — Sonnet 5 for
   Hanuman, Opus for Loki + Heimdallr, Haiku 4.5 for WORKER tier,

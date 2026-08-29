@@ -14,26 +14,17 @@ skip; bottom items depend on Loki-audit's output in PR 12).
 
 ## Definitely in PR 14
 
-### 1. Playwright pixel-baseline regression on `/seed/{1..6}`
+### 1. Playwright pixel-baseline regression on `/seed/{1..6}` — **CLOSED**
 
-**Where:** `tests/e2e/seed-canon.spec.js` currently `test.skip`s the
-six per-movement `toMatchSnapshot` cases (`115:10` in the spec file).
-
-**Why deferred:** Playwright refuses `outputPath` traversal outside the
-per-spec snapshot dir. The PR-3 baselines live at
-`tests/regression/screenshots/seed/{1..6}.png`, two levels above the
-per-spec dir Playwright would resolve against.
-
-**Two ways to close it (pick one):**
-
-- Copy the six PR-3 baselines under
-  `tests/e2e/seed-canon.spec.js-snapshots/`. Cheapest; duplicates PNGs.
-- Wire `pixelmatch` directly, reading the PR-3 baseline path by hand.
-  Cleaner; single source of truth.
-
-**Acceptance:** the six skipped tests run and fail loudly on a real
-regression (moved block, wrong color) at `~5%` per-pixel-ratio +
-`threshold: 0.3` tolerance.
+Already delivered, and this entry had gone stale: `seed-canon.spec.js`
+took the second option (raw `pixelmatch` + `pngjs` against the on-disk
+PR-3 baseline at `tests/regression/screenshots/seed/{n}.png`, single
+source of truth, no duplicated PNGs) as the Loki #18 fix. The six cases
+are not `test.skip`ped — they run, compare dimensions first so a
+silently-clamped diff cannot smuggle a regression through, and fail on a
+`~5%` per-pixel ratio at `threshold: 0.3`. A baseline missing from disk
+still `test.skip()`s at runtime rather than fake-passing. All six run
+green on the current tree.
 
 ### 2. `<grove-persona-registry>` §1 event pin — **CLOSED**
 
@@ -77,30 +68,35 @@ table each `/api/*` endpoint reads. The Playwright suite's populated-
 and empty-branch assertions become non-vacuous. **Do not** change any
 reader's `Unreachable` semantics — just ship the tables.
 
-### 4. Sibling panels' `_state` vocabulary audit
+### 4. Sibling panels' `_state` vocabulary audit — **CLOSED**
 
-PR 9 caught grove-dispatch-rail on the pre-§1 vocabulary
-(`loading|ready|error`) and normalized it to
-`loading|populated|empty|unreachable`. The dispatch-rail was written
-before §1 landed. Every other panel written in the same batch is a
-candidate for the same drift.
+Audited; no drift found, and the audit is now a test rather than a
+one-off grep: `tests/test_state_vocabulary_audit.py` reads every state
+literal out of `web/components/*.js` — the `_state` assignments
+(including the ternary settle paths) and the `data-state` attribute
+values the shadow CSS branches on — and asserts each is §1 vocabulary
+(`loading | populated | empty | unreachable`) or a named, justified
+sentinel.
 
-**Panels to audit** (`_state` value set, not just behavior):
+What the sweep found:
 
-- `grove-envelope-panel` (passes today's Playwright, but internal
-  `_state` names may not match §1 vocabulary literally)
-- `grove-chat` LEFT (composer + history)
-- `grove-chat` RIGHT (read-back column)
-- `grove-refusal-chip`, `grove-cast-chip` (may not be state-carrying —
-  verify)
-- `grove-card`, `grove-lens-switch` (behavioral, not state-carrying —
-  verify)
+- `grove-envelope-panel`, `grove-dispatch-rail` — §1 vocabulary
+  literally, including the pre-fetch `loading`.
+- `grove-persona-registry` — same vocabulary on `.state` (public, not
+  `_state`, because consumers read it).
+- `grove-chat` LEFT/RIGHT — `data-state` carries `unreachable` plus
+  `sending`, an in-flight sentinel for a line on its way to
+  `/api/journal`. Allowlisted by name with its reason; it is never a
+  resting state.
+- `grove-refusal-chip`, `grove-cast-chip` — not state-carrying
+  (verified: no state literals at all).
+- `grove-card`, `grove-lens-switch` — behavioral. `grove-card`'s
+  `_stateIsVisible()` is summoned/docked geometry, not a §1 read-state.
 
-**Acceptance:** one grep across `web/components/*.js` proving every
-component's `_state` assignments land only in the §1 vocabulary
-(`loading | populated | empty | unreachable`, plus any pre-fetch
-sentinel labeled as such). Fix each drift in-place; don't touch the
-paint code unless the paint code was branching on the old name.
+The test also pins the pre-§1 words PR 9 removed (`ready`, `error`,
+`ok`, `failed`) by name, and self-checks that its own patterns still
+match — a regex that quietly stops matching would turn the whole file
+into a green no-op.
 
 ---
 
@@ -209,14 +205,29 @@ run — the §10 false witness is gone. Three cases: no opt-in attribute →
 the live `/api/personas` wins over the inline shim; `data-fixture` → the
 shim wins; `data-source="_inline"` → the shim wins.
 
-### 11. Sibling panels' `_state` vocabulary audit — expanded
+### 11. Sibling panels' `_state` vocabulary audit — expanded — **CLOSED**
 
-Original entry (#4 above) still stands. Add:  `grove_html.py:_TOP_STRIP`
-hardcodes "grove stable" as static markup, which is a related §8 sin
-Loki caught as finding #31 (minor). Include this in the same audit
-sweep so the same PR resolves both.
+Covered by #4 above, plus its own sub-item: `grove_html.py:_TOP_STRIP`
+(Loki finding #31). The strip had stopped lying — "grove stable" as
+static markup was already replaced by the neutral "reading standing…" —
+but the placeholder was permanent, so the strip told the operator
+nothing in either direction and `/health` had no consumer on the page at
+all.
 
-**Acceptance:** already covered by #4, this cross-references.
+Closed by `web/boot/standing-boot.js`, which polls `GET /health` and
+paints the strip's `data-standing` slot: `seat live · <sha>` while the
+seat answers, `seat unreachable — <why>` when it does not, with the
+status dot painted differently per state so §1 holds at the pixel layer
+and not only in the wording. `commit: "unknown"` travels through
+verbatim rather than being hidden. The strip claims only what `/health`
+answers for — the served-page process — not the health of any seam
+behind it.
+
+Pinned by `tests/test_grove_html_standing_boot.py` (the wire: slot,
+module mount, ordering ahead of the layout boot, per-state CSS) and
+`tests/e2e/standing-strip.spec.js` (the behavior: live, `unknown`,
+unreachable-with-reason, a 200 that is not `ok:true`, and the two states
+not painting the same dot).
 
 ---
 

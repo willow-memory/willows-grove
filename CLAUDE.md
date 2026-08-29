@@ -48,7 +48,7 @@ distinctly.
 | `grove_reader.py` | Reader helpers (channels, messages, agents, routing) |
 | `grove/` | Grove Python package (readers + endpoints + serve-mode auth) |
 | `web/components/*.js` | Web Components (persona-registry, envelope-panel, dispatch-rail, chat, refusal-chip, cast-chip, lens-switch, card, dispatch-rail, envelope-panel) |
-| `web/boot/*.js` | Page-level boot modules (refusal-summon, layout-memory, registry-unreachable) |
+| `web/boot/*.js` | Page-level boot modules (refusal-summon, layout-memory, standing) |
 | `u2u/` | LAN transport for knock/consent/note messages — signed (Ed25519), plaintext on the wire; see `docs/design/u2u-security-limits.md` for what u2u guarantees and what it does not. Confidentiality planned for Gate 6. |
 | `bridge/` | Matrix bridge |
 | `grove/mcp_local.py` | Grove MCP server — stdio (local) or `--serve` (HTTP+OAuth on :8765) |

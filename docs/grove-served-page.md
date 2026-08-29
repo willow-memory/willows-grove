@@ -49,7 +49,7 @@ D9).
 
 | Surface | Route / component | Backend it needs | What it does |
 |---|---|---|---|
-| Ambient top strip | rendered by [`grove_html.py`](../grove_html.py); status dot polls `GET /health` | `grove_serve.py` itself | Willow-name, live dot, commit sha. One glance to see the seat is up. |
+| Ambient top strip | rendered by [`grove_html.py`](../grove_html.py); [`web/boot/standing-boot.js`](../web/boot/standing-boot.js) polls `GET /health` | `grove_serve.py` itself | Willow-name, live dot, commit sha. Reads `seat live · <sha>` while the seat answers and `seat unreachable — <why>` when it stops, with the dot painted differently per state (§1). It answers for the served-page process only — each panel reports its own seam. |
 | Lens switch | [`web/components/grove-lens-switch.js`](../web/components/grove-lens-switch.js) | none (client-side state); drives `/api/dispatch?lens=` | Tri-modal switch (Governance / PM / PA) — the lens the operator is looking through. |
 | Chat card | [`web/components/grove-chat.js`](../web/components/grove-chat.js) | `POST /api/journal` → [`grove/journal_writer.py`](../grove/journal_writer.py) → willow-mcp `kb_journal` | LEFT side (operator → Willow) writes the operator's words verbatim into the journal. |
 | Dispatch rail | [`web/components/grove-dispatch-rail.js`](../web/components/grove-dispatch-rail.js) | `GET /api/dispatch?lens=` → [`grove/kart_reader.py`](../grove/kart_reader.py) → Postgres `public.tasks` | Kart escalation queue, filtered by the current lens. |
