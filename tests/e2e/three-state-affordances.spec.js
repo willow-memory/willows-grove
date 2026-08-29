@@ -148,10 +148,11 @@ async function assertEmptyAndUnreachableDiffer(page, { tag, endpoint, emptyBody,
 test.describe('three-state affordances — every panel paints unreachable ≠ empty', () => {
   // grove-persona-registry is a DATA element (`:host { display: none }`).
   // Its three-state distinction is exposed via the `registry-unreachable`
-  // window event and the `.state` property — not visible markup. §1 for
-  // this component is pinned in the pytest layer (test_grove_serve_personas)
-  // and in test_refusal_summon_shape's boot contract, not the DOM.
-  test.skip('grove-persona-registry: /api/personas empty vs unreachable (data element — no visual)', async () => {});
+  // window event and the `.state` property — not visible markup, which is
+  // identical in all three states by design. A DOM diff is categorically
+  // the wrong pin for it, so it is NOT covered here: the event-and-state
+  // observable is pinned in `persona-registry-state.spec.js`, and the wire
+  // shape in the pytest layer (test_grove_serve_personas).
 
   test('grove-envelope-panel: /api/envelopes empty vs unreachable', async ({
     page,

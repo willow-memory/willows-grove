@@ -2,10 +2,10 @@
 
 b17: WGRV1 ΔΣ=42
 
-Post-v0.9 punch list. Nothing in this file is implemented yet — this is
-the shape PR 14 fills in after PR 13 tags v0.9. Do NOT expand PR 9 / 11 /
-12 / 13 to close items here; that widens their scope. When PR 13 merges,
-open PR 14 from this list.
+Post-v0.9 punch list — the shape PR 14 fills in after PR 13 tags v0.9.
+Do NOT expand PR 9 / 11 / 12 / 13 to close items here; that widens their
+scope. Items closed during the PR-14 build carry a **CLOSED** marker and
+name the artifact that closed them; everything unmarked is still open.
 
 Order below is decreasing certainty (top items I already deferred with a
 skip; bottom items depend on Loki-audit's output in PR 12).
@@ -35,24 +35,19 @@ per-spec dir Playwright would resolve against.
 regression (moved block, wrong color) at `~5%` per-pixel-ratio +
 `threshold: 0.3` tolerance.
 
-### 2. `<grove-persona-registry>` §1 event pin
+### 2. `<grove-persona-registry>` §1 event pin — **CLOSED**
 
-**Where:** `tests/e2e/three-state-affordances.spec.js` line 148 —
-currently `test.skip`ped with a comment explaining why (data element
-renders `<style>:host { display: none }</style>` in both empty and
-unreachable, so a DOM diff is categorically wrong).
-
-**Why deferred:** the correct §1 pin for a data element is its
-`registry-unreachable` window event and its `.state` property, not its
-markup. Writing that Playwright fixture right (route `/api/personas` →
-503, wait for the event, assert `.state === "unreachable"`) is a
-separate small piece of work, not a fix-in-place of the DOM-diff test.
-
-**Acceptance:** an e2e that fixtures `/api/personas` first empty then
-unreachable and asserts the `registry-unreachable` window event fires
-with the right shape on the unreachable branch (and does NOT fire on
-the empty branch). Pytest layer already pins the wire shape; this pins
-the browser-side observable.
+Closed by `tests/e2e/persona-registry-state.spec.js`. The registry is a
+data element (`:host { display: none }`), so a DOM diff is categorically
+the wrong pin; the spec pins the observable consumers actually use — the
+`.state` property plus the `registry-loaded` / `registry-unreachable`
+window events. Three cases: an empty roster settles `empty` and never
+fires `registry-unreachable`; a 503 fires `registry-unreachable` carrying
+the endpoint's reason verbatim and never fires `registry-loaded`; an
+`unreachable` declared inside a 200 body is honored rather than read as
+empty. The placeholder `test.skip` in
+`tests/e2e/three-state-affordances.spec.js` is gone, replaced by a
+comment pointing at the new spec.
 
 ---
 
@@ -204,22 +199,15 @@ the pitch does not claim more than the data shows.
 claim" section naming which layers were and were not proven. Note
 that the fleet-dispatch demonstration is future work (see #11 below).
 
-### 11a. Migrate `test_persona_registry_inline_shim_opt_in.py` from Python playwright to a `tests/e2e/*.spec.js` spec
+### 11a. Migrate the inline-shim §8 pin off the Python bindings — **CLOSED**
 
-PR 12 sealed a Python-side test that drives Playwright's Python
-bindings against a small static file server to pin §8 (inline shim
-opt-in). The bindings are not in `requirements.txt`; the CI job
-`pytest.importorskip`s them and the test silently skips on every CI
-run — a §10 false witness in the same class as the m17 pre-fix Ollama
-skips.
-
-Move the pin into a `tests/e2e/persona-registry-inline-shim.spec.js`
-Playwright spec so the pin runs in the CI Playwright step (where
-chromium and `@playwright/test` are installed).
-
-**Acceptance:** the Python test is deleted; the spec runs in the CI
-Playwright step and enforces both cases (default → live, `data-fixture`
-attr → shim).
+Closed by `tests/e2e/persona-registry-inline-shim.spec.js`;
+`tests/test_persona_registry_inline_shim_opt_in.py` is deleted. The pin
+now runs in the CI Playwright step (where chromium and
+`@playwright/test` are installed) instead of `importorskip`ping on every
+run — the §10 false witness is gone. Three cases: no opt-in attribute →
+the live `/api/personas` wins over the inline shim; `data-fixture` → the
+shim wins; `data-source="_inline"` → the shim wins.
 
 ### 11. Sibling panels' `_state` vocabulary audit — expanded
 

@@ -211,7 +211,6 @@ v0.9 punt to v0.10 or later. Key items:
 
 - Pixel-baseline regression re-enable on `/seed/{1..6}` (deferred in
   PR 9).
-- `<grove-persona-registry>` §1 event pin (deferred in PR 9).
 - CI schema completeness so §1 populated branch is exercised, not just
   §1 unreachable branch (v0.9 CI logs show `public.human_required_queue`
   and `public.routing_decisions` do not exist in the bootstrap
@@ -224,8 +223,6 @@ v0.9 punt to v0.10 or later. Key items:
   Fable reserved).
 - `specialists.json` deny-lists for every ENGINEER+ persona (only Loki
   has one today).
-- Migrate `test_persona_registry_inline_shim_opt_in.py` from Python
-  playwright to a `tests/e2e/*.spec.js` spec (item 11a).
 - OPERATOR-tier `not_do` audit (Ada, Steve, Skirnir).
 - Actual fleet dispatch wiring (Grove MCP + willow-mcp + Nestor +
   `willow.routing_decisions` + `frank_ledger`) — v1.0 shape.

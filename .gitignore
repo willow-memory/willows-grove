@@ -14,3 +14,11 @@ build/
 worktrees/
 .cursor/grove_followup_last_id
 data/
+
+# Playwright e2e (INVARIANTS §10) — installed deps and per-run output.
+# `npm install` / `npx playwright test` produce these locally and in CI;
+# none of it is tracked-code.
+node_modules/
+package-lock.json
+test-results/
+playwright-report/
