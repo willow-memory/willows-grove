@@ -117,6 +117,20 @@ jobs:
           git fetch --no-tags origin "${GITHUB_BASE_REF:-master}"
           python3 scripts/check_persona_provenance.py
 
+      # docs/INVARIANTS.md §3 — every code-changing PR appends a
+      # CHANGELOG.md [Unreleased] bullet. check_docs_drift.py only
+      # validates bullets that already exist (that each cites its PR);
+      # it never checked that a code-changing PR added one, which is how
+      # PR #8 (22 files, 1151 insertions) merged with zero bullets and a
+      # green build. Fetches origin/$GITHUB_BASE_REF (the checkout action
+      # does not fetch it by default) so the range past the base is
+      # diffable. Guarded so a fork without the script still builds green.
+      - name: Changelog-bullet check
+        if: ${{ hashFiles('scripts/check_changelog_bullet.py') != '' }}
+        run: |
+          git fetch --no-tags origin "${GITHUB_BASE_REF:-master}"
+          python3 scripts/check_changelog_bullet.py
+
       - name: Run test suite
         run: python3 -m pytest -x -q --tb=short --ignore=tests/e2e --ignore=tests/e2e_ollama --ignore=tests/e2e_willow_mcp
 

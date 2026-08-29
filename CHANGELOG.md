@@ -4,6 +4,33 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ## [Unreleased]
 
+### Added
+
+- `public.routing_decisions` and `public.human_required_queue` in
+  `schema.sql`, so CI exercises the `populated` and `empty` branches of
+  INVARIANTS.md §1 rather than only `unreachable` — those readers had no
+  table to reach, which is the PR 9 CI symptom. Plus
+  `tests/test_schema_completeness.py`, a static guard that every table the
+  readers and `/api/*` handlers query exists in `schema.sql`. Closes
+  PR 14 carryover #3.
+- `scripts/check_changelog_bullet.py`, wired into
+  `.github/workflows/tests.yml`: INVARIANTS.md §3's changelog-bullet clause
+  is now enforced in CI. Not a numbered carryover — surfaced during the
+  PR 14 build, when the gap was caught in this repo's own history. It was unenforced, which is how PR #8 merged 22
+  files with no bullet and a green build. Docs-only PRs, changelog-only
+  PRs, and pushes with no base to diff against are all exempt by
+  construction.
+- `docs/design/operator-tier-review.md`: the OPERATOR-tier `not_do` audit,
+  PR 14 carryover #9. All five OPERATOR personas, not the three the
+  carryover named — Loki's tier was unaccounted for.
+
+### Changed
+
+- `docs/audits/loki-swarm-measurement.md` now bounds its claim to the
+  prompt-injection layer it actually measured, naming Grove MCP dispatch,
+  `kb_journal` writes, Nestor seal-and-verify, and `willow.routing_decisions`
+  as unexercised. Closes PR 14 carryover #10.
+
 ## [0.9.0] — 2026-08-27
 
 **First release of Willow's Grove at its permanent home
