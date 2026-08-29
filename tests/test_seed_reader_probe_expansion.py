@@ -2,17 +2,25 @@
 """tests/test_seed_reader_probe_expansion.py — probe path resolution.
 
 INVARIANTS.md §9 ("Seed reads real canon"): the reader's
-``locate_seed_dir()`` walks the WILLOW_HOME → ~/willow-memory →
-~/.willow probe order. This suite pins each rung so a future refactor
-that changes the search order (or forgets to fall back) fails loudly,
-not silently.
+``locate_seed_dir()`` walks the ``$WILLOW_HOME/seed`` → in-repo
+``governance/seed`` probe order (D7/D10 discipline, mirrors
+``grove/persona_roster.py``). This suite pins each rung so a future
+refactor that changes the search order (or forgets to fall back) fails
+loudly, not silently.
 
-The absence case is asserted here too: no seed dir on any probe path
-means ``locate_seed_dir()`` returns None, ``load_movements()`` returns
-the six-movement D16 stub, and the "seed not found" INFO line fires
-exactly once per process (C3 continuity: /seed/ survives absence).
+The absence case is asserted here too: with the in-repo fallback
+pointed at an empty tmp dir and no ``$WILLOW_HOME`` seed dir on disk,
+``locate_seed_dir()`` returns None, ``load_movements()`` returns the
+six-movement D16 stub, and the "seed not found" INFO line fires exactly
+once per process (C3 continuity: /seed/ survives absence). Every test
+that means to exercise this "no seed dir on any probe path" case must
+patch ``seed_reader._IN_REPO_SEED_PATH`` to an empty dir first —
+otherwise, now that a real canon lives in this repo at
+``governance/seed/``, the fallback would silently resolve and the
+absence case would no longer be reachable in tests.
 
-Stdlib only. Restores WILLOW_HOME / HOME / USERPROFILE in every case.
+Stdlib only. Restores WILLOW_HOME / HOME / USERPROFILE in every case,
+and restores ``_IN_REPO_SEED_PATH`` via ``addCleanup``.
 """
 from __future__ import annotations
 
@@ -21,6 +29,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -31,8 +40,10 @@ if ROOT not in sys.path:
 from grove import seed_reader  # noqa: E402
 
 
-REAL_CANON = Path("/home/user/willow-memory/willow/seed/canon")
-REAL_SEED = REAL_CANON.parent  # /home/user/willow-memory/willow/seed
+# The real in-repo canon this repo now ships (relocated from the
+# archived charter repository per governance/README.md).
+REAL_SEED = seed_reader._REPO_ROOT / "governance" / "seed"
+REAL_CANON = REAL_SEED / "canon"
 
 
 class _EnvSandbox:
@@ -72,36 +83,59 @@ class SeedReaderProbeExpansionTests(unittest.TestCase):
         # Reset log-once so each test is independent.
         seed_reader._logged_absent = False
 
-    # ── WILLOW_HOME → real canon (only when the box has it) ──────────────
-    def test_willow_home_resolves_to_real_seed_with_canon(self) -> None:
-        if not REAL_CANON.is_dir():
-            self.skipTest(
-                f"real canon not present at {REAL_CANON}; probe test only"
-                " runs on a box with the fleet_charter mirror"
-            )
-        with _EnvSandbox(willow_home="/home/user", home=None):
-            located = seed_reader.locate_seed_dir()
-        # The reader returns the seed dir; canon/ lives inside it.
-        self.assertIsNotNone(located)
-        assert located is not None  # narrow type for mypy-style readers
-        self.assertEqual(located, REAL_SEED)
-        # And canon/ is where load_movements() will find the six files.
-        self.assertTrue((located / "canon").is_dir())
-        for name in (
-            "00-the-covenant.md",
-            "01-be-the-other.md",
-            "02-the-discipline.md",
-            "03-the-person.md",
-            "04-the-language.md",
-            "05-the-world.md",
-        ):
-            self.assertTrue((located / "canon" / name).is_file())
+        # Default every test to an empty in-repo fallback, isolated from
+        # this repo's real governance/seed/ canon. Tests that want the
+        # real fallback restore it explicitly (see below).
+        self._fallback_tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._fallback_tmp.cleanup)
+        no_fallback_dir = Path(self._fallback_tmp.name) / "no-fallback" / "seed"
+        self._fallback_patch = mock.patch.object(
+            seed_reader, "_IN_REPO_SEED_PATH", no_fallback_dir
+        )
+        self._fallback_patch.start()
+        self.addCleanup(self._fallback_patch.stop)
 
-    def test_load_movements_from_willow_home_matches_real_canon(self) -> None:
-        if not REAL_CANON.is_dir():
-            self.skipTest("real canon not present; test requires the mirror")
-        with _EnvSandbox(willow_home="/home/user", home=None):
-            movements = seed_reader.load_movements()
+    # ── WILLOW_HOME → per-node seed dir ───────────────────────────────────
+    def test_willow_home_resolves_to_willow_home_seed_dir(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            wh = root / "wh"
+            preferred = wh / "seed"
+            preferred.mkdir(parents=True)
+            with _EnvSandbox(willow_home=wh, home=None):
+                located = seed_reader.locate_seed_dir()
+            self.assertEqual(located, preferred)
+
+    # ── in-repo fallback → the real canon this repo ships ────────────────
+    def test_in_repo_fallback_resolves_to_real_canon(self) -> None:
+        """With the fallback patch removed, the second probe rung is this
+        repo's real ``governance/seed/`` — the canon relocated in from the
+        archived charter repository."""
+        self._fallback_patch.stop()
+        try:
+            with _EnvSandbox(willow_home=None, home="/nonexistent-probe-home"):
+                located = seed_reader.locate_seed_dir()
+            self.assertEqual(located, REAL_SEED)
+            self.assertTrue((located / "canon").is_dir())
+            for name in (
+                "00-the-covenant.md",
+                "01-be-the-other.md",
+                "02-the-discipline.md",
+                "03-the-person.md",
+                "04-the-language.md",
+                "05-the-world.md",
+            ):
+                self.assertTrue((located / "canon" / name).is_file())
+        finally:
+            self._fallback_patch.start()
+
+    def test_load_movements_from_in_repo_fallback_matches_real_canon(self) -> None:
+        self._fallback_patch.stop()
+        try:
+            with _EnvSandbox(willow_home=None, home="/nonexistent-probe-home"):
+                movements = seed_reader.load_movements()
+        finally:
+            self._fallback_patch.start()
         self.assertEqual([m["n"] for m in movements], [1, 2, 3, 4, 5, 6])
         # Every body is the raw text of the corresponding canon file.
         for idx, name in enumerate((
@@ -119,30 +153,20 @@ class SeedReaderProbeExpansionTests(unittest.TestCase):
                 f"movement {idx + 1} body does not match {name} verbatim",
             )
 
-    # ── unset WILLOW_HOME → home-dir probe fallback ──────────────────────
-    def test_unset_willow_home_falls_back_to_home_dir_probe(self) -> None:
-        with tempfile.TemporaryDirectory() as td:
-            root = Path(td)
-            home = root / "home"
-            preferred = home / "willow-memory" / "willow" / "seed"
-            preferred.mkdir(parents=True)
-            with _EnvSandbox(willow_home=None, home=home):
-                located = seed_reader.locate_seed_dir()
-        self.assertEqual(located, preferred)
-
-    def test_unset_willow_home_home_probe_also_finds_dot_willow(self) -> None:
-        """The third probe rung — ~/.willow/seed — is reached when the
-        second (~/willow-memory/willow/seed) is absent.
-        """
-        with tempfile.TemporaryDirectory() as td:
-            root = Path(td)
-            home = root / "home"
-            # Only the ~/.willow/seed rung is populated.
-            dot_seed = home / ".willow" / "seed"
-            dot_seed.mkdir(parents=True)
-            with _EnvSandbox(willow_home=None, home=home):
-                located = seed_reader.locate_seed_dir()
-        self.assertEqual(located, dot_seed)
+    # ── $WILLOW_HOME wins over the in-repo fallback on collision ──────────
+    def test_willow_home_wins_over_in_repo_fallback(self) -> None:
+        self._fallback_patch.stop()
+        try:
+            with tempfile.TemporaryDirectory() as td:
+                wh = Path(td) / "wh"
+                preferred = wh / "seed"
+                preferred.mkdir(parents=True)
+                with _EnvSandbox(willow_home=wh, home=None):
+                    located = seed_reader.locate_seed_dir()
+                self.assertEqual(located, preferred)
+                self.assertNotEqual(located, REAL_SEED)
+        finally:
+            self._fallback_patch.start()
 
     # ── no seed anywhere → stub + log-once ──────────────────────────────
     def test_no_seed_dir_returns_none_and_stub_load_movements_logs_once(

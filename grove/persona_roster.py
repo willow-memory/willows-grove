@@ -1,11 +1,14 @@
 # b17: WGRV1 ΔΣ=42
 """Reader for the unified persona registry (D10 consumer).
 
-``willow-memory/willow/fleet_personas.json`` — schema ``fleet-personas/v1``
-— extends ``fleet.json`` with per-agent ``voice`` (register, mandate,
-not_do), ``visual`` (color, sigil, color_token), ``emission_fields``,
-and a ``canonical_file`` pointer per D10 in
-``docs/design/willow-grove-premise.md``.
+``fleet_personas.json`` — schema ``fleet-personas/v1`` — extends
+``fleet.json`` with per-agent ``voice`` (register, mandate, not_do),
+``visual`` (color, sigil, color_token), ``emission_fields``, and a
+``canonical_file`` pointer per D10 in
+``docs/design/willow-grove-premise.md``. The registry's canonical home
+is ``governance/fleet_personas.json`` in this repo (relocated from the
+now-archived charter repository); a node may override it with its own
+copy at ``$WILLOW_HOME/fleet_personas.json``.
 
 Three-state contract (see ``docs/INVARIANTS.md §1``):
 
@@ -48,16 +51,28 @@ _logged_missing = False
 _logged_drift = False
 
 
+_REPO_ROOT = Path(__file__).resolve().parent.parent
+_IN_REPO_PERSONAS_PATH = _REPO_ROOT / "governance" / "fleet_personas.json"
+
+
 def _candidate_paths() -> list[Path]:
-    """The three locations we probe, in preference order (D10 + D7)."""
+    """The locations we probe, in preference order (D10 + D7).
+
+    1. ``$WILLOW_HOME/fleet_personas.json`` — a per-node override (D7/D10
+       discipline: a node may legitimately carry its own registry). This
+       does NOT point into the archived charter repository.
+    2. ``~/.willow/fleet_personas.json`` — the per-user location. Never an
+       archived-repo path, so the move off ``willow-memory/willow`` does
+       not retire it: an operator whose registry sits here keeps working.
+    3. ``governance/fleet_personas.json`` in this repo — the reliable
+       fallback, so Grove always has a registry even on a cold box.
+    """
     paths: list[Path] = []
     home = os.environ.get("WILLOW_HOME")
     if home:
-        paths.append(
-            Path(home).expanduser() / "willow-memory" / "willow" / "fleet_personas.json"
-        )
-    paths.append(Path.home() / "willow-memory" / "willow" / "fleet_personas.json")
+        paths.append(Path(home).expanduser() / "fleet_personas.json")
     paths.append(Path.home() / ".willow" / "fleet_personas.json")
+    paths.append(_IN_REPO_PERSONAS_PATH)
     return paths
 
 
@@ -78,7 +93,7 @@ def locate_personas_file() -> Optional[Path]:
     if not _logged_missing:
         log.info(
             "persona_roster: fleet_personas.json not found in known "
-            "locations ($WILLOW_HOME, ~/willow-memory, ~/.willow) — "
+            "locations ($WILLOW_HOME, ~/.willow, governance/fleet_personas.json) — "
             "running as no-op (D7)."
         )
         _logged_missing = True
@@ -142,9 +157,9 @@ def _load_from_path(path: Path) -> list[PersonaRow]:
       "willow": {...}, "heimdallr": {...}, ...}`` — schema is nested under
       ``_meta``, and every non-``_meta`` top-level key is an agent row.
 
-    Both must load; the charter file at ``~/willow-memory/willow/
-    fleet_personas.json`` is not migrated by Grove (D10 discipline — the
-    charter is authoritative; readers adapt).
+    Both must load; the charter file at ``governance/fleet_personas.json``
+    (in this repo) is not migrated by Grove (D10 discipline — the charter
+    is authoritative; readers adapt).
     """
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
@@ -268,7 +283,8 @@ class PersonaRoster:
         if path is None:
             raise Unreachable(
                 "no fleet_personas.json found in probe path "
-                "($WILLOW_HOME/willow-memory/willow, ~/willow-memory/willow, ~/.willow)"
+                "($WILLOW_HOME/fleet_personas.json, ~/.willow/fleet_personas.json, "
+                "governance/fleet_personas.json)"
             )
         try:
             return cls(path=path)

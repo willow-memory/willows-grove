@@ -6,7 +6,7 @@ Operator-facing reference for running, checking, and recovering
 Willow's Grove at v0.9. Cites `docs/INVARIANTS.md` §-anchors, not
 line numbers — line numbers rot, anchors don't (§3).
 
-Trust root: the human at the seat. Willow (`willow-memory/willow/fleet_personas.json`
+Trust root: the human at the seat. Willow (`governance/fleet_personas.json`
 key `willow`, `trust: OPERATOR`) holds the seat where the human's
 authorization is recorded. No fleet persona has unilateral authority
 to commit, PR, merge, patch, or wire the fleet — §12 seals this.
@@ -151,7 +151,7 @@ en-dash, or ASCII `" - "` all accepted; straight or curly quotes.
 Per §11, every commit changing tracked code (`.py`, `.js`, `.sh`,
 `.md`, `.yml`, `.yaml`, `.sql`, `.json`, `.html`) needs a `Persona:`
 trailer naming a fleet-persona key from
-`willow-memory/willow/fleet_personas.json`. Multi-persona commits
+`governance/fleet_personas.json`. Multi-persona commits
 carry two trailers. Merge commits are exempt. Amend the commit
 message locally with the trailer and force-with-lease on your own
 branch. Never rewrite history on someone else's branch.
@@ -214,7 +214,7 @@ v0.9 punt to v0.10 or later. Key items:
   and `public.routing_decisions` do not exist in the bootstrap
   schema).
 - Durable fleet-model-map (`model_hint_session` field on every entry
-  in `willow-memory/willow/fleet_personas.json` — Sonnet 5 for
+  in `governance/fleet_personas.json` — Sonnet 5 for
   Hanuman, Opus for Loki + Heimdallr, Haiku 4.5 for WORKER tier,
   Fable reserved).
 - `specialists.json` deny-lists for every ENGINEER+ persona (only Loki

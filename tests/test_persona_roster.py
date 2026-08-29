@@ -65,15 +65,27 @@ class PersonaRosterTests(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         self.willow_home = Path(self.tmp.name) / "willow_home"
-        target = self.willow_home / "willow-memory" / "willow" / "fleet_personas.json"
-        target.parent.mkdir(parents=True)
+        self.willow_home.mkdir()
+        target = self.willow_home / "fleet_personas.json"
         target.write_text(_fixture_bytes(), encoding="utf-8")
         self.registry_path = target
 
-        # Isolate HOME so the ~/willow-memory and ~/.willow candidates cannot
-        # accidentally match anything on the host running the test.
+        # Isolate HOME so no host-level candidate can accidentally match.
         self.fake_home = Path(self.tmp.name) / "no-home"
         self.fake_home.mkdir()
+
+        # Point the in-repo fallback at an empty tmp dir by default, so
+        # these tests exercise only the $WILLOW_HOME override and stay
+        # isolated from this repo's real governance/fleet_personas.json.
+        # Tests that specifically want the fallback path patch this
+        # attribute themselves.
+        self._no_fallback_dir = Path(self.tmp.name) / "no-fallback"
+        self._no_fallback_dir.mkdir()
+        self._fallback_patch = mock.patch.object(
+            pr, "_IN_REPO_PERSONAS_PATH", self._no_fallback_dir / "fleet_personas.json"
+        )
+        self._fallback_patch.start()
+        self.addCleanup(self._fallback_patch.stop)
 
         # Reset the log-once flag before every test.
         pr._logged_missing = False
@@ -139,8 +151,8 @@ class PersonaRosterTests(unittest.TestCase):
         sat on disk, /api/personas returned empty envelope until the reader
         learned this shape)."""
         charter_home = Path(self.tmp.name) / "charter_willow_home"
-        target = charter_home / "willow-memory" / "willow" / "fleet_personas.json"
-        target.parent.mkdir(parents=True)
+        charter_home.mkdir()
+        target = charter_home / "fleet_personas.json"
         target.write_text(
             json.dumps(
                 {
@@ -201,8 +213,8 @@ class PersonaRosterTests(unittest.TestCase):
         """The flat wrapper with a ``personas`` dict payload keeps working
         alongside the ``agents`` list shape — the reader accepts both."""
         flat_home = Path(self.tmp.name) / "flat_willow_home"
-        target = flat_home / "willow-memory" / "willow" / "fleet_personas.json"
-        target.parent.mkdir(parents=True)
+        flat_home.mkdir()
+        target = flat_home / "fleet_personas.json"
         target.write_text(
             json.dumps(
                 {
@@ -271,8 +283,8 @@ class PersonaRosterTests(unittest.TestCase):
         """File present, ``agents: []`` — populated=False, roster returned.
         This is the "empty" three-state case (reached, no data)."""
         empty_home = Path(self.tmp.name) / "empty_registry_home"
-        target = empty_home / "willow-memory" / "willow" / "fleet_personas.json"
-        target.parent.mkdir(parents=True)
+        empty_home.mkdir()
+        target = empty_home / "fleet_personas.json"
         target.write_text(
             json.dumps({"schema": "fleet-personas/v1", "agents": []}),
             encoding="utf-8",
@@ -281,6 +293,26 @@ class PersonaRosterTests(unittest.TestCase):
             roster = pr.PersonaRoster.load()
         self.assertEqual(roster.all(), [])
         self.assertIsNone(roster.get("willow"))
+
+    # ---- three-state: in-repo fallback (cold box, no $WILLOW_HOME) ----
+    def test_falls_back_to_in_repo_copy_when_no_willow_home_override(self) -> None:
+        """No ``$WILLOW_HOME`` override present — the in-repo copy at
+        ``governance/fleet_personas.json`` is the reliable fallback so
+        Grove always has a registry on a cold box."""
+        fallback_dir = Path(self.tmp.name) / "in_repo_fallback"
+        fallback_dir.mkdir()
+        fallback_path = fallback_dir / "fleet_personas.json"
+        fallback_path.write_text(_fixture_bytes(), encoding="utf-8")
+
+        with mock.patch.object(pr, "_IN_REPO_PERSONAS_PATH", fallback_path):
+            with self._env():
+                roster = pr.PersonaRoster.load()
+
+        self.assertEqual(roster.path, fallback_path)
+        willow = roster.get("willow")
+        self.assertIsNotNone(willow)
+        assert willow is not None
+        self.assertEqual(willow.role, "primary")
 
 
 if __name__ == "__main__":  # pragma: no cover

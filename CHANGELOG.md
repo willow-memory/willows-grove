@@ -26,6 +26,28 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Changed
 
+- The fleet persona registry and the seed canon now live in this repo —
+  `governance/fleet_personas.json` and `governance/seed/canon/`,
+  byte-identical to the originals in the archived `willow-memory/willow`.
+  `grove/persona_roster.py` and `grove/seed_reader.py` probe
+  `$WILLOW_HOME` first, then `~/.willow`, then the in-repo copy; no
+  archived-repo path remains in either. `/seed/{1..6}` now render the real
+  canon on every host with no mount required, and the registry has a live
+  home for the first time since the 2026-08-27 archiving. Absence stays a
+  reachable, tested state in both readers (INVARIANTS.md §1). PR 14.
+- `grove/envelope_reader.py`'s absence messages named five
+  `willow-memory/willow` directories the code has not probed since the
+  constitutional-path migration — an operator following them at 3am would
+  have searched five wrong places. They now name the two directories it
+  actually reads. Probe behavior unchanged. PR 14.
+- Live prose pointers repointed at the new in-repo homes across
+  `docs/INVARIANTS.md` §9/§11/§12, `docs/OPS_RUNBOOK.md`,
+  `docs/design/willow-grove-premise.md` D10/D16,
+  `docs/design/operator-tier-review.md`, and `tests/e2e/README.md`.
+  Historical records in `governance/`, audit reproducibility anchors, and
+  `willow-memory` GitHub-org references were deliberately left as written,
+  per the method in `FINDINGS-2026-08-20-charter-docs-drift.md`. PR 14.
+
 - `docs/audits/loki-swarm-measurement.md` now bounds its claim to the
   prompt-injection layer it actually measured, naming Grove MCP dispatch,
   `kb_journal` writes, Nestor seal-and-verify, and `willow.routing_decisions`

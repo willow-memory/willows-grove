@@ -2,9 +2,10 @@
 
 *Companion to `INVARIANTS.md` §12 (Ratification) and
 `pr14-carryovers.md` #9. Source of truth:
-`willow-memory/willow/fleet_personas.json`, read directly for this
-audit — nothing here is inferred from the personas' `mandate` or
-`register` fields.*
+`governance/fleet_personas.json` (in this repo, relocated from the
+archived `willow-memory/willow`), read directly for this audit —
+nothing here is inferred from the personas' `mandate` or `register`
+fields.*
 
 ## Scope note — the carryover's list is short by two
 
@@ -146,10 +147,11 @@ here for the human trust root to resolve, not assumed either way.
 
 ## Proposed next steps
 
-This audit proposes options; it does not adopt one. Changes to
-`fleet_personas.json` are out of scope for this repo and this task —
-that file lives in `willow-memory/willow` and any edit to it is a
-governance act under that repo's own discipline, not Grove's.
+This audit proposes options; it does not adopt one. `fleet_personas.json`
+now lives in this repo (`governance/fleet_personas.json`), so the changes
+below are actionable here — but they remain a governance act under
+CLAUDE.md rule 4 (propose before acting) and INVARIANTS.md §12, not a
+unilateral edit by whichever persona reads this audit.
 
 1. **Ada, Steve, Skirnir** — propose either:
    - **Alignment**: add explicit PR/commit/merge/patch/wire-the-fleet
@@ -195,4 +197,4 @@ the auditor for this task)
 >   only Willow's `not_do` carries it; Ada, Steve, and Skirnir carry no
 >   version of it, and Loki's ("Build.") is narrower in wording though
 >   arguably overlapping in practical effect. No `fleet_personas.json`
->   changes made — that file is out of repo.
+>   changes made — this audit proposes options without adopting one.

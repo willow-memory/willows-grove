@@ -297,21 +297,23 @@ distinct-render pin, Grove v0.9 PR 9).
 
 ## §9 — Seed reads real canon
 
-The `/seed/` route renders content from `willow-memory/willow/seed/canon/`
-when the fleet-charter probe path resolves. On absence the stub is
-served (C3 discipline). No content is invented at render time; the
-reader either quotes canon verbatim (HTML-escaped) or serves the stub.
+The `/seed/` route renders content from `governance/seed/canon/` (in
+this repo, relocated from the archived `willow-memory/willow` charter
+repository — see `governance/README.md`) when the probe path resolves.
+On absence the stub is served (C3 discipline). No content is invented
+at render time; the reader either quotes canon verbatim (HTML-escaped)
+or serves the stub.
 
 Concretely, for `grove/seed_reader.py` + `grove/seed_html.py` behind
 the `grove_serve.py` routes `/seed/` and `/seed/{n}`:
 
-- **The reader probes three paths, in order** (`_candidate_dirs()`):
-  `$WILLOW_HOME/willow-memory/willow/seed/`, then
-  `~/willow-memory/willow/seed/`, then `~/.willow/seed/`. The first
-  that exists on disk is the seed dir; if the seed dir contains a
-  `canon/` subdirectory with six `NN-*.md` files, those files ARE the
-  six movements. The reader does not fabricate the sixth chapter from
-  five — an incomplete canon degrades to the stub.
+- **The reader probes two paths, in order** (`_candidate_dirs()`):
+  `$WILLOW_HOME/seed/` (a per-node override), then `governance/seed/`
+  in this repo (the reliable fallback). The first that exists on disk
+  is the seed dir; if the seed dir contains a `canon/` subdirectory
+  with six `NN-*.md` files, those files ARE the six movements. The
+  reader does not fabricate the sixth chapter from five — an
+  incomplete canon degrades to the stub.
 - **The renderer escapes every body.** `<`, `>`, `&`, `"`, `'` land as
   `&lt;`, `&gt;`, `&amp;`, `&#x27;`, `&quot;` even though the seed
   source is local files. The discipline holds whether the reader is
@@ -391,7 +393,7 @@ naming the fleet persona active for the work. Accountability without
 persona-provenance is aesthetic; accountability with it is measurable.
 
 - The trailer's value is a key from
-  `willow-memory/willow/fleet_personas.json` (verbatim, lowercase) —
+  `governance/fleet_personas.json` (verbatim, lowercase) —
   `heimdallr`, `hanuman`, `loki`, `nestor`, `shiva`, `ganesha`, and the
   rest of the fleet. The `_meta` key is not a persona and is refused.
 - Multi-persona commits (Loki authors an audit line, Heimdallr commits
@@ -432,7 +434,7 @@ authorized it to leave the branch. No fleet persona has unilateral
 authority to open a pull request, merge a pull request, or push to
 master — not Heimdallr, not Hanuman, not Loki, not even Willow.
 
-Willow's own persona (`willow-memory/willow/fleet_personas.json`)
+Willow's own persona (`governance/fleet_personas.json`)
 seals this: *"Commit, PR, merge, patch, or wire the fleet without a
 recorded authorization — [do not do]."* Willow is `trust: OPERATOR`,
 which is the operator seat where the human trust-root's authorization

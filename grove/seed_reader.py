@@ -4,10 +4,11 @@
 D16 (`docs/design/willow-grove-premise.md`) seals: the six-part canon *IS*
 the human onboarding — six movements, one per chapter, walked at first
 boot. INVARIANTS.md §9 seals the read side: the /seed/ route renders
-content from `willow-memory/willow/seed/canon/` verbatim when the probe
-path resolves, and serves the D16 stub on absence (C3 continuity). The
-canonical source is the charter's seed dir (`willow-memory/willow/seed/`),
-which holds either:
+content from the seed's `canon/` dir verbatim when the probe path
+resolves, and serves the D16 stub on absence (C3 continuity). The
+canonical source is a seed dir (holding either shape below), relocated
+into this repo (`governance/seed/`) from the archived charter
+repository per `governance/README.md`:
 
 * a `canon/` tree of `NN-<slug>.md` chapter files (the current shape,
   operator-ratified 2026-07-22), or
@@ -15,17 +16,19 @@ which holds either:
   onboarding voice inline as docstrings (SEED9 shape).
 
 This reader supports both, so Grove's `/seed/` route (D16) renders the
-real story when the charter is on disk. When it isn't, Grove still boots:
+real story whenever a seed dir is found. When none is, Grove still boots:
 `load_movements()` returns a six-movement stub carrying titles + a
 one-sentence body per D16's outline, so `/seed/` is proof-of-life on any
 host (autonomous-continuity C3 — session continuity is a solved problem
 via seed's six movements, and the Grove route must survive absence).
 
-The probed directories, in order:
+The probed locations, in order (D7/D10 discipline — mirrors
+`grove/persona_roster.py`):
 
-1. ``$WILLOW_HOME/willow-memory/willow/seed/`` — per-node override
-2. ``~/willow-memory/willow/seed/``            — charter mirror on this host
-3. ``~/.willow/seed/``                          — local user overlay
+1. ``$WILLOW_HOME/seed/`` — a per-node override. This does NOT point
+   into the archived charter repository.
+2. ``governance/seed/`` in this repo — the reliable fallback, so Grove
+   always has the real canon even on a cold box.
 
 Read-only — writes to the seed source are an operator act, never Grove's.
 """
@@ -38,6 +41,9 @@ from pathlib import Path
 from typing import Any
 
 log = logging.getLogger(__name__)
+
+_REPO_ROOT = Path(__file__).resolve().parent.parent
+_IN_REPO_SEED_PATH = _REPO_ROOT / "governance" / "seed"
 
 # Canonical order: URL n=1..6 maps to canon 00..05.
 _SLUGS: tuple[tuple[int, str, str], ...] = (
@@ -65,13 +71,21 @@ _logged_absent = False
 
 
 def _candidate_dirs() -> list[Path]:
-    """The three seed directories we probe, in preference order."""
+    """The seed directories we probe, in preference order.
+
+    1. ``$WILLOW_HOME/seed/`` — a per-node override (D7/D10 discipline: a
+       node may legitimately carry its own seed dir).
+    2. ``~/.willow/seed/`` — the per-user location. Never an archived-repo
+       path, so the move off ``willow-memory/willow`` does not retire it:
+       an operator whose canon sits here keeps working.
+    3. ``governance/seed/`` in this repo — the reliable fallback.
+    """
     dirs: list[Path] = []
     home = os.environ.get("WILLOW_HOME")
     if home:
-        dirs.append(Path(home).expanduser() / "willow-memory" / "willow" / "seed")
-    dirs.append(Path.home() / "willow-memory" / "willow" / "seed")
+        dirs.append(Path(home).expanduser() / "seed")
     dirs.append(Path.home() / ".willow" / "seed")
+    dirs.append(_IN_REPO_SEED_PATH)
     return dirs
 
 

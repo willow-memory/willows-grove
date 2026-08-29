@@ -64,15 +64,26 @@ class PersonaRosterInvalidJsonUnreachableTests(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         self.willow_home = Path(self.tmp.name) / "willow_home"
-        target = self.willow_home / "willow-memory" / "willow" / "fleet_personas.json"
-        target.parent.mkdir(parents=True)
+        self.willow_home.mkdir()
+        target = self.willow_home / "fleet_personas.json"
         target.write_text(_DRIFT_BYTES, encoding="utf-8")
         self.registry_path = target
 
-        # Isolate HOME so the ~/willow-memory and ~/.willow candidates cannot
-        # accidentally match anything on the host running the test.
+        # Isolate HOME so no host-level candidate can accidentally match.
         self.fake_home = Path(self.tmp.name) / "no-home"
         self.fake_home.mkdir()
+
+        # Point the in-repo fallback at an empty tmp dir so this test is
+        # isolated from this repo's real governance/fleet_personas.json —
+        # only the $WILLOW_HOME override (pointed at the drifted file
+        # above) should be found.
+        self._no_fallback_dir = Path(self.tmp.name) / "no-fallback"
+        self._no_fallback_dir.mkdir()
+        self._fallback_patch = mock.patch.object(
+            pr, "_IN_REPO_PERSONAS_PATH", self._no_fallback_dir / "fleet_personas.json"
+        )
+        self._fallback_patch.start()
+        self.addCleanup(self._fallback_patch.stop)
 
         # Reset both log-once flags before every test.
         pr._logged_missing = False
@@ -190,8 +201,8 @@ class PersonasEndpointDriftUnreachableTests(unittest.TestCase):
         os.environ["HOME"] = str(fake_home)
 
         willow_home = Path(self._tmp.name) / "willow_home"
-        target = willow_home / "willow-memory" / "willow" / "fleet_personas.json"
-        target.parent.mkdir(parents=True)
+        willow_home.mkdir()
+        target = willow_home / "fleet_personas.json"
         target.write_text(_DRIFT_BYTES, encoding="utf-8")
         os.environ["WILLOW_HOME"] = str(willow_home)
 

@@ -132,10 +132,15 @@ the annotated tag message.
 ### 7. Durable fleet-model-map (session field on every persona)
 
 Session-scoped model assignment is set inline on each `agent()` call
-today (session-scoped, ephemeral). Durable form:  a `model_hint_session`
-field on every entry in `willow-memory/willow/fleet_personas.json`, so
-the assignment survives across sessions and is discoverable to the next
+today (session-scoped, ephemeral). Durable form: a `model_hint_session`
+field on every entry in `governance/fleet_personas.json`, so the
+assignment survives across sessions and is discoverable to the next
 planner.
+
+**Location changed.** This item was written when the registry lived in
+`willow-memory/willow`. That repository is archived and the registry now
+lives in this repo, so the change is actionable here — see the
+relocation note at the end of this file.
 
 Named assignments (from the PR 12 session):
 
@@ -146,9 +151,10 @@ Named assignments (from the PR 12 session):
 - Fable-tier (`claude-fable-5`) → reserved. No fleet member deserving
   it yet.
 
-**Acceptance:** every persona entry in fleet_personas.json carries a
-`model_hint_session` field or an explicit `null` marking it as
-non-dispatchable. Change lives in the willow-memory repo, not Grove.
+**Acceptance:** every persona entry in `governance/fleet_personas.json`
+carries a `model_hint_session` field or an explicit `null` marking it as
+non-dispatchable. The change lives here now — but it edits the fleet's
+identity registry, which is a governance act (§12), not a build task.
 
 ### 8. `specialists.json` deny-lists for every ENGINEER+ persona
 
@@ -166,7 +172,21 @@ attesting that the persona is legitimately unconstrained. No implicit
 "trust-level covers it" assumption. Change lives in willow-mcp, not
 Grove.
 
-### 9. OPERATOR-tier `not_do` audit
+### 9. OPERATOR-tier `not_do` audit — **CLOSED (audit); proposals open**
+
+Delivered as `docs/design/operator-tier-review.md`. It found more than
+this item anticipated: **five** OPERATOR-tier personas, not the three
+named below — Loki's OPERATOR tier was unaccounted for here. Only
+Willow's `not_do` carries the PR/commit/merge constraint §12 rests on;
+Ada, Steve and Skirnir carry no version of it, and Loki's forecloses
+building without naming PR, merge or push. Steve's persona is
+`voice_source: "inferred"` with no canonical file, so alignment there
+would build on a guess.
+
+The audit is done. The alignment it proposes is not: editing the
+registry is a governance act needing ratification, and it is now
+actionable in this repo rather than another one.
+
 
 The PR 12 session read Willow's `not_do` in detail and derived §12
 from it. Ada, Steve, Skirnir (all `trust: OPERATOR`, same tier as

@@ -2,15 +2,17 @@
 """tests/test_seed_canon_content.py — pins /seed/{1..6} to the real canon.
 
 INVARIANTS.md §9 ("Seed reads real canon"): the ``/seed/`` route renders
-content from ``willow-memory/willow/seed/canon/`` when the fleet-charter
-probe path resolves. This suite boots ``grove_serve`` on an ephemeral
-loopback port with ``WILLOW_HOME=/home/user`` (the operator-ratified
-location on this box, per D16 six-movement onboarding + C3 continuity)
-and asserts each of the six movement pages renders content derived
-verbatim from the corresponding ``NN-*.md`` source file. Titles are
-read from the source file's first ``# `` heading — never hardcoded —
-so a rename in the canon reaches this test through the file, not
-through a lie in the assertion.
+content from the seed's ``canon/`` dir when the probe path resolves. The
+canon now lives in this repo at ``governance/seed/canon/`` (relocated
+from the archived charter repository per ``governance/README.md``), so
+it is the in-repo fallback rung of ``grove.seed_reader``'s probe order
+and resolves with no ``$WILLOW_HOME`` set at all. This suite boots
+``grove_serve`` on an ephemeral loopback port and asserts each of the
+six movement pages renders content derived verbatim from the
+corresponding ``NN-*.md`` source file. Titles are read from the source
+file's first ``# `` heading — never hardcoded — so a rename in the
+canon reaches this test through the file, not through a lie in the
+assertion.
 
 Stdlib only. Restores every mutated env var in ``tearDown`` so the rest
 of the suite is unaffected.
@@ -36,7 +38,9 @@ if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
 
-CANON_ROOT = Path("/home/user/willow-memory/willow/seed/canon")
+from grove import seed_reader  # noqa: E402
+
+CANON_ROOT = seed_reader._IN_REPO_SEED_PATH / "canon"
 CANON_FILES = (
     "00-the-covenant.md",
     "01-be-the-other.md",
@@ -158,8 +162,8 @@ class SeedCanonContentIntegrationTests(unittest.TestCase):
     def setUp(self) -> None:
         if not CANON_ROOT.is_dir():
             self.skipTest(
-                f"real canon not present at {CANON_ROOT}; PR 3 verification"
-                " only runs on a box with the fleet_charter mirror"
+                f"real canon not present at {CANON_ROOT}; the in-repo canon"
+                " should always be present after the seed relocation"
             )
         for name in CANON_FILES:
             self.assertTrue(
@@ -168,7 +172,9 @@ class SeedCanonContentIntegrationTests(unittest.TestCase):
             )
 
     def test_seed_index_lists_all_six_movements(self) -> None:
-        env = {"WILLOW_HOME": "/home/user"}
+        # No $WILLOW_HOME needed — the in-repo canon at governance/seed/
+        # is the reliable fallback rung.
+        env: dict[str, str] = {}
         with _ServerHarness(env=env) as srv:
             status, body = srv.get("/seed/")
         self.assertEqual(status, 200)
@@ -187,7 +193,9 @@ class SeedCanonContentIntegrationTests(unittest.TestCase):
         m = re.match(r"^\s*\d+\s*·\s*(.+?)\s*$", expected_h1)
         title_only = m.group(1) if m else expected_h1
 
-        env = {"WILLOW_HOME": "/home/user"}
+        # No $WILLOW_HOME needed — the in-repo canon at governance/seed/
+        # is the reliable fallback rung.
+        env: dict[str, str] = {}
         with _ServerHarness(env=env) as srv:
             status, body = srv.get(f"/seed/{n}")
 
@@ -239,7 +247,7 @@ class SeedHtmlEscapingIntegrationTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
             home = root / "home"
-            seed = home / "willow-memory" / "willow" / "seed"
+            seed = home / "seed"
             canon = seed / "canon"
             canon.mkdir(parents=True)
             # Synthetic six-movement set — movement 3 carries the

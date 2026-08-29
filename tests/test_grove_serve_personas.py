@@ -10,8 +10,8 @@ Covers both D10 cases:
 * No ``fleet_personas.json`` on disk anywhere in the candidate probe path
   (D7 — absence is a state): 200 + empty-personas envelope.
 * A ``fleet-personas/v1`` file sitting at
-  ``$WILLOW_HOME/willow-memory/willow/fleet_personas.json`` — 200 + parsed
-  body matches what the reader would see.
+  ``$WILLOW_HOME/fleet_personas.json`` — 200 + parsed body matches what
+  the reader would see.
 """
 from __future__ import annotations
 
@@ -27,6 +27,7 @@ import unittest
 import urllib.error
 import urllib.request
 from pathlib import Path
+from unittest import mock
 
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -133,6 +134,20 @@ class PersonasRouteTests(unittest.TestCase):
         self.addCleanup(self._tmp.cleanup)
         self.addCleanup(self._restore_env)
 
+        # Point the in-repo fallback at an empty tmp dir so these tests stay
+        # isolated from this repo's real governance/fleet_personas.json —
+        # only the explicit $WILLOW_HOME override each test sets up should
+        # be found.
+        from grove import persona_roster as pr
+
+        self._no_fallback_dir = Path(self._tmp.name) / "no-fallback"
+        self._no_fallback_dir.mkdir()
+        self._fallback_patch = mock.patch.object(
+            pr, "_IN_REPO_PERSONAS_PATH", self._no_fallback_dir / "fleet_personas.json"
+        )
+        self._fallback_patch.start()
+        self.addCleanup(self._fallback_patch.stop)
+
     def _restore_env(self) -> None:
         for k, v in self._prior_env.items():
             if v is None:
@@ -174,8 +189,7 @@ class PersonasRouteTests(unittest.TestCase):
     def test_empty_registry_returns_state_empty(self) -> None:
         """File present with agents:[] → 200 + state=empty."""
         fake_home = self._isolate_home()
-        target = fake_home / "willow-memory" / "willow" / "fleet_personas.json"
-        target.parent.mkdir(parents=True, exist_ok=True)
+        target = fake_home / "fleet_personas.json"
         target.write_text(
             json.dumps({"schema": "fleet-personas/v1", "agents": []}),
             encoding="utf-8",
@@ -189,9 +203,8 @@ class PersonasRouteTests(unittest.TestCase):
 
     def test_present_registry_is_returned_verbatim(self) -> None:
         fake_home = self._isolate_home()
-        willow_home = fake_home  # WILLOW_HOME wins over ~ per the reader.
-        target = willow_home / "willow-memory" / "willow" / "fleet_personas.json"
-        target.parent.mkdir(parents=True, exist_ok=True)
+        willow_home = fake_home  # WILLOW_HOME wins over the in-repo fallback.
+        target = willow_home / "fleet_personas.json"
         target.write_text(json.dumps(_FIXTURE), encoding="utf-8")
         os.environ["WILLOW_HOME"] = str(willow_home)
 

@@ -220,6 +220,18 @@ class PersonasWiringTests(unittest.TestCase):
         self.fake_home = Path(self.tmp.name) / "no-home"
         self.fake_home.mkdir()
 
+        # Point the in-repo fallback at an empty tmp dir so these tests stay
+        # isolated from this repo's real governance/fleet_personas.json —
+        # only the explicit $WILLOW_HOME override each test sets up should
+        # be found.
+        self._no_fallback_dir = Path(self.tmp.name) / "no-fallback"
+        self._no_fallback_dir.mkdir()
+        self._fallback_patch = mock.patch.object(
+            pr, "_IN_REPO_PERSONAS_PATH", self._no_fallback_dir / "fleet_personas.json"
+        )
+        self._fallback_patch.start()
+        self.addCleanup(self._fallback_patch.stop)
+
     def _env(self, willow_home: Path):
         return mock.patch.dict(
             os.environ,
@@ -228,8 +240,7 @@ class PersonasWiringTests(unittest.TestCase):
         )
 
     def _write_registry(self, willow_home: Path, doc: dict) -> Path:
-        target = willow_home / "willow-memory" / "willow" / "fleet_personas.json"
-        target.parent.mkdir(parents=True, exist_ok=True)
+        target = willow_home / "fleet_personas.json"
         target.write_text(json.dumps(doc), encoding="utf-8")
         return target
 

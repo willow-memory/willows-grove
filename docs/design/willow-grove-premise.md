@@ -454,16 +454,19 @@ deep component trees.
 - evidence: `willow-mcp/docs/PRIOR_ART.md §1` — Editor.js (Apache-2.0) is framework-agnostic; suits Grove's card content model without React coupling
 - warrant (construction): a vanilla-JS Grove can be reviewed by `curl` on `127.0.0.1:8765`; no build artifacts to inspect; every dependency is a small named library the operator can audit — the magistrate-writes-no-code discipline made legible
 
-**D10 — Where the unified persona registry lives.** *(sealed)*
-`willow-memory/willow/fleet_personas.json` — charter-adjacent to
-`fleet.json` (its parent). Schema extends fleet.json with `visual`
-(color, sigil, color_token), `voice` (register, mandate, not_do parsed
-from `personas/{name}.md`), `emission_fields`, and `canonical_file`
-pointer. Writes are governance acts (per W1 — persona drift is the
-danger this closes); charter placement makes each edit follow Article
-VIII amendment discipline. All consumers (Grove, Nestor UI, jarvis,
-homestead) read this one file. Grove reads at boot, caches, degrades
-to bare `fleet.json` fields if the extended file is absent (per D7).
+**D10 — Where the unified persona registry lives.** *(sealed; location
+updated 2026-08-29 — the `willow` repo this decision cited was archived
+and `fleet_personas.json` relocated into this repo)*
+`governance/fleet_personas.json` — charter-adjacent to `fleet.json`
+(its parent). Schema extends fleet.json with `visual` (color, sigil,
+color_token), `voice` (register, mandate, not_do parsed from
+`personas/{name}.md`), `emission_fields`, and `canonical_file` pointer.
+Writes are governance acts (per W1 — persona drift is the danger this
+closes); its placement under `governance/` carries forward the same
+ratify-pipeline discipline the charter's Article VIII required. All
+consumers (Grove, Nestor UI, jarvis, homestead) read this one file.
+Grove reads at boot, caches, degrades to bare `fleet.json` fields if
+the extended file is absent (per D7).
 - evidence: `willow-memory/willow/fleet.json` — the parent (16 agents, 3 trust tiers, schema `fleet-roster/v1`); `fleet_personas.json` extends this shape
 - evidence: `safe-app-store/docs/app_store_vision_and_gaps.md §3+§4 + E6` — W1: persona drift is documented; central schema is the fix
 - evidence: `willow-memory/willow/CONSTITUTION.md` Article VIII — amendments to charter-carried data follow the ratify pipeline; matches the governance-act framing
@@ -534,9 +537,11 @@ later Constitution version — do not wait on it.**
 - evidence: `willow-memory/willow/CONSTITUTION.md` Article XIII — federation reserved for Version 2; coexistence must NOT wait on it
 - warrant (construction): the v1-to-v2 retrofit is small — `homestead_seam.py` slots into Grove's per-add-on renderer pattern (D7 + P3 rung ceiling + P8 persona picker are all reusable); no design lock-in from picking sibling-apps v1
 
-**D16 — Day-one experience: seed's six movements on first-run; `minimal` on return.** *(sealed)*
+**D16 — Day-one experience: seed's six movements on first-run; `minimal` on return.** *(sealed; location
+updated 2026-08-29 — the `willow` repo this decision cited was archived
+and the seed relocated into this repo)*
 **First-run** = the six-movement seed sequence from
-`willow-memory/willow/seed/seed.py` (ratified operator 2026-07-22).
+`governance/seed/seed.py` (ratified operator 2026-07-22).
 Grove hosts the pages in the browser. **Install happens inside the
 story; nothing proceeds without a `yes` per gate.** The chapters:
 - `canon/00-the-covenant` — gate + age gate; keys minted from name
@@ -708,7 +713,7 @@ decisions or artboards. What remains:*
 *Settled since the earlier draft:*
 - ~~Framework choice~~ → **D9 sealed**: vanilla JS + Web Components + no build.
 - ~~Nestor integration path~~ → **D11 sealed**: `nestor serve` MCP-over-stdio; card-native rendering, not iframe.
-- ~~Persona-roster mint location~~ → **D10 sealed**: `willow-memory/willow/fleet_personas.json` (charter-adjacent to fleet.json).
+- ~~Persona-roster mint location~~ → **D10 sealed**: `governance/fleet_personas.json` (charter-adjacent to fleet.json; relocated into this repo 2026-08-29).
 - ~~Chat / summoned-card interaction~~ → **D12 sealed**: summon-the-card; new takes focus, previous becomes secondary.
 - ~~Full-cast render vs trust-tier orbit~~ → **D13 sealed**: contextual subsets — render personas relevant to what's in focus.
 - ~~Chat's home-edge~~ → **D14 sealed**: visible home-edge affordance + OS-like pop-out to separate windows.
