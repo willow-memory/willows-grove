@@ -237,10 +237,13 @@ each other:
   different one appears: 11,061 corpus claims and a copy of the seals, on a
   device that leaves the house. That is a lane question, not a performance one.
 
-The per-project nestor from `the-forge-shape.md` §6 is the shape that fits: a
+The per-project nestor from `the-forge-shape.md` §6 narrows the second one: a
 store whose whole content is one build's world — disposable, portable, ships
-with the project — rather than the fleet store. A phone carrying *a project's*
-corpus is a different risk from a phone carrying *the box's*.
+with the project. A phone carrying *a project's* corpus is a different risk from
+a phone carrying *the box's*.
+
+**But the dilemma itself was false, and §12 is the operator's answer.** Both
+horns assume the phone is a network peer. It is not.
 
 One guard to carry wherever the model runs: `engine.py:178` filters context to
 verified rows only, because *"a forged 'sealed' row must not reach the engine's
@@ -258,6 +261,94 @@ too, or it stops running at all.
 A phone-side Nestor needs both set. Neither is set in the fleet's live config
 today.
 
+
+## 12. The phone is a thumb drive
+
+Operator, 2026-08-30, stated directly:
+
+> *"The phone is just another thumb drive. It just connects with home computer
+> just the way that a thumb drive would. So it doesn't matter that a system runs
+> APK on a phone as long as when it's plugged in the data is synced in the same
+> way that the vault is. The work is done where the work is done, as long as
+> home base knows about it."*
+
+This is the governing decision for everything above, and it removes a problem
+rather than solving one.
+
+### What it settles
+
+**The phone is not a network peer.** It is a removable volume that happens to
+compute. Nothing in §2 needs to change: `:8766` stays on loopback, `D4` stays
+sealed, rule 1 holds, no bind is widened, and the WARNING at `grove_serve.py:478`
+is never reached — because the phone never asks to reach the desk. The dilemma
+in §11 assumed a network; there isn't one.
+
+**"Home base knows about it" is a record, not a connection.** Where the work
+happens stops mattering once the record comes home. That is a claim about
+provenance and sync, not about topology or compute placement.
+
+### The APK suite is three things on one wire
+
+Not one app. Three, and they compose:
+
+| stage | what | where it runs |
+| --- | --- | --- |
+| **build** | Android SDK + gradle (§7) | the box |
+| **admit** | playgate — digest check, parent grant, `adb install` (§9) | the box → the phone |
+| **sync** | the vault's mobile half — the record comes home | the phone → the box |
+
+**The transport already exists and is already used.** `adb` is at
+`/usr/bin/adb`, and playgate *already* shells `adb install` across it into
+Waydroid. The wire that installs an APK is the same wire that carries the vault
+sync. Nothing new has to be invented to move bytes between the two devices; USB
+is already the fleet's phone transport, in production, in one direction.
+
+### The vault already has a slot for this
+
+`sean-data-vault/README.md` names three layers. The phone is the third — it is
+not a new category:
+
+| layer | travels? |
+| --- | --- |
+| Blueprint — `schema/`, `bootstrap/` | yes, that is the point |
+| The snapshot — a populated box | **no** |
+| **A live box** — provisioned locally | **never committed at all; sovereign, stays home** |
+
+A phone running a small model against a project store is **a live box**. The
+doctrine for it is already written: provisioned locally, never committed,
+persistent, sovereign.
+
+The direction is already written too. `LOCAL-ONLY.md`: *"this data lives on this
+box and does not leave it"* — `git pull` works, `git push` is refused
+mechanically at the transport. **Home base pulls.** A phone that plugs in and is
+read from is the same motion the vault already performs, pointed at a different
+volume.
+
+### And it answers the "device that leaves the house" worry
+
+§11 raised the risk of a corpus and a copy of the seals riding around on a
+phone. The vault's crypto linchpin already answers it, unchanged from willow:
+secrets are **Fernet ciphertext, meaningless without `vault.key`**, which is
+`0600`, generated locally, and **never committed** — `.gitignore` blocks `*.key`.
+
+The phone carries ciphertext. **The key stays home.** A lost phone is a lost
+thumb drive, which is the threat model the vault was already built for. What
+still needs deciding is which *plaintext* a project store legitimately holds, not
+whether the device is trustworthy.
+
+### Honest gap in this record
+
+The operator recalls substantial earlier work on a mobile version of the vault,
+from sessions since compacted. **I searched and did not find a dedicated record
+of it** — no mobile-vault design doc, no phone-sync script, nothing in
+`sean-data-vault/docs/` or `libs/vault-paths`. `adb pull`/`adb push` appear
+nowhere in either tree.
+
+So that thinking may exist only in a compacted transcript. This section is
+written from the operator's statement tonight plus what the vault's own README
+and LOCAL-ONLY.md already establish — not from the earlier design, which should
+be recovered before anyone builds the sync half.
+
 ## Open, for the operator
 
 - A phone surface reverses D4's sealed loopback premise. That is a ratification.
@@ -266,5 +357,7 @@ today.
 - Nothing binds `~/Android` into Kart. Until it does, "the APK builder is
   installed" is true of the host and false of every sandboxed build.
 - `willow-v08-toolchain-path.drawio` needs a REVISIONS line for §7.
-- Offload vs. loopback (§11) is one decision, not two: whether the phone reaches
-  the box, or carries a per-project store of its own.
+- ~~Offload vs. loopback~~ — answered by §12: neither. The phone plugs in.
+- Recover the earlier mobile-vault design before building the sync half (§12).
+- Which plaintext a project store may hold on a device that leaves the house.
+- The APK suite has a build stage and an admit stage and no sync stage yet.
