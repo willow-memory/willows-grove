@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "nestor-grove-session": {
+      "command": "nestor",
+      "args": [
+        "serve",
+        "--db", "nestor/grove-session.db",
+        "--ledger", "nestor/grove-session.db.ledger.jsonl",
+        "--source-lang", "grove",
+        "--target-lang", "grove",
+        "--engine", "offline",
+        "--read-only"
+      ],
+      "env": {}
+    }
+  }
+}
