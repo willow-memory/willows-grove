@@ -200,6 +200,41 @@ everything. The intake contract it produced:
 `flag → semantics_in_1987` — same two columns, same machinery. The corpus never
 knew it was about code; it only knew it was about pairs with provenance.
 
+### The graph has to rank its own edges
+
+As nodes connect, the answer to *what connects to what* stops being useful by
+growing. A script that only knows "these two have been mapped before" returns a
+near-infinite list the moment the graph is dense — every pair is mappable, so
+every pair gets offered. The map has to know which connections have been the
+**good** ones.
+
+Nothing in the box ranks an edge today. `corpus_search` returns `score` and
+`query_coverage`, but those rank a *claim against a query* — retrieval order,
+computed fresh each call, forgotten after. An edge's worth is a property of the
+edge, accumulated over many crossings, and there is no field holding it because
+there are no edges.
+
+The signal cannot be similarity. Two claims that look alike are the pairs a
+search already finds; the valuable edge is the one between things that do *not*
+look alike — the 1987 flag change and the emulator that implements it. So the
+rank has to come from **use**:
+
+- an edge a build actually crossed, on the way to something that ran, earns rank
+- an edge nothing has ever traversed decays toward the bottom of the list
+- an edge crossed and found useless is recorded as **tried and poor**, not
+  dropped — a recorded negative is not an absence, and an edge that is merely
+  deleted gets re-proposed forever
+
+That is FSRS again, pointed at edges instead of pairs. The box already runs it
+over `friction_score` for the Socratic loop (§7); the same scheduler grades a
+connection by whether recalling it helped. Corroboration is the second signal
+and jeles already counts it the right way — `conflict_scan` emits only when
+`>= min_sources` **independent domains** agree, which is exactly the property
+that separates a real cross-manual link from two copies of one manual.
+
+Neither is a new mechanism. Both are mechanisms the box built for something
+else and has never pointed at a graph, because the graph has zero rows.
+
 ## 7. The Socratic method, explained
 
 Held back from promotion because it *"was tested and working and I never
@@ -300,6 +335,57 @@ bill from "an agent runs the Forge."
 
 ---
 
+## 10. What the verbs return today — measured 2026-08-30
+
+The Forge does not call `nestor_ask`; it calls the corpus verbs. Measured
+against a copy of the live 11,061-claim corpus, served with `--corpus-dir`
+(which is the only thing that registers these two tools at all):
+
+```
+nestor_corpus_search(query, limit=3)     3,749 bytes  — 1,249 per claim
+  40.1%  key names, braces, indentation
+  28.5%  content            <- the only part a model can act on
+  10.6%  identity hashes    (id + row_sha256 = 128 hex chars per claim)
+   6.6%  origin string
+   3.9%  envelope           (query_sha, snapshot_sha, three counts)
+   3.2%  source_norm        (source_text with punctuation stripped)
+   3.0%  source_pair_id     (a third identity for the same row)
+   2.9%  ranking            (score, rank, query_coverage, matched_terms)
+   1.2%  non-authority markers x3
+
+nestor_corpus_map()                      5,328 bytes for 24 repositories
+```
+
+Two things follow.
+
+**The covenant is not what costs.** `authority: "none"`, `source_status` and
+`comparison_labels` — the three fields carrying the non-authority posture — are
+45 bytes, 1.2%. And the verb has no answer field at all: it returns a place to
+look, by construction. Nothing here argues for weakening the posture.
+
+**The cost is recomputability.** Three separate identities per row and two
+digests in the envelope exist so a later auditor can prove the row was not
+altered. That is right for a ledger and wrong for a model that is about to open
+the file named in `origin` anyway. `source_norm` is derivable from a field two
+lines above it. `indent=2` at `serve.py:937` is 548 bytes — 14% — on its own.
+
+The same payload as pointers (`repo` / `at` / `says`) is **1,176 bytes, 31% of
+served**, and loses nothing a build would use.
+
+This is the mirror of the `nestor_ask` measurement: 880 bytes to encode
+*trustworthy* seven ways for a 57-byte answer. One verb overspends on trust, the
+other on proof, and both are audit shapes handed to an actor.
+
+It matters for the Forge specifically because `corpus_map` is the **first** call
+a session makes — a small model spends 5 KB before it has asked anything, then
+~1.2 KB per result after. Two queries and ten results is 17 KB of provenance
+carrying maybe 5 KB of pointers, on a model chosen (§9) for running locally.
+
+The fix is one argument, not a redesign: a `fields` / `verbosity` parameter
+defaulting to lean — `repo`, `at`, `says`, `authority` — with the digests
+available on request, so the auditor's payload stays whole. Filed as a nestor
+issue.
+
 ## Decisions taken
 
 - The awesome list **moves** — into the almanac's tech rung, beside the docs,
@@ -319,3 +405,5 @@ bill from "an agent runs the Forge."
 - `promotion.json` carries `host_repointed: false` — the recorded reason the
   Forge was never fully promoted.
 - Documentation and GitHub both need updating for the list's move.
+- Edge rank has no store. FSRS grades pairs today; nothing grades a connection.
+- Whether the lean corpus payload is a default or an opt-in.
