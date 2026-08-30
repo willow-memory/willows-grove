@@ -4,6 +4,15 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ## [Unreleased]
 
+### Added
+
+- `.mcp.json` serves this session's Nestor store to an agent over MCP (stdio,
+  `--read-only`, `--engine offline`) — seven verbs including `nestor_ask`,
+  `nestor_provenance` and `nestor_ledger_verify`. `nestor/session-decisions.json`
+  is the portable bundle it is built from; the live `.db` and its ledger are
+  gitignored per LOCAL-ONLY.md's rule that the blueprint travels and the live
+  store does not. PR 15.
+
 ## [0.10.0] — 2026-08-29
 
 The PR-14 batch: the operator guide's launchers restored, the archived
