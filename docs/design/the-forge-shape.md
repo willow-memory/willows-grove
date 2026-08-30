@@ -468,6 +468,140 @@ silence never had. So `nestor corpus refresh` (plan Round 0.1) is not
 housekeeping. It is what makes this rule safe to enforce.
 
 
+## 12. The PR is the extraction event
+
+Operator, 2026-08-30:
+
+> *"Everything that is under github should be in Nestor, and really, updated at
+> every PR. That is also the shape of a hook that I see for the Forge — same
+> hook shape that we have for Nestor. Has this been looked at in the last 30
+> minutes, has Nestor been looked at, has it been refreshed. Or on a PR, record
+> the PR, the stage of how the things connected, and how CI passed or how it
+> didn't, into Nestor."*
+
+Two rules and one hook shape. §11 says Nestor is asked first; this says what
+guarantees there is something worth asking.
+
+### Rule 1 — coverage: everything under `~/github`
+
+Measured 2026-08-30, immediately after a successful refresh:
+
+```
+37 git checkouts under ~/github      24 repositories in the corpus
+```
+
+The 16 outside it are not a random tail:
+
+```
+almanac-data/  agriculture · civic · climate · economy · education · energy
+               environment · health · justice · science · transportation
+               almanac-template          (13 repositories, 0 claims)
+willow-memory/ willows-grove             (0 claims — the live grove)
+               .willow                   (see the exception below)
+hornbook-knowledge/ dotgithub
+```
+
+**The entire almanac is invisible to Nestor.** §4 makes the almanac the Forge's
+documentation rung — where the official docs and the awesome list live — and §11
+makes Nestor the first thing the Forge asks. Today that first call cannot see the
+almanac at all. The two rungs the Forge stands on do not know about each other.
+
+`willows-grove` is the second gap and the sharper one: it is the forwarding
+target of both tombstones, and it holds this document. **Nothing written here is
+findable by the tool this document is about.**
+
+### The one exception, written down because it must be
+
+`willow-memory/.willow` is a git checkout and must **not** be extracted. It is a
+live box — `vault.db`, `vault.key`, receipts, the gate ledger, per-app ACL
+manifests — not a repository of source. Extracting it would put box state into
+a corpus whose whole posture is that it holds attributed, non-authoritative
+*public* context.
+
+This is the same line `willow-data-vault`'s README already draws — *repo is
+blueprint, box is the populated instance that stays home* — and the same reason
+`sean-data-vault` was taken under an allowlist rather than wholesale.
+
+It is recorded here rather than agreed in passing because `docs/corpus-order.md`
+warns in its own first paragraph: *"an exception agreed in conversation and not
+written down is one a later session will silently undo."* So: **15 to add, 1
+excluded on the record.**
+
+### Rule 2 — the PR is when it happens
+
+Not a nightly cron. The PR, and the reasons are structural rather than
+preferential:
+
+- **A merged PR is the one moment the refusal cannot fire.** `refresh.py`
+  refuses a dirty tree — *"rows would be pinned to X, which does not contain
+  them"* — and three of tonight's four refusals were exactly that. A merge
+  commit is by construction clean.
+- **The pin format already fits.** `origin` is `<repo>@<sha>:<path>#<anchor>`.
+  A merge commit is a sha. Nothing new has to be invented to say when a claim
+  was true.
+- **A cron pins to whatever the tree happened to be at 3am**, which is a commit
+  nobody decided on. A PR is a decision with a boundary, an author, and a
+  review.
+
+### What a PR should deposit
+
+Three things, and only the first exists today:
+
+| what | shape | today |
+| --- | --- | --- |
+| the code as of the merge | `<repo>@<merge-sha>` claims | `refresh.py` does this |
+| **how CI went** | `commit → ci_outcome`, pass **and** fail | nothing records it |
+| **how things connected** | edges: PR ↔ issue, PR ↔ decision, file ↔ file | `decision_edges` is 0 rows |
+
+**Record the failures.** Most systems keep only green. The box's own rule is
+that **a recorded negative is not an absence**: "CI failed at this sha for this
+reason" is a claim with provenance and is often the more useful one — it is the
+difference between *nobody ran it* and *it was run and it broke here.* A red run
+that leaves no trace is an empty success.
+
+"How the things connected" is §6's edge layer arriving through the front door. A
+PR is a natural edge event — it closes an issue, cites a decision, touches files
+together — and those are precisely the relations `decision_edges`,
+`memory_lineage` and `superseded_by` were built for and never given. It also
+makes §6's **edge ranking** mandatory rather than clever: at PR cadence the graph
+densifies fast, and an unranked graph returns a near-infinite list.
+
+### Rule 3 — the hook asks how old the answer is
+
+The operator's third question — *"has this been looked at in the last 30
+minutes"* — is not a nice-to-have beside §11; it is what makes §11 safe.
+
+A first tool that answers from a stale corpus converts *"nobody asked"* into
+*"the box says no."* So the hook has to carry the corpus's own age with the
+answer, and the store already holds it: `corpus_snapshots.consolidated_at`, plus
+the per-repository `behind` count `refresh.py --dry-run` already computes.
+
+The three questions, in order, and they are the same shape for the Forge and for
+Nestor:
+
+1. **Has this been asked?** — §11. A build that never called the corpus is a
+   skipped step that left no trace of being skipped.
+2. **Was the answer current?** — this rule. Report the age and the behind-count
+   *with* the answer, never silently.
+3. **Did the result come back?** — the PR deposit. What was built, whether CI
+   passed, and what connected to what.
+
+An advisory answers none of these, which is why `before_build.py` did not save
+tonight (§11). These are questions with values, and a value can be checked.
+
+### Honest limits
+
+- **`refresh.py` cannot see `~/sean-data-vault`** — it searches under `~/github`
+  only, so that repository refuses every run with *"no checkout named
+  sean-data-vault."* A roster fix, not a missing repo.
+- **`refresh.py` exits non-zero when anything refuses**, while printing a
+  successful sync line. Correct behaviour, and a trap for a hook: **gate on
+  stdout, never on `$?`**, or a normal run with one dirty tree reads as a broken
+  corpus and the hook gets disabled.
+- **Nothing here is built.** `refresh.py` exists and works. The CI deposit, the
+  edge deposit, the age report, and the PR trigger do not.
+
+
 ## Decisions taken
 
 - The awesome list **moves** — into the almanac's tech rung, beside the docs,
@@ -477,10 +611,18 @@ housekeeping. It is what makes this rule safe to enforce.
 - Documents are **cited, never sealed**.
 - **Nestor is the first tool, not an available one** — the Forge cannot start a
   build that never asked. §11.
+- **Everything under `~/github` belongs in the corpus**, refreshed **at every
+  PR**, with `willow-memory/.willow` the one recorded exception. §12.
+- **Failed CI is recorded, not only green.** A recorded negative is not an
+  absence. §12.
 
 ## Open
 
 - The name. `almanac-tech` is not settled.
+- 13 almanac repos and `willows-grove` are outside the corpus; adding them is
+  an operator act, and rung order in `docs/corpus-order.md` is deliberate.
+- What a CI-outcome claim looks like as a pair, and which lane it lands in.
+- Whether the PR trigger is a workflow, a hook, or the merge queue.
 - Whether this document belongs here or in `forge-play/Forge`.
 - `plan.py` has no notion of majors; a second major forces it.
 - The toolchain bind — nothing binds `forge-play` into Kart (68 binds, zero
