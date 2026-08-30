@@ -386,6 +386,88 @@ defaulting to lean — `repo`, `at`, `says`, `authority` — with the digests
 available on request, so the auditor's payload stays whole. Filed as a nestor
 issue.
 
+## 11. Nestor is the first tool
+
+Operator, 2026-08-30, stated as a build requirement rather than a preference:
+
+> *"This is what I want built into the Forge so it's not a fault. Nestor needs
+> to be the first tool."*
+
+### What it is reacting to
+
+Tonight, asked where the earlier mobile-vault design went, I grepped four repo
+trees, read three READMEs and a decision log, reported it missing, and was
+wrong. One `nestor_corpus_search` returned it as the **first result on every
+query I tried**: `apps/marching-arts/docs/BUILD_PLAN.md`, with
+`sync-scope-equals-permission` already settled as a SOIL record — *"a device
+receives only what its holder may see; the authorization resolver does double
+duty as the sync filter — build it once."*
+
+The corpus was not missing the answer. **The answer was never asked for.**
+
+Worse than not finding it: my own grep listed that file and I read past it. So
+this is not a retrieval problem to be solved with a better search. It is a
+**sequencing** problem, and sequencing is the one thing a design can fix.
+
+### Why an advisory is not enough
+
+The box already tried the advisory shape. `nestor/hooks/before_build.py` exists,
+cites `the-house-already-knew.md` by name, and was sealed into `prompt_submit`
+(`4d070950`). It could not fire tonight for two independent reasons — the
+`github` seat carries `"hooks": false`, and its command resolves nothing from a
+directory that is not a git repo. It is also deliberately *"silent unless it's a
+build,"* and tonight was a survey.
+
+An advisory that fires on every turn trains a reader to skip the line (0221).
+An advisory that fires rarely is not there when it matters. Either way it
+depends on somebody choosing to read it, which is exactly the fault this
+requirement removes.
+
+### So: first, not available
+
+The distinction is the whole decision.
+
+- **Available** — Nestor is one of the tools the Forge can call, and a
+  well-behaved agent calls it early.
+- **First** — the Forge's entry path calls Nestor **before it calls anything
+  else**, and what comes back is an input to the next step rather than a
+  suggestion to the operator of it.
+
+Under §3, a user's opening sentence is already scanned for keywords — apps,
+languages, references to other repos. That scan is the natural hook: the same
+pass that decides which major is in play asks the corpus what the box already
+knows about it, and the answer enters the prompt as attributed, authority-free
+context. No new mechanism; the two calls already exist and are simply ordered.
+
+**The Forge should not be able to start a build that never asked.** Not
+discouraged from it — unable. A build that begins with an unanswered corpus call
+is the same shape as a seal with no verifier: a step that was skipped and left
+no trace of having been skipped. **A recorded negative is not an absence** — a
+corpus call that returns nothing is a fact worth carrying into the build, and it
+is the miss log (§6) that catches it. Silence because nobody asked is not.
+
+### What this costs, and what it requires
+
+The cost is measured in §10: a `corpus_map` plus one search is 55% of a 4096
+window served, 10% lean. Making Nestor the first tool makes #261 load-bearing —
+a mandatory call has to be cheap, or the mandate gets removed the first time
+somebody is in a hurry.
+
+The requirement is freshness, and it is not a chore attached to this rule; it is
+the rule's precondition. Measured 2026-08-30: the corpus is pinned two days back
+for `willow-mcp` and `nestor`, so every PR from the last two sessions — the lane
+crossing, the capability permissions, decision `0227`, the rejection-reason fix —
+is outside it. `willows-grove` has **zero** claims while its archived
+predecessor `willow-grove` still holds 693. And the decay is worst where it
+hurts most: the repos sitting at zero commits behind are current because nobody
+is touching them.
+
+**A first tool that answers from a stale corpus is worse than no first tool**,
+because it converts "nobody asked" into "the box says no" — an authority the
+silence never had. So `nestor corpus refresh` (plan Round 0.1) is not
+housekeeping. It is what makes this rule safe to enforce.
+
+
 ## Decisions taken
 
 - The awesome list **moves** — into the almanac's tech rung, beside the docs,
@@ -393,6 +475,8 @@ issue.
 - Contribution is **shape, never content**.
 - The project store is **per-project nestor**, not the fleet store.
 - Documents are **cited, never sealed**.
+- **Nestor is the first tool, not an available one** — the Forge cannot start a
+  build that never asked. §11.
 
 ## Open
 
@@ -406,4 +490,7 @@ issue.
   Forge was never fully promoted.
 - Documentation and GitHub both need updating for the list's move.
 - Edge rank has no store. FSRS grades pairs today; nothing grades a connection.
-- Whether the lean corpus payload is a default or an opt-in.
+- Whether the lean corpus payload is a default or an opt-in. §11 makes it
+  load-bearing: a mandatory call must be cheap or the mandate gets removed.
+- Where the first-tool call is enforced — the entry scan (§3), the hook, or
+  both. An advisory alone has already been tried and did not fire.
