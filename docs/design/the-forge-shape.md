@@ -685,17 +685,27 @@ actor rather than the code.
 the Loki and Oakenscroll personas, and `willow-bot.json`'s per-event voice lines
 including **`ci_fail`** — is:
 
-- **not under `~/github`** — private, still on the personal account, last pushed
-  2026-07-24, never migrated to an org
+- **cloned to `~/github/workshop/willow-bot` on 2026-08-30**, which closes the
+  first half of this gap. `workshop/` is staging; the operator is deciding
+  between `willow-memory` and `forge-play` and leaning toward the forge. The
+  GitHub repo has not been transferred
 - **0 claims in the corpus**
 - **already has an extractor**: `scripts/corpus/extract_willow_bot.py`, 3.6 KB,
   written and never run against anything — a third dead extractor beside
   `extract_willow_19.py` and `extract_willow_20.py`
 
-**The thing that would run the hook is the one thing the hook cannot see.** Under
-§12's rule — everything under `~/github` belongs in the corpus — `willow-bot` is
-not even a candidate, because it is not there. Cloning it into an org is a
-prerequisite for the rule to reach the code that implements the rule.
+**The thing that would run the hook was the one thing the hook could not see.**
+Under §12's rule — everything under `~/github` belongs in the corpus — it was
+not even a candidate, because it was not there. It is there now; extracting it
+and settling its org are what remain.
+
+Reading it turned up a fifth stale-org sighting and a sixth: the Nestor
+dependency points at `rudi193-cmd/Nestor` in **both** `requirements.txt:11` and
+`loki/requirements.txt:6`, resolving only through GitHub's transfer redirect, and
+`scripts/audit_app_config.py:22-28` audits a **pre-migration fleet** — `Willow`,
+`willow-2.0`, `willow-config`, `safe-app-willow-grove`, several cut or archived
+on 2026-08-27. The fleet watcher's own roster cannot see the seven orgs that
+exist. Full checklist in `BOT-INVENTORY.md`.
 
 It also already knows how to say `ci_fail`. The voice line exists; the deposit
 does not.
