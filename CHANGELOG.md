@@ -6,6 +6,18 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Added
 
+- `docs/design/fleet-standup.md` — how to stand the whole fleet up in one box,
+  and what that turns up. Grove's suite goes 517 passed / 9 skipped to 522 / 4
+  and willow-mcp's 2874 / 14 to 2883 / 5 once Postgres, willow-mcp, kartikeya,
+  jeles, nestor, willow-gate and the archived willow-2.0 policy are actually
+  present rather than skipped past — no container runtime required, and nothing
+  mocked to get there. Records the dependency graph (it is circular: nestor
+  audits itself against the charter case cards in this repo), a runbook, the
+  four skips that are correct as they are, the three hosts and one kernel
+  interface that are genuinely unreachable from a cloud seat, and four findings
+  — including two in nestor that only appear once its optional extras are
+  installed. PR 17.
+
 - `.mcp.json` serves this session's Nestor store to an agent over MCP (stdio,
   `--read-only`, `--engine offline`) — seven verbs including `nestor_ask`,
   `nestor_provenance` and `nestor_ledger_verify`. `nestor/session-decisions.json`
