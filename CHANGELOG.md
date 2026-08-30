@@ -4,6 +4,26 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ## [Unreleased]
 
+### Added
+
+- `docs/design/the-forge-shape.md` — the Forge's shape as talked out with the
+  operator: the "what's the first bite" entry, keyword→major with ambiguity as
+  a scripted state rather than a guess, an `almanac-tech` rung holding pinned
+  official docs beside the awesome lists and their criteria, per-project Nestor
+  holding the *connections* rather than the pairs, and contribution as shape
+  never content. Also records how the Socratic method actually works — it is
+  `friction_score` on the maker's own rationale feeding the FSRS grade, with no
+  questioner anywhere, which is why it resisted explanation.
+
+- `governance/architecture/willow-v08-toolchain-path.drawio` — a draft of where
+  a repo gets its Python, and the first diagram in this directory that is meant
+  to keep changing. Measured today: 8 venvs across 7 different paths, 25 repos
+  that declare dependencies with no venv at all, a fleet venv at
+  `$WILLOW_HOME/venvs/` that exactly one thing uses, and Kart binding `/usr`
+  and nothing of `forge-play`. Carries a REVISIONS box; what settles there
+  graduates to v0.7.
+
+
 ## [0.10.0] — 2026-08-29
 
 The PR-14 batch: the operator guide's launchers restored, the archived
