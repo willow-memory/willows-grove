@@ -28,4 +28,6 @@ playwright-report/
 # LOCAL-ONLY.md's rule: the blueprint travels, the live store does not. A JSON
 # bundle is also reviewable in a diff; a SQLite file is not.
 nestor/*.db
+nestor/*.db-shm
+nestor/*.db-wal
 nestor/*.ledger.jsonl

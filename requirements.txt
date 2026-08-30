@@ -24,3 +24,12 @@ mcp>=2.0.0,<3.0.0
 starlette>=0.37.0,<2
 uvicorn>=0.30.0,<1
 pytest>=8.0.0,<10
+
+# The `nestor` CLI, which grove/nestor_client.py spawns as `nestor serve`
+# (MCP over stdio) and which .mcp.json serves the session store with. It is a
+# console script, not an import — nothing in grove/ does `import nestor`. Kept
+# in the development install so the seam is live locally; the packaged install
+# leaves it to the `nestor` extra, because Grove must still render the
+# unreachable state (INVARIANTS.md §1) when the binary is absent. Pre-1.0, so
+# the ceiling is the next minor above the version verified green: 0.16.2.
+nestor-meaning>=0.16.2,<0.17
