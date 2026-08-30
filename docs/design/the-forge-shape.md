@@ -602,6 +602,105 @@ tonight (§11). These are questions with values, and a value can be checked.
   edge deposit, the age report, and the PR trigger do not.
 
 
+## 13. The bot is the actor the hook was missing
+
+Operator, 2026-08-30: *"and that ties in with the willow-bot and github app work
+I've been doing."*
+
+It does, at the exact point §12 stops. §12 says a PR should deposit what was
+built, how CI went, and what connected to what. A deposit needs someone to make
+it, and that identity now exists.
+
+### The split is already real, and it is the covenant at the credential layer
+
+From `BOT-INVENTORY.md`, installed 2026-08-29 across all seven orgs:
+
+| App | id | may |
+| --- | --- | --- |
+| `willow-ci` | 4749508 | commit, tag, propagate |
+| `willows-bot` | 4001890 | read and comment — **cannot commit** |
+
+*"Covenant §0.2 — proposing and ratifying never rest in the same hand — enforced
+by GitHub rather than by convention."* The permission trim went from 19 write
+permissions to 5 and cleared the entire organization tier.
+
+This is the same shape Nestor states about itself: **you may propose, you may
+not confirm.** It is now true of a credential, not only of a server.
+
+### The permission §12 needs is already granted
+
+The reviewer core is `contents: read`, `pull_requests: write`, `issues: write`,
+**`checks: read`**, `metadata: read`.
+
+`checks: read` is exactly the missing middle row of §12's deposit table — *how CI
+went, pass and fail.* The hardest-sounding part of that design is already
+provisioned; nothing needs asking for.
+
+### And the corpus is precisely the surface a propose-only identity may write
+
+This is the part that fits better than it had to.
+
+Every corpus claim is `draft`. Not one is sealed, deliberately —
+`corpus.py` opens *"one non-authoritative corpus lane… exposed only as
+attributed, authority-free drafting context."* **Draft is what "may propose, may
+not confirm" produces.** So a bot that cannot commit is not thereby blocked from
+depositing: what it writes is already marked unverified by the lane it writes
+into, and sealing remains a human act with a name attached.
+
+`willows-bot`'s inability to commit is therefore **alignment, not a limitation**.
+It is allowed to write exactly the kind of row it is qualified to write.
+
+### The fork this opens, and it is a real one
+
+Where the deposit lands decides which App is involved:
+
+- **Into the store** (`corpus_claims`, a SQLite write) — `willows-bot` can do it
+  with the permissions it already has, and the covenant holds by construction.
+- **Into git** (a committed corpus artifact) — that needs `willow-ci`, the App
+  that commits and tags. The deposit and the propagation credential become the
+  same hand, which is the separation §0.2 was drawn to keep.
+
+The first is the one that preserves the property. Recorded as open rather than
+decided, because it depends on whether the corpus is ever versioned in git.
+
+### Identity in a deposit is a type, never a login
+
+`BOT-INVENTORY.md` already carries this as a constraint, and §12's deposit is
+exactly where it would be violated:
+
+> *Never identify this bot by login string. `.env.example:4` still says
+> `GITHUB_BOT_LOGIN=willow-bot[bot]`, which was wrong before the rename
+> (`willow-bot-rudi193[bot]`) and is wrong after it (`willows-bot[bot]`). Match
+> on `user.type == "Bot"` instead. That is a fact GitHub asserts about the
+> credential; a login is a string that survives a rename by being wrong.*
+
+Two renames have already happened. A corpus row recording *who* did something
+must record the asserted type, not the name — the corpus already pins claims to
+a sha for the same reason, so this is the existing discipline applied to the
+actor rather than the code.
+
+### The gap worth naming
+
+`willow-bot` — the repository that holds `bot.py`, `github_app.py`, `router.py`,
+the Loki and Oakenscroll personas, and `willow-bot.json`'s per-event voice lines
+including **`ci_fail`** — is:
+
+- **not under `~/github`** — private, still on the personal account, last pushed
+  2026-07-24, never migrated to an org
+- **0 claims in the corpus**
+- **already has an extractor**: `scripts/corpus/extract_willow_bot.py`, 3.6 KB,
+  written and never run against anything — a third dead extractor beside
+  `extract_willow_19.py` and `extract_willow_20.py`
+
+**The thing that would run the hook is the one thing the hook cannot see.** Under
+§12's rule — everything under `~/github` belongs in the corpus — `willow-bot` is
+not even a candidate, because it is not there. Cloning it into an org is a
+prerequisite for the rule to reach the code that implements the rule.
+
+It also already knows how to say `ci_fail`. The voice line exists; the deposit
+does not.
+
+
 ## Decisions taken
 
 - The awesome list **moves** — into the almanac's tech rung, beside the docs,
@@ -615,6 +714,9 @@ tonight (§11). These are questions with values, and a value can be checked.
   PR**, with `willow-memory/.willow` the one recorded exception. §12.
 - **Failed CI is recorded, not only green.** A recorded negative is not an
   absence. §12.
+- **The deposit is written by a propose-only identity.** `willows-bot` cannot
+  commit, and the corpus lane is all `draft` — the two fit. §13.
+- **An actor is recorded by `user.type`, never by login.** §13.
 
 ## Open
 
@@ -623,6 +725,10 @@ tonight (§11). These are questions with values, and a value can be checked.
   an operator act, and rung order in `docs/corpus-order.md` is deliberate.
 - What a CI-outcome claim looks like as a pair, and which lane it lands in.
 - Whether the PR trigger is a workflow, a hook, or the merge queue.
+- Store deposit (`willows-bot`) or git deposit (`willow-ci`) — the first keeps
+  §0.2 intact; the second collapses it. §13.
+- `willow-bot` is not under `~/github` and has 0 claims, while its extractor
+  exists and has never run. Cloning it into an org is a prerequisite. §13.
 - Whether this document belongs here or in `forge-play/Forge`.
 - `plan.py` has no notion of majors; a second major forces it.
 - The toolchain bind — nothing binds `forge-play` into Kart (68 binds, zero
