@@ -39,24 +39,48 @@ class BootWireTests(unittest.TestCase):
             head,
         )
 
+    def test_grove_card_component_script_is_mounted(self) -> None:
+        """The grove-card component script is on the served page.
+
+        This used to be a tolerated absence: the assertion below skipped
+        itself when the tag was missing, on the stated premise that the
+        component was "imported transitively today" and that a later PR
+        would mount one. Neither held. Nothing in the tree imported
+        `grove-card.js` except `web/harness.html`, so `<grove-card>` was
+        never defined on the served page at all — `layout-memory-boot.js`
+        walked `querySelectorAll("grove-card[id]")` against an empty set
+        on every load, and layout memory was live under test and inert in
+        production.
+
+        A skip cannot pin an ordering discipline, because the state it
+        skips on is the state where the discipline is being violated.
+        Presence is asserted here so the ordering test below has
+        something real to order.
+        """
+        self.assertIn(
+            '<script type="module" src="/web/components/grove-card.js">',
+            self.html,
+            "grove-card.js must be mounted or customElements.define("
+            '"grove-card", …) never runs on the served page.',
+        )
+
     def test_boot_script_comes_after_grove_card_component_script(self) -> None:
-        """If the grove-card component script tag is on the page, the
-        boot tag must come after it in document order. Being additive to
-        a shared file, this test tolerates the current state where the
-        grove-card component script isn't explicitly mounted (it's
-        imported transitively today); once another PR adds an explicit
-        grove-card component script, the ordering discipline holds.
+        """The boot tag comes after the component tag in document order.
+
+        `layout-memory-boot.js` walks the DOM by tag name, so every
+        `customElements.define(…)` it depends on must already have run.
         """
         boot_idx = self.html.find(
             "/web/boot/layout-memory-boot.js"
         )
         self.assertNotEqual(boot_idx, -1)
         card_idx = self.html.find("/web/components/grove-card.js")
-        if card_idx == -1:
-            self.skipTest(
-                "no explicit grove-card component script yet — ordering "
-                "check applies once one is added"
-            )
+        self.assertNotEqual(
+            card_idx,
+            -1,
+            "grove-card component script missing — see "
+            "test_grove_card_component_script_is_mounted.",
+        )
         self.assertLess(
             card_idx,
             boot_idx,

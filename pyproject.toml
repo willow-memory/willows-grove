@@ -56,6 +56,13 @@ dependencies = [
 # path lightweight. Nothing in grove_serve.py imports textual; only the
 # legacy dashboard modules (grove_standalone.py, panes/) do.
 tui = ["textual>=0.61.0,<9"]
+# Nestor is the `nestor` CLI on PATH, not an import: grove/nestor_client.py
+# speaks MCP-over-stdio to a `nestor serve` child. It stays an extra on
+# purpose — INVARIANTS.md §1's unreachable state is the real branch taken
+# when the binary is absent, and a hard dependency would make that state
+# unreachable in the other sense. Pre-1.0, so the ceiling is the next minor
+# above the version verified green here (0.16.2, 2026-08-30).
+nestor = ["nestor-meaning>=0.16.2,<0.17"]
 test = [
     "pytest>=8.0.0,<10",
     "pytest-timeout",
