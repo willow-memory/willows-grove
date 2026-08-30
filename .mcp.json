@@ -6,8 +6,8 @@
         "serve",
         "--db", "nestor/grove-session.db",
         "--ledger", "nestor/grove-session.db.ledger.jsonl",
-        "--source-lang", "grove",
-        "--target-lang", "grove",
+        "--source-lang", "decision",
+        "--target-lang", "decision",
         "--engine", "offline",
         "--read-only"
       ],

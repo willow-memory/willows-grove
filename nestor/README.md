@@ -34,7 +34,42 @@ cwd.
 The `.db` and its ledger are gitignored — the bundle travels, the live store
 does not (`LOCAL-ONLY.md`). A bundle is also reviewable in a diff.
 
+## The domain, and why it is `decision`
+
 A decision's domain rides in **both** language tags identically
 (`docs/decision-memory.md` N8). A bundle written as `question→finding` imports
 without error and is then invisible to `nestor decision check` and `nestor
-triage`. That cost a round here; the domain in this bundle is correct.
+triage`.
+
+That rule is necessary and it is not sufficient, which this bundle learned
+twice. The `question→finding` shape was caught and replaced with `grove→grove`
+— two tags that match each other, satisfying N8, and that no reader queries.
+The symptom survived the fix untouched: the bare `nestor decision check` still
+answered
+
+```
+✓ clear — no decision on record for 'How does the phone reach Grove?'
+```
+
+against a store where that exact question sat at 0.984. Not an error, not an
+unreachable state Grove could render (`docs/INVARIANTS.md` §1) — a clean,
+confident *clear*, with nothing for the caller to notice. Meanwhile `.mcp.json`
+passed an explicit `--source-lang grove --target-lang grove`, so the MCP path
+answered correctly the whole time: an agent saw the record and the human at the
+keyboard was told there was none.
+
+Matching each other was never the test. The tags have to match the domain the
+**readers** query, and there are three of them:
+
+| Surface | Where |
+|---|---|
+| Grove's own reader | `grove.nestor_client.DECISION_DOMAIN` |
+| The session's MCP entry | `.mcp.json` → `nestor serve --source-lang/--target-lang` |
+| This bundle | `domain`, and every row in `pairs` |
+
+`decision` is the value because it is also the CLI's own default for
+`nestor decision check`, so an operator typing the bare command with no flags
+lands where Grove already is. `tests/test_nestor_bundle_domain.py` pins all
+three against the constant, structurally (no `nestor` binary needed, because a
+wrong domain imports cleanly and only shows up at query time) plus one
+end-to-end check of the bare invocation when the binary is present.
