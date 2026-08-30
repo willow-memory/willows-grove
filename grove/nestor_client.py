@@ -40,6 +40,22 @@ log = logging.getLogger(__name__)
 
 _DEFAULT_STORE_ENVS = ("NESTOR_DB", "NESTOR_HOME", "NESTOR_STORE", "NESTOR_STORE_PATH")
 
+# The domain tag every decision pair is keyed under, on both sides.
+#
+# Nestor keys a pair by a (source_lang, target_lang) tuple and will not serve
+# across domains — a query in one domain against a store written in another
+# returns "no decision on record", indistinguishable from a genuinely empty
+# record. That is not a reachability failure Grove can render (§1); it is a
+# clean, confident, wrong answer, which is why this is a named constant rather
+# than a literal at each call site.
+#
+# Three surfaces have to agree on it: this client, `.mcp.json`'s `nestor serve`
+# argv, and the shipped bundle `nestor/session-decisions.json`. `decision` is
+# the value because it is also the CLI's own default for `nestor decision
+# check` — an operator typing the bare command hits the same domain Grove does.
+# `tests/test_nestor_bundle_domain.py` pins all three against this constant.
+DECISION_DOMAIN = "decision"
+
 
 def _default_store_path() -> Optional[Path]:
     """Return a reasonable Nestor store path, or ``None`` if unresolvable.
@@ -286,7 +302,11 @@ class NestorClient:
             raise Unreachable("nestor binary not on PATH")
         payload = self._tool(
             "nestor_ask",
-            {"text": question, "source_lang": "decision", "target_lang": "decision"},
+            {
+                "text": question,
+                "source_lang": DECISION_DOMAIN,
+                "target_lang": DECISION_DOMAIN,
+            },
         )
         if not payload:
             return None

@@ -15,6 +15,30 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Fixed
 
+- The Nestor decision gate answered `clear` without having looked. The shipped
+  bundle was keyed `grove→grove` while every reader queries `decision` — the
+  CLI's own default for `nestor decision check`, and the value hardcoded in
+  `grove/nestor_client.py`. The bare command therefore reported "no decision on
+  record" against a store holding that exact question at 0.984 similarity: not
+  an error, not the unreachable state §1 can render, a clean and confident
+  wrong answer. `.mcp.json` passed the domain explicitly, so the MCP path
+  answered correctly throughout and only the human at the keyboard was misled.
+  The bundle is re-keyed, `DECISION_DOMAIN` is now a named constant the other
+  two surfaces are pinned against by `tests/test_nestor_bundle_domain.py`, and
+  `nestor/README.md` no longer certifies the earlier fix as complete — it
+  replaced `question→finding` with a second unqueryable domain and the symptom
+  never changed. Issue #12. PR 15.
+- `<grove-card>` was never loaded on the served page. `grove_html.py` mounted
+  eight component scripts and not `grove-card.js`; the only importer in the tree
+  was `web/harness.html`, so `customElements.define("grove-card", …)` never ran
+  in production and `layout-memory-boot.js` walked `querySelectorAll(
+  "grove-card[id]")` against an empty set on every load — layout memory live
+  under test, inert on the real page, under a docstring asserting an ordering
+  guarantee with nothing behind it. The component is mounted ahead of the boot
+  module, and the pin that would have caught this no longer skips itself when
+  the tag is absent: a skip cannot enforce an ordering discipline, because the
+  state it skips on is the state where the discipline is being violated.
+  Issue #13. PR 15.
 - `docs/KNOWN_GAPS.md` records three open defects that previously lived only
   in a session transcript: the served page's absent authentication and its
   warn-then-bind (GAP-004), u2u dispatching without destination binding,
