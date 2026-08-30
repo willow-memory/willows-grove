@@ -67,6 +67,43 @@ failure the model papers over.
 **The first artifact to build is the keyword → major table.** A flat file
 somebody can read and argue with.
 
+### The scan has two callers, not one
+
+Operator, 2026-08-30: *"this loops back to our keyword workflow in the forge."*
+
+It does, and it makes the scan load-bearing twice over.
+
+**Caller one** is the entry above: a sentence arrives, the scan pulls out apps,
+languages and references to other repos, and a major falls out.
+
+**Caller two is a document.** Measured tonight: `willows-grove` was extracted and
+produced 790 claims — **706 code docstrings, 84 table terms, and 5 rows from
+`docs/design/`.** `extract_standard.py` reads four shapes and narrative prose is
+none of them, so an entire night of design writing sat inside an extracted
+repository and remained unfindable. Extraction was never the missing step. **A
+design section is not a shape anything can query.**
+
+The scan is what makes it one. A document is an opening sentence that ran long:
+same operation, same keyword vocabulary, same trip through jeles, different
+input length. So the prose extractor the corpus needs is **not a markdown
+parser** — it is this scan pointed at a file.
+
+That is the same economy `marching-arts` P1 states about the authorization
+resolver — *"the sync spine … is the same component wearing a different hat"* —
+and the reason to say it here is that it changes what gets built. A scan written
+for one caller acquires a sentence-shaped interface and has to be rewritten for
+the second. Written for both, the Forge gets its entry and the corpus gets its
+missing lane from one component.
+
+Two properties follow, and both are cheap only if declared now:
+
+- **The input is a span of text, not a prompt.** No turn structure, no user
+  framing, no assumption of a single sentence.
+- **The output carries an origin.** The Forge can discard it; the corpus cannot
+  — a claim without a resolvable origin is not a claim. So the scan emits
+  `(source, target, reason, path, anchor)` and the Forge ignores the last two.
+
+
 ## 4. The almanac gains a tech rung
 
 Working name **`almanac-tech`** — not settled.
@@ -727,6 +764,8 @@ does not.
 - **The deposit is written by a propose-only identity.** `willows-bot` cannot
   commit, and the corpus lane is all `draft` — the two fit. §13.
 - **An actor is recorded by `user.type`, never by login.** §13.
+- **The keyword scan has two callers** — the Forge's entry and the corpus's
+  prose lane. Build it for both; the corpus half needs an origin. §3.
 
 ## Open
 
@@ -748,6 +787,8 @@ does not.
   Forge was never fully promoted.
 - Documentation and GitHub both need updating for the list's move.
 - Edge rank has no store. FSRS grades pairs today; nothing grades a connection.
+- Prose is not a shape. Design sections are unfindable until the scan exists;
+  until then, decisions belong in decision records, not paragraphs.
 - Whether the lean corpus payload is a default or an opt-in. §11 makes it
   load-bearing: a mandatory call must be cheap or the mandate gets removed.
 - Where the first-tool call is enforced — the entry scan (§3), the hook, or
