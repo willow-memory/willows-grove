@@ -287,6 +287,16 @@ def render_page() -> str:
         # <grove-envelope-panel> mounted in the Governance-lens region below.
         # Component module registered here so the tag upgrades on connect.
         '<script type="module" src="/web/components/grove-envelope-panel.js"></script>\n'
+        # D12/D14 summonable card primitive. Mounted even though the shell
+        # renders no <grove-card> markup of its own: the layout-memory boot
+        # below walks the DOM by tag name and cards are summoned at runtime,
+        # so `customElements.define("grove-card", …)` has to have run or the
+        # primitive is defined in a file nothing on this page ever loads.
+        # It was exactly that until now — the only importer in the tree was
+        # `web/harness.html`, so layout memory was live under test and inert
+        # on the served page, and the ordering guarantee asserted in
+        # `layout-memory-boot.js`'s own docstring had nothing behind it.
+        '<script type="module" src="/web/components/grove-card.js"></script>\n'
         # INVARIANTS.md §1 page-level listener for `registry-unreachable`
         # (dispatched by <grove-persona-registry>). Inline non-module script
         # so it registers at parse time — before the element upgrades — and
