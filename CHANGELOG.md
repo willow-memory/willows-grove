@@ -55,7 +55,7 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
   holding the *connections* rather than the pairs, and contribution as shape
   never content. Also records how the Socratic method actually works — it is
   `friction_score` on the maker's own rationale feeding the FSRS grade, with no
-  questioner anywhere, which is why it resisted explanation.
+  questioner anywhere, which is why it resisted explanation. PR 17.
 
 - `governance/architecture/willow-v08-toolchain-path.drawio` — a draft of where
   a repo gets its Python, and the first diagram in this directory that is meant
@@ -63,7 +63,7 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
   that declare dependencies with no venv at all, a fleet venv at
   `$WILLOW_HOME/venvs/` that exactly one thing uses, and Kart binding `/usr`
   and nothing of `forge-play`. Carries a REVISIONS box; what settles there
-  graduates to v0.7.
+  graduates to v0.7. PR 17.
 
 ## [0.10.0] — 2026-08-29
 
