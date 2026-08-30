@@ -161,17 +161,102 @@ reaching `measured` requires ten minutes, a child, and someone watching. A phone
 UI that sorts, stars, or ranks this catalog breaks the app's central argument.
 Render the four facts and let the parent decide.
 
-## 11. From the session that wrote this
+## 11. Small models — the offload case, measured
 
-Relevant because a phone surface implies a smaller model reading these payloads.
-Measured today against a copy of the live 11,061-claim corpus and filed as
-**Nestor #261**: `nestor_corpus_search` returns 1,249 bytes per claim of which
-**28.5% is content**; `nestor_corpus_map` spends **5,328 bytes** to list 24
-repositories. The non-authority posture costs 1.2% — the weight is
-recomputability (three identities and two digests per row). The same payload as
-pointers is 31% of served. A lean `fields` argument is proposed there.
+The reason this section exists: if the phone can do work rather than only
+display it, the box stops being the only thing that can think. What follows is
+what the box already has, and what the payloads cost against it.
 
-If the phone surface calls Nestor, it pays this tax on every call.
+### The models are already installed
+
+```
+qwen2.5:0.5b        397 MB   2 days ago
+llama3.2:1b         1.3 GB   3 months
+llama3.2:3b         2.0 GB   3 months     <- nestor's default draft model
+willow-lane4-3b     2.0 GB   7 weeks      <- the fleet's own, Q4_K_M, tools-capable
+gemma3:4b           3.3 GB   36 hours
+qwen3:4b            2.5 GB   36 hours
+mistral:7b · llama3.1:8b · qwen2.5vl:7b · nomic-embed-text
+```
+
+The first four are phone-class today. The 7b/8b are not, and are not the point.
+
+Two facts worth holding on to:
+
+- `nestor/engine.py:28` — `OLLAMA_DRAFT_MODEL = "llama3.2:3b"`. Nestor's default
+  local model is **already** phone-class. Running small is not a downgrade the
+  phone forces; it is the configured normal.
+- `willow-lane4-3b` declares `capabilities: completion, tools` and
+  `num_ctx 4096`. It can call MCP verbs, and **4096 is the fleet's own chosen
+  budget**, so that is the honest yardstick — not a model's 131072 maximum.
+
+### What the payloads cost against that budget
+
+Bytes measured today; tokens at ~4 bytes each, so treat them as the right order
+of magnitude rather than exact.
+
+| call | served | tok | of 4096 | lean | tok | of 4096 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| `nestor_corpus_map()` | 5,328 | 1,332 | **32.5%** | 477 | 119 | 2.9% |
+| `nestor_corpus_search(limit=3)` | 3,749 | 937 | **22.9%** | 1,176 | 294 | 7.2% |
+| `nestor_ask()` | 880 | 220 | 5.4% | 100 | 25 | 0.6% |
+| **map + one search** | **9,077** | **2,269** | **55.4%** | 1,653 | 413 | **10.1%** |
+
+**A roster call and one three-result search consume 55% of the window before the
+model has read an instruction or written a token.** The same information as
+pointers is 10%. That is the difference between a phone that can hold a task and
+one that spends its context on digests it will never recompute.
+
+This is not an argument against the provenance. It is an argument that the
+provenance should be *requestable* rather than *unconditional* — Nestor **#261**.
+On the box the 45× difference is invisible. On the phone it is the whole
+feasibility question.
+
+### What can actually move, and what cannot
+
+`the-forge-shape.md` §9 already argues the model's job was shrunk seven times by
+seven authors — the Nest cascade, Jeles' demote-only judges, a model-free
+`friction_floor`, fixed onboarding questions, a decided flowchart, precomputed
+edges, and a corpus that answers instead of being read. Those are the pieces
+that belong on a phone: cheap, bounded, mostly retrieval and traversal.
+
+What honestly does not move: turning a person's opening sentence into a project
+shape, and writing the code. Two expensive calls at the top and at the point of
+writing, twenty cheap steps around them. **The phone is the twenty steps.**
+
+### The tension to resolve before building
+
+Offloading work to the phone and keeping the desk on loopback (§2) pull against
+each other:
+
+- If the phone runs a model but the **data stays on the box**, the phone must
+  reach the box — which is exactly the unauthenticated surface in §2. Speed of
+  offload becomes the argument for widening the bind, which is how the warning
+  gets clicked past.
+- If the phone **carries its own store**, that problem disappears and a
+  different one appears: 11,061 corpus claims and a copy of the seals, on a
+  device that leaves the house. That is a lane question, not a performance one.
+
+The per-project nestor from `the-forge-shape.md` §6 is the shape that fits: a
+store whose whole content is one build's world — disposable, portable, ships
+with the project — rather than the fleet store. A phone carrying *a project's*
+corpus is a different risk from a phone carrying *the box's*.
+
+One guard to carry wherever the model runs: `engine.py:178` filters context to
+verified rows only, because *"a forged 'sealed' row must not reach the engine's
+context."* If the phone assembles its own context, that filter has to run there
+too, or it stops running at all.
+
+### Two flags gate all of this
+
+- `nestor_draft` refuses unless `--engine ollama`: *"nestor_draft requires
+  --engine ollama; no local model was ..."* (`serve.py:772-774`).
+- `nestor_corpus_map` / `nestor_corpus_search` are only registered when
+  `--corpus-dir` is set — which is why Nestor's own `describe()` currently names
+  them as withheld.
+
+A phone-side Nestor needs both set. Neither is set in the fleet's live config
+today.
 
 ## Open, for the operator
 
@@ -181,3 +266,5 @@ If the phone surface calls Nestor, it pays this tax on every call.
 - Nothing binds `~/Android` into Kart. Until it does, "the APK builder is
   installed" is true of the host and false of every sandboxed build.
 - `willow-v08-toolchain-path.drawio` needs a REVISIONS line for §7.
+- Offload vs. loopback (§11) is one decision, not two: whether the phone reaches
+  the box, or carries a per-project store of its own.
