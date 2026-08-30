@@ -349,6 +349,82 @@ written from the operator's statement tonight plus what the vault's own README
 and LOCAL-ONLY.md already establish — not from the earlier design, which should
 be recovered before anyone builds the sync half.
 
+## 13. The audit trail truncates before the object does
+
+Found on the phone, tonight, which is the only place it is visible.
+
+The operator was reviewing this session from a phone and saw a command list
+where every entry was cut at roughly **28 characters**. One line read:
+
+```
+Ran   Retract the wrong claim in t…
+```
+
+He stopped the session to ask what had been retracted. The answer was a
+markdown edit to one file — the full description was *"Retract the wrong claim
+in the inventory"* — but the object that made it harmless was in the hidden
+half. What survived was a destructive-sounding verb attached to nothing.
+
+### Measured against this session
+
+1,594 tool descriptions were issued. Against a 28-character budget:
+
+```
+1,332  (83%)  truncate on the phone
+  936  (58%)  truncate AND lead with a verb, so the object is what gets cut
+   39         median length
+  137         longest — 109 characters hidden, 20% of it visible
+```
+
+In the six-command screenshot that prompted this, the only two lines that
+survived intact were *"Read the full end-shape enum"* and *"Save the lesson to
+memory"* — the two that happened to be short. **Legibility was accidental, and
+the two that read as safe were safe by coincidence, not by design.**
+
+### Why it belongs in this document
+
+It is §11's problem in a different unit. There the finding was that a payload
+built for an auditor costs 55% of a small model's context; here a description
+built for a terminal loses 83% of its meaning on a phone. Same root cause —
+**one artifact, two audiences, and only one of them was designed for** — and the
+same shape as `nestor_ask` spending 880 bytes to encode trustworthiness seven
+ways for a 57-byte answer.
+
+The difference is the direction of the loss. A verbose payload wastes budget but
+stays *true*. A truncated description can invert: `Retract the wrong claim in
+the inventory` is a correction; `Retract the wrong claim in t…` reads as a
+deletion. **The surviving fragment was not merely less informative — it was
+more alarming than the whole.** An audit trail that becomes scarier as it
+shortens will be either ignored or panic-read, and both failures cost more than
+no trail.
+
+### The rule
+
+**Put the object in the first 28 characters.** The noun that identifies what
+was touched is the message; the verb is the modifier.
+
+```
+Retract the wrong claim in the inventory   ->  BOT-INVENTORY: retract wrong claim
+Check WILLOW_HOME repo status and remotes  ->  WILLOW_HOME: repo status
+Layer-by-layer review of how the …         ->  gate.py: layer review
+```
+
+This generalises past tool descriptions to anything the phone surface renders in
+a list — dispatch rows, envelope summaries, refusal chips, journal entries.
+`grove_html.py` already emits a `width=device-width` viewport (§6), so the layout
+adapts; **the text does not.** A responsive layout that reflows an unreadable
+label produces a well-proportioned unreadable label.
+
+### For whoever builds the phone UI
+
+- Any list row must be legible truncated, not merely truncate gracefully.
+- Prefer a leading identifier — repo, file, app_id — over a leading verb.
+- Where a row can carry a state, encode it as a chip rather than as words that
+  may be cut. `refusal-chip` and `cast-chip` already exist in `web/components/`
+  and are the right precedent.
+- Test at 28 characters, not at a phone's pixel width. The budget is characters.
+
+
 ## Open, for the operator
 
 - A phone surface reverses D4's sealed loopback premise. That is a ratification.
@@ -361,3 +437,5 @@ be recovered before anyone builds the sync half.
 - Recover the earlier mobile-vault design before building the sync half (§12).
 - Which plaintext a project store may hold on a device that leaves the house.
 - The APK suite has a build stage and an admit stage and no sync stage yet.
+- Every list surface in Grove needs a 28-character legibility pass (§13), not
+  only a responsive-layout pass.
