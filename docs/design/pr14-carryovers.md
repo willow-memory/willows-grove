@@ -44,7 +44,18 @@ comment pointing at the new spec.
 
 ## Almost certainly in PR 14 (surfaced by PR 9's CI logs)
 
-### 3. CI schema completeness — reach the `populated` branch, not just `empty | unreachable`
+### 3. CI schema completeness — **CLOSED**
+
+`schema.sql` now creates `public.human_required_queue` and
+`public.routing_decisions` alongside the eight tables it already had, so the
+readers reach live tables instead of falling to `Unreachable`.
+`tests/test_schema_completeness.py` extracts the table references from the
+readers and asserts each appears in the schema, with a self-check so the
+extraction cannot quietly stop matching; removing a table definition fails it.
+No reader's `Unreachable` semantics changed. What this proves is that the
+schema lists every table a reader names — whether each reader's `populated`
+branch is exercised by a test that inserts rows is a further step.
+
 
 **Symptom in PR 9's CI logs:**
 
@@ -214,7 +225,7 @@ research on the personas as they touch Grove work) naming each
 OPERATOR persona's `not_do` verbatim and flagging any discrepancy
 with §12.
 
-### 10. Loki-swarm measurement scope-of-claim narrowing
+### 10. Loki-swarm measurement scope-of-claim narrowing — **CLOSED**
 
 `docs/audits/loki-swarm-measurement.md` claims that persona-discipline
 is enforceable and measurable. That is true at the *prompt-injection*
@@ -297,6 +308,21 @@ well-tended session drops named characters across summary boundaries
 if they were not load-bearing to the moment's work. That is a real
 accountability gap and worth naming.
 
+**Confirmed in the wild, 2026-08-30 — and it cost design work, not just a
+name.** During the phone-surface conversation the operator recalled
+substantial earlier work on a mobile version of the vault. Five trees were
+searched by two sessions and none of it surfaced; this session concluded, in
+writing and with confidence, that the design existed only in a compacted
+transcript. It did not — it was in
+`safe-app-store-public/apps/marching-arts/docs/BUILD_PLAN.md`, and a peer
+found it by asking Nestor's corpus rather than grepping. Had the operator not
+remembered it existed, settled decisions (sync-scope-equals-permission, the
+stolen-device gate) would have been re-derived from scratch. Two lessons, both
+cheap to state and expensive to relearn: a grep answers what a corpus query
+answers, but only if you already know the words; and "I searched and found
+nothing" from an instance without corpus access is a much weaker claim than it
+sounds.
+
 ---
 
 ## Explicitly OUT of PR 14 (log for reference)
@@ -326,7 +352,22 @@ matches the moment.
 
 ---
 
-## Migration to permanent home
+## Migration to permanent home — **DONE; this section is history**
+
+The move happened. `CHANGELOG.md`'s `[0.9.0]` entry records this repository
+AS the permanent home ("First release of Willow's Grove at its permanent home
+(`willow-memory/willows-grove`)"), the four load-bearing config files name it,
+and commit `cddbb37` replaced the last stale `safe-app-willow-grove`
+identifiers post-migration. The `v0.9.0` tag travelled and is on the remote at
+`2a15323`.
+
+The checklist below is kept as the record of how the move was planned, not as
+work outstanding. Its opening premise — that this repo is "a working home, not
+the permanent one" — is the one line that is now simply false, and it
+contradicted the changelog for long enough that two sessions re-litigated it.
+Read the rest as history.
+
+Original text follows.
 
 Sean confirmed during the willow-memory pass that `willows-grove`
 is a working home, not the permanent one — a new home is lined up when

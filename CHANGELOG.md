@@ -13,6 +13,17 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
   gitignored per LOCAL-ONLY.md's rule that the blueprint travels and the live
   store does not. PR 15.
 
+### Fixed
+
+- `docs/KNOWN_GAPS.md` records three open defects that previously lived only
+  in a session transcript: the served page's absent authentication and its
+  warn-then-bind (GAP-004), u2u dispatching without destination binding,
+  replay defence or a header allowlist (GAP-005), and
+  `check_changelog_bullet.py` reporting counts it did not compute (GAP-006).
+  `pr14-carryovers.md` marks #3 and #10 closed — both were delivered and never
+  marked — retires the migration checklist as history, and records #13
+  (character continuity across compactions) as confirmed in the wild. PR 15.
+
 ## [0.10.0] — 2026-08-29
 
 The PR-14 batch: the operator guide's launchers restored, the archived
