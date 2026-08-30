@@ -104,6 +104,52 @@ Two properties follow, and both are cheap only if declared now:
   `(source, target, reason, path, anchor)` and the Forge ignores the last two.
 
 
+### Look in the box before you look outside it
+
+Operator, 2026-08-30, after I queried the GitHub API for a repository sitting on
+the disk:
+
+> *"You don't need to go remote for things that could be in the box. Just
+> because it's not right in front of you doesn't mean it isn't there. Think of it
+> like the cliché mom-knows-where-everything-is joke — it's only a joke because
+> it's usually true."*
+
+The failure was not laziness about search. It was treating **absent from the
+working set** as **absent from the box.** `willow-2.0` is archived on GitHub, so
+I reached for the API; it was also sitting clean at
+`~/github-archive-greenfield-2026-08-10/`, 52,320 files, and had been the whole
+time. Extracting it locally produced **3,583 claims** in one pass, including the
+two things being looked for: `apps/ratatosk` — a *"shared phone + desktop
+runtime"* with a capability gate that refuses raw remote shell — and
+`scripts/gitsync/gitsync-loop.py`, the whole-tree timer the old box map assumed
+and which no longer runs.
+
+So the rule has three tiers and they are strictly ordered:
+
+1. **Ask Nestor.** If the corpus answers, stop.
+2. **Look in the box** — including archives, greenfield, `superseded/`,
+   anything retired. Retired is not gone; it is a different shelf.
+3. **Only then go remote**, and say why the first two did not answer.
+
+The second tier is the one that was missing, and it is where the volume is: the
+greenfield archive holds two dozen retired repositories — `willow-1.9`,
+`willow-canonical`, `willow-compose`, `willow-nest`, `willow-tech-manual`,
+`safe-design`, `jeles-remote` — none of them in the corpus.
+
+**A silent corpus is not proof of absence, it is proof nobody extracted.** That
+is the same distinction the refresh driver already draws between *refused* and
+*retired*, applied one level up: at the moment Nestor returned zero for
+"ratatosk", the correct reading was *the corpus was never given willow-2.0* —
+not *ratatosk does not exist*.
+
+For the Forge this is a hook, not a habit. The entry scan (§3) already asks the
+corpus; the tier-2 step is a second, cheap, local lookup before any network
+call, and it fails the same way — loudly, naming which tier answered. A build
+that reaches the network without recording that the box was checked has skipped
+a step and left no trace of the skip, which is §11's rule again in a different
+place.
+
+
 ## 4. The almanac gains a tech rung
 
 Working name **`almanac-tech`** — not settled.
@@ -764,6 +810,8 @@ does not.
 - **The deposit is written by a propose-only identity.** `willows-bot` cannot
   commit, and the corpus lane is all `draft` — the two fit. §13.
 - **An actor is recorded by `user.type`, never by login.** §13.
+- **Ask Nestor, then the box, then remote** — in that order, and say which
+  tier answered. Retired is a different shelf, not gone. §3.
 - **The keyword scan has two callers** — the Forge's entry and the corpus's
   prose lane. Build it for both; the corpus half needs an origin. §3.
 
