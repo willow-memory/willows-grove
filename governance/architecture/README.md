@@ -41,6 +41,22 @@ was classified by its parent rather than its contents.
 `CURRENT-STATE-2026-08-28.md` reads v04 against what is actually on disk,
 element by element, measured rather than recalled.
 
+## v0.8 is a draft, and stays one
+
+`willow-v08-toolchain-path.drawio` is different in kind from the rest of this
+directory. v0.1–v0.4 are the operator's originals; v0.5–v0.7 are snapshots
+taken on 2026-08-29 and are finished as of that date. **v0.8 is live.** It is
+being molded as the shape settles, and it carries a REVISIONS box for that
+purpose.
+
+The rule: append to REVISIONS as it changes, and **what settles there graduates
+to v0.7**, the composition map. A thing is not "in the architecture" because it
+is drawn in a draft; it is in the architecture when it has moved to the map that
+claims to describe the whole box.
+
+Deliberately plain — no HTML markup in any label, so a box can be double-clicked
+and retyped without fighting the file.
+
 ## Status
 
 **Unfinished, and still the reference.** v04 is dated 2026-07-20 and marks its

@@ -1,0 +1,235 @@
+<mxfile host="Electron" agent="willow">
+  <diagram id="willow-proposed" name="Willow — proposed, v0.6">
+    <mxGraphModel dx="1285" dy="767" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2400" pageHeight="1700" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="legend" parent="1" style="text;html=1;fontSize=12;align=left;verticalAlign=top;" value="&lt;b&gt;Willow — PROPOSED, v0.6 · 2026-08-29&lt;/b&gt;  &lt;font color=&quot;#888888&quot;&gt;b17: WGRV1  ΔΣ=42&lt;/font&gt;&lt;br&gt;An opinion, not a measurement. 44 repos across 8 org folders as they stand, placed by what each org is &lt;i&gt;for&lt;/i&gt;.&lt;br&gt;v0.4 (2026-07-20) predates the org split entirely and shows one flat &quot;Dev Repos — ~/github (60 repos)&quot;. v0.5 measured the plumbing. This one argues about shape.&lt;br&gt;&lt;font color=&quot;#2e7d32&quot;&gt;green = right place today&lt;/font&gt; · &lt;font color=&quot;#b97700&quot;&gt;amber = works, wrong home&lt;/font&gt; · &lt;font color=&quot;#c62828&quot;&gt;red = should move&lt;/font&gt; · purple = law · &lt;font color=&quot;#1565c0&quot;&gt;blue = product&lt;/font&gt; · grey = not ours" vertex="1">
+          <mxGeometry height="86" width="1500" x="40" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="wsband" parent="1" style="text;html=1;fontSize=13;fontStyle=1;align=left;" value="&lt;b&gt;THE WORKSPACE — outside ~/github, and mostly unversioned&lt;/b&gt;" vertex="1">
+          <mxGeometry height="20" width="700" x="40" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="ws_vault" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;~/sean-data-vault&lt;/b&gt;  5.3 GB  &lt;font color=&quot;#2e7d32&quot;&gt;git, pull-only&lt;/font&gt;&lt;br&gt;THE destination. v0.4&#39;s (USER)-data-vault node.&lt;br&gt;today: snapshots · postgres dumps · archives&lt;br&gt;&lt;font color=&quot;#c62828&quot;&gt;should also hold: the live box&lt;/font&gt;" vertex="1">
+          <mxGeometry height="100" width="330" x="40" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="ws_nest" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;~/Desktop/Nest&lt;/b&gt;  4.1 GB  &lt;font color=&quot;#c62828&quot;&gt;no repo&lt;/font&gt;&lt;br&gt;the intake drop zone (FLEET_PLACEMENT §9)&lt;br&gt;&lt;font color=&quot;#b97700&quot;&gt;◐ 4 GB is not a drop zone, it is a silo&lt;/font&gt;&lt;br&gt;nest_intake_scan exists; nothing drains it" vertex="1">
+          <mxGeometry height="100" width="330" x="400" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="ws_claude" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;~/.claude&lt;/b&gt;  144 MB  &lt;font color=&quot;#c62828&quot;&gt;no repo&lt;/font&gt;&lt;br&gt;43 session transcripts · 20k words you typed&lt;br&gt;&lt;font color=&quot;#c62828&quot;&gt;✗ invisible to every instrument on this box&lt;/font&gt;&lt;br&gt;the vision lives here and nowhere else" vertex="1">
+          <mxGeometry height="100" width="330" x="760" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="ws_arch" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;~/github-archive-* &lt;/b&gt; 4 trees  ·  &lt;b&gt;~/github/archive/&lt;/b&gt;&lt;br&gt;greenfield-2026-08-10 · willow-2026-08-27 · grove-2026-08-27&lt;br&gt;&lt;font color=&quot;#c62828&quot;&gt;✗ held design/architecture — 2.4 MB, recovered only 2026-08-29&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#b97700&quot;&gt;◐ retirement notes live in ~/github/archive, trees live outside it&lt;/font&gt;" vertex="1">
+          <mxGeometry height="100" width="420" x="1120" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="ws_misc" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;~/Documents&lt;/b&gt; 18 MB · &lt;b&gt;~/Ashokoa&lt;/b&gt; 76 KB&lt;br&gt;&lt;font color=&quot;#c62828&quot;&gt;✗ willow-v01.drawio was here, uncommitted&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#b97700&quot;&gt;◐ Ashokoa/agents/hanuman holds a handoffs.db&lt;/font&gt;" vertex="1">
+          <mxGeometry height="100" width="380" x="1570" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="orgband" parent="1" style="text;html=1;fontSize=13;fontStyle=1;align=left;" value="&lt;b&gt;THE ORGS — ~/github, 8 folders, 44 repos.  v0.4 knew none of this: it drew one box, &quot;Dev Repos (60 repos)&quot;.&lt;/b&gt;" vertex="1">
+          <mxGeometry height="20" width="1400" x="40" y="290" as="geometry" />
+        </mxCell>
+        <mxCell id="org_wm" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;willow-memory&lt;/b&gt; — &lt;i&gt;the machinery&lt;/i&gt;  (8)&lt;br&gt;&lt;font color=&quot;#2e7d32&quot;&gt;willow-mcp&lt;/font&gt; the hub · &lt;font color=&quot;#2e7d32&quot;&gt;willow-gate&lt;/font&gt; trust ladder&lt;br&gt;&lt;font color=&quot;#2e7d32&quot;&gt;kartikeya&lt;/font&gt; sandbox · &lt;font color=&quot;#2e7d32&quot;&gt;willows-grove&lt;/font&gt; watchman + charter&lt;br&gt;&lt;font color=&quot;#2e7d32&quot;&gt;corpus-lens&lt;/font&gt; · &lt;font color=&quot;#2e7d32&quot;&gt;willow-data-vault&lt;/font&gt; blueprint · dotgithub&lt;br&gt;&lt;font color=&quot;#c62828&quot;&gt;✗ .willow — the LIVE BOX, and it is a git repo:&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#c62828&quot;&gt;   remote = rudi193-cmd/willow-config (a personal account)&lt;/font&gt;" vertex="1">
+          <mxGeometry height="140" width="450" x="40" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="org_dns" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;Die-Namic-Systems&lt;/b&gt; — &lt;i&gt;verification&lt;/i&gt;  (2)&lt;br&gt;&lt;font color=&quot;#2e7d32&quot;&gt;nestor&lt;/font&gt; — has a human checked this?&lt;br&gt;dotgithub&lt;br&gt;&lt;font color=&quot;#2e7d32&quot;&gt;✓ .nestor now lives here too (2026-08-28)&lt;/font&gt;&lt;br&gt;&lt;i&gt;one repo, and it is the one the covenant runs on&lt;/i&gt;" vertex="1">
+          <mxGeometry height="140" width="380" x="520" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="org_hk" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;hornbook-knowledge&lt;/b&gt; — &lt;i&gt;what is known&lt;/i&gt;  (4)&lt;br&gt;&lt;font color=&quot;#2e7d32&quot;&gt;Jeles&lt;/font&gt; verified-nugget corpus, federated server&lt;br&gt;&lt;font color=&quot;#2e7d32&quot;&gt;UTETY&lt;/font&gt; the faculty · &lt;font color=&quot;#2e7d32&quot;&gt;oakenscrolls-office&lt;/font&gt;&lt;br&gt;dotgithub&lt;br&gt;&lt;i&gt;knowledge and the personas that carry it&lt;/i&gt;" vertex="1">
+          <mxGeometry height="140" width="400" x="930" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="org_ha" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;homestead-affairs&lt;/b&gt; — &lt;i&gt;the household&lt;/i&gt;  (6)&lt;br&gt;&lt;font color=&quot;#1565c0&quot;&gt;homestead&lt;/font&gt; · &lt;font color=&quot;#1565c0&quot;&gt;-law&lt;/font&gt; · &lt;font color=&quot;#1565c0&quot;&gt;-health&lt;/font&gt; · &lt;font color=&quot;#1565c0&quot;&gt;-ledger&lt;/font&gt;&lt;br&gt;awesome-sovereign-software · dotgithub&lt;br&gt;&lt;font color=&quot;#2e7d32&quot;&gt;✓ embedded SQLite · I-26 no network module imports&lt;/font&gt;&lt;br&gt;&lt;i&gt;the grandma side: no egress to grant, by construction&lt;/i&gt;" vertex="1">
+          <mxGeometry height="140" width="440" x="1360" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="org_alm" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;almanac-data&lt;/b&gt; — &lt;i&gt;public reference&lt;/i&gt;  (14)&lt;br&gt;agriculture · civic · climate · economy · education · energy&lt;br&gt;environment · health · justice · science · transportation&lt;br&gt;+ almanac-template · almanac-data · dotgithub&lt;br&gt;&lt;font color=&quot;#2e7d32&quot;&gt;✓ held-not-fetched (H-5) — public data, names nobody&lt;/font&gt;" vertex="1">
+          <mxGeometry height="140" width="470" x="1830" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="org_ws" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;workshop&lt;/b&gt; — &lt;i&gt;tools we did not write&lt;/i&gt;  (4)&lt;br&gt;&lt;font color=&quot;#2e7d32&quot;&gt;codebase-memory-mcp&lt;/font&gt; — one of two MCPs NOT behind the hub&lt;br&gt;courtlistener-mcp · redential-cli · DispatchesFromReality&lt;br&gt;&lt;font color=&quot;#b97700&quot;&gt;◐ 48 of 51 cbm indexes point at trees that are gone&lt;/font&gt;" vertex="1">
+          <mxGeometry height="120" width="450" x="40" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="org_tp" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;terpsi-programs&lt;/b&gt; — &lt;i&gt;where the patterns were proved&lt;/i&gt;  (2)&lt;br&gt;&lt;font color=&quot;#2e7d32&quot;&gt;terpsi-music&lt;/font&gt; · dotgithub&lt;br&gt;&lt;font color=&quot;#2e7d32&quot;&gt;✓ rule 14 rungs · Envelope crossing, forgery-tested&lt;/font&gt;&lt;br&gt;&lt;i&gt;a music repo holds the fleet&#39;s lane-crossing type&lt;/i&gt;" vertex="1">
+          <mxGeometry height="120" width="380" x="520" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="org_fp" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;forge-play&lt;/b&gt; — &lt;i&gt;the workshop face&lt;/i&gt;  (2)&lt;br&gt;&lt;font color=&quot;#2e7d32&quot;&gt;Forge&lt;/font&gt; · dotgithub&lt;br&gt;&lt;font color=&quot;#b97700&quot;&gt;◐ calibration_ledger written, never called&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#b97700&quot;&gt;◐ ~/.forge does not exist — nothing recorded yet&lt;/font&gt;" vertex="1">
+          <mxGeometry height="120" width="400" x="930" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="ZztjVmoO0UOpcqSakNDw-18" edge="1" parent="1" source="org_safe" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="org_fp" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="org_safe" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#1565c0;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;safe-app-store-public&lt;/b&gt; — &lt;i&gt;the product layer&lt;/i&gt;  (43 apps, 1 repo)&lt;br&gt;&lt;font color=&quot;#c62828&quot;&gt;✗ sits at ~/github top level, not in an org&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#c62828&quot;&gt;✗ remote = rudi193-cmd/safe-app-store — a personal account&lt;/font&gt;&lt;br&gt;ai-game-master · the-table · law-gazelle · story-timeline · the-forge&lt;br&gt;marching-arts · oakenscrolls-office · utety-chat · ask-jeles · +34&lt;br&gt;&lt;font color=&quot;#b97700&quot;&gt;◐ ask-jeles is a husk — the work became a federated server&lt;/font&gt;" vertex="1">
+          <mxGeometry height="120" width="940" x="1360" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="propband" parent="1" style="text;html=1;fontSize=13;fontStyle=1;align=left;" value="&lt;b&gt;WHAT I THINK SHOULD CHANGE — five moves, in dependency order&lt;/b&gt;" vertex="1">
+          <mxGeometry height="20" width="900" x="40" y="650" as="geometry" />
+        </mxCell>
+        <mxCell id="m1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;1 · The live box moves to the vault&lt;/b&gt;  &lt;font color=&quot;#c62828&quot;&gt;the v0.4 target, still ✗&lt;/font&gt;&lt;br&gt;&lt;br&gt;$WILLOW_HOME is ALREADY a git repo — &lt;b&gt;rudi193-cmd/willow-config&lt;/b&gt;.&lt;br&gt;So this is not &quot;put the box under version control&quot;. The box is already&lt;br&gt;versioned, into a personal-account repo that is not the data vault and&lt;br&gt;not in any org. That is the actual defect.&lt;br&gt;&lt;br&gt;&lt;b&gt;Move:&lt;/b&gt; $WILLOW_HOME → ~/sean-data-vault/.willow&lt;br&gt;Postgres → dumps in the vault, live cluster stays a system service&lt;br&gt;&lt;font color=&quot;#2e7d32&quot;&gt;keys stay 0600 and gitignored — provision.sh already assumes this&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#c62828&quot;&gt;⚠ the Kart bind MUST land first, or every task reads an empty store&lt;/font&gt;" vertex="1">
+          <mxGeometry height="230" width="560" x="40" y="680" as="geometry" />
+        </mxCell>
+        <mxCell id="m2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#1565c0;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;2 · safe-app-store gets an org&lt;/b&gt;&lt;br&gt;&lt;br&gt;43 apps, the entire product layer, on a personal account at the&lt;br&gt;top level of ~/github. Every other face has an org.&lt;br&gt;&lt;br&gt;It is also the layer v0.4 got most wrong, and the layer a new&lt;br&gt;user actually touches. If the box is ever more than one person&lt;br&gt;this is the first thing that has to not be &lt;i&gt;yours&lt;/i&gt;.&lt;br&gt;&lt;br&gt;&lt;font color=&quot;#b97700&quot;&gt;◐ and cull: ask-jeles is a husk, the-forge is half-promoted&lt;/font&gt;" vertex="1">
+          <mxGeometry height="230" width="540" x="630" y="680" as="geometry" />
+        </mxCell>
+        <mxCell id="m3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;3 · The transcripts become visible&lt;/b&gt;&lt;br&gt;&lt;br&gt;~/.claude is 144 MB and NOTHING on this box can read it.&lt;br&gt;Not the corpus (extracts .py and .md from git checkouts),&lt;br&gt;not codebase-memory, not Nestor.&lt;br&gt;&lt;br&gt;43 sessions · 719 messages you typed · 20,141 words.&lt;br&gt;&lt;b&gt;The full vision appears in exactly 3 of them.&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;font color=&quot;#c62828&quot;&gt;The corpus holds 8,340 claims about what the code does&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#c62828&quot;&gt;and 0 about why any of it exists.&lt;/font&gt;" vertex="1">
+          <mxGeometry height="230" width="540" x="1200" y="680" as="geometry" />
+        </mxCell>
+        <mxCell id="m4" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;4 · The Nest gets drained&lt;/b&gt;&lt;br&gt;&lt;br&gt;4.1 GB on the Desktop, no repo, no index.&lt;br&gt;FLEET_PLACEMENT calls it a &quot;runtime drop zone&quot;.&lt;br&gt;&lt;br&gt;nest_intake_scan · nest_promote · nest_digest&lt;br&gt;all exist on the hub. Nothing runs them.&lt;br&gt;&lt;br&gt;&lt;font color=&quot;#b97700&quot;&gt;A drop zone nothing drains is a silo with&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#b97700&quot;&gt;better manners.&lt;/font&gt;" vertex="1">
+          <mxGeometry height="230" width="530" x="1770" y="680" as="geometry" />
+        </mxCell>
+        <mxCell id="m5" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;5 · One archive, not five&lt;/b&gt;  ·  ~/github-archive-greenfield · -willow · -grove · ~/github/archive/&lt;br&gt;Four trees outside ~/github, retirement notes inside it, and 2.4 MB of architecture that nobody could find for a day because the directory was classified by its parent.&lt;br&gt;&lt;font color=&quot;#2e7d32&quot;&gt;Proposal: archives land in the vault under archive-migration/&lt;date&gt;/ with a README naming what moved and what deliberately did not — the shape already used on 2026-08-28.&lt;/font&gt;" vertex="1">
+          <mxGeometry height="90" width="2260" x="40" y="940" as="geometry" />
+        </mxCell>
+        <mxCell id="cmp" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;spacingLeft=8;verticalAlign=top;spacingTop=8;fontSize=12;" value="&lt;b&gt;COMPARED TO WHAT WAS PULLED FROM THE ARCHIVED willow REPO&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;v0.1&lt;/b&gt; (~/Documents, never committed anywhere) · &lt;b&gt;v0.2&lt;/b&gt; · &lt;b&gt;v0.3-full&lt;/b&gt; · &lt;b&gt;v0.4-full&lt;/b&gt; 2026-07-20 — all predate the org split.&lt;br&gt;They draw &lt;i&gt;one&lt;/i&gt; box: &quot;Dev Repos — ~/github (60 repos): willow · willow-2.0 · willow-mcp · kartikeya · safe-app-store-publ…&quot;. Flat. No orgs.&lt;br&gt;&lt;br&gt;&lt;b&gt;What the stale versions still get right:&lt;/b&gt; the three-key egress gate · what the operator holds · lanes are mutually sealed ·&lt;br&gt;willow_web_* retiring to Jeles · and the (USER)-data-vault target, which they marked ✗ six weeks ago and is still ✗.&lt;br&gt;&lt;br&gt;&lt;b&gt;What they cannot see:&lt;/b&gt; eight orgs · 44 repos · Jeles as a federated server rather than a SAFE app · a personal lane ·&lt;br&gt;nestor with its own org and home · 43 apps where they show a handful · and that the live box is a git repo pointing at the wrong remote.&lt;br&gt;&lt;br&gt;&lt;i&gt;The diagrams were not wrong. They were unfinished, and then unreachable — left in an archive under a directory named for the repo it lived in,&lt;br&gt;when its contents were about everything except that repo.&lt;/i&gt;" vertex="1">
+          <mxGeometry height="240" width="2260" x="40" y="1060" as="geometry" />
+        </mxCell>
+        <mxCell id="a1" edge="1" parent="1" source="org_wm" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;dashed=1;strokeColor=#c62828;fontColor=#c62828;fontSize=11;" target="ws_vault" value="the box belongs here">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a2" edge="1" parent="1" source="org_safe" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;dashed=1;strokeColor=#1565c0;fontColor=#1565c0;fontSize=11;" target="org_safe" value="has one">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="2320" y="540" />
+              <mxPoint x="2320" y="560" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="a3" edge="1" parent="1" source="org_tp" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;strokeColor=#82b366;fontSize=11;" target="org_wm" value="patterns ported into willow-mcp">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a4" edge="1" parent="1" source="org_hk" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;strokeColor=#82b366;fontSize=11;" target="org_wm" value="federated in">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a5" edge="1" parent="1" source="org_dns" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;strokeColor=#82b366;fontSize=11;" target="org_wm" value="seals what the fleet believes">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a6" edge="1" parent="1" source="ws_nest" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;dashed=1;strokeColor=#d79b00;fontColor=#b97700;fontSize=11;entryX=0.22;entryY=1.11;entryDx=0;entryDy=0;entryPerimeter=0;" target="orgband" value="drain into the corpus">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="565" y="285" />
+              <mxPoint x="430" y="285" />
+              <mxPoint x="430" y="312.18" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="a7" edge="1" parent="1" source="ws_claude" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;dashed=1;strokeColor=#c62828;fontColor=#c62828;fontSize=11;" target="org_dns" value="the why lives here, unread">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="925" y="285" />
+              <mxPoint x="740" y="285" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ZztjVmoO0UOpcqSakNDw-1" edge="1" parent="1" style="shape=flexArrow;endArrow=classic;startArrow=classic;html=1;rounded=0;fillColor=#d80073;strokeColor=#A50040;" value="">
+          <mxGeometry height="100" relative="1" width="100" as="geometry">
+            <mxPoint x="1020" y="113" as="sourcePoint" />
+            <mxPoint x="1120" y="13" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ZztjVmoO0UOpcqSakNDw-2" connectable="0" parent="ZztjVmoO0UOpcqSakNDw-1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="MCP" vertex="1">
+          <mxGeometry relative="1" x="0.0864" y="-2" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ZztjVmoO0UOpcqSakNDw-4" edge="1" parent="1" style="shape=flexArrow;endArrow=classic;startArrow=classic;html=1;rounded=0;fillColor=#d80073;strokeColor=#A50040;" value="">
+          <mxGeometry height="100" relative="1" width="100" as="geometry">
+            <mxPoint x="450" y="440" as="sourcePoint" />
+            <mxPoint x="550" y="340" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ZztjVmoO0UOpcqSakNDw-5" connectable="0" parent="ZztjVmoO0UOpcqSakNDw-4" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="MCP" vertex="1">
+          <mxGeometry relative="1" x="0.0864" y="-2" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ZztjVmoO0UOpcqSakNDw-6" edge="1" parent="1" style="shape=flexArrow;endArrow=classic;startArrow=classic;html=1;rounded=0;fillColor=#d80073;strokeColor=#A50040;" value="">
+          <mxGeometry height="100" relative="1" width="100" as="geometry">
+            <mxPoint x="875" y="450" as="sourcePoint" />
+            <mxPoint x="975" y="350" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ZztjVmoO0UOpcqSakNDw-7" connectable="0" parent="ZztjVmoO0UOpcqSakNDw-6" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="MCP" vertex="1">
+          <mxGeometry relative="1" x="0.0864" y="-2" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ZztjVmoO0UOpcqSakNDw-8" edge="1" parent="1" style="shape=flexArrow;endArrow=classic;startArrow=classic;html=1;rounded=0;fillColor=#d80073;strokeColor=#A50040;" value="">
+          <mxGeometry height="100" relative="1" width="100" as="geometry">
+            <mxPoint x="270" y="520" as="sourcePoint" />
+            <mxPoint x="370" y="420" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ZztjVmoO0UOpcqSakNDw-9" connectable="0" parent="ZztjVmoO0UOpcqSakNDw-8" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="MCP" vertex="1">
+          <mxGeometry relative="1" x="0.0864" y="-2" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ZztjVmoO0UOpcqSakNDw-10" edge="1" parent="1" source="org_tp" style="shape=flexArrow;endArrow=classic;startArrow=classic;html=1;rounded=0;fillColor=#d80073;strokeColor=#A50040;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=1.004;entryY=0.896;entryDx=0;entryDy=0;entryPerimeter=0;" target="org_wm" value="">
+          <mxGeometry height="100" relative="1" width="100" as="geometry">
+            <mxPoint x="320" y="530" as="sourcePoint" />
+            <mxPoint x="420" y="430" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ZztjVmoO0UOpcqSakNDw-11" connectable="0" parent="ZztjVmoO0UOpcqSakNDw-10" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="MCP" vertex="1">
+          <mxGeometry relative="1" x="0.0864" y="-2" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ZztjVmoO0UOpcqSakNDw-12" edge="1" parent="1" source="org_wm" style="shape=flexArrow;endArrow=classic;startArrow=classic;html=1;rounded=0;fillColor=#d80073;strokeColor=#A50040;entryX=0.518;entryY=0.017;entryDx=0;entryDy=0;entryPerimeter=0;" target="org_fp" value="">
+          <mxGeometry height="100" relative="1" width="100" as="geometry">
+            <mxPoint x="660" y="570" as="sourcePoint" />
+            <mxPoint x="760" y="470" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ZztjVmoO0UOpcqSakNDw-13" connectable="0" parent="ZztjVmoO0UOpcqSakNDw-12" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="MCP" vertex="1">
+          <mxGeometry relative="1" x="0.0864" y="-2" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ZztjVmoO0UOpcqSakNDw-14" edge="1" parent="1" source="org_hk" style="shape=flexArrow;endArrow=classic;startArrow=classic;html=1;rounded=0;fillColor=#d80073;strokeColor=#A50040;" value="">
+          <mxGeometry height="100" relative="1" width="100" as="geometry">
+            <mxPoint x="320" y="530" as="sourcePoint" />
+            <mxPoint x="420" y="430" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ZztjVmoO0UOpcqSakNDw-15" connectable="0" parent="ZztjVmoO0UOpcqSakNDw-14" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="MCP" vertex="1">
+          <mxGeometry relative="1" x="0.0864" y="-2" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ZztjVmoO0UOpcqSakNDw-17" edge="1" parent="1" source="org_fp" style="endArrow=none;html=1;rounded=0;" target="org_safe" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="1550" y="640" as="sourcePoint" />
+            <mxPoint x="1600" y="590" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ZztjVmoO0UOpcqSakNDw-19" edge="1" parent="1" source="org_ha" style="endArrow=none;html=1;rounded=0;exitX=0.996;exitY=0.599;exitDx=0;exitDy=0;exitPerimeter=0;" target="org_alm" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="1550" y="640" as="sourcePoint" />
+            <mxPoint x="1600" y="590" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ZztjVmoO0UOpcqSakNDw-20" edge="1" parent="1" source="org_hk" style="endArrow=none;html=1;rounded=0;entryX=0;entryY=0.75;entryDx=0;entryDy=0;exitX=1;exitY=0.857;exitDx=0;exitDy=0;exitPerimeter=0;" target="org_alm" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="1280" y="640" as="sourcePoint" />
+            <mxPoint x="1330" y="590" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ZztjVmoO0UOpcqSakNDw-21" edge="1" parent="1" source="org_hk" style="endArrow=none;html=1;rounded=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="1280" y="640" as="sourcePoint" />
+            <mxPoint x="1380" y="440" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ZztjVmoO0UOpcqSakNDw-22" edge="1" parent="1" source="org_hk" style="endArrow=none;html=1;rounded=0;" target="org_alm" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="1390" y="640" as="sourcePoint" />
+            <mxPoint x="1440" y="590" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ZztjVmoO0UOpcqSakNDw-23" edge="1" parent="1" source="org_fp" style="endArrow=none;html=1;rounded=0;entryX=0.65;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.627;exitY=0.034;exitDx=0;exitDy=0;exitPerimeter=0;" target="org_hk" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="1390" y="640" as="sourcePoint" />
+            <mxPoint x="1440" y="590" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
