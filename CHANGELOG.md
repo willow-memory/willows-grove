@@ -6,6 +6,33 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Added
 
+- `docs/design/fleet-wiring.md` — how the fleet is actually wired, seam by seam,
+  verified against running code with all seven repositories installed together.
+  `docs/ARCHITECTURE.md` is Grove-scoped by declaration and hands cross-repo
+  wiring to `willow-2.0` through three links that no longer resolve; the drawio
+  set draws which face talks to which, but every one of its arrows is a
+  different mechanism — a subprocess speaking line-delimited JSON-RPC, a Python
+  import, a Postgres trigger, an HTTP POST — and an arrow cannot say which, nor
+  what happens when the far end is absent. Covers the five transports, eight
+  seams, the three disciplines that make it a system (three-state, fail-closed
+  authorization, confirm-once-then-revalidate), and four things a diagram cannot
+  show: an import is a transport, `WILLOW_PG_DB` defaults differently in Grove
+  (`willow_20`) than in willow-mcp (`willow`), the Nestor domain lives in three
+  places where a disagreement reports success, and the C11 seam exists in the
+  write direction only. PR 19.
+
+- `docs/design/fleet-standup.md` — how to stand the whole fleet up in one box,
+  and what that turns up. Grove's suite goes 517 passed / 9 skipped to 522 / 4
+  and willow-mcp's 2874 / 14 to 2883 / 5 once Postgres, willow-mcp, kartikeya,
+  jeles, nestor, willow-gate and the archived willow-2.0 policy are actually
+  present rather than skipped past — no container runtime required, and nothing
+  mocked to get there. Records the dependency graph (it is circular: nestor
+  audits itself against the charter case cards in this repo), a runbook, the
+  four skips that are correct as they are, the three hosts and one kernel
+  interface that are genuinely unreachable from a cloud seat, and four findings
+  — including two in nestor that only appear once its optional extras are
+  installed. PR 19.
+
 - `.mcp.json` serves this session's Nestor store to an agent over MCP (stdio,
   `--read-only`, `--engine offline`) — seven verbs including `nestor_ask`,
   `nestor_provenance` and `nestor_ledger_verify`. `nestor/session-decisions.json`
