@@ -19,7 +19,7 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
   show: an import is a transport, `WILLOW_PG_DB` defaults differently in Grove
   (`willow_20`) than in willow-mcp (`willow`), the Nestor domain lives in three
   places where a disagreement reports success, and the C11 seam exists in the
-  write direction only. PR 17.
+  write direction only. PR 19.
 
 - `docs/design/fleet-standup.md` — how to stand the whole fleet up in one box,
   and what that turns up. Grove's suite goes 517 passed / 9 skipped to 522 / 4
@@ -31,7 +31,7 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
   four skips that are correct as they are, the three hosts and one kernel
   interface that are genuinely unreachable from a cloud seat, and four findings
   — including two in nestor that only appear once its optional extras are
-  installed. PR 17.
+  installed. PR 19.
 
 - `.mcp.json` serves this session's Nestor store to an agent over MCP (stdio,
   `--read-only`, `--engine offline`) — seven verbs including `nestor_ask`,
