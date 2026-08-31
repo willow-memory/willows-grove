@@ -6,6 +6,33 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Added
 
+- `docs/design/fleet-wiring.md` — how the fleet is actually wired, seam by seam,
+  verified against running code with all seven repositories installed together.
+  `docs/ARCHITECTURE.md` is Grove-scoped by declaration and hands cross-repo
+  wiring to `willow-2.0` through three links that no longer resolve; the drawio
+  set draws which face talks to which, but every one of its arrows is a
+  different mechanism — a subprocess speaking line-delimited JSON-RPC, a Python
+  import, a Postgres trigger, an HTTP POST — and an arrow cannot say which, nor
+  what happens when the far end is absent. Covers the five transports, eight
+  seams, the three disciplines that make it a system (three-state, fail-closed
+  authorization, confirm-once-then-revalidate), and four things a diagram cannot
+  show: an import is a transport, `WILLOW_PG_DB` defaults differently in Grove
+  (`willow_20`) than in willow-mcp (`willow`), the Nestor domain lives in three
+  places where a disagreement reports success, and the C11 seam exists in the
+  write direction only. PR 19.
+
+- `docs/design/fleet-standup.md` — how to stand the whole fleet up in one box,
+  and what that turns up. Grove's suite goes 517 passed / 9 skipped to 522 / 4
+  and willow-mcp's 2874 / 14 to 2883 / 5 once Postgres, willow-mcp, kartikeya,
+  jeles, nestor, willow-gate and the archived willow-2.0 policy are actually
+  present rather than skipped past — no container runtime required, and nothing
+  mocked to get there. Records the dependency graph (it is circular: nestor
+  audits itself against the charter case cards in this repo), a runbook, the
+  four skips that are correct as they are, the three hosts and one kernel
+  interface that are genuinely unreachable from a cloud seat, and four findings
+  — including two in nestor that only appear once its optional extras are
+  installed. PR 19.
+
 - `.mcp.json` serves this session's Nestor store to an agent over MCP (stdio,
   `--read-only`, `--engine offline`) — seven verbs including `nestor_ask`,
   `nestor_provenance` and `nestor_ledger_verify`. `nestor/session-decisions.json`
@@ -47,6 +74,23 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
   `pr14-carryovers.md` marks #3 and #10 closed — both were delivered and never
   marked — retires the migration checklist as history, and records #13
   (character continuity across compactions) as confirmed in the wild. PR 15.
+
+- `docs/design/the-forge-shape.md` — the Forge's shape as talked out with the
+  operator: the "what's the first bite" entry, keyword→major with ambiguity as
+  a scripted state rather than a guess, an `almanac-tech` rung holding pinned
+  official docs beside the awesome lists and their criteria, per-project Nestor
+  holding the *connections* rather than the pairs, and contribution as shape
+  never content. Also records how the Socratic method actually works — it is
+  `friction_score` on the maker's own rationale feeding the FSRS grade, with no
+  questioner anywhere, which is why it resisted explanation. PR 17.
+
+- `governance/architecture/willow-v08-toolchain-path.drawio` — a draft of where
+  a repo gets its Python, and the first diagram in this directory that is meant
+  to keep changing. Measured today: 8 venvs across 7 different paths, 25 repos
+  that declare dependencies with no venv at all, a fleet venv at
+  `$WILLOW_HOME/venvs/` that exactly one thing uses, and Kart binding `/usr`
+  and nothing of `forge-play`. Carries a REVISIONS box; what settles there
+  graduates to v0.7. PR 17.
 
 ## [0.10.0] — 2026-08-29
 
