@@ -6,6 +6,29 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Fixed
 
+- `docs/ARCHITECTURE.md` carried three links that went nowhere, and all three
+  pointed at the cross-repo material nothing else documents — a reader
+  following them to learn how Grove meets the rest of the fleet arrived at a
+  404 with no other route. They were two different defects wearing one
+  symptom. `../../willow-2.0/docs/db/WILLOW_SCHEMA.md` names a document that
+  is real and readable; the path only resolves in a checkout where willow-2.0
+  sits beside this repo, and the 2026-08-10 org-folder move ended that layout
+  — now an absolute link to the public archive, marked archived.
+  `CROSS_REPO_BRIDGE.md` and `extractor/GROVE_DOCS_EXTRACTOR_SPEC.md` were
+  linked as local siblings but have never been in this tree or its history:
+  `docs/INDEX.md` already recorded them under *"Not in this tree (by design)"*,
+  living at `rudi193-cmd/safe-app-willow-grove`. That repository is private and
+  archived, so they are now named with their location rather than linked — a
+  URL there would 404 for most readers, which is the same dead end dressed up
+  as a working reference. The decision had been made and written down
+  correctly; ARCHITECTURE.md never learned of it, so two documents in one
+  directory disagreed about what this repository contains and the one a
+  newcomer reads first was wrong. `tests/test_architecture_links_resolve.py`
+  pins every relative link in the canonical reference against disk, and pins
+  the two by-design absences as named-not-linked. PR 21.
+
+### Fixed
+
 - Tester onboarding did not survive its own first hour. `pip install -r
   requirements.txt` aborts on Debian and Ubuntu with `Cannot uninstall PyJWT
   2.7.0, RECORD file not found` — PyJWT arrives transitively through `mcp`
