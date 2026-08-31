@@ -4,6 +4,30 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ## [Unreleased]
 
+### Fixed
+
+- Tester onboarding did not survive its own first hour. `pip install -r
+  requirements.txt` aborts on Debian and Ubuntu with `Cannot uninstall PyJWT
+  2.7.0, RECORD file not found` — PyJWT arrives transitively through `mcp`
+  (`pyjwt[crypto]>=2.10.1`), pip resolves it forward, and cannot remove a copy
+  `apt` installed because distro packages ship no `RECORD`. The error names
+  Debian, so it reads as a broken machine rather than a missing step. Step 2 now
+  creates `.venv` before installing — which is also the interpreter both
+  `run_mcp.sh` and `scripts/grove-serve-run` already resolve to and that
+  onboarding never created. Three more dead references in the same document went
+  with it: step 5 ran `python3 app.py`, which has never existed in this
+  repository; the u2u chat step ran `grove_standalone.py`, part of the departed
+  Textual dashboard, and `u2u/` exposes no entrypoint at all, so that step is
+  now marked unavailable rather than described; and a duplicated sanity-check
+  section carried curly quotes, so `psql -d “$WILLOW_PG_DB”` failed as written
+  in the first of two otherwise identical blocks.
+  `tests/test_tester_onboarding_runnable.py` pins all four properties — venv
+  before install, every named file on disk, no curly quotes inside a shell
+  fence, no duplicated headings — each paired with a self-check, because a
+  parser that silently stops matching turns an audit into a green no-op, which
+  is the failure class the document was already suffering from. Issue #14.
+  PR 20.
+
 ### Added
 
 - `docs/design/fleet-wiring.md` — how the fleet is actually wired, seam by seam,

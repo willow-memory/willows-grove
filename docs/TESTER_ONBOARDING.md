@@ -23,8 +23,41 @@ cd willows-grove
 
 ## 2. Install Python dependencies
 
+**Create the virtualenv first.** This step is not optional and it is not a
+style preference — two things depend on it:
+
 ```bash
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
+```
+
+*Why `.venv`, specifically.* Both launchers in this repo resolve their
+interpreter as `$GROVE_VENV/bin/python3`, then `./.venv/bin/python3`, then
+whatever `python3` is on PATH — see `run_mcp.sh` and `scripts/grove-serve-run`.
+A repo-local `.venv` is the conventional home they look for. Without one they
+fall through to the system interpreter, which may not carry the pinned
+dependencies, and `run_mcp.sh` will warn about a missing MCP SDK.
+
+*Why not a global install.* On Debian and Ubuntu a plain
+`pip install -r requirements.txt` aborts:
+
+```
+ERROR: Cannot uninstall PyJWT 2.7.0, RECORD file not found.
+Hint: The package was installed by debian.
+```
+
+Nothing here depends on PyJWT directly — it arrives through `mcp`, which
+requires `pyjwt[crypto]>=2.10.1`. pip resolves it forward, then cannot remove
+the distro copy, because packages installed by `apt` ship no `RECORD` file.
+The error names Debian rather than anything in this repo, so it reads like a
+broken machine. It is not. A virtualenv has no distro `PyJWT` to collide with
+and the install simply works.
+
+If you must install outside a venv, this gets past that one collision:
+
+```bash
+pip install --ignore-installed PyJWT -r requirements.txt
 ```
 
 If you prefer using a `.env` file instead of exports, copy:
@@ -67,19 +100,6 @@ Add these to your shell profile (`~/.bashrc` or `~/.zshrc`) to make them permane
 If you want an objective test that your Grove DB is alive and has the right tables, run:
 
 ```bash
-psql -d “$WILLOW_PG_DB” -c “SELECT COUNT(*) AS channels FROM grove.channels;”
-psql -d “$WILLOW_PG_DB” -c “SELECT COUNT(*) AS messages FROM grove.messages WHERE is_deleted = 0;”
-```
-
-If the schema is loaded, both commands print a single row with counts (often `messages=0` on first run).
-
----
-
-## Optional: DB sanity checks (verifiable “is it working?”)
-
-If you want an objective test that your Grove DB is alive and has the right tables, run:
-
-```bash
 psql -d "$WILLOW_PG_DB" -c "SELECT COUNT(*) AS channels FROM grove.channels;"
 psql -d "$WILLOW_PG_DB" -c "SELECT COUNT(*) AS messages FROM grove.messages WHERE is_deleted = 0;"
 ```
@@ -91,10 +111,19 @@ If the schema is loaded, both commands print a single row with counts (often `me
 ## 5. Run
 
 ```bash
-python3 app.py
+./scripts/grove-serve-run
 ```
 
-The dashboard opens in your terminal. Use arrow keys to navigate, Enter to select.
+This is the served page — loopback only, at <http://127.0.0.1:8766>. It runs in
+the foreground; Ctrl-C stops it. The launcher resolves your interpreter (the
+`.venv` from step 2), exports `WILLOW_HUMAN_ORCHESTRATOR=1`, and execs
+`python3 -m grove_serve`.
+
+`GROVE_SERVE_HOST` and `GROVE_SERVE_PORT` override the bind. Leave them alone
+unless you have a reason: the seat is designed for the desk, not the internet,
+and `8765` belongs to the MCP serve mode — do not collide with it.
+
+Full operator guide: [`docs/grove-served-page.md`](grove-served-page.md).
 
 ---
 
@@ -135,21 +164,21 @@ If you don’t know what this means, skip it.
 
 ---
 
-## Chat directly with USER
+## Chat directly with USER — not available in this repository
 
-USER runs a separate peer-to-peer node. To connect:
+The u2u LAN transport ships here as a **library** (`u2u/` — knock, consent,
+notes, Ed25519-signed) and the design is written up in
+[`docs/design/u2u-security-limits.md`](design/u2u-security-limits.md).
 
-**You:**
-```bash
-python3 grove_standalone.py
-```
+What is **not** here is an operator surface for it. The standalone node this
+step used to describe — press `F1` for your address, type a peer's address into
+a sidebar "knock" box — was part of the Textual dashboard, and that dashboard
+is not in this repository. `u2u/` exposes no entrypoint: no `__main__`, no
+`main()`. There is nothing for a tester to run, so this step is skipped rather
+than attempted.
 
-Press `F1` to see your address (looks like `yourname@192.168.x.x:8550`). Share it with USER so he can knock you back.
-
-**Connect to USER:**
-In the sidebar, enter USER's address in the "knock" input and press Enter. USER will approve the connection. Once approved, select him from your contacts list and start typing.
-
-> USER's address will be shared before the session. If it changes, press F1 on his end to get the updated one.
+If you were told to test peer-to-peer chat, say so — the instruction is ahead
+of the tree, not behind it.
 
 ---
 
@@ -159,7 +188,7 @@ In the sidebar, enter USER's address in the "knock" input and press Enter. USER 
 
 **blank screen / no channels** — Normal on first run. Press `c` to create a channel.
 
-**port 8550 already in use** — Set `GROVE_PORT=8551` (or any open port) before running `grove_standalone.py`.
+**port 8550 already in use** — 8550 is the u2u listener default (`u2u/listener.py`) and the fallback `grove/mcp_local.py` reads from `GROVE_PORT`. Set `GROVE_PORT=8551` (or any open port) before launching.
 
 ---
 
