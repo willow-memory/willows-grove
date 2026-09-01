@@ -57,17 +57,12 @@ for _p in (ROOT, MOCK_DIR):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
-import mock_willow_mcp  # noqa: E402
+import mock_willow_mcp
 
-#: Route prefix that mirrors a willow-mcp tool. Everything else the mock
-#: serves (`/health`, `/kill`, `/restore`, `/reset`) is harness control
-#: surface with no upstream counterpart and is deliberately out of scope.
-_TOOL_PREFIX = "/tools/"
-
-#: Every tool route the mock serves. A literal so that adding one is a
-#: deliberate edit here, reviewed against upstream, rather than a silent
-#: widening of what "the seam works" means.
-_EXPECTED_TOOL_ROUTES = frozenset({"kb_journal", "kb_journal_read"})
+#: MCP tool names the mock registers. Everything else the mock serves
+#: (`/health`, `/kill`, `/restore`, `/reset`) is harness control surface
+#: with no upstream counterpart and is deliberately out of scope.
+_EXPECTED_TOOL_NAMES = frozenset({"kb_journal", "kb_journal_read"})
 
 #: Tool routes the mock serves that willow-mcp does not implement yet,
 #: each with the reason it is tolerated. Not a general escape hatch: the
@@ -76,48 +71,36 @@ _EXPECTED_TOOL_ROUTES = frozenset({"kb_journal", "kb_journal_read"})
 _PENDING_UPSTREAM: dict[str, str] = {}
 
 
-def _tool_routes() -> set[str]:
-    """Tool names the mock actually serves, read off the live app."""
-    app = mock_willow_mcp.build_app()
-    return {
-        route.path[len(_TOOL_PREFIX):]
-        for route in app.routes
-        if getattr(route, "path", "").startswith(_TOOL_PREFIX)
-    }
+def _tool_names() -> set[str]:
+    """Tool names the mock actually registers."""
+    return set(mock_willow_mcp.tool_names())
 
 
 class MockRouteInventoryTests(unittest.TestCase):
     """Runs everywhere. Catches a new mock route with no upstream review."""
 
-    def test_the_audit_actually_finds_routes(self) -> None:
-        """Guard against build_app() changing shape and the walk finding
-        nothing — the failure mode that turns this file into a green
-        no-op."""
-        routes = _tool_routes()
+    def test_the_audit_actually_finds_tools(self) -> None:
+        names = _tool_names()
         self.assertTrue(
-            routes,
-            "found no /tools/* routes on mock_willow_mcp.build_app() — the "
-            "route walk has stopped matching and this file is no longer "
-            "auditing anything",
+            names,
+            "found no MCP tools on mock_willow_mcp — the inventory has "
+            "stopped matching and this file is no longer auditing anything",
         )
 
-    def test_tool_routes_are_exactly_the_expected_set(self) -> None:
+    def test_tool_names_are_exactly_the_expected_set(self) -> None:
         self.assertEqual(
-            _tool_routes(), set(_EXPECTED_TOOL_ROUTES),
-            "the mock's tool surface changed. Adding a route here means the "
+            _tool_names(), set(_EXPECTED_TOOL_NAMES),
+            "the mock's tool surface changed. Adding a tool here means the "
             "C11 suite starts asserting a contract — check it exists in "
-            "willow-mcp first, then update _EXPECTED_TOOL_ROUTES (and "
+            "willow-mcp first, then update _EXPECTED_TOOL_NAMES (and "
             "_PENDING_UPSTREAM if it does not exist yet).",
         )
 
-    def test_every_pending_entry_is_a_route_we_actually_serve(self) -> None:
-        """A stale allowance is as bad as a missing one — it would let a
-        genuinely-new divergence hide behind an entry for a route that is
-        no longer served."""
-        stale = sorted(set(_PENDING_UPSTREAM) - _tool_routes())
+    def test_every_pending_entry_is_a_tool_we_actually_serve(self) -> None:
+        stale = sorted(set(_PENDING_UPSTREAM) - _tool_names())
         self.assertEqual(
             stale, [],
-            f"_PENDING_UPSTREAM names routes the mock no longer serves: {stale}",
+            f"_PENDING_UPSTREAM names tools the mock no longer serves: {stale}",
         )
 
 
@@ -132,18 +115,18 @@ class ToolSurfaceTests(unittest.TestCase):
     """Compares the mock's tool surface against the installed willow-mcp."""
 
     def setUp(self) -> None:
-        from willow_mcp import server as wms  # noqa: PLC0415
+        from willow_mcp import server as wms
 
         self.upstream = wms
 
-    def test_non_pending_routes_exist_upstream(self) -> None:
+    def test_non_pending_tools_exist_upstream(self) -> None:
         missing = sorted(
-            name for name in _tool_routes() - set(_PENDING_UPSTREAM)
+            name for name in _tool_names() - set(_PENDING_UPSTREAM)
             if not hasattr(self.upstream, name)
         )
         self.assertEqual(
             missing, [],
-            "the mock serves tool routes willow-mcp does not implement, and "
+            "the mock serves MCP tools willow-mcp does not implement, and "
             "they are not recorded in _PENDING_UPSTREAM. The C11 suite would "
             f"go green against contracts nothing upstream honours: {missing}",
         )

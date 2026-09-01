@@ -6,8 +6,8 @@ C11) and the three-state contract (``docs/INVARIANTS.md`` §1); §10
 guards the CI witness that runs this suite.
 
 Every test runs against the mock in ``mock_willow_mcp.py``. The mock
-speaks the same routes as the real willow-mcp (``POST /tools/kb_journal``
-+ GET/POST ``/tools/kb_journal_read``), which is what makes the
+speaks MCP Streamable HTTP at ``/mcp`` with the same ``kb_journal`` and
+``kb_journal_read`` tools as real willow-mcp, which is what makes the
 round-trip real rather than a shim.
 
 Discipline pinned:
@@ -29,7 +29,6 @@ import pytest
 
 from grove import journal_reader, journal_writer
 from grove.errors import Unreachable
-
 
 # --- Test 1: single-atom round-trip ------------------------------------
 

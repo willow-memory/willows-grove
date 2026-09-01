@@ -48,7 +48,7 @@ import types
 import urllib.error
 import urllib.request
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import pytest
 
@@ -104,20 +104,20 @@ def _ollama_base_url() -> str:
 
 
 def _http_get(url: str, timeout: float = 5.0) -> tuple[int, bytes]:
-    req = urllib.request.Request(url, method="GET")  # noqa: S310 — loopback
-    with urllib.request.urlopen(req, timeout=timeout) as resp:  # noqa: S310
+    req = urllib.request.Request(url, method="GET")
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
         return resp.getcode(), resp.read()
 
 
 def _http_post_json(url: str, payload: dict[str, Any], timeout: float = 30.0) -> tuple[int, bytes]:
     body = json.dumps(payload).encode("utf-8")
-    req = urllib.request.Request(  # noqa: S310 — loopback
+    req = urllib.request.Request(
         url,
         data=body,
         method="POST",
         headers={"content-type": "application/json"},
     )
-    with urllib.request.urlopen(req, timeout=timeout) as resp:  # noqa: S310
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
         return resp.getcode(), resp.read()
 
 
@@ -137,7 +137,7 @@ def ollama_ready() -> str:
     """
     base = _ollama_base_url()
     deadline = time.monotonic() + _OLLAMA_READY_TIMEOUT_SECONDS
-    last_err: Optional[str] = None
+    last_err: str | None = None
     while time.monotonic() < deadline:
         try:
             code, _ = _http_get(base + "/api/tags", timeout=3.0)
@@ -341,7 +341,7 @@ def grove_pg_schema():
         _missing_witness(f"Postgres unreachable at {dsn} ({err}) — e2e_ollama needs it (INVARIANTS.md §10).")
 
     conn.autocommit = True
-    channel_id: Optional[int] = None
+    channel_id: int | None = None
     channel_name = f"e2e-ollama-{int(time.time() * 1000)}-{os.getpid()}"
     try:
         cur = conn.cursor()
@@ -383,56 +383,28 @@ def grove_pg_schema():
 
 @pytest.fixture(scope="function")
 def willow_mcp_capture():
-    """Install a fake ``willow_mcp.server`` in ``sys.modules``; yield captures.
+    """Patch ``willow_mcp_client.call_tool`` to capture ``kb_journal`` writes."""
+    from unittest.mock import patch
 
-    ``journal_writer._try_import_write`` does ``from willow_mcp import server``
-    inside a try/except, so a stub module in ``sys.modules`` is picked up
-    verbatim. Every call to ``server.kb_journal`` appends the payload to
-    the yielded list and returns a synthetic atom id — enough for
-    ``write_operator_turn`` to return ``{"ok": True, "id": ..., "ts": ...}``.
+    from grove import journal_writer as _jw
+    from grove import willow_mcp_client
 
-    Also resets the journal_writer log-once latch so the test starts clean.
-    """
     captures: list[dict[str, Any]] = []
 
-    def _kb_journal(*, app_id, content, source, tags):  # noqa: N803 — willow-mcp field names
+    def _call_tool(name, arguments):
+        if name != "kb_journal":
+            return None
         entry = {
-            "app_id": app_id,
-            "content": content,
-            "source": source,
-            "tags": list(tags) if isinstance(tags, (list, tuple)) else tags,
+            "app_id": arguments.get("app_id"),
+            "content": arguments.get("content"),
+            "source": arguments.get("source"),
+            "tags": list(arguments.get("tags") or []),
             "ts_seen": time.time(),
         }
         captures.append(entry)
         return {"id": f"atom-e2e-{len(captures)}", "domain": "journal"}
 
-    fake_pkg = types.ModuleType("willow_mcp")
-    fake_server = types.ModuleType("willow_mcp.server")
-    fake_server.kb_journal = _kb_journal  # type: ignore[attr-defined]
-    fake_pkg.server = fake_server  # type: ignore[attr-defined]
-
-    prev_pkg = sys.modules.get("willow_mcp")
-    prev_srv = sys.modules.get("willow_mcp.server")
-    sys.modules["willow_mcp"] = fake_pkg
-    sys.modules["willow_mcp.server"] = fake_server
-
-    # Ensure the log-once latch in journal_writer is fresh — a prior test
-    # may have flipped it and swallowed our first warning.
-    try:
-        from grove import journal_writer as _jw
-
-        _jw._reset_log_once_for_tests()
-    except Exception:  # noqa: BLE001
-        pass
-
-    try:
+    _jw._reset_log_once_for_tests()
+    willow_mcp_client._reset_client_for_tests()
+    with patch.object(willow_mcp_client, "call_tool", side_effect=_call_tool):
         yield captures
-    finally:
-        if prev_pkg is not None:
-            sys.modules["willow_mcp"] = prev_pkg
-        else:
-            sys.modules.pop("willow_mcp", None)
-        if prev_srv is not None:
-            sys.modules["willow_mcp.server"] = prev_srv
-        else:
-            sys.modules.pop("willow_mcp.server", None)

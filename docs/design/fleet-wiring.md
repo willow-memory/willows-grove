@@ -120,20 +120,17 @@ Reachable with no match → `None`. Those two are never collapsed.
 
 ### S3 · Grove → willow-mcp (the C11 seam)
 
-**Mechanism — two paths, tried in order.**
+**Mechanism — MCP ``tools/call`` via ``grove/willow_mcp_client.py``:**
 
 ```
-(a) in-process:  from willow_mcp import server as _wms
-                 _wms.kb_journal(app_id="willow-grove", content=…, source=…, tags=…)
-(b) HTTP:        POST {WILLOW_MCP_URL}/tools/kb_journal
-(c) neither     → Unreachable
+(a) streamable HTTP:  {WILLOW_MCP_URL}/mcp  → tools/call kb_journal / kb_journal_read
+(b) stdio child:      willow-mcp (no --serve) on the same seat
+(c) neither          → Unreachable
 ```
 
-Path (a) is not a network call at all — it is willow-mcp imported into Grove's
-own interpreter. That is why installing willow-mcp changes Grove's behaviour
-without changing a single line of Grove's configuration, and why Grove's test
-suite deliberately neutralises the import path so the HTTP seam is the one under
-test.
+Grove no longer posts to invented REST routes under ``/tools/*`` — willow-mcp
+``--serve`` exposes MCP at ``/mcp``, not per-tool paths. See governance
+proposal #25.
 
 **Identity.** Grove's app id is `willow-grove` (`grove/journal_writer.py:42`) —
 not `grove`. It is passed on **every** tool call; there is no session.
