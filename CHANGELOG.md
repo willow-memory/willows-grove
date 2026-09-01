@@ -9,7 +9,7 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 - C11 journal seam: Grove speaks MCP (`grove/willow_mcp_client.py`) — stdio
   child or `{WILLOW_MCP_URL}/mcp` — instead of invented REST `/tools/*`
   routes. Mock e2e server updated to match. Implements governance proposal
-  #25 item 1.
+  #25 item 1. PR 30.
 
 - GAP-007 closed: `kb_journal_read` landed upstream in willow-mcp; cleared
   `_PENDING_UPSTREAM` and updated e2e conftest to reflect the C11 read path
