@@ -135,7 +135,7 @@ CREATE INDEX IF NOT EXISTS idx_routing_decisions_public_created
 -- ────────────────────────────────────────────────────────────
 -- Public schema — tasks and knowledge
 -- (Willow system tables — created here for standalone setups;
---  willow-2.0 also manages these via its own migrations.)
+--  legacy fleet monolith also manages these via its own migrations.)
 -- ────────────────────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS public.tasks (
@@ -212,7 +212,7 @@ CREATE INDEX IF NOT EXISTS idx_binder_files_status ON public.binder_files (statu
 CREATE INDEX IF NOT EXISTS idx_binder_files_agent ON public.binder_files (agent);
 CREATE INDEX IF NOT EXISTS idx_binder_files_filed ON public.binder_files (filed_at DESC) WHERE status = 'filed';
 
--- public.knowledge is owned by willow-2.0/core/pg_bridge.py (_SCHEMA).
+-- public.knowledge is owned by the archived monolith's core/pg_bridge.py (_SCHEMA).
 -- Do NOT define it here — this file's stale DDL (BIGINT id, body, domain)
 -- does not match the live schema (TEXT id, summary, project, weight, etc.)
 -- and would silently break dashboard queries if applied before pg_bridge connects.

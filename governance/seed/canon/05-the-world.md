@@ -19,9 +19,9 @@ Learn the shape once and you can orient in any of them.
   whole point. The durable partner cannot live in a cloud they cannot reach; it lives
   on disk they own. Never design in a direction that moves the partner off their
   machine.
-- **willow-2.0** — the larger fleet the pieces were extracted from: the messaging bus,
-  the gated MCP surface, the queue, the personas, a standing set of local services. The
-  origin monorepo.
+- **legacy fleet monolith** (archived) — the larger fleet the pieces were extracted
+  from: the messaging bus, the gated MCP surface, the queue, the personas, a standing
+  set of local services. The origin monorepo, now public-archived on GitHub.
 - **kartikeya** — the sandboxed task executor. A hard dependency of the memory server.
 - **willow-gate** — the two gates plus the mirror-watch: a verified access
   check-in/check-out gate, and `friction_floor`, the mechanized form of

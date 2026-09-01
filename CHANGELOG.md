@@ -6,6 +6,11 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Changed
 
+- Drop **willow-2.0** product naming from fleet docs and canon: the archived
+  origin monorepo is **legacy fleet monolith**; checkout env is
+  `WILLOW_LEGACY_MONOLITH_REPO` (archive paths may still end in `willow-2.0`).
+  PR 31.
+
 - C11 journal seam: Grove speaks MCP (`grove/willow_mcp_client.py`) — stdio
   child or `{WILLOW_MCP_URL}/mcp` — instead of invented REST `/tools/*`
   routes. Mock e2e server updated to match. Implements governance proposal

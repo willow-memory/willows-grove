@@ -144,14 +144,14 @@ hash.
 ## Case 4 — The covenant has an ancestry *(new, Draft 0.8)*
 
 **Bears on:** `CONST-0-2`
-**Established:** read — `nestor/docs/covenant-lineage.md`, from shallow clones at `willow-1.9@b6383f2`, `willow-2.0@dd780da`, `Jeles@ed48de7`
+**Established:** read — `nestor/docs/covenant-lineage.md`, from shallow clones at `willow-1.9@b6383f2`, legacy fleet monolith `@dd780da`, `Jeles@ed48de7`
 **As of:** 2026-08-06 · **Status:** open
 
 *"You may propose. You may not confirm."*
 
 The rule is stated in the constitution as an eternity-clause axiom. It is not
 original to the constitution: it was written down, implemented, gated and
-adversarially probed in `willow-2.0` before the `nestor` package existed, with an
+adversarially probed in the legacy fleet monolith before the `nestor` package existed, with an
 ancestry reaching the 2026-05-18 migration in Case 3.
 
 The lineage document states the reason it was worth recording, and it applies to
