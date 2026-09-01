@@ -6,6 +6,28 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Fixed
 
+- The C11 read-back suite was green against a willow-mcp tool that was never
+  built. `tests/e2e_willow_mcp/mock_willow_mcp.py` serves
+  `/tools/kb_journal_read`; the name appears **zero times** in willow-mcp, so
+  both of Grove's read paths — `getattr(willow_mcp.server, "kb_journal_read")`
+  and the `POST {WILLOW_MCP_URL}/tools/kb_journal_read` fallback — depend on the
+  same absent dependency, and the fallback is not a second chance. The write
+  half is genuinely wired (`kb_journal` exists; Grove's writer was driven
+  through it to a live Postgres row); the read half raises `Unreachable`
+  against real willow-mcp while the mock answers happily.
+  `tests/test_mock_willow_mcp_surface.py` reads the mock's tool routes off the
+  live `build_app()` and compares them to the installed upstream. The obvious
+  pin — every mock route must exist upstream — would have been born failing,
+  since the divergence is real and outside this repo's control, and a pin that
+  cannot pass gets skipped or deleted. So the divergence is **enumerated
+  instead of excused** in `_PENDING_UPSTREAM` and fails in both directions: a
+  new unmatched route fails as drift, and `kb_journal_read` appearing upstream
+  also fails, telling the reader to strike the entry and close the gap. Both
+  directions were exercised before landing. `tests/e2e_willow_mcp/conftest.py`
+  now states which half of the suite proves a contract and which is a protocol
+  test against a pending tool, and `docs/KNOWN_GAPS.md` carries it as GAP-007.
+  Issue #16. PR 22.
+
 - `docs/ARCHITECTURE.md` carried three links that went nowhere, and all three
   pointed at the cross-repo material nothing else documents — a reader
   following them to learn how Grove meets the rest of the fleet arrived at a
