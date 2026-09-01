@@ -6,6 +6,30 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Fixed
 
+- Eleven dead documentation links across three design and runbook docs — the
+  sweep in PR 21 reported eight, and undercounted by three. Five pointed at
+  `the-house-already-knew.md`, a real and readable document in the public,
+  active `rudi193-cmd/safe-app-store`, through relative paths that assumed a
+  sibling checkout the 2026-08-10 org-folder move ended; they are absolute URLs
+  now. Two pointed at `docs/synthesis/*`, which `docs/INDEX.md` records as
+  out-of-tree by design at the **private, archived**
+  `rudi193-cmd/safe-app-willow-grove` — named with their location rather than
+  linked, since a URL there 404s for nearly every reader. One pointed at
+  `docs/generated/`, which is not missing but *generated*: extractor output,
+  and the extractor is itself out-of-tree.
+  **The three the first sweep missed are the interesting ones.** They climbed
+  out of the repository to `../../../willow-mcp/...` and *resolved cleanly*
+  during that audit, because a sibling checkout of willow-mcp happened to sit
+  beside this repo at the time. On a fresh clone and in CI they were always
+  dead. A file-existence check blesses a link whose validity depends on what
+  else the reader has cloned, so `tests/test_docs_links_resolve.py` asserts two
+  properties, not one: every relative link resolves, **and** no relative link
+  escapes the repository root. Resolution asks *is it there* and the answer
+  varies by machine; escape asks *could it ever reliably be there* and the
+  answer is a property of the link. Only the second is portable, and without it
+  the count stays wrong. No allowance list: every link was fixed rather than
+  excused. PR 23.
+
 - The C11 read-back suite was green against a willow-mcp tool that was never
   built. `tests/e2e_willow_mcp/mock_willow_mcp.py` serves
   `/tools/kb_journal_read`; the name appears **zero times** in willow-mcp, so

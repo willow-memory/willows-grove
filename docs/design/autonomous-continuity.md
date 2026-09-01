@@ -19,7 +19,7 @@ question and is three.
 
 | # | Continuity | Failure mode when absent | What it actually costs |
 |---|---|---|---|
-| **SC** | **Session continuity.** A specific agent's work survives context death, container recycle, or model swap. | The next model boots amnesic and re-derives what the last one already decided. | *The house's largest development cost is redoing things* ([`docs/the-house-already-knew.md`, §3](../../../safe-app-store/docs/the-house-already-knew.md)). |
+| **SC** | **Session continuity.** A specific agent's work survives context death, container recycle, or model swap. | The next model boots amnesic and re-derives what the last one already decided. | *The house's largest development cost is redoing things* ([`docs/the-house-already-knew.md`, §3](https://github.com/rudi193-cmd/safe-app-store/blob/master/docs/the-house-already-knew.md)). |
 | **DC** | **Duty continuity.** Someone is always at the post. LISTEN/NOTIFY fires and something answers; a journal write happens and something files it; the roster stays fresh. | Signals accumulate unwatched; the room has no cursor; the seat is unattended. | Every unattended signal is a missed handoff or a missed intervention. |
 | **EC** | **Escalation continuity.** The resident watcher knows when to wake a bigger model, and the bigger model knows what the watcher was watching for. | Small models act above their authority; big models get pulled in for work small models could have done; the ladder between them is a fiction. | Cost per turn goes up (episodic big-model burn) or trust goes down (small-model overreach). |
 
@@ -39,12 +39,12 @@ promoted:
   Article IV enforce the promotion tiers. Cryptographic seal:
   *"forging a witness in mine is one `UPDATE`; in Nestor a transplanted
   signature and a swapped body were both refused, the second at
-  similarity 1.00"* ([`docs/the-house-already-knew.md`, §2](../../../safe-app-store/docs/the-house-already-knew.md)).
+  similarity 1.00"* ([`docs/the-house-already-knew.md`, §2](https://github.com/rudi193-cmd/safe-app-store/blob/master/docs/the-house-already-knew.md)).
 - **Jeles** — verified-corpus organ in front of live search;
   `conflict_scan` finds what refutes rather than what resembles.
   1,028 nuggets across 74 seed files.
 - **kb_journal** — chat substrate; every operator turn writes an atom
-  with `domain: "journal"` ([`willow-mcp/src/willow_mcp/server.py:2607`](../../../willow-mcp/src/willow_mcp/server.py)).
+  with `domain: "journal"` ([`willow-mcp/src/willow_mcp/server.py:2607`](https://github.com/willow-memory/willow-mcp/blob/master/src/willow_mcp/server.py)).
 - **seed's six movements** — the onboarding IS the resume path ([D16](willow-grove-premise.md#d16)).
   A fresh model that walks the seed enters the room oriented.
 
@@ -52,7 +52,7 @@ promoted:
 yet been pointed at its own codebase and decision history.* The
 rediscovery tax measured on 2026-08-05 was four organs re-implemented
 worse in one session because the promoted answers were unreachable at
-the moment of building ([the-house-already-knew.md, §2](../../../safe-app-store/docs/the-house-already-knew.md)).
+the moment of building ([the-house-already-knew.md, §2](https://github.com/rudi193-cmd/safe-app-store/blob/master/docs/the-house-already-knew.md)).
 
 **C3 (decision).** Session continuity **is a solved problem** and does
 not need new mechanism. It needs the discipline of use: **read Nestor
@@ -175,7 +175,7 @@ operator overhead alone.
 already in the code:
 
 - L1 journal writes: `kb_journal` already accepts small-model authorship
-  ([`willow-mcp/src/willow_mcp/server.py:2607`](../../../willow-mcp/src/willow_mcp/server.py)).
+  ([`willow-mcp/src/willow_mcp/server.py:2607`](https://github.com/willow-memory/willow-mcp/blob/master/src/willow_mcp/server.py)).
 - L2 Nestor proposals: `status="proposed"` + `verifier=null` is exactly
   the state a small model leaves a pair in; sealing requires a distinct
   operator (Nestor `docs/agent-guide.md`, `CLAUDE.md`: *"You may propose.
@@ -186,7 +186,7 @@ already in the code:
 
 **Warrant:** The witness-count constitutional rule
 (*"three instances of one model are one witness, not three"* — cited in
-[the-house-already-knew.md, §6](../../../safe-app-store/docs/the-house-already-knew.md))
+[the-house-already-knew.md, §6](https://github.com/rudi193-cmd/safe-app-store/blob/master/docs/the-house-already-knew.md))
 applies to small models the same way it applies to big ones. A local
 7B is not a second reader, regardless of how many instances you run.
 That is why L3 is empty and L4 is not.
