@@ -28,9 +28,19 @@ Willow, but reached through her, never around her.
 ## Prior art (north star)
 
 **This document extends; it does not synthesize.** Four prior docs already
-stated the shape and are load-bearing for what follows:
+stated the shape and are load-bearing for what follows.
 
-- **[`docs/synthesis/the-one-desk.md`](../synthesis/the-one-desk.md)** —
+> **Two of the four are not in this tree.** `docs/synthesis/*` is recorded in
+> [`INDEX.md`](../INDEX.md) under *"Not in this tree (by design)"* — cross-repo
+> synthesis spanning Grove and other Willow surfaces lives at the old
+> `rudi193-cmd/safe-app-willow-grove` repo, which is **private and archived**.
+> They are named below rather than linked: a URL there would 404 for nearly
+> every reader, which is the same dead end as the relative paths they replaced,
+> dressed up as a working reference. Ask the operator for archive access if you
+> need them. The `safe-app-willow-grove/docs/synthesis/` prefix used further
+> down this document is the accurate location.
+
+- **`docs/synthesis/the-one-desk.md`** *(not in this tree — see below)* —
   ONEDSK, 2026-06-24, Vishwakarma with operator. The five-layer stack
   (**Voice / Desk / Tools / Memory / Trust**). The single-sentence
   architecture: *"Apps do not talk to each other. They talk to a shared
@@ -41,13 +51,13 @@ stated the shape and are load-bearing for what follows:
   tools, one tool driven by many voices — is an architectural given
   there. Willow's Grove renders it; it does not invent it.**
 
-- **[`docs/synthesis/grove-starter-borrow-map.md`](../synthesis/grove-starter-borrow-map.md)** —
+- **`docs/synthesis/grove-starter-borrow-map.md`** *(not in this tree — see below)* —
   GSBRW, 2026-06-24, Vishwakarma. The **steal-vs-wrap** discipline applied
   to the third-party starter pack (nvitop, toolong, kanban-tui, calcure,
   parllama, visidata, sqlit, fast-resume, feeds.fun, dooit, botany), plus
   a prioritized P0–P3 borrow backlog with acceptance criteria per steal.
 
-- **[`willow-mcp/docs/PRIOR_ART.md`](../../../willow-mcp/docs/PRIOR_ART.md)** —
+- **[`willow-mcp/docs/PRIOR_ART.md`](https://github.com/willow-memory/willow-mcp/blob/master/docs/PRIOR_ART.md)** —
   837-line MCP-ecosystem survey with **hard license filter** (Apache-2.0
   compatible only; MPL/EPL flagged file-level copyleft; GPL/LGPL/AGPL
   listed anyway so the cost is visible not invisible). 13 sections
@@ -59,7 +69,7 @@ stated the shape and are load-bearing for what follows:
   machinery, human-in-the-loop primitives — Grove inherits from here.**
   The Stack section below cites specific findings by section.
 
-- **[`safe-app-store/docs/the-house-already-knew.md`](../../../rudi193-cmd/safe-app-store/docs/the-house-already-knew.md)** —
+- **[`safe-app-store/docs/the-house-already-knew.md`](https://github.com/rudi193-cmd/safe-app-store/blob/master/docs/the-house-already-knew.md)** —
   Vishwakarma's field notes, 2026-08-05. Four things built one morning
   that already existed done better. The thesis: *"the fleet's largest
   development cost is redoing things"* — the fleet's organs (Jeles,
