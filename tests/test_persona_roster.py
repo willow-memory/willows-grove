@@ -91,11 +91,14 @@ class PersonaRosterTests(unittest.TestCase):
         pr._logged_missing = False
 
     def _env(self, willow_home: str | None = None):
-        env = {"HOME": str(self.fake_home)}
+        env = dict(os.environ)
+        env["HOME"] = str(self.fake_home)
         if willow_home is not None:
             env["WILLOW_HOME"] = willow_home
-        # Ensure any stale WILLOW_HOME from the host does not leak in.
-        return mock.patch.dict(os.environ, env, clear=False)
+        else:
+            # Ensure any stale WILLOW_HOME from the host does not leak in.
+            env.pop("WILLOW_HOME", None)
+        return mock.patch.dict(os.environ, env, clear=True)
 
     # ---- locate ----
     def test_locate_prefers_willow_home(self) -> None:

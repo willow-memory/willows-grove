@@ -42,6 +42,10 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Fixed
 
+- `run_test_dir_or_fail.sh` resolved the repo venv python instead of bare
+  `python3` (no pytest on fleet boxes). Persona roster tests now clear host
+  `WILLOW_HOME` when unset so in-repo fallback cases stay isolated. PR 28.
+
 - Two persona `canonical_file` pointers named files that do not exist.
   `heimdallr` pointed at `safe-app-willow-grove/CLAUDE.md`, a repo archived
   2026-08-27 and tombstoned `rebuilt -> willows-grove`; the registry was
