@@ -16,9 +16,8 @@ This document is how **`~/github/`** should look after a clean reclone: **one di
 2. **Base seat = short repo name** — `willow`, `hornbook`, `die-namic`, `almanac`, `homestead`, `play`, `terpsi` (optional until the face has a shared artifact; mandatory seats: see die Rule 1 in SAFE `docs/die-rules.md`).
 3. **Git cannot nest orgs** — disk layout is for humans and Cursor; **remotes** still use `github.com/<org>/<repo>`.
 4. **Symlinks, not copies** — meta workspaces link to real clones under `~/github/<org>/<repo>/` (almanac pattern). One physical clone per repo.
-5. **Runtime lives on the face's org** — each org may hold a **dot-directory** (not a git repo) for that face's persistence on the operator box: `.willow`, `.nestor`, `.hornbook`, `.almanac`, `.homestead`, `.forge`, `.terpsi`. These are **gitignored** trees (config, stores, handoffs, venvs). **`~/.willow`** (and peers) are **symlinks** into the canonical org path so legacy env vars and docs keep working.
-6. **willow-config** clones into **`willow-memory/.willow/`** — not `~/github/.willow` at the trunk.
-7. **Tier F stays out** — `willow-2.0`, `willow-1.9`, `willow-canonical`, `willow-compose`, duplicate flat almanac paths → archive or omit on fresh install ([`FLEET_PLACEMENT_DRAFT.md`](FLEET_PLACEMENT_DRAFT.md) §8).
+5. **Runtime lives on the face's org** — each org may hold a **dot-directory** for that face's persistence on the operator box: `.willow`, `.nestor`, `.hornbook`, etc. These hold config, stores, handoffs, venvs. **`~/.willow`** symlinks into `willow-memory/.willow`. That path is **runtime only** — `rudi193-cmd/willow-config` is tombstoned (2026-09-01); do not clone it.
+6. **Tier F stays out** — legacy monolith archives, `willow-1.9`, `willow-canonical`, `willow-compose`, duplicate flat almanac paths → archive or omit on fresh install ([`FLEET_PLACEMENT_DRAFT.md`](FLEET_PLACEMENT_DRAFT.md) §8).
 
 ---
 
@@ -36,7 +35,7 @@ This document is how **`~/github/`** should look after a clean reclone: **one di
 │   └── nestor/
 │
 ├── willow-memory/
-│   ├── .willow/                  # willow-config + fleet runtime; symlink ~/.willow → here
+│   ├── .willow/                  # fleet runtime ($WILLOW_HOME); NOT willow-config
 │   ├── dotgithub/
 │   ├── willows-grove/            # charter lives in governance/ here (relocated 2026-08-28)
 │   ├── willow-mcp/
@@ -161,7 +160,8 @@ Run from empty `~/github/`. Adjust branch (`main` vs `master`) per [`notes/fleet
 ```bash
 mkdir -p ~/github/{Die-Namic-Systems,willow-memory,hornbook-knowledge,almanac-data,homestead-affairs,forge-play,terpsi-programs,workshop}
 
-# Face runtime roots (empty dirs; .willow comes from willow-config clone below)
+# Face runtime roots (.willow is runtime only — willow-config is tombstoned)
+mkdir -p ~/github/willow-memory/.willow
 mkdir -p ~/github/Die-Namic-Systems/.nestor
 mkdir -p ~/github/hornbook-knowledge/.hornbook
 mkdir -p ~/github/almanac-data/.almanac
@@ -197,7 +197,6 @@ gh repo clone rudi193-cmd/Jeles             ~/github/hornbook-knowledge/Jeles
 gh repo clone rudi193-cmd/oakenscrolls-office ~/github/hornbook-knowledge/oakenscrolls-office
 gh repo clone rudi193-cmd/terpsi-music      ~/github/terpsi-programs/terpsi-music
 gh repo clone rudi193-cmd/safe-app-store-public ~/github/safe-app-store-public
-gh repo clone rudi193-cmd/willow-config     ~/github/willow-memory/.willow
 ln -snf ~/github/willow-memory/.willow ~/.willow
 ln -snf ~/github/homestead-affairs/.homestead ~/.homestead
 

@@ -6,6 +6,10 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Changed
 
+- **willow-config tombstoned:** `LOCAL_GITHUB_LAYOUT.md` no longer clones
+  `rudi193-cmd/willow-config`; `.willow` is runtime-only. See
+  `github/archive/RETIRE-willow-config-2026-09-01.md`. PR 32.
+
 - Drop **willow-2.0** product naming from fleet docs and canon: the archived
   origin monorepo is **legacy fleet monolith**; checkout env is
   `WILLOW_LEGACY_MONOLITH_REPO` (archive paths may still end in `willow-2.0`).
