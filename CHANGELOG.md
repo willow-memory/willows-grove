@@ -4,6 +4,37 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ## [Unreleased]
 
+### Changed
+
+- The constitution stopped naming the machinery. Draft 0.8 strips every
+  implementation reference from `governance/CONSTITUTION.md` — no filenames,
+  module names, product names or agent names in the body or the appendices —
+  on the rule that references point **up**: artifacts cite clauses by Trace ID
+  and the law cites none of them. Every citation the document has ever retired
+  was a downward one, and no upward reference has gone stale, because a Trace
+  ID does not move when a file does. Article 0 is untouched, asserted by diff
+  rather than by intention. Three further moves ride with it. Cases, field
+  evidence and name-collision notes move to a new companion volume,
+  `governance/CASEBOOK.md` (nine cases, four disambiguations; six had never
+  been written down) — a case is *supposed* to name the actor, the date and
+  the file, which is why it cannot live in the statute. Article IV's single
+  ladder splits into the two axes it had been fusing: **Standing** (who has
+  checked this) and **Ground** (what it rests on), orthogonal, with
+  Contested/Frontier/Canonical retained as their named conjunctions so no
+  Trace ID moves; new IV.5 forbids inferring either axis from the other and
+  IV.6 holds that a verifier is an attribution, not a warrant. And Appendix
+  A's hand-maintained enforcement table — which named an archived module as
+  Article II's enforcement while the gate that actually enforces it went
+  unnamed — is replaced by `governance/scripts/const_coverage.py`, a generated
+  report on a four-verdict scale (satisfied / **differently** / not applicable
+  / failing). "Differently" exists because a clause can hold by a mechanism
+  that is not its own, and scoring that either way would be a lie. The script
+  refuses to guess verdicts, reading them from
+  `governance/compliance/coverage-declarations.json`, which ships empty on
+  purpose: Draft 0.8 provides the form, the verdicts are the operator's. It
+  also excludes itself from its own scan, because a gate fails closed on its
+  subject and open on itself. Still Draft, still ratified by no one. PR 26.
+
 ### Fixed
 
 - Two persona `canonical_file` pointers named files that do not exist.
