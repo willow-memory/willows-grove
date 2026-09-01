@@ -56,7 +56,7 @@ Nestor is installed. Neither repo can fully test itself alone.
 | charter case cards | internal | Nestor's constitution audit | **this repo**, `governance/compliance/cases/` |
 | `numpy` | external | willow-mcp voice stages | pip |
 | `hypothesis`, `pytest-xdist` | external | Nestor's property lane | pip |
-| `playwright==1.56.0` | external | Nestor's browser lane | pip — **version-pinned, see §5** |
+| `playwright>=1.62` (`nestor[browser]`) | external | Nestor's browser lane | pip — **must match Chromium build, see F4** |
 | full git history + tags | external | willow-mcp changelog dedup | `git fetch --unshallow --tags` |
 
 ---
@@ -113,6 +113,7 @@ git clone https://github.com/rudi193-cmd/Jeles          ~/Jeles
 pip install -e ~/willow-mcp"[test,web,nestor]"   # pulls kartikeya + jeles
 pip install -e ~/kartikeya
 pip install -e ~/willow-gate
+pip install -e ~/nestor-repo"[dev,keys,gate,browser]"   # browser → playwright>=1.62
 pip install "pytest-xdist[psutil]" pytest-cov hypothesis shtab numpy
 ```
 
@@ -179,6 +180,15 @@ cp ~/rudi193-cmd/willow-2.0/willow/fylgja/config/kart-sandbox.json \
 
 ### 2.5 Nestor's fleet paths
 
+Source the fleet env before any test run (sets `WILLOW_HOME`, Postgres,
+Nestor paths, `umask 077`, and a `TMPDIR` **outside** `$WILLOW_HOME` — pytest
+dirs under `.willow/` break git-scoped nestor tests because `.willow` is itself
+a checkout):
+
+```bash
+. ~/github/willow-memory/.willow/fleet.env
+```
+
 All env-overridable, so nothing needs to be moved into a hardcoded location:
 
 ```bash
@@ -197,11 +207,16 @@ meaningless as uid 0. Run as anyone else:
 
 ```bash
 useradd -m grovetest
-su grovetest -c "cd ~/willow-mcp && HOME=/home/grovetest python3 -m pytest tests/test_lease.py"
+# One-time: copy tree + venv into grovetest's home (their home is 700).
+sudo rsync -a --exclude '.venv' --exclude '.git' ~/github/willow-memory/willow-mcp/ /home/grovetest/willow-mcp/
+sudo chown -R grovetest:grovetest /home/grovetest/willow-mcp
+sudo -u grovetest bash -lc 'cd ~/willow-mcp && python3 -m venv .venv && .venv/bin/pip install -q -e ".[test]"'
+# Run (use sudo -u, not su — grovetest has no login password):
+sudo -u grovetest bash -lc 'cd ~/willow-mcp && HOME=/home/grovetest .venv/bin/python -m pytest tests/test_lease.py'
 # 60 passed
 ```
 
-Playwright must match the Chromium already on the box — see §5.
+Playwright must match the Chromium already on the box — see **F4** in §6.
 
 ---
 
@@ -209,10 +224,10 @@ Playwright must match the Chromium already on the box — see §5.
 
 | Repo | Before | After | Recovered |
 |---|---|---|---|
-| **willows-grove** | 517 passed / 9 skipped | **522 / 4** | 5 `kart_reader` DB tests |
-| **willow-mcp** | 2874 / 14 | **2883 / 5** | 4 changelog, 3 fleet policy, 2 voice |
+| **willows-grove** | 517 passed / 9 skipped | **546 / 1** | kart_reader DB, persona roster env |
+| **willow-mcp** | 2874 / 14 | **2880 / 10** | egress import, home_init modes, conftest isolation |
 | **kartikeya** | — | **143 / 3** | (3 remaining are spent guards, §4) |
-| **nestor** | 2264 / 25 / 1 failed | **2285 / 13 / 2 failed** | 6 browser, charter cards, jeles, gate |
+| **nestor** | 2264 / 25 / 1 failed | **2310 / 17** | F3 cloud_seal pollution, TMPDIR outside `.willow` |
 
 ### The C11 write path, end to end, no mock
 
@@ -323,18 +338,25 @@ The intent is right and worth keeping; the mechanism needs a subprocess or a
 F2 and F3 are in `Die-Namic-Systems/nestor`, outside this session's GitHub
 scope — readable over the public git proxy, not filable from here.
 
-### F4 — Playwright must be pinned to the Chromium on the box
+### F4 — Playwright must match the Chromium build on the box
 
-This environment ships Chromium build **1194** at
-`/opt/pw-browsers/chromium-1194/chrome-linux/chrome`. A bare
-`pip install playwright` gives 1.62.0, which looks for build **1234** under a
-different layout (`chrome-linux64/`), and every browser test skips with
-*"PLAYWRIGHT_BROWSERS_PATH not populated"* — which reads like a missing
-environment variable and is actually a version mismatch.
+Playwright Python version is coupled to a **browser build id**, not semver alone.
+A mismatch reads as *"PLAYWRIGHT_BROWSERS_PATH not populated"* when the real
+problem is the wrong build directory.
 
-`pip install playwright==1.56.0` matches build 1194: **6 nestor browser tests
-pass.** Note 1.56.**1** does not exist on PyPI even though the bundled Node CLI
-reports that version.
+| Host | Chromium | Playwright | Notes |
+|---|---|---|---|
+| Fleet CI image | `1194` at `/opt/pw-browsers/chromium-1194/chrome-linux/` | `playwright==1.56.0` | Preinstalled; never `playwright install` |
+| Desktop (this box) | `1234` at `~/.cache/ms-playwright/chromium-1234/chrome-linux64/` | `playwright>=1.62` via `pip install -e nestor"[browser]"` | **6 browser tests pass** |
+| Ubuntu 26.04+ | — | `>=1.62` only | `playwright install chromium` fails: *does not support ubuntu26.04-x64* |
+
+Verify before running `NESTOR_BROWSER_TEST=1`:
+
+```bash
+python -c "from playwright.sync_api import sync_playwright as s
+with s() as p: print(p.chromium.executable_path)"
+bash scripts/ci-test.sh browser   # nestor checkout
+```
 
 ---
 
