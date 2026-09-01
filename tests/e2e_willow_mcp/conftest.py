@@ -6,24 +6,21 @@ the invariants). The ``mock_mcp_server`` fixture spins up
 ``mock_willow_mcp.build_app`` on an ephemeral loopback port in a
 background thread, waits for /health, and hands tests a URL. Every
 test also gets ``WILLOW_MCP_URL`` set on the environment so
-``grove/journal_writer.py`` and ``grove/journal_reader.py`` take their
-HTTP path (the direct-import path is neutralized in-process — see
-below — so we always exercise the HTTP seam the CI protocol relies on).
+``grove/journal_writer.py`` and ``grove/journal_reader.py`` reach the
+mock over MCP Streamable HTTP at ``{WILLOW_MCP_URL}/mcp`` — the same
+transport willow-mcp ``--serve`` exposes.
 
 What this suite does and does not prove
 ---------------------------------------
 
-The WRITE and READ halves are both real contracts now: ``kb_journal`` and
+The WRITE and READ halves are both real MCP tools: ``kb_journal`` and
 ``kb_journal_read`` exist in willow-mcp (landed 2026-09-01, issue #16).
-A green read-back here is evidence the C11 seam works end to end when
-``willow_mcp`` is installed; the mock still pins the HTTP protocol for CI
-runs that deliberately omit upstream.
+A green read-back here is evidence the C11 seam speaks MCP end to end;
+the mock pins that protocol for CI runs that deliberately omit upstream.
 """
 from __future__ import annotations
 
 import contextlib
-import json
-import os
 import socket
 import sys
 import threading
@@ -82,7 +79,9 @@ class _MockServer:
     @property
     def store(self):
         """The mock's in-memory atom store — for direct inspection in tests."""
-        return self._app.state.store
+        from mock_willow_mcp import get_store  # type: ignore[import-not-found]
+
+        return get_store()
 
     def post(self, path: str) -> None:
         """Fire-and-forget POST for /kill /restore /reset — tests only."""
@@ -118,7 +117,6 @@ def mock_mcp_server():
     via :meth:`_MockServer.reset` in the per-test fixture below.
     """
     import uvicorn
-
     from mock_willow_mcp import build_app  # type: ignore[import-not-found]
 
     app = build_app()
@@ -144,29 +142,20 @@ def mock_mcp_server():
 
 @pytest.fixture()
 def mock_mcp(mock_mcp_server, monkeypatch):
-    """Per-test wrapper: fresh store + WILLOW_MCP_URL set + import path neutralized.
+    """Per-test wrapper: fresh store + WILLOW_MCP_URL set for MCP HTTP.
 
     Also resets ``journal_writer`` / ``journal_reader`` log-once latches
-    so a test that expects the WARNING/INFO can catch it fresh.
-
-    The direct-import branch (path (a) in both modules) is neutralized
-    here — some dev boxes have ``willow_mcp`` on the PYTHONPATH, and we
-    want every test to exercise the HTTP seam the CI protocol depends
-    on. We do this by pushing a sentinel that ``_try_import_*`` will
-    interpret as "unavailable"; ``monkeypatch`` restores it after the
-    test.
+    and the willow-mcp client singleton so env changes take effect.
     """
     from grove import journal_reader, journal_writer
+    from grove import willow_mcp_client
 
     # Reset atoms and kill flag before every test.
     mock_mcp_server.reset()
 
-    # Point Grove's HTTP paths at the mock.
+    # Point Grove's MCP HTTP transport at the mock base URL.
     monkeypatch.setenv("WILLOW_MCP_URL", mock_mcp_server.url)
-
-    # Force the HTTP path — neutralize direct-import.
-    monkeypatch.setattr(journal_writer, "_try_import_write", lambda *a, **kw: None)
-    monkeypatch.setattr(journal_reader, "_try_import_read", lambda *a, **kw: None)
+    willow_mcp_client._reset_client_for_tests()
 
     # Reset log-once latches so ``self.assertLogs`` sees fresh emissions.
     journal_writer._reset_log_once_for_tests()

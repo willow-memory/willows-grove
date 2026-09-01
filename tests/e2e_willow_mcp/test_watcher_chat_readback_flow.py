@@ -30,7 +30,7 @@ from grove.resident_watcher import DOMAINS, SENDER, ResidentWatcher
 class _NestorPermits:
     """Stand-in for ``NestorClient`` that permits every decision (D7 posture)."""
 
-    def decision_check(self, question):  # noqa: ARG002 — permitting stub
+    def decision_check(self, question):
         return None  # None → resident_watcher._nestor_permits returns True
 
     def close(self) -> None:
@@ -50,12 +50,8 @@ def test_watcher_writes_and_chat_reads_back_the_same_atom(mock_mcp):
 
     row = {"id": 1, "sender": "operator", "content": "please schedule my dentist"}
 
-    # Stub the classifier at the method seam. Patching
-    # ``urllib.request.urlopen`` at the module level would also bleed
-    # into ``journal_writer``'s HTTP call to the mock (same stdlib
-    # symbol; module-scoped attribute lookup resolves to the identical
-    # object). Overriding the bound method here isolates the classifier
-    # while leaving the writer's HTTP seam real.
+    # Stub the classifier at the method seam — isolates classification from
+    # the journal MCP write path.
     watcher._classify_message = lambda text, sender: "pa"
 
     watcher._on_message(row)

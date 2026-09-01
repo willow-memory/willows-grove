@@ -36,7 +36,7 @@ The wrapper resolves the interpreter (`GROVE_VENV`, then `.venv`, then
 | `GROVE_SERVE_HOST` | `127.0.0.1` | [`grove_serve.py`](../grove_serve.py) | Bind host. Non-loopback prints a warning — the seat is designed for the desk, not the internet. |
 | `GROVE_SERVE_PORT` | `8766` | [`grove_serve.py`](../grove_serve.py) | Bind port. `8765` is `grove-mcp-serve`; do not collide. |
 | `WILLOW_HOME` | *(none)* | [`grove/envelope_reader.py`](../grove/envelope_reader.py), [`grove/persona_roster.py`](../grove/persona_roster.py), [`grove/nestor_client.py`](../grove/nestor_client.py) | Per-node override root. Highest-priority location for `envelopes/`, `fleet_personas.json`, and `nestor/` state. |
-| `WILLOW_MCP_URL` | *(none)* | [`grove/journal_writer.py`](../grove/journal_writer.py) | If set, chat writes POST to `{WILLOW_MCP_URL}/tools/kb_journal`. Absent → in-process `willow_mcp.server` import; failing that → 503. |
+| `WILLOW_MCP_URL` | *(none)* | [`grove/journal_writer.py`](../grove/journal_writer.py) | If set, journal writes call `{WILLOW_MCP_URL}/mcp` (`tools/call` → `kb_journal`). Absent → stdio child `willow-mcp`; failing that → 503. |
 | `WILLOW_DB_URL` | *(none)* | [`grove/kart_reader.py`](../grove/kart_reader.py) | Postgres DSN for the Kart escalation queue (`public.tasks`). Absent → dispatch rail returns `[]` (log-once). |
 | `GROVE_VENV` | *(none)* | [`scripts/grove-serve-run`](../scripts/grove-serve-run) | Alternate venv root for the launcher. |
 
