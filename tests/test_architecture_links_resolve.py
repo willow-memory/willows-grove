@@ -7,8 +7,8 @@ pointed at exactly the cross-repo material nothing else documents — so a
 reader who followed them to understand how Grove meets the rest of the
 fleet arrived at a 404 and had no other route:
 
-* ``../../willow-2.0/docs/db/WILLOW_SCHEMA.md`` — a real document, reached
-  by a path that only resolves when willow-2.0 sits beside this repo. The
+* ``../../<legacy-monolith>/docs/db/WILLOW_SCHEMA.md`` — a real document, reached
+  by a path that only resolves when the archived monolith checkout sits beside this repo. The
   2026-08-10 move put every repo under its own org folder, so the relative
   hop stopped working while the file it named stayed perfectly readable.
   A dead link caused by layout, not by absence.

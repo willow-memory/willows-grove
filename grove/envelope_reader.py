@@ -71,7 +71,7 @@ def _candidate_dirs() -> list[Path]:
     already migrated (its syscall table's ``registry`` field was repointed at
     the same time, and THE PLANTING carried over with its ``registry_path``
     rewritten); this reader had not, so Grove displayed a registry the engine
-    did not enforce — 15 active envelopes bound to ``willow-2.0`` paths that
+    did not enforce — 15 active envelopes bound to legacy monolith paths that
     were deleted at greenfield.
 
     Later entries override earlier ones on ``id`` collision (see ``read_all``).

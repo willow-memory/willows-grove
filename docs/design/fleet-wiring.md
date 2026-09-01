@@ -4,11 +4,11 @@
 
 `docs/ARCHITECTURE.md` is the canonical reference for **Grove**, and says so:
 its scope line stops at Grove's own boundary, and it hands cross-repo pipelines
-off to `willow-2.0/core/pg_bridge.py` — an archived repository — through a
-sibling path that does not resolve. Three of its outbound links are dead today:
+off to the archived monolith's `core/pg_bridge.py` — through a sibling path that
+does not resolve. Three of its outbound links are dead today:
 
 ```
-DEAD  ../willow-2.0/docs/db/WILLOW_SCHEMA.md
+DEAD  ../<legacy-monolith>/docs/db/WILLOW_SCHEMA.md
 DEAD  docs/CROSS_REPO_BRIDGE.md
 DEAD  docs/extractor/GROVE_DOCS_EXTRACTOR_SPEC.md
 ```
@@ -240,7 +240,7 @@ Not a protocol — a path, resolved from the environment by
 |---|---|---|
 | `constitution_cases()` | `WILLOW_CONSTITUTION_CASES`, else `WILLOW_CHARTER_REPO` + `governance/compliance/cases` | several `~/github/...` layouts |
 | `jeles_checkout()` | `JELES_REPO` | `/workspace/jeles`, `~/github/…/Jeles` |
-| `willow20_checkout()` | `WILLOW_20_REPO` | archived willow-2.0 layouts |
+| `legacy_monolith_checkout()` | `WILLOW_LEGACY_MONOLITH_REPO` | archived monolith layouts |
 
 `constitution_cases()` resolves to the `const_*.py` Trace-ID cards in **this
 repository**, at `governance/compliance/cases/`. Nestor audits its own package

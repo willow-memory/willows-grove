@@ -52,7 +52,7 @@ Nestor is installed. Neither repo can fully test itself alone.
 | `jeles` | internal | willow-mcp; Nestor's jeles audit wants a *checkout*, not the wheel | `rudi193-cmd/Jeles` (public) |
 | `nestor` | internal | Grove's decision seam; willow-mcp `[nestor]` extra | `Die-Namic-Systems/nestor` (public) |
 | `willow-gate` | internal | Nestor `[gate]` extra → `nestor.cloud_seal` | `willow-memory/willow-gate` |
-| `willow-2.0` | internal (archived) | fleet Kart sandbox containment policy | archived clone |
+| legacy fleet monolith | internal (archived) | fleet Kart sandbox containment policy | archived clone (`WILLOW_LEGACY_MONOLITH_REPO`) |
 | charter case cards | internal | Nestor's constitution audit | **this repo**, `governance/compliance/cases/` |
 | `numpy` | external | willow-mcp voice stages | pip |
 | `hypothesis`, `pytest-xdist` | external | Nestor's property lane | pip |
@@ -169,11 +169,11 @@ machine, not a containment failure:
 
 ```bash
 mkdir -p /root/github/.willow
-cp ~/rudi193-cmd/willow-2.0/willow/fylgja/config/kart-sandbox.json \
+cp "$WILLOW_LEGACY_MONOLITH_REPO/willow/fylgja/config/kart-sandbox.json" \
    /root/github/.willow/kart-sandbox.json
 ```
 
-> **Caveat, load-bearing.** That copy is from the **archived** willow-2.0 tree,
+> **Caveat, load-bearing.** That copy is from the **archived** legacy monolith tree,
 > not a live fleet host. The three assertions pass against it, which says the
 > archived policy is clean — it does not say the current fleet host's policy is.
 > Do not read a green here as an audit of production.
@@ -194,7 +194,7 @@ All env-overridable, so nothing needs to be moved into a hardcoded location:
 ```bash
 export WILLOW_CHARTER_REPO=~/willows-grove      # -> governance/compliance/cases
 export JELES_REPO=~/Jeles
-export WILLOW_20_REPO=~/rudi193-cmd/willow-2.0
+export WILLOW_LEGACY_MONOLITH_REPO=~/github-archive-greenfield-2026-08-10/archive/legacy-flat-2026-08-10/willow-2.0
 export NESTOR_EXTERNAL_TEST=1
 export NESTOR_BROWSER_TEST=1
 ```

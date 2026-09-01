@@ -115,7 +115,7 @@ the disk:
 > it's usually true."*
 
 The failure was not laziness about search. It was treating **absent from the
-working set** as **absent from the box.** `willow-2.0` is archived on GitHub, so
+working set** as **absent from the box.** The legacy fleet monolith is archived on GitHub, so
 I reached for the API; it was also sitting clean at
 `~/github-archive-greenfield-2026-08-10/`, 52,320 files, and had been the whole
 time. Extracting it locally produced **3,583 claims** in one pass, including the
@@ -139,7 +139,7 @@ greenfield archive holds two dozen retired repositories — `willow-1.9`,
 **A silent corpus is not proof of absence, it is proof nobody extracted.** That
 is the same distinction the refresh driver already draws between *refused* and
 *retired*, applied one level up: at the moment Nestor returned zero for
-"ratatosk", the correct reading was *the corpus was never given willow-2.0* —
+"ratatosk", the correct reading was *the corpus was never given the legacy monolith* —
 not *ratatosk does not exist*.
 
 For the Forge this is a hook, not a habit. The entry scan (§3) already asks the
@@ -786,7 +786,7 @@ Reading it turned up a fifth stale-org sighting and a sixth: the Nestor
 dependency points at `rudi193-cmd/Nestor` in **both** `requirements.txt:11` and
 `loki/requirements.txt:6`, resolving only through GitHub's transfer redirect, and
 `scripts/audit_app_config.py:22-28` audits a **pre-migration fleet** — `Willow`,
-`willow-2.0`, `willow-config`, `safe-app-willow-grove`, several cut or archived
+the legacy fleet monolith, `willow-config`, `safe-app-willow-grove`, several cut or archived
 on 2026-08-27. The fleet watcher's own roster cannot see the seven orgs that
 exist. Full checklist in `BOT-INVENTORY.md`.
 
