@@ -13,23 +13,11 @@ below — so we always exercise the HTTP seam the CI protocol relies on).
 What this suite does and does not prove
 ---------------------------------------
 
-The WRITE half is a real contract: ``kb_journal`` exists in willow-mcp
-and Grove's writer has been driven through it against a live Postgres.
-
-The READ half is a **protocol test against a tool that does not exist
-upstream yet.** ``kb_journal_read`` is served by the mock and appears
-zero times in willow-mcp; ``grove/journal_reader.py:174`` records that
-Gate 5 is expected to land it. So a green read-back here means "Grove
-speaks the protocol it was designed against", NOT "the read seam works
-end to end" — the same call against real willow-mcp raises
-``Unreachable``.
-
-That distinction was invisible until issue #16, because the mock always
-answered. It is enumerated now in
-``tests/test_mock_willow_mcp_surface.py`` (``_PENDING_UPSTREAM``), which
-fails if the mock grows another route upstream lacks AND fails once
-``kb_journal_read`` lands, so this note gets deleted rather than
-forgotten. Tracked as GAP-007.
+The WRITE and READ halves are both real contracts now: ``kb_journal`` and
+``kb_journal_read`` exist in willow-mcp (landed 2026-09-01, issue #16).
+A green read-back here is evidence the C11 seam works end to end when
+``willow_mcp`` is installed; the mock still pins the HTTP protocol for CI
+runs that deliberately omit upstream.
 """
 from __future__ import annotations
 

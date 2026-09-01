@@ -73,15 +73,7 @@ _EXPECTED_TOOL_ROUTES = frozenset({"kb_journal", "kb_journal_read"})
 #: each with the reason it is tolerated. Not a general escape hatch: the
 #: test asserts these are STILL missing upstream, so the entry deletes
 #: itself the day the dependency lands.
-_PENDING_UPSTREAM = {
-    "kb_journal_read": (
-        "Gate 5 lands kb_journal_read in willow-mcp alongside the resident "
-        "watcher (grove/journal_reader.py:174). Until it does, the C11 "
-        "read-back suite is a PROTOCOL test against a pending tool, not "
-        "evidence the seam works end to end. See docs/KNOWN_GAPS.md GAP-007 "
-        "and issue #16."
-    ),
-}
+_PENDING_UPSTREAM: dict[str, str] = {}
 
 
 def _tool_routes() -> set[str]:

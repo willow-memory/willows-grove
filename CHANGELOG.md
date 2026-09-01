@@ -6,6 +6,11 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Changed
 
+- GAP-007 closed: `kb_journal_read` landed upstream in willow-mcp; cleared
+  `_PENDING_UPSTREAM` and updated e2e conftest to reflect the C11 read path
+  is no longer a protocol-only mock. HTTP serve-mode parity remains open.
+  PR 27.
+
 - The constitution stopped naming the machinery. Draft 0.8 strips every
   implementation reference from `governance/CONSTITUTION.md` — no filenames,
   module names, product names or agent names in the body or the appendices —
