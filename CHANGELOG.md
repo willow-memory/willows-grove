@@ -6,6 +6,18 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Fixed
 
+- Two persona `canonical_file` pointers named files that do not exist.
+  `heimdallr` pointed at `safe-app-willow-grove/CLAUDE.md`, a repo archived
+  2026-08-27 and tombstoned `rebuilt -> willows-grove`; the registry was
+  generated the same day, so it captured the path on its way out and the
+  gatekeeper's own voice source has named a missing tree ever since. `nestor`
+  pointed at `Nestor/nestor/persona.py`, which never resolved either — every
+  other pointer is repo-relative with no org and the checkout is lowercase. All
+  nine pointers were checked; these were the only misses. Separately measured
+  and left for an operator decision: `$WILLOW_HOME/fleet_personas.json` is the
+  copy `PersonaRoster()` actually loads and carries 0/16 voices and 3/16
+  visuals, while this repo's copy carries 17/17 of each. PR 24.
+
 - Eleven dead documentation links across three design and runbook docs — the
   sweep in PR 21 reported eight, and undercounted by three. Five pointed at
   `the-house-already-knew.md`, a real and readable document in the public,
