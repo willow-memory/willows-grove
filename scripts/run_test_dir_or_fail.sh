@@ -57,4 +57,22 @@ if ! grep -lE 'def test_' "${PY_FILES[@]}" > /dev/null 2>&1; then
     exit 1
 fi
 
-exec python3 -m pytest "$@" "$DIR"
+# Resolve a Python interpreter, in order of preference (same order as
+# run_mcp.sh / grove-serve-run so CI and local runs agree):
+#   1. $GROVE_VENV/bin/python3   — explicit override (systemd / fleet box)
+#   2. repo ./.venv/bin/python3  — conventional home for this checkout
+#   3. python3 on PATH           — last resort; may lack pytest
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+PY=""
+if [[ -n "${GROVE_VENV:-}" && -x "${GROVE_VENV}/bin/python3" ]]; then
+  PY="${GROVE_VENV}/bin/python3"
+elif [[ -x "${REPO_ROOT}/.venv/bin/python3" ]]; then
+  PY="${REPO_ROOT}/.venv/bin/python3"
+elif [[ -x "$(pwd)/.venv/bin/python3" ]]; then
+  PY="$(pwd)/.venv/bin/python3"
+else
+  PY="$(command -v python3)"
+fi
+
+exec "$PY" -m pytest "$@" "$DIR"
