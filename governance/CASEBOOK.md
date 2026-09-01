@@ -166,89 +166,88 @@ Five of the six do not yet have one.
 
 ---
 
-## Case 5 — Any string is a verifier *(new, Draft 0.8)*
+## Case 5 — What a seal proves depends on how the store is configured *(new, Draft 0.8; rewritten twice)*
 
-**Bears on:** `CONST-0-1`, `CONST-0-2`, `CONST-IV-2`, `CONST-IV-6`
-**Established:** measured — sealed pair `4988f34f-0393-59b1-9391-1112325e5c84`, verifier `sean campbell`, in the live store at `~/.nestor/keep/`; extended by reading both package trees
-**As of:** 2026-08-31 · **Status:** open, narrowed — referred to the Nestor maintainers 2026-08-31 and corrected to them the same day
+**Bears on:** `CONST-0-1`, `CONST-0-2`, `CONST-IV-2`, `CONST-IV-5`, `CONST-IV-6`
+**Established:** measured — five configurations, fresh store per case, at `7ccb887`, by the maintaining session of the package itself, 2026-09-01. The two earlier readings of this case were established by quotation and by inference respectively, and both were wrong.
+**As of:** 2026-09-01 · **Status:** open — one finding survives, narrowed twice
 
-> **"What is the finding, as against the story?"**
-> *"There is no per-domain verifier policy. Measured: `add_pair(status='sealed',
-> verifier='anybody-at-all')` is accepted and `is_verified_seal` returns True."*
+### The measurement
 
-The covenant of Case 4 is enforced by convention and by which code path a caller
-takes, **not by the storage layer.** Any string is an acceptable verifier and the row
-is served as a verified seal.
+`add_pair(status="sealed", verifier="anybody-at-all")`, a fresh store per case:
 
-The asymmetry is visible inside one codebase. The tier-1.5 recognizer seam refuses a
-sealed passage explicitly, and names why in its own error text:
+| configuration | result |
+|---|---|
+| no key, no keyring | ACCEPTED, `is_verified_seal=True` |
+| shared seal key, no keyring | ACCEPTED, `is_verified_seal=True` |
+| keyring holding only `rita` | **REFUSED** — `UnknownVerifierError` |
+| keyring, `verifier="rita"` (control) | ACCEPTED |
+| no key, strict-signing required | **REFUSED** — `SigningRequiredError` |
 
-> *"the seam exists specifically to keep the sealed lane under the covenant's control
-> at tier 1"*
-> — sealed pair `bab3bdb5-54e2-51ea-a584-a2c3f069268c`
+**Row 3 settles it. The primitive refuses.** The path runs `add_pair` →
+`_resolve_seal_sig` → `sign_seal` → keyring, **before any store read or write**, and
+the code says so in its own docstrings: *"a refusal leaves nothing behind,"* and, of
+the keyring case, *"a seal is valid only under the key belonging to the verifier named
+on it. So a signature is evidence about a person."*
 
-One seam guards the lane. The direct write path does not.
+There is no dumb-primitive-with-the-covenant-above-it. There is a **configured store
+and an unconfigured one**, and the unconfigured state announces itself in a warning
+that was in view the whole time.
 
-**A live instance.** `willows-grove/docs/design/willow-grove-premise.md` records
-sixteen design decisions as `(sealed)`, the first of them as *"sealed, verifier:
-heimdallr"* — an agent named as the verifier of the founding decision about what the
-repository is. A query for that decision's own normalized question against the live
-store returns `draft` at 0.718 against a 0.92 bar, so the seals are not there; but
-nothing in the store would have refused them.
+### Two wrong readings, kept because the errors differ
 
-### The narrowing — and how the first reading of this case was wrong
+**Reading one — "the covenant is unenforced."** Established by quoting a sealed pair
+that said there was no per-domain verifier policy, without probing. Stale: a verifier
+allowlist shipped in a later release. **Error kind: a dated record read as a present
+fact.**
 
-The finding above was first written as *"the covenant is unenforced."* That was too
-broad, and the correction is the more useful record.
+**Reading two — "gated where a session is attested, ungated where a pair is written."**
+Established by inference from a premise never measured, and sent onward as a
+*correction* to reading one. There is no per-package split on this axis. **Error kind:
+a confident structural claim built on an unmeasured premise** — which is not seal
+staleness at all, but the older failure this book already records twice (Cases 1 and
+2), arriving in the costume of a correction.
 
-**One package gates it; the other does not.** In the session path of the fleet's
-runtime, an attestation is verified over a **frozen wire message** before any session
-record is written, and an invalid signature returns a structured error rather than a
-record. Its suite includes explicit refusals for an unknown verifier and for a
-compromised one. In the memory store, `add_pair` has no such refusal. **Both packages
-ship the keyring that would gate it**, and each carries a client-signing wire contract
-that names the other's in its own docstring, with a test asserting the two messages
-cannot be mistaken for each other. The split was deliberate.
+The first probe anyone ran was run by the package's own maintainers, after both
+readings had been written down and one of them relayed as authoritative.
 
-So the accurate statement is not that the covenant is unenforced. It is that **the
-covenant is gated where a session is attested and ungated where a pair is written,
-using the same machinery** — which is specific, and fixable, in a way the first
-version was not.
+### What survives: three trust states, one boolean
 
-**The open question, which this case does not settle.** Whether the permissive write
-is deliberate — the low-level primitive stays dumb and the covenant lives in the
-recipes and CLI paths above it — or is the gap it appears to be. If deliberate, what
-is missing is a statement to that effect somewhere a reader meets before they reach
-for the primitive.
+Rows 1, 2 and 4 all return `is_verified_seal=True`, and they do not mean the same
+thing:
 
-**And it may not be safely hardened alone.** A sibling finding
-(`1d20e05b-bace-5eb8-a6ac-9b4511e539b7`) records that the legitimate case of *a person
-nobody has verified yet* has no path through the entity recipe, which has only `seal`,
-and must reach around it to the same permissive write. The primitive is load-bearing
-for ordinary work. Hardening it and providing that path are one problem, not two.
+| configuration | reported | what it actually establishes |
+|---|---|---|
+| no key at all | `True` | nobody signed anything |
+| shared key, no keyring | `True` | *someone holding the shared key* signed under this name |
+| keyring | `True` | **this verifier's own key** signed |
 
-### The error this case is also a record of
+With a shared key, anyone holding it signs as anyone. The package already named this
+and built the keyring as its answer; what is missing is a statement of it where a
+reader reaches for the primitive.
 
-The seal quoted above says the private keys live **"server-side, for now."** That was
-read here as a fact about the tree, and it is not — it is a record of what was true
-when it was sealed, and the client-signing work is dated three weeks later.
+**This is `CONST-IV-5` in the small.** Three distinguishable states collapsed into one
+value, so a caller reading `True` cannot tell standing from ground. The fix has the
+shape Case 10 gives: **name which of the three you are in**, rather than report a bare
+value — the code already draws the distinction internally, and only the return has
+lost it.
 
-**A seal is a dated record, not a current fact.** Case 2's agent made the same
-substitution twice in one session, in different clothes: reading `(sealed)` in a design
-document as a live seal, and reading a dated seal as a present-tense claim about disk.
-Both times the correction came from a human saying *go and look.*
+### How this book is to be read
 
-This bears on how this entire book is read. Cases carry an **As of** field for exactly
-this reason, and a case quoted without its date is being used as something it is not.
+The seal quoted in reading one, and three others quoted alongside it, were each **true
+when sealed and overtaken by a release**. Nothing was falsified; the world moved. That
+is the subject of an open question in the package's own tree, and four independently
+found instances in one night are better evidence for it than the question currently
+has.
 
-**What it is evidence for, restated.** At the storage layer of one package, §0.1 and
-§0.2 are unenforced by the write path while being enforced by the same fleet's session
-path. That asymmetry is what `CONST-IV-6` addresses — a record that cannot refuse an
-identity Article I does not recognize is holding a label, not a gate — and it is why
-that clause is written as a requirement on the record rather than as a claim about any
-particular implementation. **Which of the four verdicts the clause earns depends on
-which record is being asked about**, and that is the case the four-verdict scale exists
-to describe.
+**A seal is a dated record, not a current fact.** Every case here carries an **As of**
+field for that reason, and a case quoted without its date is being used as something it
+is not. A reader who wants a present-tense answer must go and look — which is what
+happened here, twice, both times because a human said so.
+
+**And a case that has been wrong twice about one subject is a better case than one that
+was never tested.** Both errors are kept above, distinguished by kind, because the two
+have different remedies and collapsing them would repeat the mistake the case is about.
 
 ---
 
@@ -469,8 +468,15 @@ ever gone stale, because a Trace ID does not move when a file does.
 ## Open, and not decided here
 
 - Five of Article 0's six clauses have no lineage case (Case 4 covers §0.2 only).
-- Case 5's question — whether the verifier string is an unenforced covenant or a
-  label on a signature that *is* the gate — is with the package's maintainers.
+- Case 5's original question is **answered** — the primitive refuses an unknown
+  verifier when a keyring is configured. What remains is the narrower one: whether
+  the three trust states behind a single `True` should be reported distinctly, and
+  whether that is a documentation fix or a return-value change.
+- Seals go stale, and this book has four instances of it in one night. The axes in
+  `CONST-IV-1` have **no time dimension**: a claim's Standing never decays, but the
+  world moves. Whether that is a third axis, a property of Ground, or a duty on the
+  reader is not decided in Draft 0.8, and it is the strongest open argument against
+  adopting Article IV as drafted.
 - Case 7 names a hole in VI.4 and XI: a checker wrong about itself while reporting
   green. No clause covers it and Draft 0.8 does not add one.
 - D-1's "three mutually incompatible trust-tier models" is recorded, not reconciled.
