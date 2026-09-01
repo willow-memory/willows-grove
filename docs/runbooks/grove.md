@@ -25,7 +25,16 @@ SELECT MAX(id) AS newest_message_id FROM messages;
 
 ## Incident patterns
 
-Correlate operational notes with **[INCIDENT]** candidates under [`../generated/`](../generated/README.md).
+Correlate operational notes with **[INCIDENT]** candidates under
+`docs/generated/` — specifically `docs/generated/incident-candidates.md`, which
+[`INCIDENT_INDEX.md`](INCIDENT_INDEX.md) and [`postgres.md`](postgres.md) both
+cite.
+
+> **That directory is not in this tree, and is not missing.** It is *output*:
+> the Grove-docs extractor writes it, and the extractor itself is recorded in
+> [`INDEX.md`](../INDEX.md) under *"Not in this tree (by design)"*. Nothing here
+> generates it, so the path is named rather than linked — a link would promise a
+> file no checkout of this repository has.
 
 Curated entry points (with receipts): [`INCIDENT_INDEX.md`](INCIDENT_INDEX.md).
 

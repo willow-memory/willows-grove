@@ -4,6 +4,99 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ## [Unreleased]
 
+### Fixed
+
+- Eleven dead documentation links across three design and runbook docs — the
+  sweep in PR 21 reported eight, and undercounted by three. Five pointed at
+  `the-house-already-knew.md`, a real and readable document in the public,
+  active `rudi193-cmd/safe-app-store`, through relative paths that assumed a
+  sibling checkout the 2026-08-10 org-folder move ended; they are absolute URLs
+  now. Two pointed at `docs/synthesis/*`, which `docs/INDEX.md` records as
+  out-of-tree by design at the **private, archived**
+  `rudi193-cmd/safe-app-willow-grove` — named with their location rather than
+  linked, since a URL there 404s for nearly every reader. One pointed at
+  `docs/generated/`, which is not missing but *generated*: extractor output,
+  and the extractor is itself out-of-tree.
+  **The three the first sweep missed are the interesting ones.** They climbed
+  out of the repository to `../../../willow-mcp/...` and *resolved cleanly*
+  during that audit, because a sibling checkout of willow-mcp happened to sit
+  beside this repo at the time. On a fresh clone and in CI they were always
+  dead. A file-existence check blesses a link whose validity depends on what
+  else the reader has cloned, so `tests/test_docs_links_resolve.py` asserts two
+  properties, not one: every relative link resolves, **and** no relative link
+  escapes the repository root. Resolution asks *is it there* and the answer
+  varies by machine; escape asks *could it ever reliably be there* and the
+  answer is a property of the link. Only the second is portable, and without it
+  the count stays wrong. No allowance list: every link was fixed rather than
+  excused. PR 23.
+
+- The C11 read-back suite was green against a willow-mcp tool that was never
+  built. `tests/e2e_willow_mcp/mock_willow_mcp.py` serves
+  `/tools/kb_journal_read`; the name appears **zero times** in willow-mcp, so
+  both of Grove's read paths — `getattr(willow_mcp.server, "kb_journal_read")`
+  and the `POST {WILLOW_MCP_URL}/tools/kb_journal_read` fallback — depend on the
+  same absent dependency, and the fallback is not a second chance. The write
+  half is genuinely wired (`kb_journal` exists; Grove's writer was driven
+  through it to a live Postgres row); the read half raises `Unreachable`
+  against real willow-mcp while the mock answers happily.
+  `tests/test_mock_willow_mcp_surface.py` reads the mock's tool routes off the
+  live `build_app()` and compares them to the installed upstream. The obvious
+  pin — every mock route must exist upstream — would have been born failing,
+  since the divergence is real and outside this repo's control, and a pin that
+  cannot pass gets skipped or deleted. So the divergence is **enumerated
+  instead of excused** in `_PENDING_UPSTREAM` and fails in both directions: a
+  new unmatched route fails as drift, and `kb_journal_read` appearing upstream
+  also fails, telling the reader to strike the entry and close the gap. Both
+  directions were exercised before landing. `tests/e2e_willow_mcp/conftest.py`
+  now states which half of the suite proves a contract and which is a protocol
+  test against a pending tool, and `docs/KNOWN_GAPS.md` carries it as GAP-007.
+  Issue #16. PR 22.
+
+- `docs/ARCHITECTURE.md` carried three links that went nowhere, and all three
+  pointed at the cross-repo material nothing else documents — a reader
+  following them to learn how Grove meets the rest of the fleet arrived at a
+  404 with no other route. They were two different defects wearing one
+  symptom. `../../willow-2.0/docs/db/WILLOW_SCHEMA.md` names a document that
+  is real and readable; the path only resolves in a checkout where willow-2.0
+  sits beside this repo, and the 2026-08-10 org-folder move ended that layout
+  — now an absolute link to the public archive, marked archived.
+  `CROSS_REPO_BRIDGE.md` and `extractor/GROVE_DOCS_EXTRACTOR_SPEC.md` were
+  linked as local siblings but have never been in this tree or its history:
+  `docs/INDEX.md` already recorded them under *"Not in this tree (by design)"*,
+  living at `rudi193-cmd/safe-app-willow-grove`. That repository is private and
+  archived, so they are now named with their location rather than linked — a
+  URL there would 404 for most readers, which is the same dead end dressed up
+  as a working reference. The decision had been made and written down
+  correctly; ARCHITECTURE.md never learned of it, so two documents in one
+  directory disagreed about what this repository contains and the one a
+  newcomer reads first was wrong. `tests/test_architecture_links_resolve.py`
+  pins every relative link in the canonical reference against disk, and pins
+  the two by-design absences as named-not-linked. PR 21.
+
+### Fixed
+
+- Tester onboarding did not survive its own first hour. `pip install -r
+  requirements.txt` aborts on Debian and Ubuntu with `Cannot uninstall PyJWT
+  2.7.0, RECORD file not found` — PyJWT arrives transitively through `mcp`
+  (`pyjwt[crypto]>=2.10.1`), pip resolves it forward, and cannot remove a copy
+  `apt` installed because distro packages ship no `RECORD`. The error names
+  Debian, so it reads as a broken machine rather than a missing step. Step 2 now
+  creates `.venv` before installing — which is also the interpreter both
+  `run_mcp.sh` and `scripts/grove-serve-run` already resolve to and that
+  onboarding never created. Three more dead references in the same document went
+  with it: step 5 ran `python3 app.py`, which has never existed in this
+  repository; the u2u chat step ran `grove_standalone.py`, part of the departed
+  Textual dashboard, and `u2u/` exposes no entrypoint at all, so that step is
+  now marked unavailable rather than described; and a duplicated sanity-check
+  section carried curly quotes, so `psql -d “$WILLOW_PG_DB”` failed as written
+  in the first of two otherwise identical blocks.
+  `tests/test_tester_onboarding_runnable.py` pins all four properties — venv
+  before install, every named file on disk, no curly quotes inside a shell
+  fence, no duplicated headings — each paired with a self-check, because a
+  parser that silently stops matching turns an audit into a green no-op, which
+  is the failure class the document was already suffering from. Issue #14.
+  PR 20.
+
 ### Added
 
 - `docs/design/fleet-wiring.md` — how the fleet is actually wired, seam by seam,
