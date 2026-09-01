@@ -168,9 +168,9 @@ Five of the six do not yet have one.
 
 ## Case 5 — Any string is a verifier *(new, Draft 0.8)*
 
-**Bears on:** `CONST-0-1`, `CONST-0-2`, `CONST-IV-2`
-**Established:** measured — sealed pair `4988f34f-0393-59b1-9391-1112325e5c84`, verifier `sean campbell`, in the live store at `~/.nestor/keep/`
-**As of:** 2026-08-31 · **Status:** open — referred to the Nestor maintainers 2026-08-31
+**Bears on:** `CONST-0-1`, `CONST-0-2`, `CONST-IV-2`, `CONST-IV-6`
+**Established:** measured — sealed pair `4988f34f-0393-59b1-9391-1112325e5c84`, verifier `sean campbell`, in the live store at `~/.nestor/keep/`; extended by reading both package trees
+**As of:** 2026-08-31 · **Status:** open, narrowed — referred to the Nestor maintainers 2026-08-31 and corrected to them the same day
 
 > **"What is the finding, as against the story?"**
 > *"There is no per-domain verifier policy. Measured: `add_pair(status='sealed',
@@ -196,10 +196,59 @@ repository is. A query for that decision's own normalized question against the l
 store returns `draft` at 0.718 against a 0.92 bar, so the seals are not there; but
 nothing in the store would have refused them.
 
-**What it is evidence for.** §0.1 and §0.2 are, at the storage layer, unenforced.
-Whether that is a defect or a design in which the ed25519 signature is the real gate
-and the verifier string is only its label is **not settled here** — it is a question
-for the package's maintainers, and it has been put to them.
+### The narrowing — and how the first reading of this case was wrong
+
+The finding above was first written as *"the covenant is unenforced."* That was too
+broad, and the correction is the more useful record.
+
+**One package gates it; the other does not.** In the session path of the fleet's
+runtime, an attestation is verified over a **frozen wire message** before any session
+record is written, and an invalid signature returns a structured error rather than a
+record. Its suite includes explicit refusals for an unknown verifier and for a
+compromised one. In the memory store, `add_pair` has no such refusal. **Both packages
+ship the keyring that would gate it**, and each carries a client-signing wire contract
+that names the other's in its own docstring, with a test asserting the two messages
+cannot be mistaken for each other. The split was deliberate.
+
+So the accurate statement is not that the covenant is unenforced. It is that **the
+covenant is gated where a session is attested and ungated where a pair is written,
+using the same machinery** — which is specific, and fixable, in a way the first
+version was not.
+
+**The open question, which this case does not settle.** Whether the permissive write
+is deliberate — the low-level primitive stays dumb and the covenant lives in the
+recipes and CLI paths above it — or is the gap it appears to be. If deliberate, what
+is missing is a statement to that effect somewhere a reader meets before they reach
+for the primitive.
+
+**And it may not be safely hardened alone.** A sibling finding
+(`1d20e05b-bace-5eb8-a6ac-9b4511e539b7`) records that the legitimate case of *a person
+nobody has verified yet* has no path through the entity recipe, which has only `seal`,
+and must reach around it to the same permissive write. The primitive is load-bearing
+for ordinary work. Hardening it and providing that path are one problem, not two.
+
+### The error this case is also a record of
+
+The seal quoted above says the private keys live **"server-side, for now."** That was
+read here as a fact about the tree, and it is not — it is a record of what was true
+when it was sealed, and the client-signing work is dated three weeks later.
+
+**A seal is a dated record, not a current fact.** Case 2's agent made the same
+substitution twice in one session, in different clothes: reading `(sealed)` in a design
+document as a live seal, and reading a dated seal as a present-tense claim about disk.
+Both times the correction came from a human saying *go and look.*
+
+This bears on how this entire book is read. Cases carry an **As of** field for exactly
+this reason, and a case quoted without its date is being used as something it is not.
+
+**What it is evidence for, restated.** At the storage layer of one package, §0.1 and
+§0.2 are unenforced by the write path while being enforced by the same fleet's session
+path. That asymmetry is what `CONST-IV-6` addresses — a record that cannot refuse an
+identity Article I does not recognize is holding a label, not a gate — and it is why
+that clause is written as a requirement on the record rather than as a claim about any
+particular implementation. **Which of the four verdicts the clause earns depends on
+which record is being asked about**, and that is the case the four-verdict scale exists
+to describe.
 
 ---
 
