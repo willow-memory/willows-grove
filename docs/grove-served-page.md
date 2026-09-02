@@ -50,22 +50,26 @@ D9).
 | Surface | Route / component | Backend it needs | What it does |
 |---|---|---|---|
 | Ambient top strip | rendered by [`grove_html.py`](../grove_html.py); [`web/boot/standing-boot.js`](../web/boot/standing-boot.js) polls `GET /health` | `grove_serve.py` itself | Willow-name, live dot, commit sha. Reads `seat live · <sha>` while the seat answers and `seat unreachable — <why>` when it stops, with the dot painted differently per state (§1). It answers for the served-page process only — each panel reports its own seam. |
-| Lens switch | [`web/components/grove-lens-switch.js`](../web/components/grove-lens-switch.js) | none (client-side state); drives `/api/dispatch?lens=` | Tri-modal switch (Governance / PM / PA) — the lens the operator is looking through. |
+| Lens switch | [`web/components/grove-lens-switch.js`](../web/components/grove-lens-switch.js) | **Demoted** — component retained for quiet/harness use; **not** mounted in the first viewport (Jarvis addendum 2026-09-02; C12 misfit) | Was: operator Governance / PM / PA gearshift. Must not return as hero chrome. |
 | Chat card | [`web/components/grove-chat.js`](../web/components/grove-chat.js) | `POST /api/journal` → [`grove/journal_writer.py`](../grove/journal_writer.py) → willow-mcp `kb_journal` | LEFT side (operator → Willow) writes the operator's words verbatim into the journal. |
-| Dispatch rail | [`web/components/grove-dispatch-rail.js`](../web/components/grove-dispatch-rail.js) | `GET /api/dispatch?lens=` → [`grove/kart_reader.py`](../grove/kart_reader.py) → Postgres `public.tasks` | Kart escalation queue, filtered by the current lens. |
+| Dispatch rail | [`web/components/grove-dispatch-rail.js`](../web/components/grove-dispatch-rail.js) | `GET /api/dispatch` (optional `?lens=` for quiet tooling) → [`grove/kart_reader.py`](../grove/kart_reader.py) → Postgres `public.tasks` | Kart escalation queue. Default landing without an operator mode switch. |
 | Envelope panel | [`web/components/grove-envelope-panel.js`](../web/components/grove-envelope-panel.js) | `GET /api/envelopes` → [`grove/envelope_reader.py`](../grove/envelope_reader.py) | P1 live envelope-registry view; renders "no envelopes on file" when absent. |
 | Nestor refusal chip | [`web/components/grove-refusal-chip.js`](../web/components/grove-refusal-chip.js) | [`grove/nestor_client.py`](../grove/nestor_client.py) (via the panel host) | Shows the *reason* a Nestor pair refused, in Nestor's voice — never paraphrased. |
 | Cast chips | [`web/components/grove-cast-chip.js`](../web/components/grove-cast-chip.js) + [`grove-persona-registry.js`](../web/components/grove-persona-registry.js) | `GET /api/personas` → [`grove/persona_roster.py`](../grove/persona_roster.py) | Ambient fleet-member chips carrying persona color, sigil, and voice from the unified registry (D10). |
 
-## Tri-modal lens
+## One Jarvis seat (not a mode switch)
 
-The lens switch is a filter on the Kart queue, not a workspace divider —
-see [`design/autonomous-continuity.md`](design/autonomous-continuity.md)
-**C12**. **Governance** shows L4-authority-needed items, envelope
-re-attestation reminders, and Nestor refusal chips. **PM** shows
-L2/L3-authority-needed items, unclaimed roster items, and outstanding
-proposals. **PA** shows L1-authority-needed items, upcoming `send_later`
-reminders, and the operator's own drafts. One queue, three lenses on it.
+Tony does not flip Jarvis into dinner mode vs time-travel mode. The served
+page is **one composition**: brand/standing strip, conversation, priority
+surface (dispatch), constitutional panels as needed — without a Governance /
+PM / PA gearshift in the first viewport.
+
+P8’s three offices remain Willow’s **back-of-house triage questions** (may we?
+/ what’s in flight? / what does the operator need?). C12’s operator-facing
+lens filter oversold that shape and is **demoted**; see
+[`design/grove-persona-partition.md`](design/grove-persona-partition.md) and
+[`design/autonomous-continuity.md`](design/autonomous-continuity.md) C12.
+Optional `?lens=` on `/api/dispatch` may remain for quiet tooling.
 
 ## What happens on a cold box
 

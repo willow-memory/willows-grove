@@ -1,0 +1,66 @@
+{
+  "domain": "willow-operator",
+  "classification": "novel",
+  "pairs": [
+    {
+      "source_text": "What is the operator rule for MCP federation?",
+      "target_text": "Every MCP except nestor and codebase-memory-mcp is fronted through willow-mcp federation. Direct in Cursor: willow-mcp, nestor, codebase-memory-mcp, and cursor native tools. Jeles corpus is reached via federation_call to server 8cae3d1dcdf4 (jeles-corpus), not as a separate Cursor MCP. A caller needs both a manifest grant (mcp:<server_id>:<tool>) and an operator-ratified registry entry; discovery alone is not connectable.",
+      "reason": "Operator rule ratified 2026-08-28; live on this install"
+    },
+    {
+      "source_text": "Which MCP servers connect directly to Cursor on this install?",
+      "target_text": "Four namespaces: willow-mcp (orchestrator seat), nestor (human-verified ledger, read-only serve), codebase-memory-mcp (code knowledge graph), and cursor (CreateGoal, UpdateGoal, GenerateImage). Jeles, GitHub integrations, and other organs route through willow-mcp federation or integration_call — not direct Cursor MCP entries.",
+      "reason": "Operator routing policy"
+    },
+    {
+      "source_text": "When should the willow seat use Jeles instead of willow_web_search?",
+      "target_text": "When jeles-corpus federation is ratified and working (federation_call to 8cae3d1dcdf4 succeeds), retire willow_web_search, willow_web_fetch, willow_institutional_search, and search-shaped integration_call to jeles for the willow seat. Use federated corpus_web_search, corpus_institutional_search, corpus_verify_claim, and corpus_host_card instead. Do not grant web_net or integration_net for search while federation is healthy. Do not silently fall back to willow_web_* without operator say-so.",
+      "reason": "KB operator policy 805162C1 / orchestrator-routing.md"
+    },
+    {
+      "source_text": "What integrations stay separate from Jeles search?",
+      "target_text": "integration_call to GitHub, Pangolin, UTETY, and HuggingFace hub when the job is a structured API (repos, PRs, vault resources, hub metadata) — not open-web or institutional catalogue search. Those remain earn/grant decisions per adapter.",
+      "reason": "orchestrator-routing.md exception list"
+    },
+    {
+      "source_text": "What are the five keys to spawn a federated MCP server?",
+      "target_text": "1) manifest permission mcp_federation; 2) per-tool grant mcp:<server_id>:<tool> for each downstream tool; 3) operator-ratified entry in $WILLOW_HOME/mcp_apps/_federation/servers.json (PGP-signed when enforced); 4) consent.federation true in settings.global.json; 5) unexpired net lease for the calling app_id. Neither manifest grant nor ratification alone is sufficient.",
+      "reason": "Live install gates + federated-mcp-gating design"
+    },
+    {
+      "source_text": "What app_id should Jeles use when forwarding gaps to willow-mcp?",
+      "target_text": "JELES_CORPUS_APP_ID=jeles. The back-compat default ask-jeles is not a seated manifest in willow-mcp; gap_log is denied without the jeles librarian seat (gap_write). Gaps still land under topic ask-jeles-corpus unless JELES_CORPUS_TOPIC overrides.",
+      "reason": "Jeles README + fleet-standup.sh + live fleet_status"
+    },
+    {
+      "source_text": "Where does Jeles store nuggets on this install?",
+      "target_text": "Shared SOIL SQLite at $WILLOW_STORE_ROOT/ask_jeles_corpus/store.db — same path willow-mcp and Jeles resolve when WILLOW_STORE_ROOT is set. Collection name JELES_CORPUS_COLLECTION defaults to ask_jeles_corpus. Unset WILLOW_STORE_ROOT splits the store silently (~/.willow/store vs $WILLOW_HOME/store).",
+      "reason": "fleet-seams shared store probe"
+    },
+    {
+      "source_text": "What rung is the bundled Jeles seed corpus?",
+      "target_text": "asserted (verification_kind asserted, status unverified). The wheel ships ~968 machine-researched Q/A pairs via jeles-seed; none carry Nestor seals in the bundle. corpus_search returns them; corpus_ask will not settle an answer from them — only from human or machine verified nuggets. They are candidates for review, not settled fact.",
+      "reason": "jeles-seed output on this install 2026-09-02"
+    },
+    {
+      "source_text": "What is the willow orchestrator routing ladder order?",
+      "target_text": "1) Nestor sealed fact (serve verbatim). 2) Deterministic scripts (fleet_seams, code_graph, gap_*, wtool). 3) MCP read via wtool. 4) Jeles federation for corpus/search. 5) Kart task_submit for shell/git/network. 6) nestor_tool_route for unknown NL→tool. 7) Local Ollama draft (never auto-seal). 8) Cloud synthesis last.",
+      "reason": "orchestrator-routing.md"
+    },
+    {
+      "source_text": "What is dispatch in the Willow memory model?",
+      "target_text": "Dispatch is a pointer plus permission to dereference — not a prose instruction. A bare FRANK ledger entry or issue id is valid dispatch when the receiver can walk the shared substrate (KB, store, ledger) and verify claims against artifacts. The orchestrator keeps records dense and cross-linked so a pointer suffices.",
+      "reason": "KB A07792D9"
+    },
+    {
+      "source_text": "Should willow-mcp roster sync be run when fleet_status shows agents missing from Postgres?",
+      "target_text": "Not without operator authorization. As of 2026-08-11 the operator stated fleet roster design intent is unrecorded and roster sync is on HOLD — 14/16 agents missing from Postgres is deliberate drift, not damage to repair. Running sync would write fleet.json into Postgres and foreclose intent before it reaches paper. Read fleet_status drift against gap fleet/roster-design-intent-unrecorded.",
+      "reason": "Willow gap 14909da15700 / FRANK 7d071410"
+    },
+    {
+      "source_text": "How does the phone app capability composition model work?",
+      "target_text": "Opt-in if/then chain: if Nestor is installed connect it to willow-mcp and Grove; if Jeles is installed wire corpus; if Hornbook is installed wire its organ — each install discloses both what becomes possible and what becomes reachable (not marketing-only). Same mechanism as Kart kart-sandbox.json bind_try: declare per-capability what opens, fail closed, disclose at install. Authorization is the intersection of manifest grant and ratified server tools, surfaced at install time not only call time.",
+      "reason": "KB 2026B306 operator directive"
+    }
+  ]
+}

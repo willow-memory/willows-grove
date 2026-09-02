@@ -1,0 +1,35 @@
+{
+  "domain": "grove-governance",
+  "classification": "novel",
+  "description": "Candidate Nestor seal pairs for Grove desk vs watch ownership and Jarvis-not-mode-switch. Human must seal — not commons. Seal after operator ratifies the Jarvis addendum.",
+  "pairs": [
+    {
+      "source_text": "Who owns Willow's Grove desk?",
+      "target_text": "Willow — the operator seat. Seat scripts, intake, routing doctrine, and desk composition (what bubbles when) live under willows-grove/seat/willow/ and Willow's design docs. Heimdallr does not maintain them and does not invent desk posture.",
+      "reason": "grove-persona-partition.md OPERATOR-RATIFIED 2026-09-02 + Jarvis addendum",
+      "sources": [
+        "willows-grove/docs/design/grove-persona-partition.md",
+        "willows-grove/docs/design/willow-grove-premise.md"
+      ]
+    },
+    {
+      "source_text": "Who owns the Grove watch post?",
+      "target_text": "Heimdallr — the watchman. Served page honesty on 127.0.0.1:8766, resident watcher, Gjallarhorn/#alerts, serve-mode auth. Willow does not own watcher classification.",
+      "reason": "grove-persona-partition.md OPERATOR-RATIFIED 2026-09-02",
+      "sources": [
+        "willows-grove/docs/design/grove-persona-partition.md",
+        "willows-grove/CLAUDE.md"
+      ]
+    },
+    {
+      "source_text": "Is Willow's Grove a mode switch for Governance / PM / PA?",
+      "target_text": "No. One Jarvis seat — Tony does not flip modes to book dinner and also reason about time travel. Governance / PM / PA are back-of-house triage questions for Willow's composition, not operator chrome. C12's lens switch oversold P8 and is demoted from the first viewport.",
+      "reason": "Jarvis addendum 2026-09-02; autonomous-continuity C12 misfit; grove-persona-partition.md",
+      "sources": [
+        "willows-grove/docs/design/grove-persona-partition.md",
+        "willows-grove/docs/design/autonomous-continuity.md",
+        "willows-grove/docs/grove-served-page.md"
+      ]
+    }
+  ]
+}

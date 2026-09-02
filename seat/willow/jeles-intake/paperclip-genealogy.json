@@ -1,0 +1,277 @@
+{
+  "domain": "institutional-genealogy",
+  "classification": "novel",
+  "description": "Operation Paperclip institutional genealogy: postwar DRAFT chain + DispatchesFromReality round4/5 Huntsville present-power pairs. Public OSINT only.",
+  "pairs": [
+    {
+      "source_text": "What is the institutional genealogy chain from Operation Paperclip to present-day Huntsville aerospace and defense?",
+      "target_text": "Operation Paperclip (1945) recruited German technical personnel; von Braun's rocket group relocated to Redstone Arsenal, Huntsville (~1950). The Army Ballistic Missile Agency (ABMA) formed around that team; Marshall Space Flight Center (MSFC) was created in 1960. A Huntsville contractor ecosystem grew around Army missile and NASA launch work: Brown Engineering (1950s technical support) became Teledyne Brown Engineering; Dynetics was founded in 1974 by former Teledyne Brown employees and was acquired by Leidos in 2020 for $1.65B. Present structures on the same geographic anchor include Artemis/SLS propulsion at MSFC, missile-defense programs, Golden Dome development centered on Redstone, and U.S. Space Command headquarters relocation to Redstone Arsenal (announced 2025, operational control 2026). This is organizational continuity in facilities, contractors, and mission chains — not a claim that current leaders personally descend from Paperclip personnel.",
+      "reason": "postwar-institutional-legacies/README.md institutional lineage summary",
+      "sources": [
+        "https://en.wikipedia.org/wiki/Operation_Paperclip",
+        "https://www.nasa.gov/centers-and-facilities/marshall/",
+        "https://www.leidos.com/insights/leidos-completes-acquisition-dynetics",
+        "DispatchesFromReality/research/postwar-institutional-legacies/README.md"
+      ]
+    },
+    {
+      "source_text": "How did Brown Engineering become Teledyne Brown, Dynetics, and Leidos in Huntsville?",
+      "target_text": "Brown Engineering was founded in the 1950s to provide engineering support to the von Braun team and Redstone rocket work in Huntsville. It later became Teledyne Brown Engineering. Dynetics was founded in 1974 by former Teledyne Brown employees, continuing Huntsville missile-defense and aerospace engineering lineage. Leidos acquired Dynetics in 2020 for approximately $1.65 billion; Dynetics operates as a wholly owned Huntsville subsidiary across national security, space, IT, and cybersecurity. Leidos reported $17.2B revenue in FY2025. The chain traces organizational relationships documented in public institutional histories, not covert continuity of personnel.",
+      "reason": "postwar-institutional-legacies/DRAFT.md contractor-genealogy pass",
+      "sources": [
+        "https://www.leidos.com/insights/leidos-completes-acquisition-dynetics",
+        "https://www.govconwire.com/articles/leidos-fy2025-17-2b-revenue-financial-report",
+        "DispatchesFromReality/research/postwar-institutional-legacies/DRAFT.md"
+      ]
+    },
+    {
+      "source_text": "What was the Army Ballistic Missile Agency (ABMA) and how does it connect Operation Paperclip to Marshall Space Flight Center?",
+      "target_text": "After German rocket engineers arrived at Redstone Arsenal under Operation Paperclip (~1950), the U.S. Army organized their work into the Army Ballistic Missile Agency (ABMA), led by Wernher von Braun's team. ABMA developed the Redstone and Jupiter ballistic missiles and the Saturn program that preceded Apollo. When NASA formed, much of ABMA's civilian space work transferred to the newly created Marshall Space Flight Center (1960), with von Braun as its first director. MSFC became NASA's propulsion and heavy-lift center (Saturn V, Shuttle propulsion, SLS/Artemis). ABMA is the institutional bridge between Army missile work at Redstone and NASA's enduring Huntsville spaceflight center.",
+      "reason": "postwar-institutional-legacies/DRAFT.md Redstone pattern",
+      "sources": [
+        "https://en.wikipedia.org/wiki/Army_Ballistic_Missile_Agency",
+        "https://www.nasa.gov/centers-and-facilities/marshall/",
+        "https://www.nasa.gov/people/wernher-von-braun/"
+      ]
+    },
+    {
+      "source_text": "Why does Redstone Arsenal matter for institutional genealogy rather than biography alone?",
+      "target_text": "Redstone Arsenal turns Operation Paperclip from a story about individuals into infrastructure continuity. Technical transfers leave buildings, test stands, contractor relationships, local labor markets, procurement channels, and geographic concentrations of expertise that outlast original personnel. In Huntsville: Apollo-era test infrastructure (e.g., Test Stand 4670) is leased for commercial engine testing; Cummings Research Park hosts 300+ companies and 26,000+ employees; Army, NASA MSFC, and Space Command co-locate on Redstone; missile-defense and launch-vehicle missions inherit federal relationships built over decades. The continuity is physical and institutional — not that the same engineer holds the wrench seventy years later.",
+      "reason": "postwar-institutional-legacies/DRAFT.md substrate argument",
+      "sources": [
+        "DispatchesFromReality/research/postwar-institutional-legacies/DRAFT.md",
+        "https://www.nasa.gov/centers-and-facilities/marshall/"
+      ]
+    },
+    {
+      "source_text": "What are the claim boundaries for Operation Paperclip institutional genealogy research?",
+      "target_text": "This research claims documented organizational continuity (facilities, contractor lineages, mission chains, geography) — not sensational history, archival completeness, access to classified files, moral adjudication of every individual, personal descent of current leaders from Paperclip personnel, or reduction of every Huntsville institution to Paperclip. Living-person genealogy and 'last surviving scientist' press claims are time-sensitive and ethically loaded; they are not the main argument. The SQLite genealogy database (165 public-source scientists, institutions, locations, citations) is a relational method tool: person ≠ facility ≠ contractor ≠ mission. Uncertainty is explicit by design.",
+      "reason": "postwar-institutional-legacies/README.md claim boundaries",
+      "sources": [
+        "DispatchesFromReality/research/postwar-institutional-legacies/README.md",
+        "https://en.wikipedia.org/wiki/Operation_Paperclip"
+      ]
+    },
+    {
+      "source_text": "How does Operation Paperclip institutional genealogy relate to The Illusion of Sovereign AI?",
+      "target_text": "Both projects ask who actually controls a technical system across eras. In AI sovereignty research, control depends on hardware chokepoints, capital, talent pipelines, inference infrastructure, and revocation risk — not rhetorical 'ownership' of a model. In Paperclip genealogy, control depended on where expertise landed, what facilities and contractors formed around it, and what geography organized around the capability. Both use the same method: build a relational evidence base from public sources, track dependencies rather than isolated facts, and bound claims to what the structure supports. Leidos/Cummings/Huntsville test infrastructure and TSMC/ASML/talent flows are parallel cases of substrate outlasting press releases.",
+      "reason": "postwar-institutional-legacies/README.md + sociotechnical-ai-sovereignty/DRAFT.md bridge",
+      "sources": [
+        "DispatchesFromReality/research/postwar-institutional-legacies/README.md",
+        "DispatchesFromReality/research/sociotechnical-ai-sovereignty/DRAFT.md"
+      ]
+    },
+    {
+      "source_text": "Operation Paperclip to Golden Dome — how does von Braun's Huntsville rocketry lineage connect to 21st-century missile defense?",
+      "target_text": "Wernher von Braun built V-2 ballistic missiles with slave labor at Mittelwerk, then led Saturn V development at Marshall Space Flight Center after Operation Paperclip brought 100+ German rocket engineers to the U.S. Huntsville became the geographic concentration of U.S. rocketry expertise he helped build. The Golden Dome layered missile defense program (2025–2026) positions Redstone Arsenal as a key development hub, with space-based interceptors program office co-located in Huntsville as a joint Space Systems Command and Missile Defense Agency effort. The through-line is dual-use rocketry infrastructure in the same city — defending against the class of weapon the imported expertise originally pioneered — not a claim of direct personnel continuity.",
+      "reason": "Jeles xwire_ethics-creation + round5 Golden Dome pair synthesis",
+      "sources": [
+        "https://huntsvillebusinessjournal.com/news/2025/09/01/huntsvilles-golden-dome-what-we-know-now-and-whats-coming-next/",
+        "https://www.nasa.gov/people/wernher-von-braun/",
+        "hornbook-knowledge/Jeles/jeles/seed/xwire_ethics-creation.json"
+      ]
+    },
+    {
+      "source_text": "How does Operation Paperclip connect to Leidos and Dynetics in Huntsville today?",
+      "target_text": "Operation Paperclip placed von Braun's rocket group at Redstone Arsenal (~1950), seeding the Huntsville missile and space complex. Contractor support firms formed around that work — Brown Engineering → Teledyne Brown → Dynetics (1974) → Leidos acquisition (2020). Leidos FY2025 revenue was $17.2B; Dynetics remains a Huntsville subsidiary. Present programs on the same substrate include missile defense (Golden Dome hub at Redstone), Space Command relocation, MSFC SLS/Artemis propulsion, and defense M&A clustering (IBCS, radar/EW, space domain awareness).",
+      "reason": "Cross-link genealogy chain to round4 Leidos/Dynetics and round5 present-power pairs",
+      "sources": [
+        "DispatchesFromReality/research/postwar-institutional-legacies/DRAFT.md",
+        "https://www.leidos.com/insights/leidos-completes-acquisition-dynetics"
+      ]
+    },
+    {
+      "source_text": "How does Space Command relocation to Redstone connect to Operation Paperclip?",
+      "target_text": "U.S. Space Command announced permanent headquarters at Redstone Arsenal, Huntsville (September 2025). J2 Intelligence Directorate relocated April 15, 2026; operational control of a Redstone facility April 29, 2026 (Gen. Stephen Whiting). ~200 of 1,800 Colorado positions expected at Redstone by end 2026; permanent HQ targeted 2031; Huntsville authorized $45M infrastructure investment (May 2026). Redstone is the same arsenal where Operation Paperclip rocket engineers were placed in the 1950s and where ABMA/MSFC grew. Continuity is geographic and institutional — co-location of space and missile power on Paperclip-era ground — not personal lineage of commanders.",
+      "reason": "Links round4/5 Space Command pairs to postwar genealogy anchor",
+      "sources": [
+        "https://www.spacecom.mil/Newsroom/News/Article-Display/Article/4473792/us-space-command-takes-operational-control-of-facility-at-redstone-arsenal/",
+        "https://www.huntsvilleal.gov/huntsville-reaffirms-commitment-to-space-command-with-45-million-investment-in-redstone-arsenal/"
+      ]
+    },
+    {
+      "source_text": "Raytheon RTX $115 Million Huntsville Missile Facility Expansion",
+      "target_text": "In March 2026, Raytheon completed a 26,000 square-foot expansion of its Redstone Raytheon Missile Integration Facility in Huntsville, backed by $115 million in capital investment, increasing integration and delivery capacity by over 50% and growing the company's Alabama footprint to more than 2,200 employees. In February 2026, RTX signed five landmark framework agreements with the Department of War to increase production of Tomahawk (to 1,000+/year), AMRAAM (to 1,900+/year), SM-6 (to 500+/year), and SM-3 variants. Production occurs across Tucson, Huntsville, and Andover facilities.",
+      "reason": "DispatchesFromReality nestor.bundle (round5:news-huntsville-space)",
+      "sources": [
+        "https://raytheon.mediaroom.com/2026-03-13-RTXs-Raytheon-completes-115-million-expansion-of-Alabama-missile-integration-facility",
+        "https://www.rtx.com/news/news-center/2026/02/04/rtxs-raytheon-partners-with-department-of-war-on-five-landmark-agreements-to-exp"
+      ]
+    },
+    {
+      "source_text": "Golden Dome Missile Defense Program Centered on Huntsville",
+      "target_text": "President Trump's Golden Dome for America layered missile defense system positions Redstone Arsenal as a key development hub. The DoD launched the Golden Dome Ecosystem Hub portal to centralize technology submissions. The space-based interceptors program office is co-located in Huntsville as a joint Space Systems Command and Missile Defense Agency effort. The 2026 Space and Missile Defense Symposium (August 11-13, Von Braun Center) featured General Michael Guetlein as Golden Dome program manager. Booz Allen Hamilton and other contractors are expanding Huntsville operations to support Golden Dome integration work.",
+      "reason": "DispatchesFromReality nestor.bundle (round5:news-huntsville-space)",
+      "sources": [
+        "https://huntsvillebusinessjournal.com/news/2025/09/01/huntsvilles-golden-dome-what-we-know-now-and-whats-coming-next/",
+        "https://www.washingtontimes.com/news/2026/aug/10/us-space-missile-defense-center-stage-huntsville-alabama/"
+      ]
+    },
+    {
+      "source_text": "NASA Workforce Reductions at Marshall Space Flight Center",
+      "target_text": "NASA laid off contract employees working on ISS-related projects at Marshall Space Flight Center in anticipation of ISS decommissioning. MSFC will lose 279 employees in senior GS-13 to GS-15 positions. Across NASA, the agency's workforce dropped approximately 23% (from 17,391 to roughly 13,000-14,000) by late 2025 through deferred resignation programs, voluntary early retirement, and attrition. The Trump administration's plan targets reducing NASA's overall workforce to 11,853 (a 32% total reduction) and cutting the budget by 24%, with the focus narrowed to Moon and Mars exploration.",
+      "reason": "DispatchesFromReality nestor.bundle (round5:news-huntsville-space)",
+      "sources": [
+        "https://payloadspace.com/nasa-lays-off-iss-workers-at-marshall-space-flight-center/",
+        "https://www.yahoo.com/news/marshall-space-flight-center-lose-034012655.html"
+      ]
+    },
+    {
+      "source_text": "Alabama Wins 2026 Silver Shovel Award for Space and Defense Growth",
+      "target_text": "Alabama received Area Development's 2026 Silver Shovel Award, driven by Space Command job growth and other investments. The state achieved all-time-high investment of $14.6 billion in 2025 across 234 projects creating 9,388 new jobs. A dozen aerospace-related companies announced new Alabama investments in 2025, including GE Aerospace expansions in Huntsville and Auburn totaling $139 million and 767 jobs. Additional defense investments of $122 million included Lockheed Martin, General Dynamics, and Northrop Grumman expansions. The PAC-3 Patriot missile contract of $9.8 billion, announced September 3, 2025, was the largest missile manufacturing contract ever associated with Redstone Arsenal.",
+      "reason": "DispatchesFromReality nestor.bundle (round5:news-huntsville-space)",
+      "sources": [
+        "https://www.madeinalabama.com/2025/09/alabamas-defense-sector-enters-a-new-era-of-strategic-growth/",
+        "https://1819news.com/news/item/u-s-space-command-job-growth-6-billion-eli-lilly-announcement-earn-alabama-2026-silver-shovel-award"
+      ]
+    },
+    {
+      "source_text": "Blue Origin New Glenn Explosion May 2026",
+      "target_text": "On May 28, 2026, Blue Origin's New Glenn rocket exploded during a prelaunch test at Cape Canaveral, destroying the vehicle and severely damaging Launch Complex 36 (Blue Origin's only New Glenn launch site). The shockwave shattered windows in nearby buildings. The investigation traced the root cause to a faulty main oxygen valve on one of the BE-4 engines. CEO Dave Limp stated modified valve hardware would be ready by end of August 2026, with flights resuming by end of 2026. However, NASA chief Jared Isaacman told CNBC the launch pad might not be restored until 2028. The BE-4 engines are manufactured at Blue Origin's Huntsville factory.",
+      "reason": "DispatchesFromReality nestor.bundle (round5:news-huntsville-space)",
+      "sources": [
+        "https://spaceflightnow.com/2026/08/06/blue-origin-identifies-engine-issue-behind-new-glenn-explosion/",
+        "https://www.space.com/space-exploration/launches-spacecraft/blue-origin-traces-origin-of-huge-new-glenn-rocket-explosion-to-oxygen-valve-ceo-says",
+        "https://256today.com/new-glenn-test-explosion-investigation-underway-as-huntsville-built-engines-remain-central-to-program/"
+      ]
+    },
+    {
+      "source_text": "SLS Program Phaseout and Boeing Layoffs in Huntsville",
+      "target_text": "The Trump administration's FY2026 budget proposes an orderly phaseout of NASA's Space Launch System after Artemis III, ramping funding down to $600 million by 2028 before eliminating it entirely. Boeing, which employs 3,400 people in Huntsville, announced up to 400 SLS-related positions could be eliminated by April 2026. NASA selected ULA's Centaur 5 as the replacement upper stage for SLS starting with Artemis IV (contract confirmed March 7, 2026), shifting work away from Boeing. A 2019 analysis estimated SLS supports approximately 15,000 jobs across Alabama. The Senate countered with a proposal including $100 million for Marshall Space Flight Center infrastructure repairs.",
+      "reason": "DispatchesFromReality nestor.bundle (round5:news-huntsville-space)",
+      "sources": [
+        "https://www.alreporter.com/2025/06/02/proposed-major-cuts-to-nasa-would-likely-hit-huntsville-heavily/",
+        "https://www.rocketcitynow.com/article/tech/science/aerospace/aerospace-report-boeing-prepares-for-potential-end-of-nasas-sls-rocket-program/525-7a986734-5abc-4a1c-b37b-76806835caa4",
+        "https://spaceflightnow.com/2026/03/07/nasa-contract-confirms-selection-of-ulas-centaur-5-as-new-upper-stage-for-the-sls-rocket/"
+      ]
+    },
+    {
+      "source_text": "Northrop Grumman IBCS Production Ramp-Up in Huntsville",
+      "target_text": "In February 2025, Northrop Grumman secured $1.4 billion in contracts for IBCS (Integrated Battle Command System) work for the U.S. Army and Poland, including a $481 million five-year software development contract. In July 2025, Northrop completed LRIP delivery of 142 major end items (35 Engagement Operations Centers, 75 IFCN Relays, 32 Integrated Collaborative Environments). The company opened the $20 million Enhanced Production and Integration Center (EPIC) in Madison, Alabama -- a 175,500 sq ft facility for IBCS component integration. International interest is growing, with Poland's WISLA program using IBCS for its air and missile defense.",
+      "reason": "DispatchesFromReality nestor.bundle (round5:news-huntsville-space)",
+      "sources": [
+        "https://www.axios.com/local/huntsville/2025/08/19/northrop-grumman-madison-missile-defense-huntsville-golden-dome",
+        "https://news.northropgrumman.com/ibcs/northrop-grumman-secures-1-4-billion-in-contracts-to-modernize-global-air-and-missile-defense"
+      ]
+    },
+    {
+      "source_text": "U.S. Space Command Relocation to Redstone Arsenal",
+      "target_text": "President Trump announced on September 2, 2025 that Redstone Arsenal in Huntsville would be the permanent headquarters for U.S. Space Command. The J2 Intelligence Directorate relocated on April 15, 2026. On April 29, 2026, Gen. Stephen Whiting announced SPACECOM's operational control of a facility at Redstone Arsenal. Approximately 200 of 1,800 Colorado-based positions are expected at Redstone by end of 2026, with about 1,400 jobs transitioning over five years. The permanent headquarters targets a 2031 completion date. Intelligence operations began in existing offices while construction continues. The move is expected to bring roughly 5,000 total jobs including indirect employment.",
+      "reason": "DispatchesFromReality nestor.bundle (round5:news-huntsville-space)",
+      "sources": [
+        "https://www.axios.com/local/huntsville/2026/04/30/space-command-new-building-redstone-arsenal-huntsville",
+        "https://www.defenseone.com/policy/2026/08/intel-ops-are-underway-space-commands-nascent-alabama-hq/415418/",
+        "https://www.rocketcitynow.com/article/news/local/first-arrivals-us-space-command-begins-relocation-to-huntsville-marking-operational-start-at-redstone-arsenal/525-dc9c39b3-c300-47d3-8e62-d771b1658b5c"
+      ]
+    },
+    {
+      "source_text": "Blue Origin Huntsville Workforce Expansion Despite New Glenn Setback",
+      "target_text": "As of May 2026, Blue Origin exceeded 1,600 employees in Alabama and announced 100+ new Huntsville-area jobs to support thruster production. The company operates the BE-4 and BE-3U engine factory at Cummings Research Park, the Jemison Manufacturing Facility at Jetplex Industrial Park (producing BE-7 engines for the Blue Moon lunar lander and Blue Ring spacecraft), and conducts hot-fire testing at the historic Test Stand 4670 on Marshall Space Flight Center grounds under a Commercial Space Launch Act agreement. Despite the May 28 New Glenn explosion, Huntsville manufacturing operations continue as engine production and testing are separate from launch operations.",
+      "reason": "DispatchesFromReality nestor.bundle (round5:news-huntsville-space)",
+      "sources": [
+        "https://hsvchamber.org/blue-origin-exceeds-1600-employees-in-alabama-announces-expansion/",
+        "https://www.blueorigin.com/news/blue-origin-opens-huntsville-engine-factory"
+      ]
+    },
+    {
+      "source_text": "Artemis Program Restructuring February 2026",
+      "target_text": "In February 2026, NASA announced sweeping Artemis restructuring: Artemis III was downgraded from a crewed lunar landing to a low-Earth-orbit lander systems test, because neither the SpaceX nor Blue Origin commercial lander was ready. Artemis IV became the first crewed lunar landing mission, targeted for 2028. The SLS Block 1B and Block 2 upgrades were eliminated, standardizing the rocket configuration. NASA aims for launch cadence of every 10 months starting April 2026. The restructuring followed the 2025 Aerospace Safety Advisory Panel report warning of cumulative technical risk in combining too many untested technologies in a single mission.",
+      "reason": "DispatchesFromReality nestor.bundle (round5:news-huntsville-space)",
+      "sources": [
+        "https://www.nbcnews.com/science/space/nasa-artemis-moon-mission-overhaul-rcna260971",
+        "https://www.space.com/space-exploration/launches-spacecraft/a-pretty-significant-setback-how-blue-origins-rocket-explosion-affects-nasas-moon-plans"
+      ]
+    },
+    {
+      "source_text": "Marshall Space Flight Center role and vulnerability — 2026",
+      "target_text": "Lead center managing SLS, building structural adapters, contributing to Gateway, developing lunar landing hardware, providing life support. Existential transition: Block 1B cancellation removed largest development program; FY26 budget proposes ending SLS after third flight; NASA 20%+ workforce reduction (2025) hit SLS teams disproportionately — Block 1B lost 20% civil servants, Orion shed 10%. Future pivots toward science operations management, commercial partnerships (Blue Origin test stand), deep-space exploration. Scale of replacement work unclear.",
+      "reason": "DispatchesFromReality nestor.bundle (round4:huntsville-space)",
+      "sources": [
+        "https://aldailynews.com/how-doge-could-impact-nasas-presence-in-huntsville/",
+        "https://www.science.org/content/article/confusion-and-worry-doge-cuts-hit-nasa"
+      ]
+    },
+    {
+      "source_text": "SLS and Artemis II/III status — August 2026",
+      "target_text": "Artemis II flew four astronauts around Moon in April 2026 (7 months late, $261M Orion cost overrun). February 2026: NASA cancelled SLS Block 1B and Exploration Upper Stage after spending $3.5B with zero operational flights, pivoting to commercial alternatives (ULA Centaur V). Artemis III restructured from landing to LEO docking test (targeted late 2027). First crewed landing pushed to Artemis IV (2028). FY26 budget proposes phasing out SLS/Orion after third mission. GAO-26-108556 (July 2026): $501.4M net annual cost overruns, $4.7B cumulative overruns, 14 years cumulative delays across 36 major projects.",
+      "reason": "DispatchesFromReality nestor.bundle (round4:huntsville-space)",
+      "sources": [
+        "https://www.gao.gov/products/gao-26-108556",
+        "https://payloadspace.com/nasas-fy26-plan-would-cut-gateway-phase-out-sls-orion/"
+      ]
+    },
+    {
+      "source_text": "Huntsville corridor defense M&A — 2024-2026",
+      "target_text": "Four significant transactions: (1) SPA acquired Huntsville-based Intrepid LLC (Mar 2025) — Army IBCS lead SETA for missile defense. (2) Radiance Technologies (employee-owned, Huntsville) acquired Phased n Research (Mar 2025) — radar/EW capability. (3) Applied Aerospace acquired Huntsville-based NeXolve (Mar 2025) — JWST sunshield creator, Huntsville as HQ. (4) Qualis/InTrack/Tektonux three-way merger (Feb 2026, Bluestone Investment Partners) — 400+ employee missile defense/space domain awareness platform. Deal themes cluster around missile defense, space domain awareness, radar/EW, integrated battle management.",
+      "reason": "DispatchesFromReality nestor.bundle (round4:huntsville-space)",
+      "sources": [
+        "https://www.prnewswire.com/news-releases/qualis-intrack-radar-technologies-and-tektonux-announce-merger-creating-missile-defense-and-space-domain-awareness-platform-302678270.html"
+      ]
+    },
+    {
+      "source_text": "Leidos/Dynetics financials and Huntsville operations — FY2025",
+      "target_text": "Leidos FY2025: $17.2B revenue (3% YoY), $17.5B net bookings, $2.42B adjusted EBITDA (14.1% margin), diluted EPS $11.14 (up 21% YoY). Reported February 17, 2026. Dynetics acquired 2020 for $1.65B, operates as wholly-owned Huntsville subsidiary — engineering, scientific, IT, cybersecurity across national security, space, critical infrastructure.",
+      "reason": "DispatchesFromReality nestor.bundle (round4:huntsville-space)",
+      "sources": [
+        "https://www.govconwire.com/articles/leidos-fy2025-17-2b-revenue-financial-report"
+      ]
+    },
+    {
+      "source_text": "Blue Origin/ULA at Marshall test stands and New Glenn explosion impact",
+      "target_text": "Blue Origin leased restored Apollo-era Test Stand 4670 at MSFC since 2023. Crossed 500 hot-fire tests by March 2026 (BE-3U and BE-4 engines). BE-4 powers both ULA Vulcan and Blue Origin New Glenn. May 28, 2026: New Glenn exploded during static fire at Cape Canaveral LC-36 — cryogenic leak froze hydraulic line causing thrust anomaly. August 2026: Blue Origin identified main oxygen valve issue on BE-4. Explosion destroyed vehicle and severely damaged LC-36; launchpad restoration may take until 2028. Jeopardizes Artemis III (late 2027) requiring Blue Origin lunar lander.",
+      "reason": "DispatchesFromReality nestor.bundle (round4:huntsville-space)",
+      "sources": [
+        "https://spaceflightnow.com/2026/08/06/blue-origin-identifies-engine-issue-behind-new-glenn-explosion/"
+      ]
+    },
+    {
+      "source_text": "Cummings Research Park employment — 2026",
+      "target_text": "300+ companies and 26,000+ employees. Second-largest US research park (after Research Triangle, NC), fourth-largest globally. Tenants: Fortune 500, international high-tech, US space/defense agencies, incubators, universities. Major employers: SAIC (~2,300), Camber Corporation (~2,100), HudsonAlpha Institute. Over half of metro's major defense/aerospace employers maintain facilities there.",
+      "reason": "DispatchesFromReality nestor.bundle (round4:huntsville-space)",
+      "sources": [
+        "https://hsvchamber.org/expand-here/cummings-research-park/"
+      ]
+    },
+    {
+      "source_text": "U.S. Space Command relocation to Redstone Arsenal — 2026",
+      "target_text": "First facility took operational control April 29, 2026 (Gen. Stephen Whiting ribbon-cutting). First permanent personnel (J2 Intelligence) arrived April 15, 2026. JISE intelligence arm: 80 personnel in-building by end 2026. Total SPACECOM staff reaching 200 by end 2026, ultimate target 1,800. Permanent HQ completion targeted 2031. Huntsville City Council authorized $45M investment (May 14, 2026): $15M from Alabama for senior leader housing, $30M for site infrastructure.",
+      "reason": "DispatchesFromReality nestor.bundle (round4:huntsville-space)",
+      "sources": [
+        "https://www.spacecom.mil/Newsroom/News/Article-Display/Article/4473792/us-space-command-takes-operational-control-of-facility-at-redstone-arsenal/",
+        "https://www.huntsvilleal.gov/huntsville-reaffirms-commitment-to-space-command-with-45-million-investment-in-redstone-arsenal/"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from_source": "What is the institutional genealogy chain from Operation Paperclip to present-day Huntsville aerospace and defense?",
+      "to_source": "Leidos/Dynetics financials and Huntsville operations — FY2025",
+      "kind": "refines",
+      "reason": "Contractor chain terminus in present-day financial/organizational form"
+    },
+    {
+      "from_source": "What is the institutional genealogy chain from Operation Paperclip to present-day Huntsville aerospace and defense?",
+      "to_source": "U.S. Space Command relocation to Redstone Arsenal — 2026",
+      "kind": "refines",
+      "reason": "Geographic anchor closes on 2026 Space Command co-location"
+    },
+    {
+      "from_source": "Operation Paperclip to Golden Dome — how does von Braun's Huntsville rocketry lineage connect to 21st-century missile defense?",
+      "to_source": "Golden Dome Missile Defense Program Centered on Huntsville",
+      "kind": "refines",
+      "reason": "Ethics-geography bridge to present Golden Dome hub pair"
+    },
+    {
+      "from_source": "Wernher von Braun — from Nazi V-2 rockets to landing humans on the Moon",
+      "to_source": "What was the Army Ballistic Missile Agency (ABMA) and how does it connect Operation Paperclip to Marshall Space Flight Center?",
+      "kind": "refines",
+      "reason": "Biography to institutional ABMA→MSFC bridge (Jeles seed pair may already exist)"
+    },
+    {
+      "from_source": "How did Brown Engineering become Teledyne Brown, Dynetics, and Leidos in Huntsville?",
+      "to_source": "How does Operation Paperclip connect to Leidos and Dynetics in Huntsville today?",
+      "kind": "refines",
+      "reason": "Historical contractor chain to present-day synthesis pair"
+    }
+  ]
+}

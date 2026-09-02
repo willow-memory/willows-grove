@@ -211,16 +211,16 @@ Concretely:
   ask, an ambiguous request) becomes a Kart task; Grove routes it, the
   operator picks the model.
 
-**C12 (decision).** The tri-modal switch (Governance / PM / PA — [P8](willow-grove-premise.md))
-is a **lens on the Kart queue** first, not a workspace divider. Each
-lens filters the queue to the tasks that lens's operator-persona cares
-about:
-- **Governance** — L4-authority-needed Kart items, envelope re-attestation
-  reminders, refusal chips from Nestor.
-- **PM** — L2/L3-authority-needed items, unclaimed roster items,
-  outstanding proposals.
-- **PA** — L1-authority-needed items, upcoming reminders (send_later),
-  operator's own drafts.
+**C12 (misfit — demoted 2026-09-02).** Shipped as: the tri-modal switch
+(Governance / PM / PA — [P8](willow-grove-premise.md)) is a **lens on the
+Kart queue** the operator picks, filtering by authority rung (L4 / L2–L3 / L1).
+That **oversold P8**. Tony’s Jarvis does not ask Tony to switch modes to book
+dinner and also reason about time travel — one continuous seat; context and
+priority change underneath. Governance / PM / PA remain useful as
+**back-of-house triage questions** for Willow’s composition, not as hero chrome.
+Kart may still accept an optional `lens=` filter for quiet tooling; the served
+page must not put a Governance / PM / PA gearshift in the first viewport.
+See [grove-persona-partition.md](grove-persona-partition.md) Jarvis addendum.
 
 **C13 (open).** Auto-drain: whether Kart may auto-route certain kinds
 of task to a specific model tier without operator click. Default
@@ -332,7 +332,8 @@ L0..L4  source: "Local model authority is capped at L2. L3 is empty by design. L
 
 Optional pairs to seal after operator use exposes them:
 - Whether L1 write cadence needs its own throttle (small model spamming journal).
-- Whether the tri-modal lens should hide L1 items entirely from Governance view.
+- Whether quiet Kart `lens=` tooling should remain at all once Willow
+  composition replaces operator-picked filters (C12 demoted).
 - Whether Kart should carry the resident watcher's confidence score alongside the escalation.
 
 ---
