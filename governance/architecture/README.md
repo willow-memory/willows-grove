@@ -37,9 +37,33 @@ was classified by its parent rather than its contents.
 | `willow-new-user.drawio` · `-draft` · `-draftv,02.png` | the greenfield flow — what a new user's box looks like |
 | `willow-session-start.drawio` | session entry |
 | `github-corpus-map.drawio` | repos → corpus |
+| **`willow-v11-verification-edge.drawio`** | **containment and the check** — the seven nests on this box, drawn as nests, and which of them can be asked whether their contents still match. Measured 2026-09-01. |
 
 `CURRENT-STATE-2026-08-28.md` reads v04 against what is actually on disk,
 element by element, measured rather than recalled.
+
+## v0.11 — why containment, and not a component diagram
+
+v04 through v10 answer *what is wired to what*. v11 answers a different
+question and is drawn differently for it: **what contains what, and what checks
+inward.**
+
+The box is not a stack of peers. Nestor's pair holds a warrant which holds an
+evidence pointer; FRANK's entry holds the hash of the entry before it; the gate
+narrows manifest ∩ tier ∩ capability; the vault's blueprint holds the shape of
+a snapshot that holds a live box. It nests all the way down — which is what the
+main product is named for, and it was worth drawing once as the thing it is.
+
+The diagram's claim is one sentence: **a container asserts what it holds, and
+without an inward check the assertion drifts.** Four nests can be asked and
+answer honestly (`nestor_ledger_verify`, `frank_verify`, the gate on every
+call, and `vault_intake.py` as of 2026-09-01). Three cannot, and all three had
+already drifted when they were checked by hand that day — Kart's `bind_try`,
+the Nest's classifier, and the code graph's roster. Each failed the same way:
+silently, returning a shape indistinguishable from a true negative.
+
+Not a status board. If a check is added or a seam closes, redraw it — the
+figures are dated on purpose.
 
 ## v0.8 is a draft, and stays one
 
