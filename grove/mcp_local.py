@@ -5,7 +5,7 @@ Modes:
   stdio (default):   python3 -m grove.mcp_local
                      .mcp.json: {"command": "python3", "args": ["-m", "grove.mcp_local"]}
 
-  serve (push):      python3 -m grove.mcp_local --serve  [--port 8765] [--watch]
+  serve (push):      python3 -m grove.mcp_local --serve  [--port 8767] [--watch]
                      Runs as a persistent streamable-HTTP server with OAuth.
                      Set GROVE_MCP_URL to the public base URL (e.g. ngrok tunnel).
                      .mcp.json: {"url": "https://<tunnel>/mcp"}
@@ -129,7 +129,12 @@ async def _lifespan(server: MCPServer) -> AsyncIterator[None]:
     yield
 
 
-_PORT = int(os.getenv("GROVE_MCP_PORT", "8765"))
+# 8767, not 8765: willow-mcp --serve also defaults to 8765 (its server.py),
+# so the two MCP servers collided and only one could bind — a tunnel stood up
+# in front of "the MCP port" fronted whichever won the race. The fleet port
+# map is now explicit: 8765 willow-mcp MCP, 8766 the Grove desk page
+# (loopback ONLY, never fronted — D4), 8767 Grove MCP.
+_PORT = int(os.getenv("GROVE_MCP_PORT", "8767"))
 
 
 def _detect_serve_mode(argv: list[str] | None = None) -> bool:
@@ -197,7 +202,7 @@ def _transport_security():
     reach the server cross-origin through a rebound name.
 
     The reason it was disabled is real: behind a tunnel the edge may forward
-    `Host: 127.0.0.1:8765` (the origin address) OR the public hostname,
+    `Host: 127.0.0.1:8767` (the origin address) OR the public hostname,
     depending on the tunnel. That is an argument for allowlisting BOTH, not for
     checking neither. Loopback stays on the list for the forwarded case; the
     tunnel host comes from the configured base URL, which the operator sets and
@@ -1063,7 +1068,7 @@ if _SERVE_MODE and _auth_provider is not None:
     # this list is the enforcement of that clause. A public tunnel deployment
     # that forwards its client's public IP to the app will not match; the
     # operator has to reach /grove-approve from the box itself (SSH port-
-    # forward, `xdg-open http://127.0.0.1:8765/grove-approve?pending=…`).
+    # forward, `xdg-open http://127.0.0.1:8767/grove-approve?pending=…`).
     _LOOPBACK_HOSTS = {"127.0.0.1", "::1", "localhost"}
 
     def _remote_is_loopback(request: Request) -> bool:

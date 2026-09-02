@@ -36,7 +36,7 @@ running code with all seven repositories installed in one container — see
 | **T2** | Grove → Nestor | child process, line-delimited JSON-RPC on stdio | `grove/nestor_client.py` |
 | **T3** | Grove → willow-mcp | **in-process Python import**, else HTTP POST | `grove/journal_writer.py` |
 | **T4** | willow-mcp → Postgres | connection over the **Unix socket** | `willow_mcp/db.py` |
-| **T5** | agent → Grove | MCP: stdio, or HTTP+OAuth on `:8765` | `grove/mcp_local.py` |
+| **T5** | agent → Grove | MCP: stdio, or HTTP+OAuth on `:8767` | `grove/mcp_local.py` |
 
 Plus two that carry no bytes between processes at all and are still load-bearing
 wiring: **willow-mcp → kartikeya** and **nestor → willow-gate** are ordinary
@@ -261,7 +261,7 @@ Distinct ports, distinct purposes, frequently conflated:
   is *no web ports for the dashboard*, and `GAP-004` records that the loopback
   bind is currently a **default rather than a gate**: `GROVE_SERVE_HOST=0.0.0.0`
   is warned about and then honoured, with no credential anywhere in the path.
-- **`:8765`** — `grove/mcp_local.py --serve`, MCP over HTTP with a full OAuth
+- **`:8767`** — `grove/mcp_local.py --serve`, MCP over HTTP with a full OAuth
   2.0/PKCE authorization server (`grove/mcp_auth.py`). This is the remote-client
   surface, and the only one that authenticates.
 

@@ -121,7 +121,8 @@ the foreground; Ctrl-C stops it. The launcher resolves your interpreter (the
 
 `GROVE_SERVE_HOST` and `GROVE_SERVE_PORT` override the bind. Leave them alone
 unless you have a reason: the seat is designed for the desk, not the internet,
-and `8765` belongs to the MCP serve mode — do not collide with it.
+and `8767` belongs to the MCP serve mode — do not collide with it. (`8765` is
+willow-mcp's own `--serve` port; Grove moved off it to end a real collision.)
 
 Full operator guide: [`docs/grove-served-page.md`](grove-served-page.md).
 

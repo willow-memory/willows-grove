@@ -3,7 +3,7 @@ b17: WGRV1  ΔΣ=42
 
 Joins the fleet's `gates_serve` pattern (`willow-mcp/src/willow_mcp/gates_serve.py`)
 — a small Starlette + uvicorn app bound to loopback, no MCP, no auth of its
-own beyond the loopback boundary. Same shape, different port (8766 vs 8765)
+own beyond the loopback boundary. Same shape, different port (8766 vs 8767)
 so it does not collide with `grove-mcp-serve` when both are up.
 
 Two routes for this first pass:

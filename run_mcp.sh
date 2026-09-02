@@ -4,7 +4,7 @@
 #
 # Usage:
 #   ./run_mcp.sh              # stdio (Claude/Cursor spawns this)
-#   ./run_mcp.sh --serve      # HTTP on :8765 for remote clients
+#   ./run_mcp.sh --serve      # HTTP on :8767 for remote clients
 #   ./run_mcp.sh --serve --watch
 
 set -euo pipefail
@@ -34,7 +34,8 @@ fi
 export PYTHONPATH="$(pwd)${PYTHONPATH:+:$PYTHONPATH}"
 export WILLOW_PG_DB="${WILLOW_PG_DB:-willow_20}"
 export WILLOW_PG_USER="${WILLOW_PG_USER:-${USER:-}}"
-export GROVE_MCP_PORT="${GROVE_MCP_PORT:-8765}"
+# 8767: willow-mcp --serve owns 8765, 8766 is the loopback-only desk page.
+export GROVE_MCP_PORT="${GROVE_MCP_PORT:-8767}"
 
 echo "Grove MCP: $PY -m grove.mcp_local $*" >&2
 exec "$PY" -m grove.mcp_local "$@"

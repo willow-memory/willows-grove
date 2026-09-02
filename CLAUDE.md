@@ -32,7 +32,7 @@ A loopback-only served page on `127.0.0.1:8766` (Starlette + uvicorn) that
 hosts the Grove Web Components. Reads live state from Postgres, the local
 Nestor store, and the willow-mcp `kb_journal` seam. The MCP server
 (`./run_mcp.sh`) runs as its own process; in `--serve` mode it exposes
-Grove tools to remote (claude.ai) clients over HTTP+OAuth on `:8765`.
+Grove tools to remote (claude.ai) clients over HTTP+OAuth on `:8767`.
 
 Every reader honors the three-state contract (INVARIANTS.md §1): populated /
 empty / unreachable — never collapsed. Every panel renders each state
@@ -51,7 +51,7 @@ distinctly.
 | `web/boot/*.js` | Page-level boot modules (refusal-summon, layout-memory, standing) |
 | `u2u/` | LAN transport for knock/consent/note messages — signed (Ed25519), plaintext on the wire; see `docs/design/u2u-security-limits.md` for what u2u guarantees and what it does not. Confidentiality planned for Gate 6. |
 | `bridge/` | Matrix bridge |
-| `grove/mcp_local.py` | Grove MCP server — stdio (local) or `--serve` (HTTP+OAuth on :8765) |
+| `grove/mcp_local.py` | Grove MCP server — stdio (local) or `--serve` (HTTP+OAuth on :8767) |
 | `grove/mcp_auth.py` | `GroveOAuthProvider` — OAuth 2.0/PKCE authorization server for serve mode |
 | `run_mcp.sh` | Launch wrapper (resolves venv, sets env) |
 | `deploy/grove-mcp-serve.service.template` | systemd `--user` unit template |

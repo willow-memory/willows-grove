@@ -44,13 +44,29 @@ Curated entry points (with receipts): [`INCIDENT_INDEX.md`](INCIDENT_INDEX.md).
 
 ### Local access (default)
 
-Grove MCP runs on `localhost:8765`. No additional config needed for local Claude Code sessions.
+Grove MCP runs on `localhost:8767`. No additional config needed for local Claude Code sessions.
+
+### The fleet port map
+
+Three services, three ports, and only one of them may ever be fronted by a
+tunnel. Written down because two of them defaulted to the same port until
+2026-09-02, so "front the MCP port" fronted whichever process won the race.
+
+| port | service | tunnel? |
+|---|---|---|
+| `8765` | `willow-mcp --serve` (its own MCP over HTTP+OAuth) | yes — the ratified remote-seat endpoint (KB `2026B306`) |
+| `8766` | `grove_serve.py`, the desk page | **never.** Loopback-only, sealed D4 |
+| `8767` | `grove/mcp_local.py --serve`, Grove MCP | yes, as its own resource |
+
+Grove MCP moved 8765 → 8767 to end the collision. Pin the port explicitly in
+any unit or tunnel config rather than relying on a default: an inferred
+endpoint is not an endpoint.
 
 `.mcp.json` (local):
 ```json
 {
   "mcpServers": {
-    "grove": { "type": "http", "url": "http://127.0.0.1:8765/mcp" }
+    "grove": { "type": "http", "url": "http://127.0.0.1:8767/mcp" }
   }
 }
 ```
@@ -59,7 +75,7 @@ Start: `python3 -m grove.mcp_local --serve` or `systemctl --user start grove-mcp
 
 ### Remote access (claude.ai, external clients)
 
-The serve process **always binds `127.0.0.1:8765`** — it never listens on a
+The serve process **always binds `127.0.0.1:8767`** — it never listens on a
 public interface itself (`grove/mcp_local.py`, `host="127.0.0.1"`). To reach it
 from claude.ai you put a **tunnel** in front of loopback. The code is
 tunnel-agnostic: Pangolin, ngrok, cloudflared, and Tailscale Funnel all work —
@@ -67,12 +83,12 @@ the server only cares about `GROVE_MCP_URL`.
 
 Three things must line up:
 
-1. The tunnel forwards a **stable public HTTPS host** → `127.0.0.1:8765`.
+1. The tunnel forwards a **stable public HTTPS host** → `127.0.0.1:8767`.
 2. `GROVE_MCP_URL` is set to that public base URL, because OAuth derives its
    issuer, RFC 9728 resource metadata, and the Host/Origin allowlist from it. A
    rotating free-tier URL invalidates client registrations and tokens on every
    restart — use a reserved/stable hostname.
-3. The tunnel's forwarded `Host` header is either loopback (`127.0.0.1:8765`) or
+3. The tunnel's forwarded `Host` header is either loopback (`127.0.0.1:8767`) or
    the exact `GROVE_MCP_URL` netloc — both are allowlisted automatically. If a
    tunnel forwards some other host, allowlist it with `GROVE_MCP_EXTRA_HOSTS`
    (see "DNS-rebinding allowlist" below) rather than turning protection off.
@@ -83,7 +99,7 @@ Three things must line up:
 entry together, so serve mode is one command:
 
 ```bash
-# one-time: reserve/point your tunnel at 127.0.0.1:8765 first, then:
+# one-time: reserve/point your tunnel at 127.0.0.1:8767 first, then:
 GROVE_MCP_URL=https://grove.example.org scripts/grove-serve install
 scripts/grove-serve on       # start serve + add local .mcp.json entry
 scripts/grove-serve status   # unit state, entry presence, claude.ai connector URL
@@ -106,7 +122,7 @@ Pangolin fronts loopback one of two ways.
 
 **A. Newt (Pangolin's tunnel client, no inbound ports on the origin).** Register
 a resource in the Pangolin dashboard for your public hostname, target
-`http://127.0.0.1:8765`, then run Newt on the Grove host:
+`http://127.0.0.1:8767`, then run Newt on the Grove host:
 ```bash
 newt --id <resource-id> --secret <resource-secret> --endpoint https://pangolin.example.org
 ```
@@ -114,13 +130,13 @@ Set `GROVE_MCP_URL=https://<your-pangolin-hostname>`. Newt forwards the public
 `Host`, which matches the `GROVE_MCP_URL` netloc — no extra config needed.
 
 **B. Reverse-proxy target (Pangolin/Traefik in front, origin reachable on the
-LAN).** Point the Pangolin resource at the Grove host's `:8765`. If the proxy
+LAN).** Point the Pangolin resource at the Grove host's `:8767`. If the proxy
 rewrites `Host` to an internal name (Traefik `passHostHeader: false`, or an
 upstream service name), add that value:
 ```ini
 [Service]
-Environment=GROVE_MCP_EXTRA_HOSTS=grove.internal:8765
-Environment=GROVE_MCP_EXTRA_ORIGINS=https://grove.internal:8765
+Environment=GROVE_MCP_EXTRA_HOSTS=grove.internal:8767
+Environment=GROVE_MCP_EXTRA_ORIGINS=https://grove.internal:8767
 ```
 Prefer preserving the original Host (`passHostHeader: true`) so no extra is
 needed.
@@ -128,9 +144,9 @@ needed.
 #### Other tunnels (drop-in)
 
 ```bash
-ngrok http 8765                                  # → https://<sub>.ngrok-free.app
-cloudflared tunnel --url http://127.0.0.1:8765   # named tunnel = stable host
-tailscale funnel 8765                            # → https://<host>.<tailnet>.ts.net
+ngrok http 8767                                  # → https://<sub>.ngrok-free.app
+cloudflared tunnel --url http://127.0.0.1:8767   # named tunnel = stable host
+tailscale funnel 8767                            # → https://<host>.<tailnet>.ts.net
 ```
 Set `GROVE_MCP_URL` to whichever public base you get, then restart the unit.
 

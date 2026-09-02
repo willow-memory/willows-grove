@@ -22,7 +22,7 @@ decisions that shaped what got built.
 | Area | Doc |
 |------|-----|
 | Postgres (`willow_20`) | [`runbooks/postgres.md`](runbooks/postgres.md) |
-| Grove MCP (stdio vs `--serve` on `:8765`) | [`runbooks/mcp.md`](runbooks/mcp.md) |
+| Grove MCP (stdio vs `--serve` on `:8767`) | [`runbooks/mcp.md`](runbooks/mcp.md) |
 | Grove messaging / LISTEN + NOTIFY | [`runbooks/grove.md`](runbooks/grove.md) |
 | Curated incident receipts | [`runbooks/INCIDENT_INDEX.md`](runbooks/INCIDENT_INDEX.md) |
 

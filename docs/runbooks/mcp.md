@@ -15,7 +15,7 @@ Set **`GROVE_MCP_URL`** to the public base URL when using serve mode (tunnel/ngr
 ## Health checks
 
 - **stdio:** process exits if imports/db fail — watch Claude/Code logs.
-- **serve:** hit configured HTTP port (`GROVE_MCP_PORT`, default `8765`) per FastMCP deployment.
+- **serve:** hit configured HTTP port (`GROVE_MCP_PORT`, default `8767`) per FastMCP deployment.
 
 ## LISTEN/NOTIFY thread
 
