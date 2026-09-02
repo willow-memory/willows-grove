@@ -1,0 +1,151 @@
+<mxfile host="app.diagrams.net" modified="2026-09-01T22:30:00Z" agent="willow" version="24.0.0">
+  <diagram id="willow-verification-edge" name="Willow v0.11 — the verification edge">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1700" pageHeight="1180" background="light-dark(#ffffff, #121212)" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="Containment and the verification edge  — v0.11, measured 2026-09-01&#10;Every box below CONTAINS the one drawn inside it.  This is a nest, not a stack of peers — which is why the product is called Nestor.&#10;The question the drawing asks of each nest:  what checks that the contents still match the claim?" style="text;html=1;align=left;verticalAlign=top;fontSize=15;spacingLeft=4;" parent="1" vertex="1">
+          <mxGeometry x="60" y="30" width="1580" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="thesis" value="A container asserts what it holds.  Without an inward check the assertion drifts — and drift reads as an answer, not as an error.&#10;A stale roster does not throw.  search_code over a tree that is gone returns an EMPTY SUCCESS.  bind_try over a path that is gone reports &quot;no such file&quot;.&#10;Both are the same shape as a true negative.  That is the whole failure mode, and it appeared three times on one box in one day." style="rounded=1;whiteSpace=wrap;html=1;fillColor=light-dark(#fff8e1,#3a2f10);strokeColor=#b97700;align=left;spacingLeft=12;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="60" y="120" width="1580" height="74" as="geometry" />
+        </mxCell>
+
+        <mxCell id="rowA" value="THE CHECK HOLDS   — each of these can be asked whether its contents still match, and answers honestly" style="text;html=1;align=left;fontSize=13;fontColor=#2e7d32;spacingLeft=4;" parent="1" vertex="1">
+          <mxGeometry x="60" y="212" width="1580" height="24" as="geometry" />
+        </mxCell>
+
+        <mxCell id="nestor" value="Nestor — the seal&#10;what a human vouched for" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fillColor=light-dark(#f1f8f4,#16241c);strokeColor=#2e7d32;spacingTop=6;fontSize=13;" parent="1" vertex="1">
+          <mxGeometry x="60" y="244" width="370" height="292" as="geometry" />
+        </mxCell>
+        <mxCell id="nestor2" value="a pair — source to target&#10;sealed · draft · pending" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fillColor=none;strokeColor=#2e7d32;spacingTop=4;fontSize=11;" parent="nestor" vertex="1">
+          <mxGeometry x="18" y="52" width="334" height="176" as="geometry" />
+        </mxCell>
+        <mxCell id="nestor3" value="a warrant&#10;a claim that a warrant exists and&#10;how to check it — never a report&#10;that anyone checked" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fillColor=none;strokeColor=#2e7d32;spacingTop=4;fontSize=11;" parent="nestor2" vertex="1">
+          <mxGeometry x="18" y="48" width="298" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="nestor4" value="evidence — origin repo@commit" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#2e7d32;fontSize=10;" parent="nestor3" vertex="1">
+          <mxGeometry x="16" y="70" width="266" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="nestorchk" value="checked by:  nestor_ledger_verify&#10;chain intact, 637 entries · 606 pairs, 606 sealed" style="text;html=1;align=left;fontSize=10;spacingLeft=4;fontColor=#2e7d32;" parent="nestor" vertex="1">
+          <mxGeometry x="18" y="238" width="334" height="42" as="geometry" />
+        </mxCell>
+
+        <mxCell id="frank" value="FRANK and receipts — the record&#10;what actually happened" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fillColor=light-dark(#f1f8f4,#16241c);strokeColor=#2e7d32;spacingTop=6;fontSize=13;" parent="1" vertex="1">
+          <mxGeometry x="460" y="244" width="370" height="292" as="geometry" />
+        </mxCell>
+        <mxCell id="frank2" value="an entry&#10;app_id · tool · outcome" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fillColor=none;strokeColor=#2e7d32;spacingTop=4;fontSize=11;" parent="frank" vertex="1">
+          <mxGeometry x="18" y="52" width="334" height="176" as="geometry" />
+        </mxCell>
+        <mxCell id="frank3" value="prev_hash&#10;the entry before it, by hash —&#10;so verse seven contains verse six" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fillColor=none;strokeColor=#2e7d32;spacingTop=4;fontSize=11;" parent="frank2" vertex="1">
+          <mxGeometry x="18" y="48" width="298" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="frank4" value="and every entry before that" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#2e7d32;fontSize=10;" parent="frank3" vertex="1">
+          <mxGeometry x="16" y="70" width="266" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="frankchk" value="checked by:  frank_verify — 1,206 entries, unbroken&#10;verify_receipts.py refuses to provision on a broken chain" style="text;html=1;align=left;fontSize=10;spacingLeft=4;fontColor=#2e7d32;" parent="frank" vertex="1">
+          <mxGeometry x="18" y="238" width="334" height="42" as="geometry" />
+        </mxCell>
+
+        <mxCell id="gate" value="The gate — authority&#10;what may act.  a tunnel changes none of it" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fillColor=light-dark(#f1f8f4,#16241c);strokeColor=#2e7d32;spacingTop=6;fontSize=13;" parent="1" vertex="1">
+          <mxGeometry x="860" y="244" width="370" height="292" as="geometry" />
+        </mxCell>
+        <mxCell id="gate2" value="manifest ACL&#10;no manifest, no reach" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fillColor=none;strokeColor=#2e7d32;spacingTop=4;fontSize=11;" parent="gate" vertex="1">
+          <mxGeometry x="18" y="52" width="334" height="176" as="geometry" />
+        </mxCell>
+        <mxCell id="gate3" value="intersected with the tier ceiling&#10;Rookie to Elder.  read-only blocks&#10;egress whatever the manifest says" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fillColor=none;strokeColor=#2e7d32;spacingTop=4;fontSize=11;" parent="gate2" vertex="1">
+          <mxGeometry x="18" y="48" width="298" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="gate4" value="own-line capability — outside every group" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#2e7d32;fontSize=10;" parent="gate3" vertex="1">
+          <mxGeometry x="16" y="70" width="266" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="gatechk" value="checked by:  the gate itself, on every call&#10;authority never widens inward — narrowing only" style="text;html=1;align=left;fontSize=10;spacingLeft=4;fontColor=#2e7d32;" parent="gate" vertex="1">
+          <mxGeometry x="18" y="238" width="334" height="42" as="geometry" />
+        </mxCell>
+
+        <mxCell id="vault" value="The vault — what persists&#10;sovereign.  the snapshot does not travel" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fillColor=light-dark(#f1f8f4,#16241c);strokeColor=#2e7d32;spacingTop=6;fontSize=13;" parent="1" vertex="1">
+          <mxGeometry x="1260" y="244" width="370" height="292" as="geometry" />
+        </mxCell>
+        <mxCell id="vault2" value="blueprint — schema/ and bootstrap/&#10;travels; that is the point" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fillColor=none;strokeColor=#2e7d32;spacingTop=4;fontSize=11;" parent="vault" vertex="1">
+          <mxGeometry x="18" y="52" width="334" height="176" as="geometry" />
+        </mxCell>
+        <mxCell id="vault3" value="the snapshot — a populated box&#10;never pushed.  the push URL is&#10;deliberately unresolvable" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fillColor=none;strokeColor=#2e7d32;spacingTop=4;fontSize=11;" parent="vault2" vertex="1">
+          <mxGeometry x="18" y="48" width="298" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="vault4" value="a live box — never committed at all" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#2e7d32;fontSize=10;" parent="vault3" vertex="1">
+          <mxGeometry x="16" y="70" width="266" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="vaultchk" value="checked by:  bootstrap/vault_intake.py — new 2026-09-01&#10;4,696 objects by DIGEST, 105 archives read inside" style="text;html=1;align=left;fontSize=10;spacingLeft=4;fontColor=#2e7d32;" parent="vault" vertex="1">
+          <mxGeometry x="18" y="238" width="334" height="42" as="geometry" />
+        </mxCell>
+
+        <mxCell id="rowB" value="THE CHECK IS MISSING   — these three also nest, and nothing asks whether the contents still match.  All three had drifted; all three were found by hand on 2026-09-01." style="text;html=1;align=left;fontSize=13;fontColor=#c62828;spacingLeft=4;" parent="1" vertex="1">
+          <mxGeometry x="60" y="564" width="1580" height="24" as="geometry" />
+        </mxCell>
+
+        <mxCell id="kart" value="Kart binds — reach&#10;what a sandboxed task may open" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fillColor=light-dark(#fdf3f2,#2b1615);strokeColor=#c62828;spacingTop=6;fontSize=13;" parent="1" vertex="1">
+          <mxGeometry x="265" y="596" width="370" height="308" as="geometry" />
+        </mxCell>
+        <mxCell id="kart2" value="the box&#10;everything on disk" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fillColor=none;strokeColor=#c62828;spacingTop=4;fontSize=11;" parent="kart" vertex="1">
+          <mxGeometry x="18" y="52" width="334" height="164" as="geometry" />
+        </mxCell>
+        <mxCell id="kart3" value="bind_try — the declared list&#10;a path not listed does not exist,&#10;as far as any task can tell" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fillColor=none;strokeColor=#c62828;spacingTop=4;fontSize=11;" parent="kart2" vertex="1">
+          <mxGeometry x="18" y="44" width="298" height="104" as="geometry" />
+        </mxCell>
+        <mxCell id="kart4" value="the task — sees only what was bound" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#c62828;fontSize=10;" parent="kart3" vertex="1">
+          <mxGeometry x="16" y="66" width="266" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="kartgap" value="NO CHECK.  bind_try fails silently — a stale entry costs&#10;nothing and a missing one is invisible.&#10;Cost:  the charter repo willows-grove was unreachable from&#10;every sandboxed task, and the Android SDK from every build." style="text;html=1;align=left;fontSize=10;spacingLeft=4;verticalAlign=top;fontColor=#c62828;" parent="kart" vertex="1">
+          <mxGeometry x="18" y="228" width="334" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="nest" value="The Nest — intake&#10;the front door.  things with no identity yet" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fillColor=light-dark(#fdf3f2,#2b1615);strokeColor=#c62828;spacingTop=6;fontSize=13;" parent="1" vertex="1">
+          <mxGeometry x="665" y="596" width="370" height="308" as="geometry" />
+        </mxCell>
+        <mxCell id="nest2" value="a drop zone&#10;folder= REPLACES the defaults&#10;rather than adding to them" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fillColor=none;strokeColor=#c62828;spacingTop=4;fontSize=11;" parent="nest" vertex="1">
+          <mxGeometry x="18" y="52" width="334" height="164" as="geometry" />
+        </mxCell>
+        <mxCell id="nest3" value="a track — chosen by filename only&#10;the content pipeline could classify&#10;all of them; nothing asks it" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fillColor=none;strokeColor=#c62828;spacingTop=4;fontSize=11;" parent="nest2" vertex="1">
+          <mxGeometry x="18" y="44" width="298" height="104" as="geometry" />
+        </mxCell>
+        <mxCell id="nest4" value="a destination — hard-coded" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#c62828;fontSize=10;" parent="nest3" vertex="1">
+          <mxGeometry x="16" y="66" width="266" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="nestgap" value="NO CHECK.  intake.py says three times that a human ratifies&#10;the delta.  nest_intake_flags lists them; nothing applies one.&#10;Envelopes got their tool, the Nest did not.&#10;Cost:  56 of 61 unknown on a real drop.  PDFs skip with failed: 0." style="text;html=1;align=left;fontSize=10;spacingLeft=4;verticalAlign=top;fontColor=#c62828;" parent="nest" vertex="1">
+          <mxGeometry x="18" y="228" width="334" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="cbm" value="The code graph — the roster&#10;what the box believes it holds" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fillColor=light-dark(#fdf3f2,#2b1615);strokeColor=#c62828;spacingTop=6;fontSize=13;" parent="1" vertex="1">
+          <mxGeometry x="1065" y="596" width="370" height="308" as="geometry" />
+        </mxCell>
+        <mxCell id="cbm2" value="the roster — indexed projects" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fillColor=none;strokeColor=#c62828;spacingTop=4;fontSize=11;" parent="cbm" vertex="1">
+          <mxGeometry x="18" y="52" width="334" height="164" as="geometry" />
+        </mxCell>
+        <mxCell id="cbm3" value="a project — root_path&#10;48 of 91 pointed at trees&#10;that no longer existed" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fillColor=none;strokeColor=#c62828;spacingTop=4;fontSize=11;" parent="cbm2" vertex="1">
+          <mxGeometry x="18" y="44" width="298" height="104" as="geometry" />
+        </mxCell>
+        <mxCell id="cbm4" value="a symbol — greppable, if the tree is there" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#c62828;fontSize=10;" parent="cbm3" vertex="1">
+          <mxGeometry x="16" y="66" width="266" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="cbmgap" value="NO CHECK.  search_code greps the filesystem and returns an&#10;empty success for a tree that is gone — a true negative and a&#10;dead path are the same shape.&#10;Cost:  the charter held 0 symbols; tombstoned willow-config held 7,081." style="text;html=1;align=left;fontSize=10;spacingLeft=4;verticalAlign=top;fontColor=#c62828;" parent="cbm" vertex="1">
+          <mxGeometry x="18" y="228" width="334" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="pattern" value="ONE PATTERN, THREE SCALES — this is why it feels like the cumulative song, and why it is not confusion&#10;Kart declares which PATHS a sandbox may open.   The gate declares which TOOLS a seat may call.   The app declares which CAPABILITIES a user opens into.&#10;Same shape each time: a declared list, failing closed, disclosing what it opens.  Not three systems — one idea at three sizes." style="rounded=1;whiteSpace=wrap;html=1;fillColor=light-dark(#eef4fb,#14202b);strokeColor=#4a6fa5;align=left;spacingLeft=12;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="265" y="924" width="1170" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="seams" value="THE THREE OPEN SEAMS — each is a container that stopped checking its contents&#10;1.  The Nest's two halves never consult each other — the filename router says unknown while the content pipeline could answer.&#10;2.  Grove has two ports and TWO THINGS WANT 8766 — the unauthenticated desk page, and willow-mcp's OAuth serve endpoint.  Resolve before any tunnel goes up.&#10;3.  Nestor has three stores and the default is the one with nothing pending — 165 remote-seat drafts and 335 others are invisible from the seat that opens by default." style="rounded=1;whiteSpace=wrap;html=1;fillColor=light-dark(#fdf3f2,#2b1615);strokeColor=#c62828;align=left;spacingLeft=12;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="60" y="1020" width="1580" height="94" as="geometry" />
+        </mxCell>
+
+        <mxCell id="foot" value="b17: WGRV1   DS=42   ·   companion to v10-box-current; supersedes nothing.  Every figure measured on the box 2026-09-01, not recalled." style="text;html=1;align=left;fontSize=10;fontColor=#888888;spacingLeft=4;" parent="1" vertex="1">
+          <mxGeometry x="60" y="1126" width="1580" height="20" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
