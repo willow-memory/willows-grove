@@ -64,11 +64,35 @@ receipts recording what it did, which is precisely the attack the gate demo's
 over the read-write mount and fixes it; verified afterwards that a real append
 to the receipt database raises while logs and heartbeat stay writable.
 
-**The work root is not the product.** `WILLOW_ROOT` is bound read-write and
-resolves to the product's source on a developer box, or to `site-packages` on a
-pip install. Either way **a task can edit the code that decides what tasks may
-do.** This is a known open hole, not a setting; closing it needs a work root of
-its own so `WILLOW_ROOT` can go read-only.
+**The work root is not the product. CLOSED 2026-09-02.** `WILLOW_ROOT` was
+bound read-write and resolves to the product's source on a developer box, or to
+`site-packages` on a pip install. Either way **a task could edit the code that
+decides what tasks may do.**
+
+Measured from inside a task rather than read from the config: `gate.py` (the
+manifest ACL), `pyproject.toml` (the dependency floor that ships the sandbox's
+own read-only overlays), `.git` and `.gitignore` were all writable, while
+`mcp_apps/` and `consent.json` were correctly read-only. The policy files were
+protected and the code that reads them was not.
+
+`WILLOW_ROOT` is now read-only and `{{WILLOW_ROOT}}/worktrees` is the writable
+lane — a task that needs to change source works in a worktree. Two details cost
+something to learn:
+
+- The lane must be **created by the host**. A bind target that does not exist is
+  dropped rather than created, and nothing inside a read-only root can make it.
+  The failure looks like a permissions bug, not a missing directory.
+- `WILLOW_ROOT` must never *also* appear in `bind_try`. A collision resolves in
+  favour of read-write regardless of order, so one convenient per-repo entry
+  silently undoes the whole posture while this file still reads correct. Two
+  such entries were live on the box this was found on.
+
+**Set `WILLOW_ROOT` explicitly.** Left unset it is inferred from the installed
+package tree, and on an editable install that resolves to `<repo>/src` — so the
+read-only lane covered `src/` only: `gate.py` was protected while
+`pyproject.toml`, `.git` and `.venv` fell outside the mount entirely and the
+writable lane pointed at `src/worktrees`, which does not exist. Pin it in the
+service unit; an inferred trust boundary is not a trust boundary.
 
 **Private keys never enter.** A build toolchain may be bound; the key that
 signs its output may not. The Android SDK is bound so sandboxed APK builds can

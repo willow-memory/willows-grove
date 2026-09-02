@@ -6,6 +6,18 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Changed
 
+- **Kart mount policy: `WILLOW_ROOT` is bound read-only and tasks get a work
+  root.** It resolves to the product's source (or `site-packages`), and bound
+  read-write it let a sandboxed task edit the code deciding what tasks may do —
+  measured from inside a task: `gate.py`, `pyproject.toml`, `.git` and
+  `.gitignore` writable while `mcp_apps/` and `consent.json` were correctly
+  read-only. `deploy/kart-sandbox.template.json` now binds `WILLOW_ROOT` `ro`
+  with `{{WILLOW_ROOT}}/worktrees` as the writable lane, and records the three
+  rules that cost something: the host must create the lane, `WILLOW_ROOT` must
+  never also appear in `bind_try` (read-write wins a collision regardless of
+  order), and it must be set explicitly — inferred on an editable install it
+  resolves to `<repo>/src`. Implementation in willow-memory/kartikeya#37. PR 35.
+
 - **willow-config tombstoned:** `LOCAL_GITHUB_LAYOUT.md` no longer clones
   `rudi193-cmd/willow-config`; `.willow` is runtime-only. See
   `github/archive/RETIRE-willow-config-2026-09-01.md`. PR 32.
