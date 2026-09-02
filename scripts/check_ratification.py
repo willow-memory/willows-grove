@@ -76,6 +76,12 @@ _MACHINE_TRAILER_RES = (
     ),
     # A bare session URL on its own line.
     re.compile(r"^<?https?://(?:www\.)?claude\.ai/\S*>?$", re.IGNORECASE),
+    # "Made with [Cursor](https://cursor.com)" — appended server-side after
+    # the author's text, same class as the Claude Code attribution footer.
+    re.compile(
+        r"^Made with\s+\[Cursor\]\([^)]*\)\s*$",
+        re.IGNORECASE,
+    ),
 )
 
 

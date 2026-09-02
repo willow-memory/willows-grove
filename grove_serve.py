@@ -79,8 +79,9 @@ def _get_nestor_client() -> NestorClient:
                 _NESTOR_CLIENT = NestorClient()
     return _NESTOR_CLIENT
 
-# Lenses the dispatch rail's tri-modal switch understands (C12). Any other
-# value falls through to the unfiltered queue.
+# Optional Kart lens filter values (quiet tooling). C12's operator-facing
+# Governance/PM/PA gearshift is demoted (Jarvis addendum); these tokens remain
+# for ?lens= on /api/dispatch only. Any other value falls through unfiltered.
 _DISPATCH_LENSES = {"governance", "pm", "pa"}
 
 

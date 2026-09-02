@@ -81,9 +81,10 @@ stated the shape and are load-bearing for what follows.
 What **this** doc adds:
 1. The **constitutional framing** (`willow-memory/willow`, arrived later)
    — that the desk is the *Operator Jarvis seat* and serves the law.
-2. The **tri-modal seat** shape (Governance / PM / PA from
-   `willow-memory/willow/ORIENT.md`) as the desk's explicit lens
-   structure.
+2. The **P8 office questions** (Governance / PM / PA from
+   `willow-memory/willow/ORIENT.md`) as Willow’s **back-of-house triage
+   vocabulary** — not an operator mode switch (Jarvis addendum 2026-09-02;
+   C12 demoted).
 3. The **name correction** (Willow's Grove — her space, everything routes
    through her).
 4. **Decisions D1–D16** taken during the design conversation, each with
@@ -98,11 +99,13 @@ covered; this doc yields.
 
 ## What Willow's Grove is
 
-The **Operator Jarvis seat**, rendered as a tri-modal desk that consumes
-the fleet's already-existing surfaces without re-implementing them.
+The **Operator Jarvis seat** — one continuous desk that consumes the fleet's
+already-existing surfaces without re-implementing them. Tony does not switch
+modes to book dinner and also reason about time travel; Willow composes
+priority underneath.
 
-The tri-modal shape is not new. It is already stated in
-`willow-memory/willow/ORIENT.md`:
+P8’s three offices (from `willow-memory/willow/ORIENT.md`) remain the
+**questions Willow asks when triaging**, not chrome the operator clicks:
 
 | Office | Question | Where it looks |
 |---|---|---|
@@ -110,8 +113,9 @@ The tri-modal shape is not new. It is already stated in
 | **PM** | what's in flight, by when, done how? | `fleet.json`, `dispatch_list`, WO-1/WO-2, envelope meters |
 | **PA** | what does the operator need, when? | `pa/*` SOIL commitments, one prioritized card, protect operator attention |
 
-The Grove desktop is a single canvas where the operator switches lenses.
-Everything the desk shows is fetched, not synthesized.
+The Grove desktop is a **single canvas**. Everything the desk shows is fetched,
+not synthesized. An operator-facing Governance / PM / PA gearshift oversold
+this shape (C12 misfit); see [grove-persona-partition.md](grove-persona-partition.md).
 
 ## Why "composed, not built"
 
@@ -154,9 +158,10 @@ not a failure**. See D7.
 runs on any operator's machine before any add-on is installed:
 
 1. **One HTML page**, served on 127.0.0.1 under the `gates_serve` pattern —
-   the tri-modal canvas. Structure, not novel plumbing.
-2. **The tri-modal switch** — Governance / PM / PA as browser state
-   (localStorage / URL fragment) + one toggle affordance.
+   one Jarvis canvas. Structure, not novel plumbing.
+2. **Composition, not a mode switch** — Willow prioritizes what bubbles;
+   Governance / PM / PA stay back-of-house triage vocabulary (P8). Do not
+   put a three-office gearshift in the first viewport (C12 demoted).
 3. **Layout memory** — which panels are up, where, per-operator. Browser
    state plus a small SOIL record.
 4. **The `WILLOW_HUMAN_ORCHESTRATOR=1` env** — Grove sets this to be
@@ -282,12 +287,13 @@ Sealed during the design exploration, each with evidence and warrant.
 Grove design gets its own live Nestor store, they get re-sealed there with
 receipts intact.)
 
-**D1 — What is Willow's Grove?** *(sealed, verifier: heimdallr; question normalized as "what is willow's grove")*
-The operator's Jarvis seat rendered as a tri-modal desk (Governance / PM /
-PA) that consumes fleet-presence, envelopes, and dispatch without
-re-implementing them.
+**D1 — What is Willow's Grove?** *(sealed, verifier: heimdallr; question normalized as "what is willow's grove"; wording clarified 2026-09-02)*
+The operator's Jarvis seat — one continuous desk that consumes fleet-presence,
+envelopes, and dispatch without re-implementing them. Governance / PM / PA are
+back-of-house triage questions (P8), not an operator mode switch.
 - evidence: `willow-memory/willow/AGENTS.md:47` — "Operator Jarvis seat" verbatim
-- evidence: `willow-memory/willow/ORIENT.md:15` — tri-modal seat definition
+- evidence: `willow-memory/willow/ORIENT.md:15` — office questions (not chrome)
+- evidence: `willows-grove/docs/design/grove-persona-partition.md` — Jarvis addendum
 - warrant (citation): `willow-memory/willow/CONSTITUTION.md` — Article 0
 
 **D2 — Which repo owns the desktop code?** *(sealed)*

@@ -40,6 +40,7 @@ decisions that shaped what got built.
 | Doc | Purpose |
 |-----|---------|
 | [`design/willow-grove-premise.md`](design/willow-grove-premise.md) | The founding premise — operator seat, composed not built |
+| [`design/grove-persona-partition.md`](design/grove-persona-partition.md) | Willow desk vs Heimdallr watch — persona ownership inside Grove |
 | [`design/watcher-e2e-notes.md`](design/watcher-e2e-notes.md) | Resident watcher Ollama + Postgres LISTEN end-to-end notes |
 | [`design/autonomous-continuity.md`](design/autonomous-continuity.md) | Autonomous continuity — the sealing question for Nestor |
 | [`design/pr14-carryovers.md`](design/pr14-carryovers.md) | Punch list for v0.10 — what v0.9 punted and why |

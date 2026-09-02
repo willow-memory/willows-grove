@@ -130,6 +130,21 @@ def test_tool_appended_footer_below_the_line_passes() -> None:
     assert r.returncode == 0, r.stdout + r.stderr
 
 
+def test_cursor_made_with_footer_skipped() -> None:
+    """Cursor appends 'Made with [Cursor](…)' after the author's text —
+    same class as the Claude Code attribution footer, and the reason
+    willows-grove #37 went red on an otherwise correct body."""
+    body = (
+        "Description of the change.\n"
+        "\n"
+        'Ratified-by: sean-campbell — "Implement the plan as specified"\n'
+        "\n"
+        "Made with [Cursor](https://cursor.com)\n"
+    )
+    r = _run(body)
+    assert r.returncode == 0, r.stdout + r.stderr
+
+
 def test_real_content_below_the_line_still_flagged() -> None:
     """The footer skip is an allowlist, not a general 'ignore trailing
     junk'. Prose after the sign-off means the sign-off was not last, and

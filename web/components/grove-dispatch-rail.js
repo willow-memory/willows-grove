@@ -16,22 +16,22 @@
  * C6-C8) names Kart as the seam every small-to-big handoff crosses: an
  * agent that hits its authority ceiling files a task with the
  * `authority_needed` it needs from a larger tier, and the operator (v1,
- * no auto-drain) picks the drain-tier from *this rail*. C12 wires the
- * tri-modal desk switch to the `lens` attribute so the same rail
- * narrows to the governance / pm / pa slice the operator is standing
- * in. D12 says the rail is a summonable card — mounted at the home edge,
+ * no auto-drain) picks the drain-tier from *this rail*. Optional `lens`
+ * may still narrow the queue for quiet tooling; the operator-facing
+ * Governance/PM/PA gearshift is demoted (C12 misfit / Jarvis addendum).
+ * D12 says the rail is a summonable card — mounted at the home edge,
  * narrow, and evictable — not a permanent panel.
  *
  * Attributes:
- *   lens — one of "governance" | "pm" | "pa". Anything else (unset,
- *          empty, junk) falls through to the unfiltered queue. Reactive:
+ *   lens — optional quiet filter: "governance" | "pm" | "pa". Unset /
+ *          empty / junk → unfiltered queue. Reactive:
  *          setAttribute("lens", "governance") re-fetches and re-renders.
  *
  * Data source:
- *   GET /api/dispatch?lens=<lens> — served by grove_serve.py, backed by
- *   grove/kart_reader.py. Returns a JSON array of task-row objects.
- *   Missing / unreachable → a single "dispatch unreachable" row + a
- *   30 s retry.
+ *   GET /api/dispatch or GET /api/dispatch?lens=<lens> — served by
+ *   grove_serve.py, backed by grove/kart_reader.py. Returns a JSON array
+ *   of task-row objects. Missing / unreachable → a single "dispatch
+ *   unreachable" row + a 30 s retry.
  *
  * Rendering:
  *   Each row is:

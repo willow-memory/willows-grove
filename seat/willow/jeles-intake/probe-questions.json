@@ -1,0 +1,59 @@
+{
+  "description": "Questions to corpus_ask — misses become Jeles gaps worth researching.",
+  "topics": [
+    {
+      "topic": "willow/governance",
+      "questions": [
+        "Should trust-critical tools pin artifact locations instead of resolving from ambient shell environment?",
+        "What is the operator's intended design for the fleet roster?",
+        "Should session_enter return attestation status in the orientation payload at boot?",
+        "Should cross-session verification read a peer's operator transcript automatically?"
+      ]
+    },
+    {
+      "topic": "willow/federation",
+      "questions": [
+        "What is the federated MCP wire format for node-to-node dispatch?",
+        "How does external_guard scan federated MCP tool results?",
+        "When must a federated HTTP peer URL be re-validated at connect time?"
+      ]
+    },
+    {
+      "topic": "willow/jeles",
+      "questions": [
+        "How do I promote an asserted Jeles nugget to verified with a Nestor seal?",
+        "What is the minimum score for corpus_ask to answer from a nugget?",
+        "How does conflict_scan propose machine-verified nuggets from two sources?"
+      ]
+    },
+    {
+      "topic": "willow/integrations",
+      "questions": [
+        "What is the Pangolin integration used for on this install?",
+        "How is UTETY wired into willow-mcp?",
+        "What is the jeles-remote hosted delegate and when should JELES_REMOTE_URL be set?"
+      ]
+    },
+    {
+      "topic": "hornbook/research",
+      "questions": [
+        "What almanacs exist in the hornbook-knowledge corpus?",
+        "What is the Jeles source registry search order for institutional collections?",
+        "Which hornbook collections are excluded from nestor corpus refresh and why?"
+      ]
+    },
+    {
+      "topic": "institutional-genealogy/paperclip",
+      "questions": [
+        "What is the institutional genealogy chain from Operation Paperclip to present-day Huntsville aerospace and defense?",
+        "How did Brown Engineering become Teledyne Brown, Dynetics, and Leidos in Huntsville?",
+        "How does Operation Paperclip connect to Leidos and Dynetics in Huntsville today?",
+        "How does Space Command relocation to Redstone connect to Operation Paperclip?",
+        "What was the Army Ballistic Missile Agency (ABMA) and how does it connect Operation Paperclip to Marshall Space Flight Center?",
+        "Operation Paperclip to Golden Dome — how does von Braun's Huntsville rocketry lineage connect to 21st-century missile defense?",
+        "U.S. Space Command relocation to Redstone Arsenal — 2026",
+        "Leidos/Dynetics financials and Huntsville operations — FY2025"
+      ]
+    }
+  ]
+}

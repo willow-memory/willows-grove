@@ -154,40 +154,23 @@ _TOP_STRIP = (
 )
 
 
-# Tri-modal lens toggle (P8/C12). Rendered right below the top strip so the
-# operator's current posture-lens is the second thing they see, next to the
-# fleet-standing indicator. Additive-only: the component ships as a Web
-# Component with its own shadow root and does not restyle the strip above.
-_LENS_SWITCH = (
-    '<div class="lens-row">'
-    '<grove-lens-switch></grove-lens-switch>'
-    '</div>'
-)
-_LENS_SWITCH_SCRIPT = (
-    '<script type="module" '
-    'src="/web/components/grove-lens-switch.js"></script>'
-)
-_LENS_SWITCH_CSS = (
-    "  .lens-row {"
-    " display: flex;"
-    " justify-content: flex-end;"
-    " padding: .35rem 1rem;"
-    " background: var(--bg-soft);"
-    " border-bottom: 1px solid var(--border);"
-    " }\n"
-)
+# Lens switch demoted (Jarvis addendum 2026-09-02 / C12 misfit):
+# component file retained under web/components/ for harness or quiet tooling;
+# it is NOT mounted in the first viewport. One continuous Jarvis seat —
+# brand strip, conversation, priority surface — without a Governance/PM/PA
+# gearshift. Optional ?lens= on /api/dispatch remains for quiet filters.
+_LENS_SWITCH_REMOVED_FROM_HERO = True  # documentation pin for greppers
 
 
-# Governance-lens region — the served-page home for panels whose subject is
-# the fleet's constitutional surface (envelopes, provenance, ratification
-# trails). Kept as a section wrapper rather than a full lens region so a
-# later PR can add sibling panels here without moving the mount point.
+# Constitutional / envelope panels — subject is the fleet's grant surface,
+# not an operator "Governance mode." Kept as a section wrapper so sibling
+# panels can mount without implying a mode switch.
 # INVARIANTS.md §8 — the served page consumes /api/envelopes live via
 # <grove-envelope-panel>. The `data-source` attribute is set to the live
 # endpoint verbatim (not a fixture path); the served page never carries
 # an explicit fixture-path data-source per §8.
-_GOVERNANCE_LENS = (
-    '<section class="governance-lens" data-lens="governance">'
+_CONSTITUTIONAL_PANELS = (
+    '<section class="constitutional-panels">'
     '<grove-envelope-panel data-source="/api/envelopes"></grove-envelope-panel>'
     '</section>'
 )
@@ -247,9 +230,9 @@ def render_page() -> str:
     """Full HTML document for `GET /`.
 
     Proof-of-life: dark warm background, the willow tree at rest, an ambient
-    top strip, and a footer. The dispatch rail (C6-C8 / C12) mounts into the
-    main region and refreshes itself — the page itself stays static beyond
-    that one Web Component.
+    top strip, chat, dispatch rail, constitutional panels, and a footer —
+    one Jarvis composition without an operator mode switch in the first
+    viewport (C12 demoted).
     """
     return (
         "<!doctype html>\n"
@@ -259,8 +242,6 @@ def render_page() -> str:
         '<meta name="viewport" content="width=device-width,initial-scale=1">\n'
         "<title>willow's grove</title>\n"
         f"<style>{_CSS}</style>\n"
-        f"<style>{_LENS_SWITCH_CSS}</style>\n"
-        f"{_LENS_SWITCH_SCRIPT}\n"
         # C11 chat card (LEFT-side write path). Registered here as an ES module
         # so ``<grove-chat>`` upgrades in place. The RIGHT-side read-back is a
         # follow-up PR (resident-watcher work). Additive only — no existing
@@ -284,7 +265,7 @@ def render_page() -> str:
         # defined by the time the boot fires an event.
         '<script type="module" src="/web/boot/refusal-summon-boot.js"></script>\n'
         # INVARIANTS.md §8: the served page consumes /api/envelopes live via
-        # <grove-envelope-panel> mounted in the Governance-lens region below.
+        # <grove-envelope-panel> mounted in the constitutional-panels region.
         # Component module registered here so the tag upgrades on connect.
         '<script type="module" src="/web/components/grove-envelope-panel.js"></script>\n'
         # D12/D14 summonable card primitive. Mounted even though the shell
@@ -322,13 +303,13 @@ def render_page() -> str:
         "<body>\n"
         '<grove-persona-registry></grove-persona-registry>\n'
         f"{_TOP_STRIP}\n"
-        f"{_LENS_SWITCH}\n"
         "<main>\n"
         f"  {_tree_block()}\n"
         '  <p class="here">the grove is here.</p>\n'
         '  <grove-chat home-edge="bottom"></grove-chat>\n'
-        '  <grove-dispatch-rail lens="pa"></grove-dispatch-rail>\n'
-        f"  {_GOVERNANCE_LENS}\n"
+        # Default dispatch rail without operator mode switch (C12 demoted).
+        '  <grove-dispatch-rail></grove-dispatch-rail>\n'
+        f"  {_CONSTITUTIONAL_PANELS}\n"
         "</main>\n"
         f"{_FOOTER}\n"
         # Mount point for verbatim refusal chips summoned by

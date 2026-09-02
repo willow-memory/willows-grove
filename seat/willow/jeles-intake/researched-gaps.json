@@ -1,0 +1,151 @@
+{
+  "domain": "gap-research",
+  "classification": "novel",
+  "pairs": [
+    {
+      "source_text": "How do I promote an asserted Jeles nugget to verified with a Nestor seal?",
+      "target_text": "Three paths, strictest to loosest: (1) Human in-process — call corpus.put_nugget(...) directly from your own script; that writes verification_kind human without going through corpus_put's tool gate. (2) Via corpus_put (MCP) — produce a Nestor seal outside Jeles: nestor.signing.sign_seal(question, answer, verified_by) returns hex seal_sig; pass evidence={\"scheme\": \"nestor-seal-v1\", \"seal_sig\": \"...\"} with JELES_CORPUS_TRUST_TOOL_WRITES=1 and NESTOR_KEYRING or NESTOR_SEAL_KEY configured on the Jeles instance. jeles._nestor_seal.verify_human_write checks the signature; invalid or missing seal lands at asserted, not human. (3) Machine corroboration — conflict_scan.apply with two independent registrable domains can write verification_kind machine (corroborated), which corpus_ask also answers from. Asserted nuggets are never promoted by resolve_gap alone — closing a gap records an answer pointer, it does not upgrade the rung.",
+      "sources": [
+        "hornbook-knowledge/Jeles/README.md",
+        "hornbook-knowledge/Jeles/jeles/corpus_server.py",
+        "hornbook-knowledge/Jeles/jeles/_nestor_seal.py"
+      ],
+      "reason": "Jeles verification ladder documentation"
+    },
+    {
+      "source_text": "What is the minimum score for corpus_ask to answer from a nugget?",
+      "target_text": "MIN_ASK_SCORE = 0.5, applied to _confidence (not _score). Ranking uses _score for ordering candidates; answering uses _confidence with two rules: (1) if any content word in the asker's question is absent from the nugget's question, confidence is 0.0 — disqualifying (e.g. production vs staging); (2) otherwise confidence is the harmonic mean of precision and recall over question tokens, so a one-word query cannot pull a broad nugget over threshold. Below 0.5, corpus_ask returns found:false, logs a gap, and returns candidates. Asserted nuggets are excluded unless include_asserted=True. Only human and machine kinds answer by default.",
+      "sources": [
+        "hornbook-knowledge/Jeles/jeles/corpus.py"
+      ],
+      "reason": "corpus.py MIN_ASK_SCORE and _confidence"
+    },
+    {
+      "source_text": "How does conflict_scan propose machine-verified nuggets from two sources?",
+      "target_text": "conflict_scan.react(claim, searcher=...) is pure — it returns proposed actions, writes nothing. It frames conflict-biased queries (supersedes, prior art, criticism) not similarity mirrors. For each hit it counts distinct registrable domains (_independence.MIN_INDEPENDENT_SOURCES, default 2), excluding search engines and URL shorteners. With >=2 independent relevant domains it proposes put_nugget at verification_kind machine with verified_by jeles:conflict-scan/2-independent-sources. Single-source findings propose a contested gap instead. conflict_scan.apply() executes proposals through injected drivers, validates an allowlist of arguments, and refuses kind escalation — web results cannot name their own rung. Network lives only in the injected searcher.",
+      "sources": [
+        "hornbook-knowledge/Jeles/jeles/reactions/conflict_scan.py",
+        "hornbook-knowledge/Jeles/README.md"
+      ],
+      "reason": "conflict_scan module docstring and tests"
+    },
+    {
+      "source_text": "How does external_guard scan federated MCP tool results?",
+      "target_text": "willow-mcp mcp_federation_client runs external_guard on downstream MCP content before any caller sees it — Decision 4(c). At connect/list_tools time every tool name+description is scanned; each listing entry carries guard_verdict and guard_hits. At call_tool time the concatenated text blocks of the MCP result are scanned the same way. external_guard.scan(text) finds risky patterns; external_guard.verdict(hits) returns CLEAN or BLOCKED. BLOCKED results replace content with SANDWICH_TEMPLATE (untrusted content wrapped, not spliced verbatim). Federation responses expose guard_verdict and guard_hits alongside content_text — same guard web_fetch uses for open-web egress.",
+      "sources": [
+        "willow-memory/willow-mcp/src/willow_mcp/mcp_federation_client.py",
+        "willow-memory/willow-mcp/src/willow_mcp/external_guard.py"
+      ],
+      "reason": "federation client guard at list and call time"
+    },
+    {
+      "source_text": "When must a federated HTTP peer URL be re-validated at connect time?",
+      "target_text": "Every HTTP/streamable-http connect, not only at operator ratification. mcp_federation.validate_remote_url uses web_fetch.validate_fetch_url (resolve-don't-pattern-match): refuses loopback, link-local, private space, non-http(s). Ratification refuses bad destinations at the operator terminal; mcp_federation_client._ServerConnection re-validates at dial time because DNS can repoint a ratified public hostname to 127.0.0.1 or cloud metadata later without changing the registry entry. Same doctrine as federation_egress re-reading leases at call time rather than trusting a cached connect decision.",
+      "sources": [
+        "willow-memory/willow-mcp/src/willow_mcp/mcp_federation.py",
+        "willow-memory/willow-mcp/src/willow_mcp/mcp_federation_client.py",
+        "willow-memory/willow-mcp/docs/design/federated-mcp-gating.md"
+      ],
+      "reason": "validate_remote_url at ratify and connect"
+    },
+    {
+      "source_text": "What is the federated MCP wire format for node-to-node dispatch?",
+      "target_text": "Draft willow-fed/0.1 (PROPOSAL, federation-wire-format.md) — node-to-node, not willow-mcp→downstream MCP. Four wire message types only: grant (operator-signed federation envelope), directive (work request citing a grant), receipt (executing node signed outcome + evidence + ledger_anchor), refusal (errno + reason). Prime invariant: a directive never grants anything — authority is issued only by each node's own operator. Messages carry protocol willow-fed/0.1, msg_id, from/to key fingerprints, sent_at, nonce, detached signature over RFC 8785 JCS canonical JSON. Grants extend local envelope-registry schema with grantee_node, evidence_required, verb_table_hash. Unknown signer → EUNTRUSTED. Distinct from in-host federation where willow-mcp spawns downstream MCP servers as subprocesses at one uid.",
+      "sources": [
+        "willow-memory/willow-mcp/docs/design/federation-wire-format.md"
+      ],
+      "reason": "wire format proposal doc"
+    },
+    {
+      "source_text": "What is the Pangolin integration used for on this install?",
+      "target_text": "PangolinAdapter (integrations.py) is the tunnel control plane for what this box exposes to the public internet — it fronts willow-mcp --serve for the remote seat (KB 5B7F11AF / 2026B306). integration_call to pangolin hits https://api.pangolin.net/v1 to audit/create/target/protect/delete public resources (sites, public-resource, access-control). Requires WILLOW_PANGOLIN_TOKEN or PANGOLIN_API_KEY; credential_required=True so calls fail before egress without a key. Gated like any integration: manifest integration_call grant + integration_net + consent + lease. Not a search adapter — it automates reachability policy (what becomes publicly reachable), which must leave receipts.",
+      "sources": [
+        "willow-memory/willow-mcp/src/willow_mcp/integrations.py",
+        "willow-memory/willow-mcp/tests/test_integrations.py"
+      ],
+      "reason": "PangolinAdapter docstring and tests"
+    },
+    {
+      "source_text": "How is UTETY wired into willow-mcp?",
+      "target_text": "UtetyAdapter is a live integration with its own egress identity — never Jeles's credentials. name=utety, base_url from WILLOW_UTETY_BASE_URL (default https://utety.pages.dev), auth via X-Utety-Secret header from WILLOW_UTETY_SECRET. Founding rule: UTETY owns pedagogy, Jeles owns knowledge; student-facing calls are attributable to app_id utety (manifest + consent + lease), and de-identified factual questions may use the Jeles lane separately. credential_required=False until Phase 1 backend enforces auth — identity and transport exist without hard-failing on missing secret today. Reach via integration_call with integration_net; listed live alongside jeles, github, pangolin in integration_status.",
+      "sources": [
+        "willow-memory/willow-mcp/src/willow_mcp/integrations.py"
+      ],
+      "reason": "UtetyAdapter docstring"
+    },
+    {
+      "source_text": "What is the jeles-remote hosted delegate and when should JELES_REMOTE_URL be set?",
+      "target_text": "jeles-remote is an optional hosted FastAPI shim (~74 lines) that wraps its own vendored sources.py copy — not this Jeles package's module. When JELES_REMOTE_URL is unset, jeles.institutional.search_institutional fans out in-process only (the default lane). Set JELES_REMOTE_URL to a base URL when you want institutional search delegated to a remote deployment (e.g. Fly.io jeles-remote.fly.dev used by willow-mcp's JelesAdapter for integration_call). JELES_REMOTE_SECRET sends X-Jeles-Secret; redirect host changes drop the secret (SchemeGuardedRedirects). JELES_REMOTE_TIMEOUT defaults 20s. Remote is opt-in — unset means no second lane silently runs. Note: willow seat policy prefers federated local jeles-corpus over integration_call jeles when federation is healthy.",
+      "sources": [
+        "hornbook-knowledge/Jeles/README.md",
+        "hornbook-knowledge/Jeles/jeles/institutional.py",
+        "willow-memory/willow-mcp/src/willow_mcp/integrations.py"
+      ],
+      "reason": "Jeles README remote vs in-process lanes"
+    },
+    {
+      "source_text": "What almanacs exist in the hornbook-knowledge corpus?",
+      "target_text": "Almanacs live under the almanac-data GitHub org as domain vertical repos (open versioned public-data indexes), not inside Jeles's institutional SOURCES registry. On this machine's checkout: agriculture-almanac, civic-almanac, climate-almanac, economy-almanac, education-almanac, energy-almanac, environment-almanac, health-almanac, justice-almanac, science-almanac, transportation-almanac — plus almanac-template for new verticals. hornbook-knowledge/oakenscrolls-office provides almanac_seam.py (Nestor-graded citation against cloned almanac repos). Jeles corpus_ask does not answer from almanac YAML directly; almanacs are a separate Hornbook/almanac-data lane from Jeles's arXiv/PubMed/Crossref fan-out.",
+      "sources": [
+        "github/almanac-data/",
+        "hornbook-knowledge/oakenscrolls-office/almanac_seam.py",
+        "hornbook-knowledge/dotgithub/profile/README.md"
+      ],
+      "reason": "local almanac-data checkout inventory"
+    },
+    {
+      "source_text": "What is the Jeles source registry search order for institutional collections?",
+      "target_text": "65 sources registered in jeles.sources.SOURCES; default institutional fan-out queries all 61 non-opt-in enabled sources concurrently (not sequential priority). Dispatch uses a thread pool (up to _MAX_WORKERS parallel); wall_clock_limit defaults 20s per search. Default fan-out order follows registry iteration (first ids include openalex, core, doaj, europepmc, semantic_scholar, crossref, pubmed, arxiv) but there is no ranked fallback — all non-opt-in sources run in parallel and results merge by source id. Four opt-in sources (isfdb, omdb, patentsview, wikipedia) require explicit sources=[...]. Key-required sources abstain with skipped reason when env key missing. Prose queries (6+ words) skip PROSE_UNSAFE_SOURCES before dispatch.",
+      "sources": [
+        "hornbook-knowledge/Jeles/jeles/sources.py",
+        "hornbook-knowledge/Jeles/jeles/institutional.py"
+      ],
+      "reason": "sources.search and list_sources on live install"
+    },
+    {
+      "source_text": "Which hornbook collections are excluded from nestor corpus refresh and why?",
+      "target_text": "nestor/scripts/corpus/refresh.py derives its plan from the corpus store — exclusions are operator-authored in tombstones.json, not silently reversible. excluded (never extracted): .willow (live private box state — vault, manifests, receipts; lane reason), mealie (operator decision — fork to read not build on), litellm (operator decision — contribution never merged). tombstones (retired repos, skipped not errored): willow-grove→willows-grove, willow charter→willows-grove, willow-2.0→willow-mcp, willow-canonical, willow-1.9, willow-compose, willow-nest, and others with ended/successor records. derived sources (no checkout): sessions, decisions, app-manifests, gh-* org extracts. method (read via special extractor): hermes-agent, mcp-memory-service forks. sean-data-vault was taken under an allowlist rather than excluded.",
+      "sources": [
+        "Die-Namic-Systems/nestor/scripts/corpus/tombstones.json",
+        "Die-Namic-Systems/nestor/scripts/corpus/refresh.py"
+      ],
+      "reason": "nestor tombstones excluded and tombstones sections"
+    },
+    {
+      "source_text": "What is the operator's intended design for the fleet roster?",
+      "target_text": "Not recorded on paper as of 2026-08-11. Operator stated: \"I have an idea for them that hasn't made it to paper yet\" — that is the explicit reason NOT to run willow-mcp roster sync. HOLD recorded at FRANK 7d071410. fleet_status showing 14/16 agents db_state MISSING (only publius and schmidt present) is deliberate drift, not damage — syncing would write fleet.json into Postgres and foreclose intent before it is written. Reopen condition: the idea reaching paper. Until then no agent should propose roster sync; read fleet_status drift against this hold, not as a repair ticket.",
+      "sources": [
+        "willow-memory/.willow/gap_list topic fleet/roster-design-intent-unrecorded",
+        "willow-memory/.willow/fleet.json"
+      ],
+      "reason": "Willow gap backlog — operator HOLD, not missing data"
+    },
+    {
+      "source_text": "Should trust-critical tools pin artifact locations instead of resolving from ambient shell environment?",
+      "target_text": "Known problem class, open design decision. Two confirmed instances: (1) envelope registry path relative vs WILLOW_HOME/constitutional/ — silent empty enforcement after layout move; (2) frank-anchor from bare shell resolving empty ledger while MCP server reads 1000+ entries with WILLOW_HOME set. Both fail safe (ENOENT / unanchored) but make \"which file is law\" a property of the launching shell. Proposed fix class: pin authoritative paths in tool contracts OR refuse when resolved artifact is empty/absent rather than reporting on empty state. Willow gap governance/ambient-artifact-resolution tracks this; not yet ratified as one coordinated fix.",
+      "sources": [
+        "willow-memory gap 006e0144da95",
+        "willow-memory/willow-mcp/docs/design/federated-mcp-gating.md"
+      ],
+      "reason": "documented gap synthesis — design still open"
+    },
+    {
+      "source_text": "Should session_enter return attestation status in the orientation payload at boot?",
+      "target_text": "Partial yes — option (c) is viable regardless of full boot-wrapper work. session_enter cannot mint attestation (no TTY; would collapse human/operator separation). Attestation minting stays operator-run: willow-mcp attest-session from interactive terminal, or boot wrapper CLI. But session_enter CAN return attestation status in orientation so the seat learns governance writes are unarmed at boot instead of on first frank_append failure. Measured failure: full session ran before discovering unattested session. Same orientation payload already misreports frank status (gap 9d9410053b64). Cheap improvement: surface {attestation: armed|missing|expired} beside frank/store/orientation blocks.",
+      "sources": [
+        "willow-memory gap 624c5fbe1504",
+        "willow-memory/willow-mcp/src/willow_mcp/human_session.py"
+      ],
+      "reason": "boot attestation gap — shape (c) documented"
+    },
+    {
+      "source_text": "Should cross-session verification read a peer's operator transcript automatically?",
+      "target_text": "Proposed hook, not shipped. Problem: no verb reads another seat's Claude Code transcript (~/.claude/projects/<slug>/<uuid>.jsonl); when a peer relays \"operator told me X\", orchestrator can only ask operator to retype. willow-mcp session_read covers willow dispatch records, not Claude transcripts. Proposed shape: Grove or willow-mcp hook surfaces peer's cited instruction to orchestrator by reading operator user lines from transcript (filter tool results/system-reminder). Hard constraint: verify never launder — must return \"instruction absent or narrower than claimed\"; peer assertion is not authorization. Open gap cross-session-verification (5c638956a282); alternative is orientation payload surfacing peer citation (boot/orientation-payload gap family).",
+      "sources": [
+        "willow-memory gap 5c638956a282",
+        "willow-memory/willow-mcp/docs/design/federation-wire-format.md"
+      ],
+      "reason": "cross-session gap synthesis — proposal not implementation"
+    }
+  ]
+}

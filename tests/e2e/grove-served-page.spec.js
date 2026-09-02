@@ -312,44 +312,15 @@ test.describe('served page — component upgrades and three-state affordances', 
     ).toBe(true);
   });
 
-  test('lens switch: Governance / PM / PA buttons update body[data-lens]', async ({
+  test('lens switch is demoted — not in the first viewport (Jarvis)', async ({
     page,
   }) => {
-    const lens = page.locator('grove-lens-switch').first();
-    await expect(lens).toBeAttached();
-
-    const labels = await lens.evaluate((el) => {
-      const root = el.shadowRoot;
-      const buttons = Array.from(root.querySelectorAll('button'));
-      return buttons.map((b) => (b.textContent || '').trim().toLowerCase());
-    });
-
-    // Three buttons named after the three lenses; case-insensitive match so
-    // a display casing tweak doesn't break the pin.
-    expect(labels.length).toBeGreaterThanOrEqual(3);
-    expect(labels.some((l) => l.includes('governance'))).toBe(true);
-    expect(labels.some((l) => l.includes('pm'))).toBe(true);
-    expect(labels.some((l) => l.includes('pa'))).toBe(true);
-
-    // Click each and confirm body[data-lens] updates. The lens tokens
-    // are lowercase per the component.
-    for (const lensName of ['governance', 'pm', 'pa']) {
-      await lens.evaluate((el, name) => {
-        const root = el.shadowRoot;
-        const btn = Array.from(root.querySelectorAll('button')).find((b) =>
-          (b.textContent || '').trim().toLowerCase().includes(name)
-        );
-        if (btn) btn.click();
-      }, lensName);
-      // Give the lens-switch component a tick to reflect on the body.
-      await page.waitForFunction(
-        (name) => document.body.dataset.lens === name,
-        lensName,
-        { timeout: 2000 }
-      );
-      const current = await page.evaluate(() => document.body.dataset.lens);
-      expect(current).toBe(lensName);
-    }
+    // C12 misfit: operator Governance/PM/PA gearshift must not mount.
+    await expect(page.locator('grove-lens-switch')).toHaveCount(0);
+    await expect(page.locator('.lens-row')).toHaveCount(0);
+    // One Jarvis composition still present.
+    await expect(page.locator('grove-chat').first()).toBeAttached();
+    await expect(page.locator('grove-dispatch-rail').first()).toBeAttached();
   });
 
   test('summon a grove-card via .summon() → CSS transition enters the card', async ({

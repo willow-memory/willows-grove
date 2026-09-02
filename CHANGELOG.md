@@ -6,6 +6,14 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Changed
 
+- **Willow desk home + Jarvis is not a mode switch.** Operator seat scripts and
+  jeles-intake live under `seat/willow/`; `docs/design/grove-persona-partition.md`
+  splits Willow desk vs Heimdallr watch. Governance / PM / PA stay back-of-house
+  triage questions — C12’s operator lens switch is demoted from the first
+  viewport (`grove_html.py` no longer mounts `<grove-lens-switch>`). Cursor’s
+  Made-with footer is treated as a machine trailer for §12 ratification.
+  PR 37.
+
 - **Grove MCP moves 8765 → 8767, ending a real port collision.**
   `grove/mcp_local.py --serve` and `willow-mcp --serve` both defaulted to
   `8765`; only one can bind, so a tunnel pointed at "the MCP port" fronted

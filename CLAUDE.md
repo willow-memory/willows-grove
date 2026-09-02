@@ -38,6 +38,22 @@ Every reader honors the three-state contract (INVARIANTS.md §1): populated /
 empty / unreachable — never collapsed. Every panel renders each state
 distinctly.
 
+## Watch vs Desk
+
+This repo is **Willow's Grove** (possessive). Inside it:
+
+| Lens | Owner | Owns |
+|------|--------|------|
+| **Desk** | Willow | Operator seat under `seat/willow/`; what the desk is *for* — one Jarvis composition (priority bubbles underneath; not a Governance/PM/PA mode switch) |
+| **Watch** | Heimdallr | Served page honesty, resident watcher, Gjallarhorn / `#alerts`, serve-mode auth |
+
+Rule of thumb: Willow decides what the desk is for; Heimdallr decides whether
+the surface is telling the truth. The desk is **not** a mode switch. Full table:
+[`docs/design/grove-persona-partition.md`](docs/design/grove-persona-partition.md).
+
+Heimdallr does **not** maintain `seat/willow/` and does **not** invent desk
+posture for Tony. Willow does **not** own watcher classification or serve-mode OAuth.
+
 ## Architecture
 
 | File/Dir | Responsibility |

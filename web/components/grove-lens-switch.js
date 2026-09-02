@@ -1,53 +1,21 @@
 // b17: WGRV1 ΔΣ=42
 /**
- * <grove-lens-switch> — tri-modal lens toggle for Willow's Grove desk.
+ * <grove-lens-switch> — DEPRECATED as hero chrome (Jarvis addendum 2026-09-02).
  *
- * Premise doc anchors:
- *   P8  — the tri-modal seat: Governance / PM / PA. One operator, three
- *         posture-lenses on the same fleet, not three separate workspaces.
- *   C12 — the switch is a lens on the Kart queue first, not a workspace
- *         divider. Each lens filters queue/cards by which operator-persona
- *         cares:
- *           governance → L4-authority items + envelopes + refusal chips.
- *           pm         → L2/L3 items + proposals.
- *           pa         → L1 items + reminders + drafts (least-surprising
- *                        landing on first boot — Tony's own drafts and low-
- *                        stakes items are what he opens the desk to).
+ * C12 misfit: shipping this as an operator Governance / PM / PA gearshift
+ * oversold P8. Tony's Jarvis does not ask Tony to switch modes. The served
+ * page (`grove_html.render_page`) no longer mounts this element.
+ *
+ * Retained for harness / quiet tooling. Optional Kart `?lens=` may still
+ * filter the dispatch API without putting this chrome in the first viewport.
+ *
+ * Historical notes (do not restore as hero):
+ *   P8  — offices are back-of-house triage questions for Willow.
+ *   C12 — demoted; was "lens on Kart queue the operator picks."
  *   D9  — vanilla JS + Web Components + no build step, zero imports.
- *   D14 — workshop metaphor: the lens picks a working posture, not a room.
- *
- * Renders three toggle buttons (inline, evenly spaced). The active button
- * wears the willow-frond green (#4ade80); the two inactive ones wear the
- * pigeon color (#94a3b8) the rest of the grove already uses for a resting
- * chrome tone. Background is the same warm #1a1409 the other components
- * share so the switch sits on the top strip without a seam.
- *
- * Persona sigils (V6 stand-ins — a real persona registry lookup can replace
- * these later; the sigils are stable enough to hard-code as a fallback):
- *   Governance ⚖   PM ▤   PA ~
- *
- * Behavior:
- *   * Emits `lens-change` CustomEvent({detail: {lens}}) on every click.
- *     Bubbles + composed so listeners outside the shadow tree can hook it.
- *   * Persists the last-picked lens to localStorage key `grove:lens:v1`,
- *     wrapped in try/catch — same discipline as `web/lib/layout-memory.js`
- *     (private windows / cleared storage / quota all throw silently, we
- *     never crash the boot).
- *   * On first boot with no stored value, defaults to `pa` — the lens with
- *     the smallest blast radius and the highest chance of matching what
- *     Tony wanted when he opened the browser.
- *   * Sets `data-lens="<lens>"` on `document.body` on every change (and on
- *     first paint) so page-scoped CSS can hide/show cards per lens with
- *     rules like `[data-lens="governance"] .lens-pa { display: none }`.
- *
- * Attributes:
- *   lens — current lens; one of "governance" | "pm" | "pa". Attribute-
- *          reactive: setAttribute("lens", "pm") re-paints and mirrors to
- *          document.body without a click. Setting an unknown value is a
- *          no-op (the previous lens stays active); this mirrors the
- *          registry-miss stance in <grove-cast-chip>.
  *
  * @element grove-lens-switch
+ * @deprecated Not mounted on the served Grove page.
  */
 
 const STORAGE_KEY = "grove:lens:v1";
