@@ -6,6 +6,18 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Changed
 
+- **Grove MCP moves 8765 → 8767, ending a real port collision.**
+  `grove/mcp_local.py --serve` and `willow-mcp --serve` both defaulted to
+  `8765`; only one can bind, so a tunnel pointed at "the MCP port" fronted
+  whichever process won the race. The fleet map is now explicit and written in
+  the Grove runbook: **8765** willow-mcp MCP (the ratified remote-seat endpoint,
+  KB `2026B306`), **8766** the desk page — loopback only, never fronted (D4) —
+  and **8767** Grove MCP. `tests/test_port_map.py` asserts the declared defaults
+  from source, including that the launcher and the module agree. Found while
+  reading a remote-seat design doc that instructed a builder to front
+  `willow-mcp --serve` "at 127.0.0.1:8766", which is both the wrong default and
+  the one surface doctrine forbids exposing. PR 36.
+
 - **Kart mount policy: `WILLOW_ROOT` is bound read-only and tasks get a work
   root.** It resolves to the product's source (or `site-packages`), and bound
   read-write it let a sandboxed task edit the code deciding what tasks may do —

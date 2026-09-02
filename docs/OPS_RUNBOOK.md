@@ -43,7 +43,7 @@ Every `/api/*` endpoint mirrors that shape (200/populated, 200/empty,
 | `python3 app.py` | Textual dashboard — main operator TUI. |
 | `python3 -m grove` | Lightweight curses TUI (SSH / narrow terminal). |
 | `./run_mcp.sh` | Grove MCP server — stdio mode. Claude Code / Cursor spawns this to talk to Grove locally. |
-| `./run_mcp.sh --serve` | Grove MCP over HTTP+OAuth on `:8765`. For remote clients (claude.ai) fronted by a tunnel. |
+| `./run_mcp.sh --serve` | Grove MCP over HTTP+OAuth on `:8767`. For remote clients (claude.ai) fronted by a tunnel. |
 | `scripts/grove-serve {install\|on\|off\|status}` | Toggle the `--serve` systemd unit and the local `.mcp.json` entry together. |
 
 ---

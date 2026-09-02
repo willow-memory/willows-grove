@@ -51,9 +51,9 @@ needs a ratification, not a patch. Propose before acting (rule 4).
 | port | what it is | auth |
 | --- | --- | --- |
 | **8766** | the served page (Starlette + uvicorn) | **none** — loopback only |
-| **8765** | Grove MCP in `--serve` mode | OAuth 2.0 / PKCE, `grove/mcp_auth.py::GroveOAuthProvider` |
+| **8767** | Grove MCP in `--serve` mode | OAuth 2.0 / PKCE, `grove/mcp_auth.py::GroveOAuthProvider` |
 
-If the phone needs to reach Grove over anything but loopback, `:8765` is the
+If the phone needs to reach Grove over anything but loopback, `:8767` is the
 seam that already has an authorization server in front of it. `:8766` has
 nothing, and adding auth there is new work, not configuration.
 
@@ -429,7 +429,7 @@ label produces a well-proportioned unreadable label.
 
 - A phone surface reverses D4's sealed loopback premise. That is a ratification.
 - `:8766` has no authentication to widen. Reaching it from a phone means either
-  authenticating it, or tunnelling it, or moving the surface to `:8765`.
+  authenticating it, or tunnelling it, or moving the surface to `:8767`.
 - Nothing binds `~/Android` into Kart. Until it does, "the APK builder is
   installed" is true of the host and false of every sandboxed build.
 - `willow-v08-toolchain-path.drawio` needs a REVISIONS line for §7.

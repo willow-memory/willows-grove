@@ -15,7 +15,7 @@ not the fleet — see [`docs/INVARIANTS.md`](docs/INVARIANTS.md) §12.
 |---|---|
 | `python3 grove_serve.py` | Loopback-only served-page host on `127.0.0.1:8766` |
 | `./run_mcp.sh` | Grove MCP server — stdio mode (Claude Code / Cursor spawns this) |
-| `./run_mcp.sh --serve` | Grove MCP over HTTP+OAuth on `:8765` for remote clients behind a tunnel |
+| `./run_mcp.sh --serve` | Grove MCP over HTTP+OAuth on `:8767` for remote clients behind a tunnel |
 | `scripts/grove-serve {install\|on\|off\|status}` | Toggle the `--serve` systemd unit + `.mcp.json` entry together |
 
 See [`docs/OPS_RUNBOOK.md`](docs/OPS_RUNBOOK.md) for boot preconditions,

@@ -15,7 +15,7 @@
 #   systemctl --user edit grove-mcp-serve
 #     [Service]
 #     Environment=GROVE_MCP_URL=https://grove.example.org
-#     Environment=GROVE_MCP_EXTRA_HOSTS=grove.internal:8765
+#     Environment=GROVE_MCP_EXTRA_HOSTS=grove.internal:8767
 [Unit]
 Description=Grove MCP OAuth HTTP serve mode
 After=network-online.target
