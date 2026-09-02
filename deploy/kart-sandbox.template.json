@@ -1,0 +1,111 @@
+{
+  "b17": "KRTSND",
+  "version": 1,
+  "description": "Kart bwrap mount policy — TEMPLATE. Copy to $WILLOW_HOME/kart-sandbox.json and add this box's own repositories to bind_try. Extend bind_try / env_prefixes for new paths without code changes.",
+
+  "_template": {
+    "what_this_is": "The mount policy a sandboxed Kart task runs under: what it may open, what it may write, and what it must never see. This file is the shape; an instance is a box's own copy with its repositories filled in. Nothing here names a person, a home directory, or a machine.",
+    "resolution_order": "$KART_SANDBOX_CONFIG → $WILLOW_HOME/kart-sandbox.json → the vendored default in kartikeya. A box that has never been configured runs the vendored one.",
+    "tokens": {
+      "{{HOME}}": "the runtime user's home",
+      "{{WILLOW_ROOT}}": "the work root (see work_root_is_not_the_product below)",
+      "{{WILLOW_GROVE_ROOT}}": "the grove checkout, when present",
+      "{{WILLOW_SAFE_ROOT}}": "the SAFE app store root, when present",
+      "{{WILLOW_AGENTS_ROOT}}": "the agents root, when present",
+      "{{XDG_RUNTIME_DIR}}": "the session runtime dir",
+      "{{WILLOW_HOME}}": "NOT YET SUPPORTED — see template_keys_required"
+    },
+    "packaging": "Everything below is portable. An instance adds repository paths and nothing else, which is what lets this ship inside an APK, a wheel, or a container image without carrying somebody's filesystem with it."
+  },
+
+  "env_prefixes": [
+    "WILLOW_", "GROVE_", "SAFE_", "PG", "POSTGRES", "OLLAMA_",
+    "GIT_", "TWINE_", "PYPI_", "ANTHROPIC_", "OPENROUTER_", "GROQ_",
+    "GITHUB_", "NPM_", "NODE_", "SSH_AUTH", "HUGGINGFACE_", "HF_",
+    "OPENAI_", "AWS_", "DISCORD_", "DBUS_", "XDG_"
+  ],
+
+  "credential_env_prefixes": [
+    "TWINE_", "PYPI_", "ANTHROPIC_", "OPENROUTER_", "GROQ_",
+    "GITHUB_", "NPM_", "HUGGINGFACE_", "HF_", "OPENAI_", "AWS_", "DISCORD_"
+  ],
+
+  "bind_read_only": [
+    "/usr",
+    "/etc",
+    "/sys",
+    "{{HOME}}/.config/git",
+    "{{HOME}}/.config/systemd"
+  ],
+
+  "bind_read_write": [
+    "{{WILLOW_ROOT}}",
+    "{{HOME}}/.local",
+    "/var/run/postgresql"
+  ],
+
+  "bind_try": [
+    "{{WILLOW_GROVE_ROOT}}",
+
+    "{{HOME}}/Android",
+    "{{HOME}}/.gradle",
+
+    "{{HOME}}/.gitconfig",
+    "{{HOME}}/.npmrc",
+    "{{HOME}}/.cargo",
+    "{{HOME}}/.npm",
+    "{{HOME}}/.cache/uv",
+    "{{HOME}}/.cache/pip",
+    "{{HOME}}/.cache/pre-commit",
+    "{{HOME}}/.config/pip",
+    "{{HOME}}/.config/pypoetry",
+    "{{HOME}}/.local/share/uv",
+
+    "/run/user",
+    "/run/media",
+    "{{XDG_RUNTIME_DIR}}",
+    "/run/systemd/resolve"
+  ],
+
+  "bind_try_read_only": [
+    "{{WILLOW_SAFE_ROOT}}",
+    "{{WILLOW_AGENTS_ROOT}}",
+    "/lib32"
+  ],
+
+  "worktree_scan_roots": [
+    "{{WILLOW_ROOT}}/worktrees"
+  ],
+
+  "rtk_compress": {
+    "enabled": false,
+    "binary": "{{HOME}}/.willow/bin/rtk-plus",
+    "_note": "Off by default. rtk-plus rewrites a shell command to its own compressing wrapper before Kart executes it. Enable only after observing it on real tasks."
+  },
+
+  "_policy": {
+    "bind_try_is_read_write": "bind_try entries are READ-WRITE. This is the single most misread line in the file: a path added 'so a task can see it' is a path a task can also change. If a task only needs to read, the entry belongs in bind_try_read_only. Every failure below is a variation on that sentence.",
+
+    "one_repo_per_entry_never_a_parent": "List repositories INDIVIDUALLY. Never bind a parent directory to catch several at once. A parent bind grants whatever is added to that directory later, including things nobody meant to expose — and on a box where a personal data store shares a parent with source repositories, one convenient entry silently republishes it. It also reorders the mount sequence, which can defeat a read-only overlay applied to a subpath.",
+
+    "the_sovereign_store_is_absent_on_purpose": "A user's own data vault does not appear in this file, and its absence is a DECISION rather than an omission. Record that where a later reader will find it, because silence is indistinguishable from oversight — and a sandboxed task pointed at a store that is not mounted opens a root that is not there and reads an EMPTY store while passing every gate on the way.",
+
+    "secret_files_need_their_own_overlay": "The trust-root overlay applied by the sandbox covers the manifest ACLs and the consent files — and nothing else. Every other sensitive file inside the fleet home sits in a read-write mount. Measured on a live box 2026-09-01: the manifest directory was correctly read-only while the RECEIPT LEDGER and the SECRET STORE were writable, so a task could rewrite the very receipts recording what it did. List those files in bind_try_read_only, which acts as an overlay over the read-write mount. Verified after: a real append to the receipt database raises, while the store, logs and heartbeat stay writable.",
+
+    "work_root_is_not_the_product": "WILLOW_ROOT is bound read-write and resolves, in order, to $WILLOW_ROOT, $WILLOW_MCP_REPO, the installed package tree, then a checkout. On a developer box that is the product's source; on a pip-installed box it is site-packages. Either way a task can edit the code that decides what tasks may do. Give tasks a work root of their own and make WILLOW_ROOT read-only. Until that exists, this is a KNOWN OPEN HOLE, not a setting.",
+
+    "credentials_are_gated_not_bound": "Credential environment prefixes, the gh config and netrc reach a task only on allow_net. A no-network task gets zero credentials. Keep it that way.",
+
+    "private_keys_never_enter": "SSH private keys are never bound; git over SSH uses the agent socket. The same rule covers any other authentication key the host holds — an adb key, a signing key, a device credential. A build toolchain may be bound; the key that signs its output may not.",
+
+    "tmpfs_not_host": "/tmp and /dev/shm are private tmpfs, never host binds.",
+
+    "localhost_tier": "allow_localhost shares the host network namespace so a loopback model server works, while still stripping credentials. Weaker than full isolation; prefer it over allow_net for embedding-only work."
+  },
+
+  "_instance_notes": {
+    "add_your_repositories": "Append this box's checkouts to bind_try, one entry per repository, following one_repo_per_entry_never_a_parent. Nothing else in this file needs to change to stand a box up.",
+    "add_your_secret_files": "Append the fleet home's sensitive files to bind_try_read_only per secret_files_need_their_own_overlay. Until template_keys_required lands these must be written as literal paths, because a token that does not resolve binds NOTHING AND SAYS NOTHING.",
+    "template_keys_required": "{{WILLOW_HOME}} and a work-root token are not yet known to the template context, which today resolves only HOME, WILLOW_ROOT, WILLOW_GROVE_ROOT, WILLOW_SAFE_ROOT, WILLOW_AGENTS_ROOT and XDG_RUNTIME_DIR. Three of those historically pointed at paths that no longer existed. An unresolved token fails silently — the same shape as every other failure in this file."
+  }
+}

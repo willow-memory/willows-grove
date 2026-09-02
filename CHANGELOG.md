@@ -164,6 +164,8 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Added
 
+
+- **The Kart mount policy is tracked, as a portable template.** `deploy/kart-sandbox.template.json` + `deploy/kart-sandbox.md`. The policy deciding what a sandboxed task may open, write and never see lived in one untracked file on one disk — no history, no review, no ratification. The template names no person, home directory or machine, so it imports into an APK, a wheel or another box; an instance adds only its repositories and its sensitive files. Nine rules recorded in `_policy`, including that `bind_try` is READ-write, that secret files need their own read-only overlay (the receipt ledger and secret store were writable by the tasks they record), and that a parent bind silently republishes whatever is added under it later. Two known holes recorded as holes: `WILLOW_ROOT` lets a task edit the gate, and `{{WILLOW_HOME}}` is not a template key. PR 34.
 - `docs/design/fleet-wiring.md` — how the fleet is actually wired, seam by seam,
   verified against running code with all seven repositories installed together.
   `docs/ARCHITECTURE.md` is Grove-scoped by declaration and hands cross-repo
