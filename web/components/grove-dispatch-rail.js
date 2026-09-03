@@ -149,6 +149,13 @@ const CSS = `
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    /* docs/design/phone-surface-context.md §13: the legibility budget is
+       characters, not pixels. Without a floor here, the ellipsis clips
+       wherever the grid's 1fr column happens to land -- measured at ~22
+       visible chars at this component's own declared 260px min-width,
+       below the 28-char rule. min-width forces the row (and, if needed,
+       the host) to make room instead of silently dropping the budget. */
+    min-width: 28ch;
   }
   li.row .caret {
     color: #d4a373;
