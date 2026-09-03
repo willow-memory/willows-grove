@@ -372,6 +372,16 @@ written from the operator's statement tonight plus what the vault's own README
 and LOCAL-ONLY.md already establish — not from the earlier design, which should
 be recovered before anyone builds the sync half.
 
+**Re-searched 2026-09-03, still not found.** Widened the search past
+`sean-data-vault`: every repo's full `git log --all` (not just `master`) for
+`mobile.vault`, `phone.*sync`, `adb.*pull`, `adb.*push`; the willow-mcp
+knowledge base (`knowledge_search`) for "mobile vault design phone"; and
+`$WILLOW_HOME` for any file mentioning it. Zero hits across all three. If the
+earlier design exists, it is not reachable from any grep-able record this
+seat can see — worth asking the operator directly whether it lived in a
+session that was compacted *and* never wrote a KB atom, versus a
+different, unindexed location.
+
 ## 13. The audit trail truncates before the object does
 
 Found on the phone, tonight, which is the only place it is visible.
