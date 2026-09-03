@@ -264,6 +264,14 @@ today.
 
 ## 12. The phone is a thumb drive
 
+> **Superseded 2026-09-01 by KB 2026B306** (operator directive, session
+> github-a8): the phone is *both* a thumb drive and a network peer, in three
+> tiers by gate cost (USB/adb; LAN u2u, signals only until Gate 6; remote via
+> Pangolin at :8765 only). This section removed a forced choice; it did not
+> forbid the second mode. The app is a capability-composition chain with
+> install-time disclosure of what becomes possible and what becomes
+> reachable. Read this section as tier 0, still true, no longer the whole.
+
 Operator, 2026-08-30, stated directly:
 
 > *"The phone is just another thumb drive. It just connects with home computer
@@ -277,11 +285,26 @@ rather than solving one.
 
 ### What it settles
 
-**The phone is not a network peer.** It is a removable volume that happens to
-compute. Nothing in §2 needs to change: `:8766` stays on loopback, `D4` stays
-sealed, rule 1 holds, no bind is widened, and the WARNING at `grove_serve.py:478`
-is never reached — because the phone never asks to reach the desk. The dilemma
-in §11 assumed a network; there isn't one.
+**The phone is not *only* a network peer.** It is a removable volume that
+happens to compute, and that mode needs nothing from the rest of this
+section to hold: `:8766` stays on loopback, `D4` stays sealed, rule 1 holds,
+no bind is widened, and the WARNING at `grove_serve.py:478` is never reached
+for tier 0 traffic — because the USB tier never asks to reach the desk. The
+dilemma in §11 assumed a network for *every* mode; KB 2026B306 says two of
+the three tiers do use one, deliberately, at escalating gate cost:
+
+| tier | reach | gate | :8766 exposure |
+| --- | --- | --- | --- |
+| 0 — USB/adb | none (removable volume) | already in production, no new gate | none — tier 0 never asks |
+| 1 — LAN, u2u | signals only, not contents, until Gate 6 | Ed25519-signed, plaintext wire (`docs/design/u2u-security-limits.md`) | none — u2u is its own transport, not a `:8766` bind |
+| 2 — remote, Pangolin | terminates at `:8765` only, never `:8766` | strongest: leaves the LAN | none — `:8766` stays loopback-only in every tier |
+
+So the open item below — *"`:8766` has no authentication to widen"* — is
+answered, not outstanding: nobody widens it. Reach for tiers 1 and 2 is
+built by adding transports beside the loopback page, not by opening it.
+Starlink is CGNAT, which is why tier 2 is Pangolin-or-nothing: a remote
+phone cannot dial the box directly, so a public-IP rendezvous is structurally
+required, not merely preferred.
 
 **"Home base knows about it" is a record, not a connection.** Where the work
 happens stops mattering once the record comes home. That is a claim about
@@ -427,9 +450,14 @@ label produces a well-proportioned unreadable label.
 
 ## Open, for the operator
 
-- A phone surface reverses D4's sealed loopback premise. That is a ratification.
-- `:8766` has no authentication to widen. Reaching it from a phone means either
-  authenticating it, or tunnelling it, or moving the surface to `:8767`.
+- ~~A phone surface reverses D4's sealed loopback premise. That is a
+  ratification.~~ — answered by KB 2026B306: it doesn't reverse it. `:8766`
+  stays loopback in all three tiers; reach is added beside it (u2u, Pangolin
+  `:8765`), never through it. No ratification of D4 itself is pending.
+- ~~`:8766` has no authentication to widen. Reaching it from a phone means
+  either authenticating it, or tunnelling it, or moving the surface to
+  `:8767`.~~ — answered the same way: none of those three. See "What it
+  settles" above.
 - Nothing binds `~/Android` into Kart. Until it does, "the APK builder is
   installed" is true of the host and false of every sandboxed build.
 - `willow-v08-toolchain-path.drawio` needs a REVISIONS line for §7.
