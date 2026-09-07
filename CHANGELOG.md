@@ -19,7 +19,7 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
   `syscall-table.json`, `frank_head_anchor.json`, `review_queue.json`,
   `README.md` — stays tracked. Same rule the Nestor session store follows: the
   blueprint travels, the live store does not.
-  PR PRNUM.
+  PR 45.
 
 ### Changed
 
