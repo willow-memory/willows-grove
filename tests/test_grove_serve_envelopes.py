@@ -97,18 +97,23 @@ class EnvelopesRouteTests(unittest.TestCase):
         self.addCleanup(self.tmp.cleanup)
         self.fake_home = Path(self.tmp.name) / "no-home"
         self.fake_home.mkdir()
-        # Point WILLOW_HOME at a directory that has no `envelopes/` child, so
-        # the degraded-case tests do not accidentally pick up the operator's
-        # real fleet directories.
         self.empty_willow_home = Path(self.tmp.name) / "empty_willow_home"
         self.empty_willow_home.mkdir()
 
-    def _env(self, willow_home: Path):
-        return mock.patch.dict(
-            os.environ,
-            {"HOME": str(self.fake_home), "WILLOW_HOME": str(willow_home)},
-            clear=False,
+        self._no_fallback_dir = Path(self.tmp.name) / "no-fallback"
+        self._no_fallback_dir.mkdir()
+        self._fallback_patch = mock.patch.object(
+            er, "_IN_REPO_ENVELOPES", self._no_fallback_dir / "envelopes"
         )
+        self._fallback_patch.start()
+        self.addCleanup(self._fallback_patch.stop)
+
+    def _env(self, willow_home: Path):
+        env = dict(os.environ)
+        env["HOME"] = str(self.fake_home)
+        env["WILLOW_HOME"] = str(willow_home)
+        env.pop("WILLOW_CHARTER_REPO", None)
+        return mock.patch.dict(os.environ, env, clear=True)
 
     def _get(self, url: str) -> tuple[int, dict]:
         req = urllib.request.Request(url, method="GET", headers={"accept": "application/json"})

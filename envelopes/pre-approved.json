@@ -1,0 +1,1184 @@
+{
+  "schema": "envelope-registry/v1.1",
+  "description": "Pre-Approved Scope (Article III.2) — standing filesystem and network grants agents may invoke without a fresh Operator Key envelope. Starter shape shipped by willow-mcp; empty until the operator issues real grants.",
+  "constitutional_ref": "CONST-III-2",
+  "envelope_schema": {
+    "version": "0.1",
+    "status": "draft",
+    "description": "Shape of an entry in active[]. An active envelope is a capability: root opened it once; each use is checked mechanically and cited in FRANK. proposals[] entries use the same shape with status=proposed and no force.",
+    "fields": {
+      "id": "env-{verb}-{slug} — stable, citable, never reused",
+      "verb_id": "int — row id in syscall-table.json",
+      "verb": "string — must equal the table row's verb name; mismatch with verb_id is a registry integrity fault, not a judgment call",
+      "grantee": "agent id from fleet.json (or list) — the process(es) holding the fd",
+      "bounds": "object — keys MUST be exactly the verb's bounds signature from the table: no missing keys, no extra keys. The checker validates call args field-by-field against these values. A bounds object that does not match its verb's signature makes the envelope VOID, not loosely interpretable.",
+      "issued_by": "root — always; envelope.issue is not grantable",
+      "issued_at": "UTC date",
+      "ratified_via": "how root's act is evidenced: pgp | in-session statement recorded in FRANK ledger entry <id> | commit signature",
+      "expires_at": "UTC date or null — null means until revoked, not forever",
+      "max_count": "int or null — null means unmetered",
+      "use_count_source": "always 'frank' — the count is DERIVED by counting envelope_citation entries in the ledger, never stored here; a stored counter is mutable state an agent could touch, a derived count is not",
+      "revoked": "object or absent — {at, by, reason}; revocation appends, never deletes (register discipline)",
+      "status": "active | proposed | expired | exhausted | revoked",
+      "notes": "human context — NEVER read by the checker"
+    },
+    "citation": {
+      "description": "Every application writes a FRANK entry before the action executes.",
+      "event_type": "envelope_citation",
+      "content": "{envelope_id, verb, call_args, outcome: granted|errno, session}"
+    }
+  },
+  "pre_approved": [],
+  "active": [
+    {
+      "id": "env-envelope.apply-planting",
+      "verb_id": 13,
+      "verb": "envelope.apply",
+      "grantee": "willow",
+      "bounds": {
+        "registry_path": "/home/sean-campbell/github/willow-memory/.willow/constitutional/pre-approved.json"
+      },
+      "issued_by": "root",
+      "issued_at": "2026-07-06",
+      "ratified_via": "in-session statement recorded in FRANK ledger entry 6ba8e501-3607-4867-a1fb-3905e93c3251",
+      "expires_at": null,
+      "max_count": null,
+      "use_count_source": "frank",
+      "status": "active",
+      "restored": [
+        {
+          "at": "2026-08-11",
+          "via_frank": "1826b4d3-58f2-415e-b29e-c58f5a3759d3",
+          "ratified_by": "root (in-session)",
+          "reason": "Enforced registry found empty 2026-08-11; empty since the 2026-08-10 layout move. Re-issued alone as tranche 0 so verb 13 returns and every later entry can be scribed under citation.",
+          "change": "bounds.registry_path relative 'envelopes/pre-approved.json' -> absolute. No other field altered from the 2026-07-06 grant."
+        }
+      ],
+      "notes": "THE PLANTING — the envelope that licenses the orchestrator seat to exist. Grants willow (OPERATOR ring; verb 13 min_ring OPERATOR) the act of matching calls against this registry, citing envelopes, and routing faults per the errno table. Self-grounding by design: the seat's own authority sits in the same register, under the same law, as everyone else's. Unmetered and non-expiring because the seat is a standing office, but revocable like any envelope — revocation of this one entry shuts the seat down whole. Drafted by willow 2026-07-06 (session e2b05d0a) as a proposal; ratified and moved to active[] the same day by root (verb 12). RESTORED 2026-08-11 by root's own hand, not scribed by the seat: the seat held no verb 13 to scribe with, because this entry is what grants it. registry_path is now ABSOLUTE. The relative form was the whole of the 2026-08-10 failure — the enforcer resolved it against $WILLOW_HOME/constitutional/ while a human resolved it against the repo, so relocating $WILLOW_HOME rewrote what counts as law with no edit to any governed file. Filed publicly as willow-mcp #332(a). Pinning the path here fixes this entry; it does not fix the class, and the syscall table's verb 13 bounds signature still describes a relative path."
+    },
+    {
+      "id": "env-msg.post-1ee343e26d70",
+      "verb_id": 8,
+      "verb": "msg.post",
+      "grantee": "loki",
+      "bounds": {
+        "channels": [
+          "dispatch"
+        ]
+      },
+      "issued_by": "root",
+      "issued_at": "2026-09-03T07:44:36Z",
+      "ratified_via": "frank ledger entry 48916a5d-47c9-4900-8550-a10a59435ab4",
+      "expires_at": null,
+      "max_count": null,
+      "use_count_source": "frank",
+      "status": "active",
+      "notes": "Operator 2026-09-03: review, findings only. Loki reads forge-play/Forge branches design/pr-time-deposit and feat/bundle-export and posts findings to #dispatch; no edits, no build. Questions: is propose-only enforced by the API surface the deposit may call or by good manners; does forge/deposit.py or tests/test_deposit.py ever name seal, seal_edge, or a keyring; does bundle.cut refuse a broken ledger chain and a checkout holding a database. The deposit is the first code that writes into a project Nestor from a PR path.",
+      "proposed_at": "2026-09-03T07:37:09Z",
+      "proposed_by": {
+        "verifier": "sean",
+        "session_id": "537316c2-c086-4843-bf70-f11f87840a86",
+        "orchestrator_session_id": "537316c2-c086-4843-bf70-f11f87840a86",
+        "proposer_app_id": "willow"
+      },
+      "precedent_ids": []
+    },
+    {
+      "id": "env-msg.post-93bd271650b4",
+      "verb_id": 8,
+      "verb": "msg.post",
+      "grantee": "skirnir",
+      "bounds": {
+        "channels": [
+          "dispatch"
+        ]
+      },
+      "issued_by": "root",
+      "issued_at": "2026-09-03T07:44:38Z",
+      "ratified_via": "frank ledger entry 38e83677-2a53-4151-8924-02fefaceeaab",
+      "expires_at": null,
+      "max_count": null,
+      "use_count_source": "frank",
+      "status": "active",
+      "notes": "Operator 2026-09-03: witness, observation only. Skirnir runs tools/store_export.py cut against the forge-engine project store on forge-play/Forge feat/bundle-export, then check, and posts to #dispatch whether .forge/HEAD digest, ledger head and counts agree with what check recomputes. No inference fill, no edits. The bundle is the input to the workshop record gate; a witness sees the round trip once before anyone trusts a HEAD file.",
+      "proposed_at": "2026-09-03T07:41:16Z",
+      "proposed_by": {
+        "verifier": "sean",
+        "session_id": "537316c2-c086-4843-bf70-f11f87840a86",
+        "orchestrator_session_id": "537316c2-c086-4843-bf70-f11f87840a86",
+        "proposer_app_id": "willow"
+      },
+      "precedent_ids": []
+    },
+    {
+      "id": "env-shell.exec-b31eee38a08f",
+      "verb_id": 6,
+      "verb": "shell.exec",
+      "grantee": "ada",
+      "bounds": {
+        "sandbox_profile": "kart"
+      },
+      "issued_by": "root",
+      "issued_at": "2026-09-03T07:44:39Z",
+      "ratified_via": "frank ledger entry 3f1f0e5b-1e31-4117-b0d1-d87ed0cb960e",
+      "expires_at": null,
+      "max_count": null,
+      "use_count_source": "frank",
+      "status": "active",
+      "notes": "Operator 2026-09-03: operate. Ada runs the command block in $WILLOW_HOME/2026-09-02-unit-retirement.md (retire the ~20 user units pointing at the vanished willow-2.0 tree, including grove-mcp.service on 8765 and willow-grove-listen.service), then installs willow-bot's fleet bridge unit and creates $WILLOW_HOME/upstream_steward/webhook_inbox once fix/bridge-check-run-keying lands. Host units via systemctl --user only. Must not touch willow-mcp-serve (8768), the Nestor UI (8765), or the two Kart workers. Gaps abaf0d0d9c75, 1d737ffa2595.",
+      "proposed_at": "2026-09-03T07:41:23Z",
+      "proposed_by": {
+        "verifier": "sean",
+        "session_id": "537316c2-c086-4843-bf70-f11f87840a86",
+        "orchestrator_session_id": "537316c2-c086-4843-bf70-f11f87840a86",
+        "proposer_app_id": "willow"
+      },
+      "precedent_ids": []
+    },
+    {
+      "id": "env-git.push-74d3b322a349",
+      "verb_id": 3,
+      "verb": "git.push",
+      "grantee": "hanuman",
+      "bounds": {
+        "repo": "workshop/willow-bot",
+        "branches": [
+          "fix/bridge-check-run-keying"
+        ],
+        "remote": "origin",
+        "force": false
+      },
+      "issued_by": "root",
+      "issued_at": "2026-09-03T07:45:09Z",
+      "ratified_via": "frank ledger entry 3589e49d-eaba-4dc4-882e-a05a41bcf54d",
+      "expires_at": null,
+      "max_count": null,
+      "use_count_source": "frank",
+      "status": "active",
+      "notes": "Operator 2026-09-03: land. Push exactly this branch (commit 2b7281b, written by the vishwakarma seat on the operator's word) to origin. Pairs with the pr.open envelope for the same repo.",
+      "proposed_at": "2026-09-03T07:41:29Z",
+      "proposed_by": {
+        "verifier": "sean",
+        "session_id": "537316c2-c086-4843-bf70-f11f87840a86",
+        "orchestrator_session_id": "537316c2-c086-4843-bf70-f11f87840a86",
+        "proposer_app_id": "willow"
+      },
+      "precedent_ids": []
+    },
+    {
+      "id": "env-pr.open-de1d11100a9b",
+      "verb_id": 4,
+      "verb": "pr.open",
+      "grantee": "hanuman",
+      "bounds": {
+        "repo": "workshop/willow-bot",
+        "base_branches": [
+          "master"
+        ]
+      },
+      "issued_by": "root",
+      "issued_at": "2026-09-03T07:47:10Z",
+      "ratified_via": "frank ledger entry ba05c976-1374-4a79-96e2-ee67389d5e7f",
+      "expires_at": null,
+      "max_count": null,
+      "use_count_source": "frank",
+      "status": "active",
+      "notes": "Operator 2026-09-03: land. Open the PR for fix/bridge-check-run-keying against master; closeout is the PR URL and green CI in handoff_write_v4; no merge. Willow-bot goes first.",
+      "proposed_at": "2026-09-03T07:44:11Z",
+      "proposed_by": {
+        "verifier": "sean",
+        "session_id": "537316c2-c086-4843-bf70-f11f87840a86",
+        "orchestrator_session_id": "537316c2-c086-4843-bf70-f11f87840a86",
+        "proposer_app_id": "willow"
+      },
+      "precedent_ids": []
+    },
+    {
+      "id": "env-git.push-ffa823f1641a",
+      "verb_id": 3,
+      "verb": "git.push",
+      "grantee": "hanuman",
+      "bounds": {
+        "repo": "willow-memory/willow-mcp",
+        "branches": [
+          "feat/grove-listen"
+        ],
+        "remote": "origin",
+        "force": false
+      },
+      "issued_by": "root",
+      "issued_at": "2026-09-03T07:47:15Z",
+      "ratified_via": "frank ledger entry 4c32644f-024e-4c7d-a1e6-ca1705989afe",
+      "expires_at": null,
+      "max_count": null,
+      "use_count_source": "frank",
+      "status": "active",
+      "notes": "Operator 2026-09-03: land. Push exactly this branch (commits 5ffa33c and 0ad86c2, written by the willow seat on the operator's word) to origin, after loki's review of the Forge branches is posted. The listener author does not land its own code.",
+      "proposed_at": "2026-09-03T07:44:17Z",
+      "proposed_by": {
+        "verifier": "sean",
+        "session_id": "537316c2-c086-4843-bf70-f11f87840a86",
+        "orchestrator_session_id": "537316c2-c086-4843-bf70-f11f87840a86",
+        "proposer_app_id": "willow"
+      },
+      "precedent_ids": []
+    },
+    {
+      "id": "env-pr.open-d2b4ecb1337a",
+      "verb_id": 4,
+      "verb": "pr.open",
+      "grantee": "hanuman",
+      "bounds": {
+        "repo": "willow-memory/willow-mcp",
+        "base_branches": [
+          "master"
+        ]
+      },
+      "issued_by": "root",
+      "issued_at": "2026-09-03T07:47:52Z",
+      "ratified_via": "frank ledger entry 147f2852-086a-48b1-bb1a-b674a5924d5b",
+      "expires_at": null,
+      "max_count": null,
+      "use_count_source": "frank",
+      "status": "active",
+      "notes": "Operator 2026-09-03: land. Open the PR for feat/grove-listen against master; closeout is the PR URL and green CI in handoff_write_v4; no merge.",
+      "proposed_at": "2026-09-03T07:44:22Z",
+      "proposed_by": {
+        "verifier": "sean",
+        "session_id": "537316c2-c086-4843-bf70-f11f87840a86",
+        "orchestrator_session_id": "537316c2-c086-4843-bf70-f11f87840a86",
+        "proposer_app_id": "willow"
+      },
+      "precedent_ids": []
+    },
+    {
+      "id": "env-dispatch-d999e1950cce",
+      "verb_id": 11,
+      "verb": "dispatch",
+      "grantee": "willow",
+      "bounds": {
+        "to_agents": [
+          "loki",
+          "hanuman",
+          "ada",
+          "skirnir",
+          "vishwakarma"
+        ],
+        "task_class": "build-work-order"
+      },
+      "issued_by": "root",
+      "issued_at": "2026-09-03T07:47:57Z",
+      "ratified_via": "frank ledger entry 3dc0dc81-3140-4a67-bffa-bf770d6f532e",
+      "expires_at": null,
+      "max_count": null,
+      "use_count_source": "frank",
+      "status": "active",
+      "notes": "Operator 2026-09-03: send. Five packets carrying the envelopes above: loki review, hanuman land (willow-bot then grove-listen), ada operate, skirnir witness, and vishwakarma to open the PRs for design/pr-time-deposit and feat/bundle-export once loki's findings are posted, with the store pointer branch after the deposit lands. The orchestrator verifies each handoff against the artifact (PR URL, CI, posted findings), never the packet's own booleans. The register held one envelope, the planting, and zero proposals before today.",
+      "proposed_at": "2026-09-03T07:44:29Z",
+      "proposed_by": {
+        "verifier": "sean",
+        "session_id": "537316c2-c086-4843-bf70-f11f87840a86",
+        "orchestrator_session_id": "537316c2-c086-4843-bf70-f11f87840a86",
+        "proposer_app_id": "willow"
+      },
+      "precedent_ids": []
+    },
+    {
+      "id": "env-git.commit-de690b92f33d",
+      "verb_id": 2,
+      "verb": "git.commit",
+      "grantee": "willow",
+      "bounds": {
+        "repo": "willow-memory/willow-mcp",
+        "branches": [
+          "feat/meter"
+        ]
+      },
+      "issued_by": "root",
+      "issued_at": "2026-09-03T15:29:22Z",
+      "ratified_via": "frank ledger entry 7b67215c-c926-44fa-83e4-5d37b309f729",
+      "expires_at": null,
+      "max_count": null,
+      "use_count_source": "frank",
+      "status": "active",
+      "notes": "Commit the joules-per-tool-call meter patch (src/willow_mcp/meter.py, tests/test_meter.py, server.py funnel edits) on worktrees/feat-meter, base 34de95f. Full suite verified clean: 2952 passed, 26 skipped, 4 xfailed (Kart batch lane, task 34Z1XPT3). A real bug in the vault patch's unmetered else-branch (never called fn(**call_kwargs), causing UnboundLocalError on every non-metered tool) was found and fixed by hand before commit. Fork feat-meter has full provenance.",
+      "proposed_at": "2026-09-03T15:24:03Z",
+      "proposed_by": {
+        "verifier": "sean",
+        "session_id": "session_01QY2iivnjyjCvkad4ctQvV2",
+        "orchestrator_session_id": "session_01QY2iivnjyjCvkad4ctQvV2",
+        "proposer_app_id": "willow"
+      },
+      "precedent_ids": []
+    },
+    {
+      "id": "env-pr.open-87a24226309d",
+      "verb_id": 4,
+      "verb": "pr.open",
+      "grantee": "willow",
+      "bounds": {
+        "repo": "willow-memory/willow-mcp",
+        "base_branches": [
+          "master"
+        ]
+      },
+      "issued_by": "root",
+      "issued_at": "2026-09-03T15:31:13Z",
+      "ratified_via": "frank ledger entry 53ad787d-b95c-4ff1-85fd-d7a23fc22c4b",
+      "expires_at": null,
+      "max_count": null,
+      "use_count_source": "frank",
+      "status": "active",
+      "notes": "Open the PR for feat/meter -> master once committed and pushed. Same patch as env-git.commit-de690b92f33d: joules-per-tool-call meter, bug found and fixed in the vault patch's unmetered else-branch, full suite clean (2952 passed).",
+      "proposed_at": "2026-09-03T15:25:38Z",
+      "proposed_by": {
+        "verifier": "sean",
+        "session_id": "session_01QY2iivnjyjCvkad4ctQvV2",
+        "orchestrator_session_id": "session_01QY2iivnjyjCvkad4ctQvV2",
+        "proposer_app_id": "willow"
+      },
+      "precedent_ids": []
+    },
+    {
+      "id": "env-git.push-6dcb728bbb40",
+      "verb_id": 3,
+      "verb": "git.push",
+      "grantee": "willow",
+      "bounds": {
+        "repo": "willow-memory/willow-mcp",
+        "branches": [
+          "feat/meter"
+        ],
+        "remote": "origin",
+        "force": false
+      },
+      "issued_by": "root",
+      "issued_at": "2026-09-03T15:31:35Z",
+      "ratified_via": "frank ledger entry 13740d63-6348-4509-a5d1-cc8b986b916f",
+      "expires_at": null,
+      "max_count": null,
+      "use_count_source": "frank",
+      "status": "active",
+      "notes": "Push feat/meter to origin after committing the meter patch, so pr.open (env-pr.open-87a24226309d) has something to point at. Non-force, single branch, matches the shape of env-git.push-ffa823f1641a already active for this repo (grantee hanuman, branch feat/grove-listen).",
+      "proposed_at": "2026-09-03T15:31:18Z",
+      "proposed_by": {
+        "verifier": "sean",
+        "session_id": "session_01QY2iivnjyjCvkad4ctQvV2",
+        "orchestrator_session_id": "session_01QY2iivnjyjCvkad4ctQvV2",
+        "proposer_app_id": "willow"
+      },
+      "precedent_ids": []
+    },
+    {
+      "id": "env-dispatch-ac4078a96fb1",
+      "verb_id": 11,
+      "verb": "dispatch",
+      "grantee": "willow",
+      "bounds": {
+        "to_agents": "loki",
+        "task_class": "auditor"
+      },
+      "issued_by": "root",
+      "issued_at": "2026-09-03T21:49:43Z",
+      "ratified_via": "frank ledger entry df37bcdf-0ee6-47ce-94f4-9f85727490d6",
+      "expires_at": null,
+      "max_count": null,
+      "use_count_source": "frank",
+      "status": "revoked",
+      "notes": "auto-proposed from gate miss on session 537316c2-c086-4843-bf70-f11f87840a86",
+      "proposed_at": "2026-09-03T07:48:25Z",
+      "proposed_by": {
+        "verifier": "sean",
+        "session_id": "537316c2-c086-4843-bf70-f11f87840a86",
+        "orchestrator_session_id": "537316c2-c086-4843-bf70-f11f87840a86",
+        "proposer_app_id": "willow"
+      },
+      "precedent_ids": [],
+      "revoked": true,
+      "revoked_at": "2026-09-07T07:30:00Z",
+      "revoked_by": "sean",
+      "revoked_reason": "redundant with env-dispatch-d999e1950cce; two dispatch envelopes made every dispatch_send return EAMBIG"
+    },
+    {
+      "id": "env-git.commit-c9bc24ae904d",
+      "verb_id": 2,
+      "verb": "git.commit",
+      "grantee": "willow",
+      "bounds": {
+        "repo": "willow-mcp",
+        "branches": [
+          "master"
+        ]
+      },
+      "issued_by": "root",
+      "issued_at": "2026-09-03T21:56:37Z",
+      "ratified_via": "frank ledger entry 96ee144d-95a3-41e5-b1e8-ff0db3638fa5",
+      "expires_at": null,
+      "max_count": null,
+      "use_count_source": "frank",
+      "status": "active",
+      "notes": "Fix WILLOW_KEYRING/sign-session/session_enter doc errors that caused a live ratification to stall this session",
+      "proposed_at": "2026-09-03T21:55:53Z",
+      "proposed_by": {
+        "verifier": "sean",
+        "session_id": "session_011uugYJ5wqHFBi8qGPd2NjL",
+        "orchestrator_session_id": "session_011uugYJ5wqHFBi8qGPd2NjL",
+        "proposer_app_id": "willow"
+      },
+      "precedent_ids": []
+    },
+    {
+      "id": "env-git.push-20d931c5e4b1",
+      "verb_id": 3,
+      "verb": "git.push",
+      "grantee": "willow",
+      "bounds": {
+        "repo": "willow-mcp",
+        "branches": [
+          "docs/fix-keyring-onboard-guidance"
+        ],
+        "remote": "origin",
+        "force": false
+      },
+      "issued_by": "root",
+      "issued_at": "2026-09-03T22:05:16Z",
+      "ratified_via": "frank ledger entry a5444778-0c7b-4083-baf6-20cd23247d7f",
+      "expires_at": null,
+      "max_count": null,
+      "use_count_source": "frank",
+      "status": "active",
+      "notes": "Push doc-fix branch for PR after Kart net egress blocked by cross-user key ownership",
+      "proposed_at": "2026-09-03T22:02:50Z",
+      "proposed_by": {
+        "verifier": "sean",
+        "session_id": "session_011uugYJ5wqHFBi8qGPd2NjL",
+        "orchestrator_session_id": "session_011uugYJ5wqHFBi8qGPd2NjL",
+        "proposer_app_id": "willow"
+      },
+      "precedent_ids": [
+        "env-git.push-6dcb728bbb40"
+      ]
+    },
+    {
+      "id": "env-pr.open-4c2b8178f109",
+      "verb_id": 4,
+      "verb": "pr.open",
+      "grantee": "willow",
+      "bounds": {
+        "repo": "willow-mcp",
+        "base_branches": [
+          "master"
+        ]
+      },
+      "issued_by": "root",
+      "issued_at": "2026-09-03T22:08:35Z",
+      "ratified_via": "frank ledger entry ca78e943-0456-4e3d-8b7a-23294f9c7e05",
+      "expires_at": null,
+      "max_count": null,
+      "use_count_source": "frank",
+      "status": "active",
+      "notes": "Open PR for doc-fix branch after Kart net egress blocked by cross-user key ownership",
+      "proposed_at": "2026-09-03T22:04:48Z",
+      "proposed_by": {
+        "verifier": "sean",
+        "session_id": "session_011uugYJ5wqHFBi8qGPd2NjL",
+        "orchestrator_session_id": "session_011uugYJ5wqHFBi8qGPd2NjL",
+        "proposer_app_id": "willow"
+      },
+      "precedent_ids": [
+        "env-pr.open-87a24226309d"
+      ]
+    },
+    {
+      "id": "env-git.commit-bdfa50ec8b9d",
+      "verb_id": 2,
+      "verb": "git.commit",
+      "grantee": "willow",
+      "bounds": {
+        "repo": "willow-mcp",
+        "branches": [
+          "docs/fix-keyring-onboard-guidance"
+        ]
+      },
+      "issued_by": "root",
+      "issued_at": "2026-09-03T22:09:50Z",
+      "ratified_via": "frank ledger entry 36176e71-dcce-461c-8c1a-494905dcb525",
+      "expires_at": null,
+      "max_count": null,
+      "use_count_source": "frank",
+      "status": "active",
+      "notes": "Fix the register file-mode fault (gap 6b4b7737c535) itself: _atomic_write left tmp files group-writable, tripping trusted_read on every subsequent read",
+      "proposed_at": "2026-09-03T22:09:21Z",
+      "proposed_by": {
+        "verifier": "sean",
+        "session_id": "session_011uugYJ5wqHFBi8qGPd2NjL",
+        "orchestrator_session_id": "session_011uugYJ5wqHFBi8qGPd2NjL",
+        "proposer_app_id": "willow"
+      },
+      "precedent_ids": [
+        "env-git.commit-c9bc24ae904d"
+      ]
+    },
+    {
+      "id": "env-pr.merge-54364b0334f7",
+      "verb_id": 5,
+      "verb": "pr.merge",
+      "grantee": "willow",
+      "bounds": {
+        "repo": "willow-mcp",
+        "base_branch": "master",
+        "requires_ci": true
+      },
+      "issued_by": "root",
+      "issued_at": "2026-09-03T22:15:17Z",
+      "ratified_via": "frank ledger entry beb4bb60-7dca-422b-a5fb-b5f27a5c3e8a",
+      "expires_at": null,
+      "max_count": null,
+      "use_count_source": "frank",
+      "status": "active",
+      "notes": "Merge PR #426 (doc fix + file-mode fault fix) after CI went green",
+      "proposed_at": "2026-09-03T22:14:46Z",
+      "proposed_by": {
+        "verifier": "sean",
+        "session_id": "session_011uugYJ5wqHFBi8qGPd2NjL",
+        "orchestrator_session_id": "session_011uugYJ5wqHFBi8qGPd2NjL",
+        "proposer_app_id": "willow"
+      },
+      "precedent_ids": []
+    },
+    {
+      "id": "env-git.commit-137d2dbebd96",
+      "verb_id": 2,
+      "verb": "git.commit",
+      "grantee": "willow",
+      "bounds": {
+        "repo": "willows-grove",
+        "branches": [
+          "master"
+        ]
+      },
+      "issued_by": "root",
+      "issued_at": "2026-09-03T22:31:49Z",
+      "ratified_via": "frank ledger entry b933209d-b90d-46ba-8fb4-97b86f4ae4d2",
+      "expires_at": null,
+      "max_count": null,
+      "use_count_source": "frank",
+      "status": "active",
+      "notes": "Reconcile phone-surface-context.md §12 with KB 2026B306's three-tier reach model; resolve two open items it already answers",
+      "proposed_at": "2026-09-03T22:31:44Z",
+      "proposed_by": {
+        "verifier": "sean",
+        "session_id": "session_011uugYJ5wqHFBi8qGPd2NjL",
+        "orchestrator_session_id": "session_011uugYJ5wqHFBi8qGPd2NjL",
+        "proposer_app_id": "willow"
+      },
+      "precedent_ids": [
+        "env-git.commit-c9bc24ae904d"
+      ]
+    },
+    {
+      "id": "env-git.push-808fb5cdddcf",
+      "verb_id": 3,
+      "verb": "git.push",
+      "grantee": "willow",
+      "bounds": {
+        "repo": "willows-grove",
+        "branches": [
+          "master"
+        ],
+        "remote": "origin",
+        "force": false
+      },
+      "issued_by": "root",
+      "issued_at": "2026-09-03T22:32:09Z",
+      "ratified_via": "frank ledger entry 4d7dd37d-c9a2-42a5-b152-aa15a55e9dc5",
+      "expires_at": null,
+      "max_count": null,
+      "use_count_source": "frank",
+      "status": "active",
+      "notes": "Push phone-surface-context.md reconciliation",
+      "proposed_at": "2026-09-03T22:32:06Z",
+      "proposed_by": {
+        "verifier": "sean",
+        "session_id": "session_011uugYJ5wqHFBi8qGPd2NjL",
+        "orchestrator_session_id": "session_011uugYJ5wqHFBi8qGPd2NjL",
+        "proposer_app_id": "willow"
+      },
+      "precedent_ids": [
+        "env-git.push-6dcb728bbb40",
+        "env-git.push-20d931c5e4b1"
+      ]
+    },
+    {
+      "id": "env-git.commit-0ca59bce087e",
+      "verb_id": 2,
+      "verb": "git.commit",
+      "grantee": "willow",
+      "bounds": {
+        "repo": "willows-grove",
+        "branches": [
+          "master"
+        ]
+      },
+      "issued_by": "root",
+      "issued_at": "2026-09-03T22:33:25Z",
+      "ratified_via": "frank ledger entry 1a074454-3628-4069-a2d8-cd3301dbab43",
+      "expires_at": null,
+      "max_count": null,
+      "use_count_source": "frank",
+      "status": "active",
+      "notes": "Record a re-search confirming the earlier mobile-vault design is unrecoverable from any grep-able record, so the next session doesn't repeat the search",
+      "proposed_at": "2026-09-03T22:33:22Z",
+      "proposed_by": {
+        "verifier": "sean",
+        "session_id": "session_011uugYJ5wqHFBi8qGPd2NjL",
+        "orchestrator_session_id": "session_011uugYJ5wqHFBi8qGPd2NjL",
+        "proposer_app_id": "willow"
+      },
+      "precedent_ids": [
+        "env-git.commit-137d2dbebd96",
+        "env-git.commit-c9bc24ae904d"
+      ]
+    },
+    {
+      "id": "env-git.push-b15da2bb41c0",
+      "verb_id": 3,
+      "verb": "git.push",
+      "grantee": "willow",
+      "bounds": {
+        "repo": "willows-grove",
+        "branches": [
+          "master"
+        ],
+        "remote": "origin",
+        "force": false
+      },
+      "issued_by": "root",
+      "issued_at": "2026-09-03T22:33:37Z",
+      "ratified_via": "frank ledger entry 7ece6d20-1d64-4616-9a5a-aebfc3ce0cd5",
+      "expires_at": null,
+      "max_count": null,
+      "use_count_source": "frank",
+      "status": "active",
+      "notes": "Push mobile-vault re-search confirmation note",
+      "proposed_at": "2026-09-03T22:33:34Z",
+      "proposed_by": {
+        "verifier": "sean",
+        "session_id": "session_011uugYJ5wqHFBi8qGPd2NjL",
+        "orchestrator_session_id": "session_011uugYJ5wqHFBi8qGPd2NjL",
+        "proposer_app_id": "willow"
+      },
+      "precedent_ids": [
+        "env-git.push-808fb5cdddcf",
+        "env-git.push-6dcb728bbb40",
+        "env-git.push-20d931c5e4b1"
+      ]
+    },
+    {
+      "id": "env-git.commit-9aa5aed2cc7c",
+      "verb_id": 2,
+      "verb": "git.commit",
+      "grantee": "willow",
+      "bounds": {
+        "repo": "willows-grove",
+        "branches": [
+          "master"
+        ]
+      },
+      "issued_by": "root",
+      "issued_at": "2026-09-03T22:39:34Z",
+      "ratified_via": "frank ledger entry 8737b491-7021-4a9f-96d1-fe2042aba610",
+      "expires_at": null,
+      "max_count": null,
+      "use_count_source": "frank",
+      "status": "active",
+      "notes": "28-char legibility pass (§13): grove-dispatch-rail's .action column was clipping to ~22 visible chars at its own declared min-width via pixel-driven CSS ellipsis, below the doc's 28-char floor; add min-width:28ch, verified empirically with headless Playwright measurement",
+      "proposed_at": "2026-09-03T22:39:32Z",
+      "proposed_by": {
+        "verifier": "sean",
+        "session_id": "session_011uugYJ5wqHFBi8qGPd2NjL",
+        "orchestrator_session_id": "session_011uugYJ5wqHFBi8qGPd2NjL",
+        "proposer_app_id": "willow"
+      },
+      "precedent_ids": [
+        "env-git.commit-137d2dbebd96",
+        "env-git.commit-0ca59bce087e",
+        "env-git.commit-c9bc24ae904d"
+      ]
+    },
+    {
+      "id": "env-git.push-ef20b51d2869",
+      "verb_id": 3,
+      "verb": "git.push",
+      "grantee": "willow",
+      "bounds": {
+        "repo": "willows-grove",
+        "branches": [
+          "master"
+        ],
+        "remote": "origin",
+        "force": false
+      },
+      "issued_by": "root",
+      "issued_at": "2026-09-03T22:39:50Z",
+      "ratified_via": "frank ledger entry 14f3425d-a627-42b4-82d4-0b35de42ff90",
+      "expires_at": null,
+      "max_count": null,
+      "use_count_source": "frank",
+      "status": "active",
+      "notes": "Push the dispatch-rail 28-char legibility fix",
+      "proposed_at": "2026-09-03T22:39:48Z",
+      "proposed_by": {
+        "verifier": "sean",
+        "session_id": "session_011uugYJ5wqHFBi8qGPd2NjL",
+        "orchestrator_session_id": "session_011uugYJ5wqHFBi8qGPd2NjL",
+        "proposer_app_id": "willow"
+      },
+      "precedent_ids": [
+        "env-git.push-808fb5cdddcf",
+        "env-git.push-b15da2bb41c0",
+        "env-git.push-6dcb728bbb40",
+        "env-git.push-20d931c5e4b1"
+      ]
+    },
+    {
+      "id": "env-git.commit-542c03600a45",
+      "verb_id": 2,
+      "verb": "git.commit",
+      "grantee": "willow",
+      "bounds": {
+        "repo": "willow-mcp",
+        "branches": [
+          "master"
+        ]
+      },
+      "issued_by": "root",
+      "issued_at": "2026-09-05T05:58:07Z",
+      "ratified_via": "frank ledger entry 5bfe8b35-18db-4fc7-b4e6-27237831689d",
+      "expires_at": null,
+      "max_count": null,
+      "use_count_source": "frank",
+      "status": "active",
+      "notes": "Fix serve-mode DNS-rebinding allowlist: SDK defaults allowed_hosts to loopback-only regardless of WILLOW_MCP_URL, so any tunnelled/public deployment gets a 421 on every authenticated /mcp call. Ported the fix from willows-grove's grove/mcp_local.py::_transport_security, which already solved the identical problem.",
+      "proposed_at": "2026-09-05T05:57:58Z",
+      "proposed_by": {
+        "verifier": "sean",
+        "session_id": "session_011uugYJ5wqHFBi8qGPd2NjL",
+        "orchestrator_session_id": "session_011uugYJ5wqHFBi8qGPd2NjL",
+        "proposer_app_id": "willow"
+      },
+      "precedent_ids": [
+        "env-git.commit-c9bc24ae904d",
+        "env-git.commit-bdfa50ec8b9d",
+        "env-git.commit-137d2dbebd96",
+        "env-git.commit-0ca59bce087e",
+        "env-git.commit-9aa5aed2cc7c"
+      ]
+    },
+    {
+      "id": "env-git.push-0054a1270c36",
+      "verb_id": 3,
+      "verb": "git.push",
+      "grantee": "willow",
+      "bounds": {
+        "repo": "willow-mcp",
+        "branches": [
+          "master"
+        ],
+        "remote": "origin",
+        "force": false
+      },
+      "issued_by": "root",
+      "issued_at": "2026-09-05T06:03:57Z",
+      "ratified_via": "frank ledger entry 87b96e6f-f960-4c3b-a928-6c1282639412",
+      "expires_at": null,
+      "max_count": null,
+      "use_count_source": "frank",
+      "status": "active",
+      "notes": "Push the transport-security allowlist fix",
+      "proposed_at": "2026-09-05T06:03:53Z",
+      "proposed_by": {
+        "verifier": "sean",
+        "session_id": "session_011uugYJ5wqHFBi8qGPd2NjL",
+        "orchestrator_session_id": "session_011uugYJ5wqHFBi8qGPd2NjL",
+        "proposer_app_id": "willow"
+      },
+      "precedent_ids": [
+        "env-git.push-20d931c5e4b1",
+        "env-git.push-808fb5cdddcf",
+        "env-git.push-b15da2bb41c0",
+        "env-git.push-ef20b51d2869",
+        "env-git.push-6dcb728bbb40"
+      ]
+    },
+    {
+      "id": "env-git.commit-5f55ec2bbeb6",
+      "verb_id": 2,
+      "verb": "git.commit",
+      "grantee": "willow",
+      "bounds": {
+        "repo": "willow-mcp",
+        "branches": [
+          "master"
+        ]
+      },
+      "issued_by": "root",
+      "issued_at": "2026-09-05T06:17:02Z",
+      "ratified_via": "frank ledger entry dd2d59b0-5520-4fa7-a83d-1c09365c86de",
+      "expires_at": null,
+      "max_count": null,
+      "use_count_source": "frank",
+      "status": "active",
+      "notes": "Fix confirm-binding's success message crashing on KeyError: record uses 'idp', print statement read 'issuer'; the actual bind write completes fine, only the confirmation message crashes",
+      "proposed_at": "2026-09-05T06:16:59Z",
+      "proposed_by": {
+        "verifier": "sean",
+        "session_id": "session_011uugYJ5wqHFBi8qGPd2NjL",
+        "orchestrator_session_id": "session_011uugYJ5wqHFBi8qGPd2NjL",
+        "proposer_app_id": "willow"
+      },
+      "precedent_ids": [
+        "env-git.commit-c9bc24ae904d",
+        "env-git.commit-542c03600a45",
+        "env-git.commit-bdfa50ec8b9d",
+        "env-git.commit-137d2dbebd96",
+        "env-git.commit-0ca59bce087e"
+      ]
+    },
+    {
+      "id": "env-git.push-b5ad7c5cd2b1",
+      "verb_id": 3,
+      "verb": "git.push",
+      "grantee": "willow",
+      "bounds": {
+        "repo": "willow-mcp",
+        "branches": [
+          "master"
+        ],
+        "remote": "origin",
+        "force": false
+      },
+      "issued_by": "root",
+      "issued_at": "2026-09-05T06:17:29Z",
+      "ratified_via": "frank ledger entry 9c4653e9-cfe9-4113-9808-b3c82b1ff7e9",
+      "expires_at": null,
+      "max_count": null,
+      "use_count_source": "frank",
+      "status": "active",
+      "notes": "Push the confirm-binding print fix",
+      "proposed_at": "2026-09-05T06:17:24Z",
+      "proposed_by": {
+        "verifier": "sean",
+        "session_id": "session_011uugYJ5wqHFBi8qGPd2NjL",
+        "orchestrator_session_id": "session_011uugYJ5wqHFBi8qGPd2NjL",
+        "proposer_app_id": "willow"
+      },
+      "precedent_ids": [
+        "env-git.push-0054a1270c36",
+        "env-git.push-20d931c5e4b1",
+        "env-git.push-808fb5cdddcf",
+        "env-git.push-b15da2bb41c0",
+        "env-git.push-ef20b51d2869"
+      ]
+    },
+    {
+      "id": "env-git.commit-ef5d42f9d42d",
+      "verb_id": 2,
+      "verb": "git.commit",
+      "grantee": "willow",
+      "bounds": {
+        "repo": "willow-mcp",
+        "branches": [
+          "fix/frank-verify-anchor-provenance"
+        ]
+      },
+      "issued_by": "root",
+      "issued_at": "2026-09-07T01:09:38Z",
+      "ratified_via": "frank ledger entry b523b0e5-4cf3-487e-a063-3c58a20050b5",
+      "expires_at": null,
+      "max_count": null,
+      "use_count_source": "frank",
+      "status": "active",
+      "notes": "Make frank_verify's anchor verdict decidable. Today GovernanceLedger.verify (src/willow_mcp/governance_ledger.py:171) returns valid:false whenever the walked head differs from the externally-held anchor, and cannot say whether that is benign staleness (legitimate appends, which always move the head) or an edit-then-rechain relink — the one case the anchor exists to catch. Observed live 2026-09-06: count=1496, broken_at=null, head=16b69ee2, expected_head=4f9ec2ac, anchor_recorded_at=2026-08-11T02:20:41Z, undecidable from the seat. Gap d6d0a632184f. Fix is inside the existing single pass: the loop already carries the running `previous` hash, so set a flag when previous == expected_head. Seen mid-walk means the chain is a strict extension of the anchored chain (report entries_since_anchor); never seen means the anchored head is not in this chain at all, which is the relink. Also carry `head` and a `reason` (prev-linkage vs digest mismatch) into the broken_at return, which currently discards head as None — reason is prior art from receipts.ReceiptLog.verify, and the anchor-prose shape is prior art from attribution_ledger.verify, both already in this repo. Tests to match in tests/test_governance_ledger.py. Full suite must be green before the commit stands.",
+      "proposed_at": "2026-09-07T01:08:44Z",
+      "proposed_by": {
+        "verifier": "sean",
+        "session_id": "session_01QwQSZfXGSAmGK7hL9u6ZLn",
+        "orchestrator_session_id": "session_01QwQSZfXGSAmGK7hL9u6ZLn",
+        "proposer_app_id": "willow"
+      },
+      "precedent_ids": [
+        "env-git.commit-c9bc24ae904d",
+        "env-git.commit-bdfa50ec8b9d",
+        "env-git.commit-542c03600a45",
+        "env-git.commit-5f55ec2bbeb6"
+      ]
+    },
+    {
+      "id": "env-git.push-c2eabb5afa66",
+      "verb_id": 3,
+      "verb": "git.push",
+      "grantee": "willow",
+      "bounds": {
+        "repo": "willow-mcp",
+        "branches": [
+          "fix/frank-verify-anchor-provenance"
+        ],
+        "remote": "origin",
+        "force": false
+      },
+      "issued_by": "root",
+      "issued_at": "2026-09-07T01:09:39Z",
+      "ratified_via": "frank ledger entry 9b8b6b77-e0d6-40a9-8866-40fd003bb6af",
+      "expires_at": null,
+      "max_count": null,
+      "use_count_source": "frank",
+      "status": "active",
+      "notes": "Push the frank_verify anchor-provenance branch to origin so pr.open has something to point at. Non-force, single branch, same shape as env-git.push-20d931c5e4b1 (the prior doc-fix branch push for this repo). Paired with the git.commit envelope proposed alongside it for gap d6d0a632184f.",
+      "proposed_at": "2026-09-07T01:08:47Z",
+      "proposed_by": {
+        "verifier": "sean",
+        "session_id": "session_01QwQSZfXGSAmGK7hL9u6ZLn",
+        "orchestrator_session_id": "session_01QwQSZfXGSAmGK7hL9u6ZLn",
+        "proposer_app_id": "willow"
+      },
+      "precedent_ids": [
+        "env-git.push-20d931c5e4b1",
+        "env-git.push-0054a1270c36",
+        "env-git.push-b5ad7c5cd2b1",
+        "env-git.push-6dcb728bbb40",
+        "env-git.push-808fb5cdddcf"
+      ]
+    },
+    {
+      "id": "env-pr.open-e5fc2116eb7a",
+      "verb_id": 4,
+      "verb": "pr.open",
+      "grantee": "willow",
+      "bounds": {
+        "repo": "willow-mcp",
+        "base_branches": [
+          "master"
+        ]
+      },
+      "issued_by": "root",
+      "issued_at": "2026-09-07T01:09:39Z",
+      "ratified_via": "frank ledger entry e5be498d-d7d1-45e5-8f28-c908fb9580af",
+      "expires_at": null,
+      "max_count": null,
+      "use_count_source": "frank",
+      "status": "active",
+      "notes": "Open the PR for fix/frank-verify-anchor-provenance into master. This patch edits the governance ledger's own integrity verifier, so it goes through CI and review rather than direct-to-master as the last several willow-mcp fixes did — a change to the thing that detects tampering should not land on the strength of the same seat that wrote it. No pr.merge is proposed here; that is a separate act after CI is green and the diff has been read.",
+      "proposed_at": "2026-09-07T01:08:49Z",
+      "proposed_by": {
+        "verifier": "sean",
+        "session_id": "session_01QwQSZfXGSAmGK7hL9u6ZLn",
+        "orchestrator_session_id": "session_01QwQSZfXGSAmGK7hL9u6ZLn",
+        "proposer_app_id": "willow"
+      },
+      "precedent_ids": [
+        "env-pr.open-4c2b8178f109",
+        "env-pr.open-87a24226309d"
+      ]
+    },
+    {
+      "id": "env-git.commit-f98a49337e67",
+      "verb_id": 2,
+      "verb": "git.commit",
+      "grantee": "willow",
+      "bounds": {
+        "repo": "willow-mcp",
+        "branches": [
+          "fix/task-queue-reconnect-after-pg-restart"
+        ]
+      },
+      "issued_by": "root",
+      "issued_at": "2026-09-07T01:28:20Z",
+      "ratified_via": "frank ledger entry 1c915f56-8d98-41cb-aa23-0e8c01c7b9ee",
+      "expires_at": null,
+      "max_count": null,
+      "use_count_source": "frank",
+      "status": "active",
+      "notes": "PgTaskQueue caches its Postgres connection for the life of the worker process and never re-resolves it, so a database restart strands the lane permanently. Diagnosed live 2026-09-06: Postgres terminated abnormally at 2026-09-05T00:29:49 MDT, the fast-lane worker's connection died with it, and every tick since raised \"connection already closed\" from claim_pending and reap_stale — roughly 31,000 failed ticks over 43 hours, during which fleet_health reported the worker alive with last_tick_ok true and stranded false. Two tasks sat pending the whole time. A systemctl --user restart of willow-mcp-worker-fast drained both within one tick, confirming the process was the only broken thing. Gap 88e0334e8bed. The fix: db.get_pg() already checks .closed, reconnects, revalidates with SELECT 1 and calls postgres_lifecycle.try_recover(), so PgTaskQueue should ask it again rather than hold a handle forever. Store the connection as self._pg_conn and expose self._pg as a property that returns the cached connection when live and re-resolves through get_pg() when closed, raising a clear RuntimeError when Postgres is genuinely unavailable. All 13 existing self._pg call sites stay unchanged. The worker then self-heals on the first tick after the database returns instead of needing an operator to notice. Tests in tests/test_task_queue.py covering: a closed connection is re-resolved, a live one is not needlessly replaced, and an unavailable database raises rather than returning a dead handle. Full suite must be green before the commit stands. NOT in scope and flagged separately: kartikeya's run_worker hardcodes on_heartbeat(tick_ok=True) before attempting the claim, which is why this outage was invisible — that is a different repo and needs its own envelope.",
+      "proposed_at": "2026-09-07T01:23:03Z",
+      "proposed_by": {
+        "verifier": "sean",
+        "session_id": "session_01QwQSZfXGSAmGK7hL9u6ZLn",
+        "orchestrator_session_id": "session_01QwQSZfXGSAmGK7hL9u6ZLn",
+        "proposer_app_id": "willow"
+      },
+      "precedent_ids": [
+        "env-git.commit-c9bc24ae904d",
+        "env-git.commit-bdfa50ec8b9d",
+        "env-git.commit-542c03600a45",
+        "env-git.commit-5f55ec2bbeb6",
+        "env-git.commit-ef5d42f9d42d"
+      ]
+    },
+    {
+      "id": "env-git.push-9fa6b4738b05",
+      "verb_id": 3,
+      "verb": "git.push",
+      "grantee": "willow",
+      "bounds": {
+        "repo": "willow-mcp",
+        "branches": [
+          "fix/task-queue-reconnect-after-pg-restart"
+        ],
+        "remote": "origin",
+        "force": false
+      },
+      "issued_by": "root",
+      "issued_at": "2026-09-07T01:28:21Z",
+      "ratified_via": "frank ledger entry 8e9c8cc3-15b7-46db-abf9-a8c41309c441",
+      "expires_at": null,
+      "max_count": null,
+      "use_count_source": "frank",
+      "status": "active",
+      "notes": "Push the task-queue reconnect branch to origin so pr.open has something to point at. Non-force, single branch, same shape as env-git.push-c2eabb5afa66. Paired with the git.commit envelope proposed alongside it for gap 88e0334e8bed.",
+      "proposed_at": "2026-09-07T01:23:05Z",
+      "proposed_by": {
+        "verifier": "sean",
+        "session_id": "session_01QwQSZfXGSAmGK7hL9u6ZLn",
+        "orchestrator_session_id": "session_01QwQSZfXGSAmGK7hL9u6ZLn",
+        "proposer_app_id": "willow"
+      },
+      "precedent_ids": [
+        "env-git.push-20d931c5e4b1",
+        "env-git.push-0054a1270c36",
+        "env-git.push-b5ad7c5cd2b1",
+        "env-git.push-c2eabb5afa66",
+        "env-git.push-6dcb728bbb40"
+      ]
+    },
+    {
+      "id": "env-pr.open-daedfd93473c",
+      "verb_id": 4,
+      "verb": "pr.open",
+      "grantee": "willow",
+      "bounds": {
+        "repo": "willow-mcp",
+        "base_branches": [
+          "master"
+        ]
+      },
+      "issued_by": "root",
+      "issued_at": "2026-09-07T01:28:21Z",
+      "ratified_via": "frank ledger entry a6f373c1-4403-4d9c-8ed0-c4dc3b4bbbee",
+      "expires_at": null,
+      "max_count": null,
+      "use_count_source": "frank",
+      "status": "active",
+      "notes": "Open the PR for fix/task-queue-reconnect-after-pg-restart into master. Separate PR from #429 (frank anchor provenance) because the two share nothing but the session that found them. No pr.merge proposed; that is a separate act after CI is green.",
+      "proposed_at": "2026-09-07T01:23:07Z",
+      "proposed_by": {
+        "verifier": "sean",
+        "session_id": "session_01QwQSZfXGSAmGK7hL9u6ZLn",
+        "orchestrator_session_id": "session_01QwQSZfXGSAmGK7hL9u6ZLn",
+        "proposer_app_id": "willow"
+      },
+      "precedent_ids": [
+        "env-pr.open-4c2b8178f109",
+        "env-pr.open-e5fc2116eb7a",
+        "env-pr.open-87a24226309d"
+      ]
+    },
+    {
+      "id": "env-git.commit-ca6c329d9dfc",
+      "verb_id": 2,
+      "verb": "git.commit",
+      "grantee": "willow",
+      "bounds": {
+        "repo": "kartikeya",
+        "branches": [
+          "fix/heartbeat-reports-claim-failure"
+        ]
+      },
+      "issued_by": "root",
+      "issued_at": "2026-09-07T01:28:21Z",
+      "ratified_via": "frank ledger entry 75d6945e-c9ac-4c96-93cf-bdae2d7a209b",
+      "expires_at": null,
+      "max_count": null,
+      "use_count_source": "frank",
+      "status": "active",
+      "notes": "run_worker's poll loop calls on_heartbeat(lane=lane, tick_ok=True) at src/kartikeya/worker.py:168 with the result hardcoded, before it attempts the claim, and the claim itself is wrapped in a bare except that logs and continues. A worker whose every claim raises therefore publishes a perfectly healthy heartbeat forever. Demonstrated live, not hypothesised: after Postgres terminated abnormally at 2026-09-05T00:29:49 MDT the willow-mcp fast-lane worker raised \"connection already closed\" on every tick for 43 hours — roughly 31,000 ticks — while fleet_health reported alive, last_tick_ok true, stranded false, and two tasks sat pending. The operator had no signal distinguishing \"idle, nothing to do\" from \"cannot take work at all\". Gap 88e0334e8bed. Fix: carry the outcome of the last claim attempt in a local, initialised True, set False in the existing except branch and True on a successful claim_pending, and pass it as tick_ok on the next iteration. When free == 0 no claim is attempted, so the previous value must carry rather than reset to True — a saturated worker is not a failing one. _maybe_reap_and_prune deliberately stays out of the signal: it swallows per-name exceptions and returns None by contract, and a backend that simply does not implement reap_stale must not read as unhealthy. Tests to match in the worker tests: a queue whose claim_pending always raises drives tick_ok False, a healthy queue keeps it True, recovery flips it back, and a fully saturated loop does not reset it. NOT in scope: willow-mcp's fleet_health computes `stranded` from heartbeat liveness alone, so it will still read false even once tick_ok is honest — surfacing it there is a separate willow-mcp change.",
+      "proposed_at": "2026-09-07T01:26:05Z",
+      "proposed_by": {
+        "verifier": "sean",
+        "session_id": "session_01QwQSZfXGSAmGK7hL9u6ZLn",
+        "orchestrator_session_id": "session_01QwQSZfXGSAmGK7hL9u6ZLn",
+        "proposer_app_id": "willow"
+      },
+      "precedent_ids": []
+    },
+    {
+      "id": "env-git.push-f3a210301ddf",
+      "verb_id": 3,
+      "verb": "git.push",
+      "grantee": "willow",
+      "bounds": {
+        "repo": "kartikeya",
+        "branches": [
+          "fix/heartbeat-reports-claim-failure"
+        ],
+        "remote": "origin",
+        "force": false
+      },
+      "issued_by": "root",
+      "issued_at": "2026-09-07T01:28:22Z",
+      "ratified_via": "frank ledger entry c00c4886-5a0a-47af-9b23-aa0f3bde4ad2",
+      "expires_at": null,
+      "max_count": null,
+      "use_count_source": "frank",
+      "status": "active",
+      "notes": "Push the heartbeat-honesty branch to origin so pr.open has something to point at. Non-force, single branch. First git.push envelope for the kartikeya repo; bounds follow the same signature as the willow-mcp and willows-grove pushes already in the register.",
+      "proposed_at": "2026-09-07T01:26:08Z",
+      "proposed_by": {
+        "verifier": "sean",
+        "session_id": "session_01QwQSZfXGSAmGK7hL9u6ZLn",
+        "orchestrator_session_id": "session_01QwQSZfXGSAmGK7hL9u6ZLn",
+        "proposer_app_id": "willow"
+      },
+      "precedent_ids": [
+        "env-git.push-6dcb728bbb40",
+        "env-git.push-20d931c5e4b1",
+        "env-git.push-808fb5cdddcf",
+        "env-git.push-b15da2bb41c0",
+        "env-git.push-ef20b51d2869"
+      ]
+    },
+    {
+      "id": "env-pr.open-c54a24b56d12",
+      "verb_id": 4,
+      "verb": "pr.open",
+      "grantee": "willow",
+      "bounds": {
+        "repo": "kartikeya",
+        "base_branches": [
+          "master"
+        ]
+      },
+      "issued_by": "root",
+      "issued_at": "2026-09-07T01:28:22Z",
+      "ratified_via": "frank ledger entry c70cb9ad-4944-4f9e-928c-3d142fd8fc86",
+      "expires_at": null,
+      "max_count": null,
+      "use_count_source": "frank",
+      "status": "active",
+      "notes": "Open the PR for fix/heartbeat-reports-claim-failure into kartikeya master. kartikeya is a published dependency (willow-mcp floors it at 0.0.9, 0.0.12 installed), so this goes through CI and review rather than direct-to-master. No pr.merge proposed; that is a separate act after CI is green, and a release/version bump is a further separate decision.",
+      "proposed_at": "2026-09-07T01:26:10Z",
+      "proposed_by": {
+        "verifier": "sean",
+        "session_id": "session_01QwQSZfXGSAmGK7hL9u6ZLn",
+        "orchestrator_session_id": "session_01QwQSZfXGSAmGK7hL9u6ZLn",
+        "proposer_app_id": "willow"
+      },
+      "precedent_ids": [
+        "env-pr.open-87a24226309d",
+        "env-pr.open-4c2b8178f109",
+        "env-pr.open-e5fc2116eb7a"
+      ]
+    }
+  ],
+  "proposals": []
+}

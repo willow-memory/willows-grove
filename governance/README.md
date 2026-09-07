@@ -21,7 +21,7 @@ The grove is the charter's home now because the grove is the watchman's seat
 | `fleet_personas.json` | **here**, at `governance/fleet_personas.json` — see the 2026-08-29 addendum below |
 | `mem_ratify/` | `willow-mcp/src/willow_mcp/mem_ratify` |
 | `seed/` | `$WILLOW_HOME/seed` and `willow-mcp/seed` |
-| `envelopes/` | **stayed in the archive.** Its own `MOVED.md` records that its default-path role went to `$WILLOW_HOME/constitutional/`; the archived `pre-approved.json` / `syscall-table.json` are the operator's real grants as of 2026-07-22 / 2026-07-06, kept as historical record. They differ from the live files because the live ones are current. Moving them here would have put a superseded copy beside a live one. |
+| `envelopes/` | **here** — live Article III.2 registry (`pre-approved.json`, `syscall-table.json`, `frank_head_anchor.json`, `review_queue.json`). Relocated from `$WILLOW_HOME/constitutional/` 2026-09-07; `willow-mcp` reads via `WILLOW_CHARTER_REPO/envelopes/` when set. |
 | `design/` (2.8 MB), `tools/`, `notes/`, `soil/`, `CLAUDE.md`, `AGENTS.md`, `ORIENT.md` | left in the archive — repo-operating docs for a repository that no longer exists, and the grove has its own |
 
 ## About the paths in these documents
@@ -67,10 +67,14 @@ Both are now in this repo — `governance/fleet_personas.json` and
 both readers probe `$WILLOW_HOME` first, then `~/.willow`, then the
 in-repo copy. No archived-repo path remains in either.
 
-What still deliberately did NOT move: the archived `envelopes/`. The
-reasoning in the table above holds and is not weakened by the archiving —
-those files are the operator's grants as of 2026-07-22 / 2026-07-06 and
-are superseded by the live ones at `$WILLOW_HOME/constitutional/`, which
-is where `grove/envelope_reader.py` already reads. Bringing a stale copy
-of the real grants in beside the live ones would be the one move that
-makes this worse.
+What still deliberately did NOT move: the archived `envelopes/` copy in the
+old `willow` repo — historical record only. The **live** registry is now
+`envelopes/` in this repo (see addendum below).
+
+## Addendum — 2026-09-07
+
+The live envelope registry moved from `$WILLOW_HOME/constitutional/` to
+`envelopes/` here. `willow-mcp` resolves `paths.constitutional_dir()` to
+`<WILLOW_CHARTER_REPO>/envelopes/` when the charter repo is set.
+Vault-shaped secrets moved to `~/sean-data-vault/willow-operator-box/`
+via `WILLOW_VAULT_BOX`.
