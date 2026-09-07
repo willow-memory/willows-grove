@@ -12,7 +12,7 @@
 | Org | URL | Repos on org (today’s placement) |
 |-----|-----|----------------------------------|
 | **Die-Namic-Systems** | [github.com/Die-Namic-Systems](https://github.com/Die-Namic-Systems) | `.github`, **`die-namic`** *(base seat, draft)*, **`nestor`** |
-| **willow-memory** | [github.com/willow-memory](https://github.com/willow-memory) | `.github`, **`willow`** *(charter seat — target)*, **`willow-mcp`**, **`willow-gate`**, **`kartikeya`** |
+| **willow-memory** | [github.com/willow-memory](https://github.com/willow-memory) | `.github`, **`willow`** *(charter seat — target)*, **`willow-mcp`**, **`willow-gate`**, **`kartikeya`**, **`ratatosk`** |
 | **hornbook-knowledge** | [github.com/hornbook-knowledge](https://github.com/hornbook-knowledge) | `.github`, **`hornbook`** *(base seat, draft)*, **Terpsi** *(interim)*, **`UTETY`**, **`Jeles`** · Squarespace |
 | **almanac-data** | [github.com/almanac-data](https://github.com/almanac-data) | `.github`, **`almanac`** *(base/meta seat, draft)*, **`almanac-template`**, vertical almanacs (see §4) |
 
@@ -145,7 +145,7 @@ The **die** is a **cube**: six **faces** (public product legs) and **one center*
 
 | # | Display · suffix | GitHub org | Base repo *(seat)* | Primary muscle *(examples)* |
 |---|------------------|------------|--------------------|-----------------------------|
-| 1 | **Willow · Memory** | `willow-memory` | `willow` | `willow-mcp`, `willow-gate`, `kartikeya` |
+| 1 | **Willow · Memory** | `willow-memory` | `willow` | `willow-mcp`, `willow-gate`, `kartikeya`, `ratatosk` |
 | 2 | **Hornbook · Knowledge** | `hornbook-knowledge` | `hornbook` | `UTETY`, `Jeles` |
 | 3 | **Almanac · Data** | `almanac-data` | `almanac` | `almanac-template`, `*-almanac` |
 | 4 | **Homestead · Affairs** | **`homestead-affairs`** | `homestead` | **`homestead-law`** *(promoted `law-gazelle`)*, `awesome-sovereign-software` |
@@ -303,6 +303,7 @@ Some human usages need a **charter fork** or a **different face**, not another r
 | **`willow-mcp`** | `~/github/willow-memory/willow-mcp` | Shipped MCP server |
 | **`willow-gate`** | `~/github/willow-memory/willow-gate` | Manifest / auth gate |
 | **`kartikeya`** | `~/github/willow-memory/kartikeya` | Kart worker (platform bundle with hub + gate) |
+| **`ratatosk`** | `~/github/willow-memory/ratatosk` | Platform session runtime — MCP client, capability gate, tier-0 sync (promoted 2026-09-07) |
 | **`safe-app-willow-grove`** | `~/github/willow-memory/willow-grove` | Grove fleet bus (Heimdallr seat) — **dev clone**; active on GitHub |
 
 **Fleet dev clones (operator box, 2026-08-18):** `willow`, `willow-mcp`, `willow-gate`, `kartikeya`, `safe-app-willow-grove` (`willow-grove` on disk). Not cloned locally: tier-F / remote-only repos below.
