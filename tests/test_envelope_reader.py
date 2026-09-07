@@ -50,15 +50,26 @@ class EnvelopeReaderTests(unittest.TestCase):
         er._logged_missing_files = False
         er._logged_malformed = set()
 
-    def _env(self, willow_home: str | None = None):
-        env = {"HOME": str(self.fake_home)}
+        self._no_fallback_dir = root / "no-fallback"
+        self._no_fallback_dir.mkdir()
+        self._fallback_patch = mock.patch.object(
+            er, "_IN_REPO_ENVELOPES", self._no_fallback_dir / "envelopes"
+        )
+        self._fallback_patch.start()
+        self.addCleanup(self._fallback_patch.stop)
+
+    def _env(self, willow_home: str | None = None, charter_repo: str | None = None):
+        env = dict(os.environ)
+        env["HOME"] = str(self.fake_home)
         if willow_home is not None:
             env["WILLOW_HOME"] = willow_home
         else:
-            # Strip a real WILLOW_HOME the host may carry so the probe
-            # only sees what the test set up.
             env["WILLOW_HOME"] = str(self.fake_home / "unset")
-        return mock.patch.dict(os.environ, env, clear=False)
+        if charter_repo is not None:
+            env["WILLOW_CHARTER_REPO"] = charter_repo
+        else:
+            env.pop("WILLOW_CHARTER_REPO", None)
+        return mock.patch.dict(os.environ, env, clear=True)
 
     # ---- three-state: unreachable (INVARIANTS.md §1) ----
     def test_no_dirs_raises_unreachable_and_logs_once(self) -> None:
@@ -166,9 +177,9 @@ class EnvelopeReaderTests(unittest.TestCase):
 
     # ---- precedence: later dir wins on id collision ----
     def test_later_dir_overrides_earlier_on_id_collision(self) -> None:
-        # $WILLOW_HOME/constitutional is candidate index 0; ~/.willow/constitutional
-        # is index 1. Precedence rule: later probe order wins on collision, so the
-        # ~/.willow payload should replace the $WILLOW_HOME one.
+        # ~/.willow/constitutional is probed before $WILLOW_HOME/constitutional.
+        # Precedence rule: later probe order wins on collision, so the
+        # $WILLOW_HOME payload should replace the ~/.willow one.
         wh_dir = self.willow_home / "constitutional"
         wh_dir.mkdir(parents=True)
         (wh_dir / "src.json").write_text(
@@ -197,7 +208,7 @@ class EnvelopeReaderTests(unittest.TestCase):
             result = er.read_all()
 
         self.assertEqual(len(result["envelopes"]), 1)
-        self.assertEqual(result["envelopes"][0]["grantee"], "from-dot-willow")
+        self.assertEqual(result["envelopes"][0]["grantee"], "from-willow-home")
 
     # ---- new probe: $WILLOW_HOME/willow-memory/willow/envelopes/ ----
     def test_the_registry_is_read_from_constitutional(self) -> None:

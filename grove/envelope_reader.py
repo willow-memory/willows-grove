@@ -18,18 +18,17 @@ mirrors ``grove/persona_roster.py`` shape:
   files, ``read_all()`` returns an empty envelope list and logs
   the fact exactly once. Grove boots either way.
 
-The probed directories, in order:
+The probed directories, in order (later entries override earlier on
+``id`` collision):
 
-1. ``$WILLOW_HOME/constitutional/`` — where willow-mcp keeps and
-   authenticates the Article III.2 registry.
-2. ``~/.willow/constitutional/`` — the same place when ``WILLOW_HOME``
-   is unset.
-5. ``~/.willow/envelopes/`` — local user overlay (lowest priority).
+1. ``$WILLOW_CHARTER_REPO/envelopes/`` or ``envelopes/`` in this repo —
+   the grove charter's canonical Article III.2 registry.
+2. ``~/.willow/constitutional/`` — per-user overlay.
+3. ``$WILLOW_HOME/constitutional/`` — per-node override (highest priority).
 
-Later directories in that list override earlier ones on an ``id``
-collision (last-writer-wins). Any file that fails to parse is
-skipped with a single log line naming the path and the reason —
-one malformed file must not deny the operator sight of the rest.
+Any file that fails to parse is skipped with a single log line naming the
+path and the reason — one malformed file must not deny the operator sight
+of the rest.
 """
 from __future__ import annotations
 
@@ -56,31 +55,22 @@ _logged_missing_dirs = False
 _logged_missing_files = False
 _logged_malformed: set[str] = set()
 
+_REPO_ROOT = Path(__file__).resolve().parent.parent
+_IN_REPO_ENVELOPES = _REPO_ROOT / "envelopes"
+
 
 def _candidate_dirs() -> list[Path]:
-    """The directories we probe, in preference order.
-
-    ``$WILLOW_HOME/constitutional/`` is where the registry lives. willow-mcp's
-    ``paths.envelope_registry_path()`` resolves there and its
-    ``trusted_read()`` authenticates it there, so this reader and the engine
-    that enforces the law now name the same file.
-
-    Every earlier candidate was a pre-migration path — ``envelopes/`` in the
-    sibling ``willow`` charter repo, and hops through ``willow-memory/willow/``
-    that never existed after the 2026-08-10 org-folder move. willow-mcp had
-    already migrated (its syscall table's ``registry`` field was repointed at
-    the same time, and THE PLANTING carried over with its ``registry_path``
-    rewritten); this reader had not, so Grove displayed a registry the engine
-    did not enforce — 15 active envelopes bound to legacy monolith paths that
-    were deleted at greenfield.
-
-    Later entries override earlier ones on ``id`` collision (see ``read_all``).
-    """
+    """The directories we probe, in preference order (low → high on id collision)."""
     dirs: list[Path] = []
+    charter = os.environ.get("WILLOW_CHARTER_REPO", "").strip()
+    if charter:
+        dirs.append(Path(charter).expanduser() / "envelopes")
+    else:
+        dirs.append(_IN_REPO_ENVELOPES)
+    dirs.append(Path.home() / ".willow" / "constitutional")
     home = os.environ.get("WILLOW_HOME")
     if home:
         dirs.append(Path(home).expanduser() / "constitutional")
-    dirs.append(Path.home() / ".willow" / "constitutional")
     return dirs
 
 
@@ -180,11 +170,10 @@ def read_all() -> dict:
         {"schema": "envelope-registry/v1.1", "envelopes": [ ... ]}
 
     Precedence: ``_candidate_dirs()`` order. Later directories override
-    earlier ones on ``id`` collision — the per-user registry at
-    ``~/.willow/constitutional/`` wins over a ``$WILLOW_HOME`` override.
-    Files without an ``id`` are
-    still returned but participate in no collision — their order is
-    the order they were read.
+    earlier ones on ``id`` collision — a per-node override at
+    ``$WILLOW_HOME/constitutional/`` wins over the grove charter copy.
+    Files without an ``id`` are still returned but participate in no
+    collision — their order is the order they were read.
 
     Three-state contract (INVARIANTS.md §1):
 
@@ -202,14 +191,15 @@ def read_all() -> dict:
         if not _logged_missing_dirs:
             log.info(
                 "[grove.envelope_reader] no envelope directory found in known "
-                "locations ($WILLOW_HOME/constitutional, "
-                "~/.willow/constitutional) — "
+                "locations ($WILLOW_CHARTER_REPO/envelopes, envelopes/ in-repo, "
+                "~/.willow/constitutional, $WILLOW_HOME/constitutional) — "
                 "raising Unreachable (INVARIANTS.md §1)."
             )
             _logged_missing_dirs = True
         raise Unreachable(
             "no envelope directory found in probe path "
-            "($WILLOW_HOME/constitutional, ~/.willow/constitutional)"
+            "($WILLOW_CHARTER_REPO/envelopes, envelopes/ in-repo, "
+            "~/.willow/constitutional, $WILLOW_HOME/constitutional)"
         )
 
     # Precedence: later dirs win. Walk in probe order, keying by id.

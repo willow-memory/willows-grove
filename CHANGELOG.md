@@ -6,6 +6,15 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Changed
 
+- **Live envelope registry moves to `envelopes/` in the grove charter repo.**
+  Article III.2 law (`pre-approved.json`, `syscall-table.json`,
+  `frank_head_anchor.json`, `review_queue.json`) no longer lives under
+  `$WILLOW_HOME/constitutional/`; `grove/envelope_reader.py` probes
+  `WILLOW_CHARTER_REPO/envelopes/` first, with per-node
+  `$WILLOW_HOME/constitutional/` overrides on `id` collision. Pairs with
+  willow-mcp path resolution for `WILLOW_CHARTER_REPO` / `WILLOW_VAULT_BOX`.
+  PR 42.
+
 - **Willow desk home + Jarvis is not a mode switch.** Operator seat scripts and
   jeles-intake live under `seat/willow/`; `docs/design/grove-persona-partition.md`
   splits Willow desk vs Heimdallr watch. Governance / PM / PA stay back-of-house
