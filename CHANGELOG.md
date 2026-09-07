@@ -6,6 +6,12 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Changed
 
+- **Willow seat stack documented; probe gains Ratatosk + vault env.**
+  Cherry-picks phone-seat production + tier-0 homecoming docs onto master;
+  adds `docs/design/seat-stack.md` (Phone → Ratatosk → MCP/Grove → deposit).
+  `willow-seat.sh probe` sources `fleet.env` / `WILLOW_VAULT_BOX`, checks
+  `RATATOSK_GROVE_CHANNEL`, dry-runs `grove.send()`, and lists serve ports.
+
 - **Live envelope registry moves to `envelopes/` in the grove charter repo.**
   Article III.2 law (`pre-approved.json`, `syscall-table.json`,
   `frank_head_anchor.json`, `review_queue.json`) no longer lives under
