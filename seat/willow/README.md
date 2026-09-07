@@ -17,6 +17,9 @@ One Jarvis seat — not a Governance / PM / PA mode switch. See
 | `scripts/jeles-intake.py` | Load / probe intake JSON |
 | `jeles-intake/` | Novel intake pairs (Paperclip, willow-local, …) |
 
+Design: [docs/design/seat-stack.md](../../docs/design/seat-stack.md) —
+phone → Ratatosk → MCP / Grove bus → tier-0 homecoming.
+
 ## Assumptions
 
 - Sibling layout: `willow-memory/{willows-grove,willow-mcp,.willow}/`
@@ -27,6 +30,7 @@ One Jarvis seat — not a Governance / PM / PA mode switch. See
 
 ```bash
 cd ~/github/willow-memory/willows-grove
+. ~/github/willow-memory/.willow/fleet.env   # vault + charter paths
 bash seat/willow/scripts/willow-seat.sh probe
 bash seat/willow/scripts/unblock-jeles-federation.sh   # when lease expired
 ```

@@ -16,15 +16,36 @@ SEAT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 GROVE_REPO="$(cd "$SEAT_DIR/../.." && pwd)"
 WM_ROOT="$(cd "$GROVE_REPO/.." && pwd)"
 WMCP_REPO="${WMCP_REPO:-$WM_ROOT/willow-mcp}"
+RATATOSK_REPO="${RATATOSK_REPO:-$WM_ROOT/ratatosk}"
 WILLOW_HOME="${WILLOW_HOME:-$WM_ROOT/.willow}"
 
-if [[ -f "$WILLOW_HOME/env" ]]; then
-  # shellcheck disable=SC1090
-  source "$WILLOW_HOME/env"
-fi
+load_operator_env() {
+  # Prefer fleet join (sources WILLOW_VAULT_BOX + charter paths). Fall back to
+  # vault env, then legacy $WILLOW_HOME/env.
+  if [[ -f "$WILLOW_HOME/fleet.env" ]]; then
+    # shellcheck disable=SC1090
+    source "$WILLOW_HOME/fleet.env"
+    return 0
+  fi
+  local vault="${WILLOW_VAULT_BOX:-$HOME/sean-data-vault/willow-operator-box}"
+  if [[ -f "$vault/env" ]]; then
+    set -a
+    # shellcheck disable=SC1090
+    source "$vault/env"
+    set +a
+  elif [[ -f "$WILLOW_HOME/env" ]]; then
+    set -a
+    # shellcheck disable=SC1090
+    source "$WILLOW_HOME/env"
+    set +a
+  fi
+}
+
+load_operator_env
 export WILLOW_HOME WILLOW_STORE_ROOT="${WILLOW_STORE_ROOT:-$WILLOW_HOME/store}"
 export WILLOW_APP_ID=willow
 export WILLOW_SEAT_DIR="$SEAT_DIR"
+export RATATOSK_REPO
 
 PY="${WMCP_REPO}/.venv/bin/python"
 if [[ ! -x "$PY" ]]; then
@@ -52,8 +73,53 @@ case "$cmd" in
     ;;
 
   probe)
+    echo "== env"
+    echo "WILLOW_HOME=$WILLOW_HOME"
+    echo "WILLOW_VAULT_BOX=${WILLOW_VAULT_BOX:-"(unset)"}"
+    echo "WILLOW_CHARTER_REPO=${WILLOW_CHARTER_REPO:-"(unset)"}"
+    echo
     echo "== diagnostic_summary"
     wtool diagnostic_summary '{"app_id":"willow"}' | "$PY" -m json.tool 2>/dev/null | head -40 || wtool diagnostic_summary '{"app_id":"willow"}'
+    echo
+    echo "== ratatosk (session runtime)"
+    "$PY" - "$RATATOSK_REPO" <<'PYPROBE'
+import os
+import sys
+from pathlib import Path
+
+repo = Path(sys.argv[1])
+channel = os.environ.get("RATATOSK_GROVE_CHANNEL", "")
+print(f"RATATOSK_GROVE_CHANNEL={channel or '(unset)'}")
+print(f"RATATOSK_REPO={repo}")
+
+if repo.is_dir():
+    sys.path.insert(0, str(repo))
+
+try:
+    import ratatosk.grove as grove
+except ImportError:
+    print("package: not importable (pip install willow-ratatosk or set RATATOSK_REPO)")
+    sys.exit(0)
+
+try:
+    from importlib.metadata import version as pkg_version
+    print(f"package: willow-ratatosk {pkg_version('willow-ratatosk')}")
+except Exception:
+    print("package: import ok (version unknown)")
+
+receipt = grove.send("willow-seat probe")
+print(f"grove.send: ok={receipt.ok} skipped={receipt.skipped} detail={receipt.detail}")
+PYPROBE
+    echo
+    echo "== mcp serve ports (phone sign-in is NOT :8766 desk)"
+    for port in 8765 8767 8768; do
+      if curl -sf --max-time 1 "http://127.0.0.1:${port}/" >/dev/null 2>&1 \
+        || curl -sf --max-time 1 "http://127.0.0.1:${port}/health" >/dev/null 2>&1; then
+        echo "  :${port} reachable"
+      else
+        echo "  :${port} (no http listener)"
+      fi
+    done
     echo
     echo "== net-status"
     willow-mcp net-status 2>/dev/null || true
