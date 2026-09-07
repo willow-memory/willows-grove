@@ -107,6 +107,30 @@ try:
 except Exception:
     print("package: import ok (version unknown)")
 
+if not channel:
+    print("grove.send: not configured (RATATOSK_GROVE_CHANNEL unset)")
+    sys.exit(0)
+
+# grove.send needs a bound sender. crown.py binds one only under --mcp
+# (mcp_call starts as None), so calling send() in a bare probe process
+# reports "sender not configured" no matter how the box is configured —
+# a probe that cannot trigger what it tests. Bind the sender the same way
+# crown does, but only when explicitly asked: starting the stdio server
+# costs a willow-mcp process and up to 60s.
+if os.environ.get("SEAT_PROBE_GROVE_SEND") != "1":
+    print(f"grove.send: configured for #{channel}; sender unbound in this process")
+    print("           set SEAT_PROBE_GROVE_SEND=1 to bind MCP and prove a receipt")
+    sys.exit(0)
+
+try:
+    from ratatosk import mcp_client
+
+    mcp_client.start()
+    grove.set_grove_sender(grove.make_mcp_sender(mcp_client.call))
+except Exception as exc:
+    print(f"grove.send: could not bind MCP sender: {exc}")
+    sys.exit(0)
+
 receipt = grove.send("willow-seat probe")
 print(f"grove.send: ok={receipt.ok} skipped={receipt.skipped} detail={receipt.detail}")
 PYPROBE

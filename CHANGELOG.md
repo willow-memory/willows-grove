@@ -6,6 +6,17 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Changed
 
+- **Seat probe binds a Grove sender instead of asserting on an unbound one.**
+  `willow-seat.sh probe` called `ratatosk.grove.send()` in a bare process, but
+  `crown.py` binds the sender only under `--mcp`, so the check reported
+  `grove sender not configured` regardless of how the box was configured — it
+  could not trigger what it tested. The probe now separates channel-unset,
+  channel-set-but-sender-unbound, and a live receipted send; the live path is
+  opt-in behind `SEAT_PROBE_GROVE_SEND=1`, since binding costs a willow-mcp
+  stdio process. Verified with `RATATOSK_GROVE_CHANNEL=willow`:
+  `grove.send: ok=True detail=posted to willow`.
+  PR 44.
+
 - **Willow seat stack documented; probe gains Ratatosk + vault env.**
   Cherry-picks phone-seat production + tier-0 homecoming docs onto master;
   adds `docs/design/seat-stack.md` (Phone → Ratatosk → MCP/Grove → deposit).
