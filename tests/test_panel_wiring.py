@@ -151,13 +151,20 @@ class EnvelopesWiringTests(unittest.TestCase):
         self.addCleanup(self.tmp.cleanup)
         self.fake_home = Path(self.tmp.name) / "no-home"
         self.fake_home.mkdir()
+        self._no_fallback_dir = Path(self.tmp.name) / "no-fallback"
+        self._no_fallback_dir.mkdir()
+        self._fallback_patch = mock.patch.object(
+            er, "_IN_REPO_ENVELOPES", self._no_fallback_dir / "envelopes"
+        )
+        self._fallback_patch.start()
+        self.addCleanup(self._fallback_patch.stop)
 
     def _env(self, willow_home: Path):
-        return mock.patch.dict(
-            os.environ,
-            {"HOME": str(self.fake_home), "WILLOW_HOME": str(willow_home)},
-            clear=False,
-        )
+        env = dict(os.environ)
+        env["HOME"] = str(self.fake_home)
+        env["WILLOW_HOME"] = str(willow_home)
+        env.pop("WILLOW_CHARTER_REPO", None)
+        return mock.patch.dict(os.environ, env, clear=True)
 
     def test_envelopes_unreachable_when_no_dir(self) -> None:
         willow_home = Path(self.tmp.name) / "no_envelopes_dir"
