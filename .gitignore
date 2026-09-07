@@ -31,3 +31,17 @@ nestor/*.db
 nestor/*.db-shm
 nestor/*.db-wal
 nestor/*.ledger.jsonl
+
+# Live envelope register — the ratifications actually in force on THIS box.
+# `envelopes/pre-approved.json` is written by willow-mcp (envelope_propose /
+# envelope_ratify) as the seat works; it is machine state, not law. The law is
+# `syscall-table.json` (what verbs exist and their bounds signatures) and
+# `README.md` — those stay tracked.
+#
+# Same rule as the Nestor session store above: the blueprint travels, the live
+# store does not. Tracking it meant every clone inherited another machine's
+# active grants as if they were its own. `grove/envelope_reader.py` handles the
+# file's absence (logs once, returns no envelopes), so a fresh clone now fails
+# CLOSED with zero grants — which is the correct default for a register of
+# authority. LOCAL-ONLY.
+envelopes/pre-approved.json
