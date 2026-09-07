@@ -4,6 +4,23 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ## [Unreleased]
 
+### Removed
+
+- **`envelopes/pre-approved.json` is no longer tracked — the live register is
+  machine state, not law.** The file records which envelopes are in force on
+  *this* box, and willow-mcp rewrites it on every `envelope_propose` /
+  `envelope_ratify`. Tracking it had two costs. It drifted: 352 uncommitted
+  lines carrying 22 envelope ids had accumulated across several sessions
+  because no one owned committing a file the server was writing underneath
+  them. And it leaked authority: a fresh clone inherited this box's 48 active
+  grants as though root had ratified them there. `grove/envelope_reader.py`
+  already handles the file's absence (logs once, returns no envelopes), so an
+  untracked clone now fails CLOSED with zero grants. The law it sat beside —
+  `syscall-table.json`, `frank_head_anchor.json`, `review_queue.json`,
+  `README.md` — stays tracked. Same rule the Nestor session store follows: the
+  blueprint travels, the live store does not.
+  PR 45.
+
 ### Changed
 
 - **Seat probe binds a Grove sender instead of asserting on an unbound one.**
