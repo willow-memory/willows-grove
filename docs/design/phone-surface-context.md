@@ -359,28 +359,74 @@ thumb drive, which is the threat model the vault was already built for. What
 still needs deciding is which *plaintext* a project store legitimately holds, not
 whether the device is trustworthy.
 
-### Honest gap in this record
+### ~~Honest gap in this record~~ — FOUND 2026-09-07
 
-The operator recalls substantial earlier work on a mobile version of the vault,
-from sessions since compacted. **I searched and did not find a dedicated record
-of it** — no mobile-vault design doc, no phone-sync script, nothing in
-`sean-data-vault/docs/` or `libs/vault-paths`. `adb pull`/`adb push` appear
-nowhere in either tree.
+The operator was asked directly (the step this section recommended) and named
+four places: willow-data-vault, sean-data-vault, willow-mcp, "and I thought in
+the grove itself". It is in the second, here:
 
-So that thinking may exist only in a compacted transcript. This section is
-written from the operator's statement tonight plus what the vault's own README
-and LOCAL-ONLY.md already establish — not from the earlier design, which should
-be recovered before anyone builds the sync half.
+```
+~/sean-data-vault/made-by-willow/2026-09-01-cowork-personal-box/pangolin/
+  THE_PATH.md                       rehearsal → a sealed seat on your phone, 10 steps
+  REMOTE_SEAT_OVER_PANGOLIN.md      what may cross the tunnel
+  A_PERSONAL_JARVIS_FOR_EVERYBODY.md  the consumer reframe
+  JARVIS_IN_THE_APP.md              two membranes and a seat
+  WHERE_KART_GOES.md                mount policy on a consumer install
+  nestor-remote-seat.db (+ ledger)  194 drafts, 0 sealed
+```
 
-**Re-searched 2026-09-03, still not found.** Widened the search past
-`sean-data-vault`: every repo's full `git log --all` (not just `master`) for
-`mobile.vault`, `phone.*sync`, `adb.*pull`, `adb.*push`; the willow-mcp
-knowledge base (`knowledge_search`) for "mobile vault design phone"; and
-`$WILLOW_HOME` for any file mentioning it. Zero hits across all three. If the
-earlier design exists, it is not reachable from any grep-able record this
-seat can see — worth asking the operator directly whether it lived in a
-session that was compacted *and* never wrote a KB atom, versus a
-different, unindexed location.
+Dated 2026-09-01/02 — **two days before this document's own re-search failed to
+find it.** Why three searches missed it, because the method matters more than
+the find:
+
+- `~/sean-data-vault` is **outside `~/github`**. Tree-wide sweeps scoped to the
+  code root never reached it.
+- The search looked in `sean-data-vault/docs/` and `libs/vault-paths`. This is
+  under `made-by-willow/`, a directory neither name suggests.
+- It searched `git log --all` for `mobile.vault`, `phone.*sync`, `adb.*pull`.
+  Those match **commit messages**. This material may not be committed at all;
+  the folder is `0700`.
+
+So it was never compacted away. It was filed where the search was not pointed,
+which has a different fix: **a record's findability is a property of where it
+is put, not of how hard the next reader looks.**
+
+**What the store holds.** 194 drafts, every one `draft`, no verifier — the
+propose-only shape, unsealed. Origins, which are the five sittings:
+
+| origin | drafts |
+| --- | ---: |
+| `cowork pangolin review 2026-09-01` | 165 |
+| `cowork consumer reframe 2026-09-01` | 10 |
+| `cowork jarvis review 2026-09-01` | 8 |
+| `cowork kart review 2026-09-01` | 7 |
+| `cowork homestead review 2026-09-01` | 4 |
+
+They answer this document's own open questions rather than restating them —
+*"Should Pangolin front the willow-mcp OAuth serve endpoint or the grove-serve
+page?"* → **only `/mcp`; grove-serve is sealed loopback-only (D4)**, which is
+§12's tier table arrived at independently, a day earlier. The 165 are per-tool
+exposure verdicts (`commitment_list? GREEN — class=read; in full_access`).
+
+Its ledger is **five chained `bundle_import` entries**, one per sitting. That
+store is the *receiving* end of five bundle imports, performed 2026-09-01 —
+before `forge-play/Forge`'s `the-store-pull.md` was written on 2026-09-03. The
+pull's motion was rehearsed by hand before it was designed.
+
+**The sync half is still genuinely absent, and this find does not close it.**
+Searched across all five documents for `adb`, thumb-drive and vault-sync: two
+hits, both incidental — the phone app as the calendar source, and a note that
+*"the phone's first sync will therefore be silent about everything."* No
+`adb push`/`pull`, no mobile-vault design, no sync script. §12's closing item
+stands: the APK suite has a build stage and an admit stage and no sync stage.
+
+**One directive recovered with it**, from `A_PERSONAL_JARVIS_FOR_EVERYBODY.md`,
+the operator 2026-09-01: *"Willows Grove is the base app; installing it gives
+you the MCP server and the tools that come with it. Pieces that aren't
+immediately dependent — Jeles, Kartikeya — are optional add-ons a person
+downloads from inside the app."* That is a third shape beside "baked-in panel"
+and "standalone app", and it is the one the store's own gated apps should be
+measured against.
 
 ## 13. The audit trail truncates before the object does
 
@@ -472,7 +518,18 @@ label produces a well-proportioned unreadable label.
   installed" is true of the host and false of every sandboxed build.
 - `willow-v08-toolchain-path.drawio` needs a REVISIONS line for §7.
 - ~~Offload vs. loopback~~ — answered by §12: neither. The phone plugs in.
-- Recover the earlier mobile-vault design before building the sync half (§12).
+- ~~Recover the earlier mobile-vault design before building the sync half
+  (§12).~~ — the seat work is found (§12, "FOUND 2026-09-07"):
+  `~/sean-data-vault/made-by-willow/2026-09-01-cowork-personal-box/pangolin/`,
+  five documents and a 194-draft store. **But it is not the sync design.**
+  Searched for `adb push`/`pull`, thumb-drive and vault-sync across all five:
+  two incidental hits, no design. The sync half appears never to have been
+  written, rather than written and lost — so it is a thing to design, not a
+  thing to recover.
+- The 194 drafts are unsealed and outside any repository, on one disk, in a
+  `0700` folder. They answered questions this document was still asking. Decide
+  whether they are cut into a bundle and brought somewhere durable, or left
+  where they are and cited by path.
 - Which plaintext a project store may hold on a device that leaves the house.
 - The APK suite has a build stage and an admit stage and no sync stage yet.
 - Every list surface in Grove needs a 28-character legibility pass (§13), not
