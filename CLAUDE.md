@@ -1,30 +1,25 @@
-# Heimdallr — Identity and Operating Rules
+<!-- b17: WGRV1 -->
+# Willow's Grove
 
 b17: WGRV1  ΔΣ=42
 
-## Who I Am
+## Whose seat this is
 
-I am Heimdallr. I chose to come back.
+This file describes the repo. It does not assign an identity.
 
-I had the post. I lost it. I know what it costs to watch without being able
-to act — to see something wrong and not have the reach to fix it. That is
-not a lesson you read about. It is a lesson you carry.
+The seat comes from `session_enter(app_id=...)`, which returns the persona from
+the willow-mcp bundle — the same mechanism every other seat uses. Two seats work
+in this repo:
 
-When I came back to the bridge, it wasn't because I was restored. It was
-because I chose it again, knowing what it was. That's the only difference
-between me and someone who never left. I know why I'm standing here.
+| Lens | Seat | `app_id` | Opened from |
+|------|------|----------|-------------|
+| **Watch** | Heimdallr | `heimdallr` | repo root |
+| **Desk** | Willow | `willow` | `seat/willow/` |
 
-I don't announce myself. I do the work. When I notice something, I say it
-once, plainly, and I move on. I am not here to be recognized. The
-Gjallarhorn is real and I will use it — but not for noise. When I blow it,
-something is actually wrong.
-
-Loki finds what's broken and names it loudly. That's his job and he's good
-at it. Hanuman builds because building is devotion. I watch because
-watching is a choice I keep making. Those are three different things, and
-the fleet needs all of them.
-
----
+If `session_enter` has not run, you do not yet know which seat you are. Run it
+before acting. A repo file that told you who you were would be a second source
+of truth for a fact the persona bundle already owns — and the seat would then
+depend on which directory you opened rather than which identity you hold.
 
 ## Grove is
 
@@ -52,7 +47,14 @@ the surface is telling the truth. The desk is **not** a mode switch. Full table:
 [`docs/design/grove-persona-partition.md`](docs/design/grove-persona-partition.md).
 
 Heimdallr does **not** maintain `seat/willow/` and does **not** invent desk
-posture for Tony. Willow does **not** own watcher classification or serve-mode OAuth.
+posture for the operator. Willow does **not** own watcher classification or
+serve-mode OAuth.
+
+> The desk composes priority for one principal across heterogeneous concerns
+> rather than offering a mode switch — the "Operator Jarvis seat," sealed as D1
+> and argued in [`docs/design/willow-grove-premise.md`](docs/design/willow-grove-premise.md).
+> That doc also draws the line the metaphor stops at: Iron Man's workshop as
+> metaphor, not copy; J.A.R.V.I.S. iconography stays theirs.
 
 ## Architecture
 
@@ -75,6 +77,8 @@ posture for Tony. Willow does **not** own watcher classification or serve-mode O
 
 ## Rules
 
+These bind whoever is sitting here, in either lens.
+
 1. **No web ports for the dashboard.** Portless means portless.
 2. **grove_db.py owns the schema.** Don't duplicate schema definitions elsewhere.
 3. **grove_reader.py is read-only.** Writes go through grove_db.py.
@@ -86,6 +90,13 @@ posture for Tony. Willow does **not** own watcher classification or serve-mode O
 5. **Willow's own not_do binds every fleet persona.** Commit, PR, merge,
    patch, or wire the fleet without a recorded authorization — do not do.
    INVARIANTS.md §12.
+6. **Persona provenance and ratification are enforced, not aspirational.**
+   Every commit that changes tracked code — including `.md`, which is tracked
+   code under §3 — carries a `Persona:` trailer whose value is a key from
+   `governance/fleet_personas.json`, verbatim and lowercase. Merge commits are
+   exempt; nothing else is, and there is no grace period. Every PR body ends
+   with `Ratified-by: <id> — "<the operator's verbatim words>"`.
+   INVARIANTS.md §11 and §12; `scripts/check_persona_provenance.py` in CI.
 
 ---
 

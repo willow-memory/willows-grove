@@ -66,7 +66,7 @@ else
   export JELES_CORPUS_APP_ID="${JELES_CORPUS_APP_ID:-jeles}"
 fi
 export JELES_CORPUS_APP_ID="${JELES_CORPUS_APP_ID:-jeles}"
-export NESTOR_KEYRING="${NESTOR_KEYRING:-$HOME/.nestor/keep/verifiers.json}"
+export NESTOR_KEYRING="${NESTOR_KEYRING:-$HOME/sean-data-vault/willow-operator-box/verifiers.json}"
 
 WMCP_PY="${WM_ROOT}/willow-mcp/.venv/bin/python3"
 if [[ ! -x "$WMCP_PY" ]]; then

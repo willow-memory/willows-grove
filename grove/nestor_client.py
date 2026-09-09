@@ -64,10 +64,11 @@ def _default_store_path() -> Optional[Path]:
 
     1. ``$NESTOR_DB`` / ``$NESTOR_HOME`` — Nestor's own pins.
     2. ``$NESTOR_STORE`` / ``$NESTOR_STORE_PATH`` — legacy env override.
-    2. ``~/.nestor/keep/nestor.db`` — household canonical store when present.
-    3. ``$WILLOW_HOME/nestor`` — per-node Grove-adjacent store.
-    3. ``~/.willow/nestor`` — local user overlay under the Willow prefix.
-    4. ``~/.nestor`` — the operator's household Nestor store (the actual
+    2. ``$WILLOW_VAULT_BOX/nestor.db`` — vault-box canonical store when present.
+    3. ``~/.nestor/keep/nestor.db`` — legacy household canonical store.
+    4. ``$WILLOW_HOME/nestor`` — per-node Grove-adjacent store.
+    5. ``~/.willow/nestor`` — local user overlay under the Willow prefix.
+    6. ``~/.nestor`` — the operator's household Nestor store (the actual
        location on our operator's box; without this probe Grove falls
        through to Nestor's own CLI default of ``./data/nestor.db``, which
        drops a scratch DB into the repo cwd on every run).
@@ -77,6 +78,11 @@ def _default_store_path() -> Optional[Path]:
         val = os.environ.get(name)
         if val:
             return Path(val).expanduser()
+    vault_box = os.environ.get("WILLOW_VAULT_BOX")
+    if vault_box:
+        vault_db = Path(vault_box).expanduser() / "nestor.db"
+        if vault_db.is_file():
+            return vault_db
     household_db = Path.home() / ".nestor" / "keep" / "nestor.db"
     if household_db.is_file():
         return household_db
