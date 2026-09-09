@@ -1,0 +1,27 @@
+{
+  "app_id": "heimdallr",
+  "human_only": false,
+  "role": "gatekeeper",
+  "permissions": [
+    "dispatch_read",
+    "dispatch_write",
+    "fleet_read",
+    "knowledge_read",
+    "store_read",
+    "store_write",
+    "context"
+  ],
+  "deny_tools": [
+    "tool_oracle_seal",
+    "task_submit",
+    "knowledge_ingest",
+    "kb_promote",
+    "kb_journal",
+    "envelope_ratify",
+    "human_attestation_create"
+  ],
+  "store_scope": [
+    "heimdallr_*",
+    "grove-dashboard"
+  ]
+}

@@ -4,6 +4,22 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ## [Unreleased]
 
+### Added
+
+- **heimdallr joins the materialized manifest set, and its README stops naming
+  the retired home.** The set is compiled from willow-mcp's `specialists.json`,
+  which gained a heimdallr row in willow-mcp#443 — so the tracked copy held
+  seven of eight seats. The manifest here is byte-identical to the live
+  `$WILLOW_HOME/mcp_apps/heimdallr/manifest.json`, which has carried an operator
+  signature since 2026-08-27; copying rather than compiling means installing it
+  cannot invalidate that signature. Note the live manifest says
+  `role: gatekeeper` where the bundle row says `watchman` — the two are
+  reconciled toward the signed file in a companion willow-mcp change, not here.
+  Every command in the README pointed at `~/github/willow-memory/.willow` and
+  its venv: the pre-migration home, moved to the vault archive this session, so
+  a reader following it would have compiled against a tree that no longer holds
+  the fleet.
+
 ### Removed
 
 - **`envelopes/pre-approved.json` is no longer tracked — the live register is

@@ -6,13 +6,13 @@ Install into the fleet home:
 
 ```bash
 cd ~/github/willow-memory/willows-grove
-WILLOW_HOME=~/github/willow-memory/.willow ./governance/scripts/install-materialized-mcp-apps.sh
+WILLOW_HOME=~/sean-data-vault/willow-operator-box ./governance/scripts/install-materialized-mcp-apps.sh
 ```
 
 If `compile-agents --force` fails with **Permission denied** on `mcp_apps/*/manifest.json`, the tree is owned by `willow-operator`. Either:
 
 ```bash
-sudo chown -R "$USER":willow-operator ~/github/willow-memory/.willow/mcp_apps
+sudo chown -R "$USER":willow-operator ~/sean-data-vault/willow-operator-box/mcp_apps
 ```
 
 then compile, **or** use the install script above (pre-built manifests). After adding `willow-operator`, try **`newgrp willow-operator`** or a **fresh login** before group write works without chown.
@@ -20,11 +20,11 @@ then compile, **or** use the install script above (pre-built manifests). After a
 To compile from bundle (once writable):
 
 ```bash
-WILLOW_HOME=~/github/willow-memory/.willow ~/github/willow-memory/.willow/venvs/willow-mcp/bin/willow-mcp compile-agents --force \
+WILLOW_HOME=~/sean-data-vault/willow-operator-box ~/sean-data-vault/willow-operator-box/venvs/willow-mcp/bin/willow-mcp compile-agents --force \
   --registry ~/github/willow-memory/willow-mcp/src/willow_mcp/bundle/config/specialists.json
 ```
 
-Then **reload Cursor MCP** (or restart the IDE). Jarvis seat `.cursor/mcp.json` already sets `WILLOW_HOME` to `~/github/willow-memory/.willow`.
+Then **reload Cursor MCP** (or restart the IDE). The seat's `.cursor/mcp.json` already sets `WILLOW_HOME` to `~/sean-data-vault/willow-operator-box`.
 
 **Willow manifest** here adds `schema_admin` + `task_queue` for G3 schema confirm + Kart witness (operator seat).
 
