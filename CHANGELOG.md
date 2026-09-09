@@ -205,13 +205,16 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
   operator's origin-bound browser key.** Grove MCP serve mode is 8767; the
   toggle script had kept 8765 as its default while the module and the launcher
   moved on, so running it would have written a systemd unit that either fought
-  the Nestor UI for that port or, worse, answered on it. The unit template also
-  never carried a DSN, so a unit started by the toggle came up unable to reach
-  Postgres and reported it as an ordinary empty read rather than as
-  unreachable, which the three-state contract (§1) forbids; it now gets
-  `Environment=WILLOW_DB_URL`. `tests/test_port_map.py` grew three assertions
-  that read the toggle script itself, because the existing coverage read the
-  module and the launcher — every file except the one that drifted. PR 50.
+  the Nestor UI for that port or, worse, answered on it.
+  `tests/test_port_map.py` grew three assertions that read the toggle script
+  itself, because the existing coverage read the module and the launcher —
+  every file except the one that drifted. Separately, and on a different unit:
+  `deploy/grove-serve.service.template` — the *served page* on 8766, which the
+  toggle does not install and which is filled in by hand per its own header —
+  gained `Environment=WILLOW_DB_URL=@DB_URL@` and the matching `sed` line in
+  that header, so a hand-installed served page starts with a DSN instead of
+  finding Postgres missing at first read. The toggle installs
+  `grove-mcp-serve.service.template`, and only that one. PR 50.
 
 - `run_test_dir_or_fail.sh` resolved the repo venv python instead of bare
   `python3` (no pytest on fleet boxes). Persona roster tests now clear host
