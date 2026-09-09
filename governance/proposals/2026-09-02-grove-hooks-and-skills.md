@@ -104,7 +104,7 @@ domain `port` → `owner` and awaiting seal:
 | 8765 | Nestor UI, keep store, keyring | the operator's browser verifier key is origin-bound here; signing outranks serve |
 | 8766 | Grove desk page | loopback only, sealed D4, never tunnelled |
 | 8767 | Grove MCP `--serve` | tunnelled as its own resource |
-| 8768 | willow-mcp `--serve` | moved off 8765 for the above; KB 2026B306 tier 2 says Pangolin terminates at 8765, so the remote seat is re-ratified against this row or serve returns when the key's origin is fixed (gap `d8b0bea7e205`) |
+| 8768 | willow-mcp `--serve` | moved off 8765 for the above. **Settled 2026-09-09**, operator: *"serve is on 8768, update the map."* The remote seat is re-ratified against this row; KB 2026B306's "terminates at 8765" is superseded and serve does not return when gap `d8b0bea7e205` is fixed — that stays a Nestor UI problem. 8765 remains the code default (`server.py:489`); this row is the operator bind, set by the systemd drop-in `port-8768.conf` |
 | 11434 | Ollama | loopback, the local runtime |
 | 18789 | OpenClaw gateway | not fleet; recorded so the check does not report it as unsealed |
 

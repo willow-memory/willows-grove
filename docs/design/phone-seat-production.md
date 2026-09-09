@@ -27,17 +27,21 @@ Two older sentences disagreed:
   that port was `willow-mcp --serve`.
 - Operator 2026-09-02: signing outranks serve. **8765** is Nestor UI / keep
   store / origin-bound verifier key. **`willow-mcp --serve` is 8768** on this
-  box (`WILLOW_MCP_PORT` or `--port 8768`). The package default in source is
-  still **8765** until that is re-ratified in code.
+  box (`WILLOW_MCP_PORT` or `--port 8768`; set by the systemd drop-in
+  `willow-mcp-serve.service.d/port-8768.conf`, which overrides the unit's own
+  `--port 8765`). The package default in source is still **8765**
+  (`server.py:489`) and that is correct for a fresh deployment elsewhere — the
+  operator table governs this box, not the product.
 
 **Resolution for the phone seat:** sign in to `willow-mcp --serve`, never to
 the Grove desk, never to Nestor UI by mistake.
 
 - Local default on this box: `http://127.0.0.1:8768`
 - Remote: Pangolin fronts **that same --serve process** (8768 on the box),
-  not 8765. Re-ratify the 2026B306 “terminates at 8765” sentence against this
-  table, or move `--serve` back to 8765 only after the origin-bound key on
-  8765 is fixed. Until then the phone’s ratified URL is 8768.
+  not 8765. ~~Re-ratify the 2026B306 “terminates at 8765” sentence against this
+  table~~ — **done 2026-09-09**, operator: *“serve is on 8768, update the map.”*
+  2026B306's port is superseded; tier 2 terminates at **8768**. The phone's
+  ratified URL is 8768, no longer provisionally.
 - **8766** stays loopback (D4). This app refuses a serve URL whose port is
   8766.
 - **8767** is Grove MCP (`grove/mcp_local.py --serve`) — OAuth, not the phone
