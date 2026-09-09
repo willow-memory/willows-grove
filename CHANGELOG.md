@@ -6,6 +6,19 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Added
 
+- **The Desk seat is wired, not only described.** `CLAUDE.md` (PR 46) named
+  `seat/willow/` as where the Willow seat opens while nothing implemented it:
+  the repo's only willow-mcp wiring was `.cursor/mcp.json`, and it declared
+  `heimdallr`. Opening the grove in Claude Code got you no seat at all. Adds
+  `seat/willow/mcp.template.json` and `seat/willow/.claude/settings.json`, and
+  documents the arrangement in the seat README. Verified rather than assumed:
+  the project root is the launch directory, so a config in a subdirectory is
+  what loads — and the PreToolUse hook, which reads
+  `$CLAUDE_PROJECT_DIR/.mcp.json`, correctly lifts git routing for this seat
+  while still warning on `ls`. The live `.mcp.json` stays untracked by design;
+  `**/.mcp.json` is ignored on an operator box because it carries absolute
+  paths and a seat identity.
+
 - **heimdallr joins the materialized manifest set, and its README stops naming
   the retired home.** The set is compiled from willow-mcp's `specialists.json`,
   which gained a heimdallr row in willow-mcp#443 — so the tracked copy held
