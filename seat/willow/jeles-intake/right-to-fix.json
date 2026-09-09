@@ -1,0 +1,65 @@
+{
+  "domain": "vintage-mechanical-restoration",
+  "classification": "novel",
+  "description": "Right to fix / loss of mechanical knowledge — essay-derived pairs. Thesis novel/asserted; Honda Cub used as illustrative corpus-vs-material knowledge example, not a measured failure rate.",
+  "pairs": [
+    {
+      "source_text": "What is the core question of Right to Fix and the Loss of Mechanical Knowledge?",
+      "target_text": "What is lost when ordinary people can no longer inspect, disassemble, reassemble, and verify the machines and intelligent systems they depend on — and when AI fluent explanation is mistaken for the same thing as material understanding?",
+      "reason": "README core question",
+      "sources": [
+        "DispatchesFromReality/research/vintage-mechanical-restoration/README.md",
+        "DispatchesFromReality/research/vintage-mechanical-restoration/DRAFT.md"
+      ]
+    },
+    {
+      "source_text": "What learning loop does the right-to-fix essay treat as the spine of repair literacy?",
+      "target_text": "Take the system apart far enough to see components and dependencies; observe fit, sequence, wear, and failure; reassemble into a working whole; build a mental model for diagnosis; consult external documentation only where the object cannot safely teach the rest (torque, clearance, model-year procedure).",
+      "reason": "DRAFT 'The loop'",
+      "sources": [
+        "DispatchesFromReality/research/vintage-mechanical-restoration/DRAFT.md"
+      ]
+    },
+    {
+      "source_text": "Why does the essay open with a Honda Cub chatbot example?",
+      "target_text": "The Cub is one of the most-documented vehicles in history, so a chatbot will likely get the general ignition architecture right and still get a model-year specific wrong — and in repair one wrong thing is not trivia. It separates corpus knowledge from material/variant knowledge.",
+      "reason": "DRAFT opening; illustrative, not a measured error rate",
+      "sources": [
+        "DispatchesFromReality/research/vintage-mechanical-restoration/DRAFT.md"
+      ]
+    },
+    {
+      "source_text": "What shifts does the essay say eroded conditions for learning by disassembly?",
+      "target_text": "Sealed modules and proprietary fasteners; lost or paywalled manuals; dealer-only diagnostics and software pairing; disposable design; cultural devaluation of repair labor; platform/subscription dependence that makes ownership conditional.",
+      "reason": "README 'What changed' table",
+      "sources": [
+        "DispatchesFromReality/research/vintage-mechanical-restoration/README.md"
+      ]
+    },
+    {
+      "source_text": "How does the essay widen right-to-repair beyond consumer slogans?",
+      "target_text": "As a learning and labor issue: parts, manuals, tools, software access, modifiability, disassembly as teaching, and skilled labor that can still transmit the method. Understanding and repair are one loop.",
+      "reason": "README Right to fix section",
+      "sources": [
+        "DispatchesFromReality/research/vintage-mechanical-restoration/README.md"
+      ]
+    },
+    {
+      "source_text": "How does the essay connect right-to-fix to local-first AI?",
+      "target_text": "AI enclosure can hide the same loss of inspectability: fluent answers without open weights, local tools, or verifiable chains. Local-first stacks are framed as preserving the disassembly loop for intelligent systems — not as nostalgia for old machines.",
+      "reason": "README AI enclosure + portfolio link to sovereign AI",
+      "sources": [
+        "DispatchesFromReality/research/vintage-mechanical-restoration/README.md",
+        "DispatchesFromReality/research/sociotechnical-ai-sovereignty/README.md"
+      ]
+    },
+    {
+      "source_text": "What are the claim boundaries for the right-to-fix research packet?",
+      "target_text": "Design/essay research on repair literacy and inspectability. Not a claim that old machines were simply better, not a rollback program, not a peer-reviewed labor-economics result. Honda Cub example is illustrative. Policy right-to-repair statutes exist in multiple jurisdictions — cite specific bills/laws when making legal claims; this packet is about epistemology and autonomy.",
+      "reason": "README claim boundaries + DRAFT 'not nostalgia'",
+      "sources": [
+        "DispatchesFromReality/research/vintage-mechanical-restoration/README.md"
+      ]
+    }
+  ]
+}

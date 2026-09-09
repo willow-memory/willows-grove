@@ -1,0 +1,48 @@
+{
+  "domain": "tabletop-mechanical-engines",
+  "classification": "novel",
+  "description": "Tabletop mechanical engines / Gateway Momentum Engine — design-research pairs. Proprietary means in-house design, not registered commercial product unless separately documented.",
+  "pairs": [
+    {
+      "source_text": "What is the core question of the tabletop mechanical engines research?",
+      "target_text": "How do you design a rule system that produces strategy, agency, and story without collapsing into arbitrariness (anything can happen, so nothing matters) or rigidity (the outcome is decided before the dice fall)?",
+      "reason": "README core question",
+      "sources": [
+        "DispatchesFromReality/research/tabletop-mechanical-engines/README.md"
+      ]
+    },
+    {
+      "source_text": "What does the tabletop packet claim a good rule system must do?",
+      "target_text": "Make outcomes uncertain enough that decisions carry risk; structured enough that decisions carry meaning; keep probability legible enough for real strategy; let consequences chain so narrative emerges from mechanics. Same instinct as good software constraint design.",
+      "reason": "README thesis",
+      "sources": [
+        "DispatchesFromReality/research/tabletop-mechanical-engines/README.md"
+      ]
+    },
+    {
+      "source_text": "What is the Gateway Momentum Engine in this research?",
+      "target_text": "CLAIM BOUNDARY: An original in-house tabletop mechanics framework built around momentum and gateway states for strategic narrative generation. Design research / mechanics prototyping — not a published commercial game line unless separately documented.",
+      "reason": "README work represented + claim boundaries",
+      "sources": [
+        "DispatchesFromReality/research/tabletop-mechanical-engines/README.md"
+      ]
+    },
+    {
+      "source_text": "How does the essay parallel tabletop design with Willow/software systems?",
+      "target_text": "Probability legibility ↔ observability; degenerate-strategy testing ↔ adversarial/edge gates; constraint design ↔ API/schema/sandboxes; emergent narrative ↔ emergent composed behavior; balance ↔ performance/fairness under load; named rules as objects ↔ named tools/policies/contracts.",
+      "reason": "README 'Why this belongs beside the software research'",
+      "sources": [
+        "DispatchesFromReality/research/tabletop-mechanical-engines/README.md",
+        "DispatchesFromReality/professional/willow-systems-portfolio.md"
+      ]
+    },
+    {
+      "source_text": "What are the claim boundaries for tabletop mechanical engines research?",
+      "target_text": "Safe: tabletop as probability-aware rule engines; Gateway Momentum Engine as original design work; custom 5e / faction work as structural world-building; systems instinct transfers to software. Frame carefully: design research not published statistical balancing; 'proprietary' means in-house not commercial registration; playtest evidence is enthusiast-scale.",
+      "reason": "README What this research claims",
+      "sources": [
+        "DispatchesFromReality/research/tabletop-mechanical-engines/README.md"
+      ]
+    }
+  ]
+}

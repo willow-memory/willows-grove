@@ -1,0 +1,89 @@
+{
+  "domain": "childrens-software-interruption",
+  "classification": "novel",
+  "description": "Nobody Counts the Ad Breaks — essay pairs AFTER public-source research pass 2026-09-02. Regulatory/audit facts marked checked; thesis/mechanism pairs remain novel/asserted until sealed.",
+  "pairs": [
+    {
+      "source_text": "What is the core gap argued in Nobody Counts the Ad Breaks?",
+      "target_text": "Almost everything about how children's games manipulate has been documented, litigated, or measured — except the one number a parent needs at the moment of decision: how often *this* app stops the child during ordinary play. Regulatory, audit, census, and advocacy records exist; none resolve to one app, one child, one afternoon.",
+      "reason": "README thesis + DRAFT opening; novel essay claim",
+      "sources": [
+        "DispatchesFromReality/research/childrens-software-interruption/README.md",
+        "DispatchesFromReality/research/childrens-software-interruption/DRAFT.md"
+      ]
+    },
+    {
+      "source_text": "What does Nobody Counts the Ad Breaks say engagement telemetry gets wrong?",
+      "target_text": "Time-on-app and interaction count treat frustration and delight as the same shape. The proxy is not merely imprecise — it is inverted: a worse interruption-heavy experience can produce a better engagement number. Same failure mode as assessment proxies (worksheet for understanding).",
+      "reason": "DRAFT 'The session looked great'; novel thesis",
+      "sources": [
+        "DispatchesFromReality/research/childrens-software-interruption/DRAFT.md"
+      ]
+    },
+    {
+      "source_text": "What was the Epic Games FTC settlement amount and split in December 2022?",
+      "target_text": "RESEARCH-CHECKED: FTC announced Dec 19, 2022 settlements totaling $520 million — $275 million civil penalty for COPPA Rule violations (largest FTC rule penalty then claimed) and $245 million consumer redress for dark-pattern / unwanted-charge billing practices. Primary: ftc.gov press release.",
+      "reason": "Draft claim corroborated 2026-09-02 via FTC primary press + secondary",
+      "sources": [
+        "https://www.ftc.gov/news-events/news/press-releases/2022/12/fortnite-video-game-maker-epic-games-pay-more-half-billion-dollars-over-ftc-allegations",
+        "DispatchesFromReality/research/childrens-software-interruption/DRAFT.md"
+      ]
+    },
+    {
+      "source_text": "What was the Cognosphere / Genshin Impact FTC outcome in January 2025?",
+      "target_text": "RESEARCH-CHECKED: FTC announced ~Jan 17–18 2025 that Cognosphere (HoYoverse / Genshin Impact) agreed to pay $20 million and face order terms including blocking under-16 loot-box purchases without parental consent, addressing COPPA and deceptive loot-box cost/odds practices. Primary: ftc.gov case page and press release.",
+      "reason": "Draft claim corroborated 2026-09-02 via FTC primary",
+      "sources": [
+        "https://www.ftc.gov/news-events/news/press-releases/2025/01/genshin-impact-game-developer-will-be-banned-selling-lootboxes-teens-under-16-without-parental",
+        "https://www.ftc.gov/legal-library/browse/cases-proceedings/222-3152-cognosphere-llc-us-v",
+        "DispatchesFromReality/research/childrens-software-interruption/DRAFT.md"
+      ]
+    },
+    {
+      "source_text": "What did Xiao and Park find about South Korean loot-box probability disclosure compliance?",
+      "target_text": "RESEARCH-CHECKED: Acta Psychologica 2025 content analysis of the 100 highest-grossing South Korean iPhone games: 90 contained paid loot boxes; of those, 84.4% disclosed probabilities under the law mandatory from March 2024 — better than cited self-regulation comparators, still not 100%, and accessibility/prominence often poor. DOI 10.1016/j.actpsy.2025.105490.",
+      "reason": "Draft figures corroborated 2026-09-02 via DOI abstract + techxplore secondary",
+      "sources": [
+        "https://doi.org/10.1016/j.actpsy.2025.105490",
+        "https://techxplore.com/news/2025-09-south-korea-loot-law-strong.html",
+        "DispatchesFromReality/research/childrens-software-interruption/DRAFT.md"
+      ]
+    },
+    {
+      "source_text": "What free machine-readable per-app sources does Nobody Counts the Ad Breaks name, and what is the F-Droid Ads caveat?",
+      "target_text": "F-Droid AntiFeatures (including Ads and Tracking) and Exodus Privacy tracker reports. RESEARCH-CHECKED: F-Droid docs apply Ads to apps containing advertising and note most ad-serving apps use proprietary ad SDKs and therefore never enter the FOSS repo — so absence of Ads inside F-Droid is not a clean bill for the commercial Play population.",
+      "reason": "Draft claim + F-Droid primary docs corroborated 2026-09-02",
+      "sources": [
+        "https://f-droid.org/docs/Anti-Features/",
+        "https://f-droid.org/docs/Build_Metadata_Reference/",
+        "DispatchesFromReality/research/childrens-software-interruption/DRAFT.md"
+      ]
+    },
+    {
+      "source_text": "What interruption fact does Nobody Counts the Ad Breaks propose recording?",
+      "target_text": "How many times, in ten minutes of ordinary play, the application stops the child to show something they did not ask for — counting interruptions (paywall, rate-us, daily reward, video ad) not ads alone; with dismissal mode (immediate / after_delay / unskippable / deceptive_close), observed version+date, and who observed. Provenance states: assumed / fitted / measured. No composite score.",
+      "reason": "README mechanism table; novel proposal",
+      "sources": [
+        "DispatchesFromReality/research/childrens-software-interruption/README.md",
+        "DispatchesFromReality/research/childrens-software-interruption/DRAFT.md"
+      ]
+    },
+    {
+      "source_text": "What is the Playgate artifact claimed in Nobody Counts the Ad Breaks?",
+      "target_text": "CLAIM BOUNDARY: Essay states apps/playgate in safe-app-store is merged, in CI, with 118 assertions including eleven mutations. Treat as operator-asserted until a dated CI/commit receipt is attached in the data room — do not auto-seal engineering metrics from the essay alone.",
+      "reason": "README artifact section; firewall engineering claims",
+      "sources": [
+        "DispatchesFromReality/research/childrens-software-interruption/README.md"
+      ]
+    },
+    {
+      "source_text": "What are the claim boundaries for Nobody Counts the Ad Breaks?",
+      "target_text": "Safe to claim: maps an extensive public record and names a missing per-title interruption measurement; proposes a provenance-stated field. Not a screen-time moralism, not a claim that games are bad, not a new statute proposal. Regulatory dollar figures and audit percentages must cite primary sources (FTC, DOI). Commercial ad-load vendors (Sensor Tower etc.) are named as existence of paid measurement, not as endorsed data partners.",
+      "reason": "DRAFT 'What this paper is not' + research pass discipline",
+      "sources": [
+        "DispatchesFromReality/research/childrens-software-interruption/DRAFT.md",
+        "DispatchesFromReality/research/childrens-software-interruption/README.md"
+      ]
+    }
+  ]
+}

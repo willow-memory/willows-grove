@@ -77,6 +77,9 @@ os.replace(tmp, lease_path)
 
 for path in (settings_path, lease_path):
     os.chown(path, op.pw_uid, op.pw_gid)
+    # Seat process (operator uid) must READ consent + lease; only write stays
+    # with willow-operator. Mode 600 after chown made federation look "denied".
+    os.chmod(path, 0o644)
 
 print("consent.federation = true")
 print(f"lease expires_at = {record['expires_at']}")

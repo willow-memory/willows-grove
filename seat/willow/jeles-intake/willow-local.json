@@ -61,6 +61,21 @@
       "source_text": "How does the phone app capability composition model work?",
       "target_text": "Opt-in if/then chain: if Nestor is installed connect it to willow-mcp and Grove; if Jeles is installed wire corpus; if Hornbook is installed wire its organ — each install discloses both what becomes possible and what becomes reachable (not marketing-only). Same mechanism as Kart kart-sandbox.json bind_try: declare per-capability what opens, fail closed, disclose at install. Authorization is the intersection of manifest grant and ratified server tools, surfaced at install time not only call time.",
       "reason": "KB 2026B306 operator directive"
+    },
+    {
+      "source_text": "How do I issue a willow-mcp net lease when sudo cannot find willow-mcp?",
+      "target_text": "sudo resets PATH. Use the install binary with WILLOW_HOME set, e.g. `source ~/github/willow-memory/.willow/fleet.env` then `sudo -E env PATH=\"$PATH\" WILLOW_HOME=\"$WILLOW_HOME\" .willow/venvs/willow-mcp/bin/willow-mcp grant-net willow --ttl 60m --reason '…'`. Or run `bash willows-grove/seat/willow/scripts/unblock-jeles-federation.sh` for permissions + consent.federation + lease together.",
+      "reason": "Operator incident 2026-09-02"
+    },
+    {
+      "source_text": "After unblock-jeles-federation, why does federation_call still say consent_denied?",
+      "target_text": "Consent and lease files under willow-operator were mode 600, so the seat process (sean-campbell) could not read them — diagnostic reported Permission denied and treated every consent key as denied. Fix: chmod 644 on settings.global.json and the app's lease JSON (write stays with willow-operator; read must be available to the seat). The seat unblock script now chmods 644 after chown.",
+      "reason": "Operator incident 2026-09-02; seat unblock script fix"
+    },
+    {
+      "source_text": "Where is Willow's seat intake for Jeles on this install?",
+      "target_text": "willows-grove/seat/willow/jeles-intake/ — willow-local, researched-gaps, paperclip-genealogy, grove-persona-partition-seals, probe-questions. Load with seat/willow/scripts/jeles-intake.py after sourcing fleet.env. Runtime nuggets live in $WILLOW_STORE_ROOT/ask_jeles_corpus/store.db, not in the git tree.",
+      "reason": "grove-persona-partition / seat home"
     }
   ]
 }

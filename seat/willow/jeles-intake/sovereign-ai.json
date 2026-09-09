@@ -1,0 +1,152 @@
+{
+  "domain": "sociotechnical-ai-sovereignty",
+  "classification": "novel",
+  "description": "The Illusion of Sovereign AI \u2014 essay-derived pairs AFTER Jeles research pass (see sovereign-ai-research.json). Novel/asserted until sealed. DeepSeek cost wording corrected for final-run vs total-investment nuance.",
+  "pairs": [
+    {
+      "source_text": "What does The Illusion of Sovereign AI argue is wrong with most sovereign AI narratives?",
+      "target_text": "They define sovereignty too narrowly as 'we trained a model.' That says almost nothing about who makes the chips, who owns the fabs, who sells the lithography machines, or whose money built the stack. Having a model is not the same as controlling the means to produce and run it.",
+      "reason": "sociotechnical-ai-sovereignty/DRAFT.md opening thesis",
+      "sources": [
+        "DispatchesFromReality/research/sociotechnical-ai-sovereignty/DRAFT.md",
+        "DispatchesFromReality/research/sociotechnical-ai-sovereignty/README.md"
+      ]
+    },
+    {
+      "source_text": "What five things does operational AI sovereignty require according to The Illusion of Sovereign AI?",
+      "target_text": "1) Model weights you can download and retain. 2) Hardware the institution owns. 3) Inference software the institution controls (e.g. llama.cpp, Ollama \u2014 not a monthly permission slip). 4) Isolated local data infrastructure (local RAG and/or on-prem fine-tuning) that anchors models to institutional reality. 5) No single API key, license, cloud account, platform policy, or vendor relationship that can revoke access to all of the above.",
+      "reason": "README five pillars + DRAFT 'What Sovereignty Actually Requires'",
+      "sources": [
+        "DispatchesFromReality/research/sociotechnical-ai-sovereignty/README.md",
+        "DispatchesFromReality/research/sociotechnical-ai-sovereignty/DRAFT.md"
+      ]
+    },
+    {
+      "source_text": "What is the hardware chokepoint chain from a chat query to EUV lithography?",
+      "target_text": "Models run on GPUs. NVIDIA designs leading datacenter GPUs but does not fabricate them \u2014 TSMC does. TSMC's cutting-edge process depends on EUV lithography machines. ASML (Netherlands) is the sole cutting-edge EUV supplier. There is no second supplier at that tier. The essay frames the path from a chat query to a Dutch export license as about five hops.",
+      "reason": "DRAFT chokepoint map + Jeles institutional/web research 2026-09-02",
+      "sources": [
+        "DispatchesFromReality/research/sociotechnical-ai-sovereignty/DRAFT.md",
+        "https://doi.org/10.2139/ssrn.6453478",
+        "https://readthesignal.net/article/asml-euv-monopoly-chokepoint-ai-chips"
+      ]
+    },
+    {
+      "source_text": "How does The Illusion of Sovereign AI connect Operation Paperclip / Huntsville to today's AI stack?",
+      "target_text": "Same story with different nouns: physical bottlenecks draw capital; a security narrative quiets awkward questions about money and expertise; a reckoning arrives when the bet overshoots returns; what persists is substrate \u2014 facilities, relationships, physics \u2014 not press releases. Von Braun-era test infrastructure still fires engines in Huntsville; TSMC and ASML will outlast whatever we call the AI era. Paperclip genealogy and the sociotechnical AI database are framed as two evidence bases for one institutional pattern.",
+      "reason": "DRAFT through-line + coda",
+      "sources": [
+        "DispatchesFromReality/research/sociotechnical-ai-sovereignty/DRAFT.md",
+        "DispatchesFromReality/research/postwar-institutional-legacies/README.md"
+      ]
+    },
+    {
+      "source_text": "Why is Hugging Face described as a quiet distribution chokepoint?",
+      "target_text": "Major open-weight models (LLaMA, Mistral, Qwen, DeepSeek-R1, etc.) are distributed there. Hugging Face Series D investors included Google, Amazon, NVIDIA, Salesforce, and Intel \u2014 companies most threatened by open weights holding equity in the 'neutral' distribution platform. The essay calls this managed neutrality: openness while you can see what's open and build a moat around what isn't. Serious sovereignty practice mirrors weights locally; convenience keeps most people dependent.",
+      "reason": "DRAFT Distribution + Jeles web research 2026-09-02 (Series D corroboration)",
+      "sources": [
+        "DispatchesFromReality/research/sociotechnical-ai-sovereignty/DRAFT.md",
+        "https://techcrunch.com/2023/08/24/hugging-face-raises-235m-from-investors-including-salesforce-and-nvidia/",
+        "https://www.cnbc.com/2023/08/24/google-amazon-nvidia-amd-other-tech-giants-invest-in-hugging-face.html"
+      ]
+    },
+    {
+      "source_text": "What does The Illusion of Sovereign AI say about Stargate and capital geography?",
+      "target_text": "January 2025 Stargate was announced at up to $500B over four years ($100B initially), framed as American strategic victory. Founding partners named that day: OpenAI, SoftBank, Oracle, and MGX (Abu Dhabi), with Masayoshi Son present. G42 appears later in a separate Stargate UAE cluster (May 2025), often conflated in press. The point is not moral judgment on foreign capital \u2014 capital doesn't carry a passport \u2014 but that sovereignty rhetoric and capital geography diverge.",
+      "reason": "DRAFT Money + Jeles web research 2026-09-02 (primary press)",
+      "sources": [
+        "DispatchesFromReality/research/sociotechnical-ai-sovereignty/DRAFT.md",
+        "https://openai.com/index/announcing-the-stargate-project/",
+        "https://group.softbank/en/news/press/20250122",
+        "https://en.wikipedia.org/wiki/Stargate_LLC"
+      ]
+    },
+    {
+      "source_text": "How do Mistral and DeepSeek illustrate the constraint-then-invention pattern?",
+      "target_text": "Mistral (Paris, 2023) trained small open models on commodity hardware without closed US API access and matched larger peers at fewer parameters. DeepSeek sits inside High-Flyer; public reporting attributes a large pre-control A100 stockpile (~10k class) and a widely cited ~$5\u20136M figure for the DeepSeek-V3 *final training run* GPU cost \u2014 not total GPU investment (SemiAnalysis and cost breakdowns argue hundreds of millions in hardware). Constraint under export controls is the essay's pattern claim; the dollar figure must be framed as final-run compute, not program total.",
+      "reason": "DRAFT Efficiency Convergence + Jeles web research 2026-09-02 (cost nuance)",
+      "sources": [
+        "DispatchesFromReality/research/sociotechnical-ai-sovereignty/DRAFT.md",
+        "https://newsletter.semianalysis.com/p/deepseek-debates",
+        "https://unanswered.io/guide/deepseek-5-million-development-cost",
+        "https://www.interconnects.ai/p/deepseek-v3-and-the-actual-cost-of"
+      ]
+    },
+    {
+      "source_text": "What is the mid-2026 efficiency-convergence claim in The Illusion of Sovereign AI?",
+      "target_text": "By mid-2026 the essay reports top frontier models within ~100 Elo on LMArena, MMLU clustered ~93\u201397, and narrower SWE-bench spreads than prior year gaps. When capability gaps close that tight, differentiation shifts from the model itself to data, retrieval stack, and operational judgment \u2014 sovereignty restated as engineering: what you do with the model on infrastructure you control.",
+      "reason": "DRAFT Efficiency Convergence benchmark wall",
+      "sources": [
+        "DispatchesFromReality/research/sociotechnical-ai-sovereignty/DRAFT.md"
+      ]
+    },
+    {
+      "source_text": "What forecast window does The Illusion of Sovereign AI give for AI-capex reckoning?",
+      "target_text": "Structured forecast, not a point prediction: late 2026 follow-on friction for mid-tier labs on 2024 multiples; 2026\u20132027 public earnings reckon with hyperscaler capex; 2027\u20132028 consolidation when bets on infinite API margin absorb or fail. Substrate survivors emphasized: NVIDIA, TSMC, ASML. Frame carefully \u2014 incomplete private capital data; revenue/valuation figures from public reporting and estimates.",
+      "reason": "DRAFT bubble section + README claim boundaries",
+      "sources": [
+        "DispatchesFromReality/research/sociotechnical-ai-sovereignty/DRAFT.md",
+        "DispatchesFromReality/research/sociotechnical-ai-sovereignty/README.md"
+      ]
+    },
+    {
+      "source_text": "What are the claim boundaries for The Illusion of Sovereign AI research?",
+      "target_text": "Safe to claim: maps dependency chains via a structured relational evidence base; distinguishes rhetorical model sovereignty from operational infrastructure sovereignty; connects policy, semiconductors, capital, talent, and local-first deployment. Frame carefully: 2027\u20132028 correction is a structured forecast not a point prediction; figures are public reporting/estimates; database incomplete by design (private capital not fully observable). Do not claim: peer review, complete AI-governance coverage, definitive financial prediction, or hardware sovereignty for local-first stacks that still depend on consumer GPUs or Apple Silicon.",
+      "reason": "README What the paper claims",
+      "sources": [
+        "DispatchesFromReality/research/sociotechnical-ai-sovereignty/README.md"
+      ]
+    },
+    {
+      "source_text": "How does Willow relate to The Illusion of Sovereign AI?",
+      "target_text": "Willow is not national-scale 'sovereign AI.' It is a local-first operator stack that takes the same problem seriously at practical scale: sealed human verification (Nestor), sandboxed execution (Kart), federated tools with consent/leases, local store/KB, and no silent cloud fallback for search when Jeles federation is healthy. The paper asks what sovereignty requires structurally; Willow is one practical answer at single-operator / small-fleet scale.",
+      "reason": "README Connection to Willow",
+      "sources": [
+        "DispatchesFromReality/research/sociotechnical-ai-sovereignty/README.md",
+        "DispatchesFromReality/professional/willow-systems-portfolio.md"
+      ]
+    },
+    {
+      "source_text": "What evidence base backs The Illusion of Sovereign AI?",
+      "target_text": "A structured SQLite research database (sociotechnical.db) from public sources: ~30 AI organizations, ~76 persons, ~41 funders, ~40 funding rounds, ~80 directed relationship edges, ~56 analytical observations with source attributions. Representative edge types include infrastructure_dependency and strategic_backer. Private DB files are not published in the Dispatches packet; the public packet states method and boundaries.",
+      "reason": "README Evidence base",
+      "sources": [
+        "DispatchesFromReality/research/sociotechnical-ai-sovereignty/README.md"
+      ]
+    },
+    {
+      "source_text": "What is the substrate-outlasts-the-press-release thesis?",
+      "target_text": "Physical and institutional infrastructure persists after program names and narratives change. In Huntsville: test stands, primes, federal relationships outlast Apollo-era announcements. In AI: fabs, EUV, GPU design, power interconnects, and mirrored weights outlast sovereignty press conferences. After overbuild and repricing, survivors match cost to what actually endures \u2014 not the slide deck.",
+      "reason": "DRAFT through-line + Post-Bubble Landscape",
+      "sources": [
+        "DispatchesFromReality/research/sociotechnical-ai-sovereignty/DRAFT.md"
+      ]
+    },
+    {
+      "source_text": "What escape hatch does The Illusion of Sovereign AI claim is new in this cycle?",
+      "target_text": "Capability is getting small enough to leave the data center: a 7B-class model on a laptop; distilled reasoning on modest local hardware (essay cites Raspberry Pi 5 class inference as real-but-slow, not viral-claim fast). Postwar rocketry never got small enough to leave the pad; AI is getting small enough to run in a room you control \u2014 if you also hold weights, inference software, and local data infrastructure without a revocable vendor key.",
+      "reason": "DRAFT coda",
+      "sources": [
+        "DispatchesFromReality/research/sociotechnical-ai-sovereignty/DRAFT.md"
+      ]
+    },
+    {
+      "source_text": "What DispatchesFromReality research packets exist beyond Paperclip?",
+      "target_text": "Public research packets: (1) The Illusion of Sovereign AI \u2014 sociotechnical-ai-sovereignty; (2) Post-WWII institutional legacies \u2014 Paperclip/Huntsville; (3) Right to fix / vintage mechanical restoration; (4) Tabletop mechanical engines; (5) Nobody counts the ad breaks \u2014 children's software interruption; (6) Adversarially verified knowledge corpus \u2014 1369-pair Nestor bundle. Plus professional Willow portfolio docs and education/lessons tracks.",
+      "reason": "research/README.md portfolio map",
+      "sources": [
+        "DispatchesFromReality/research/README.md"
+      ]
+    },
+    {
+      "source_text": "What is the DispatchesFromReality adversarially verified knowledge corpus?",
+      "target_text": "A portable Nestor bundle (nestor.bundle.json): 1369 pairs, hundreds of edges, ~2100 evidence URLs across ~30 domains (science, infrastructure, people, economics, law, health, labor, AI research, adversarial passes). Built from public sources, adversarially fact-checked across three rounds. Bundle status is almost all draft (only a handful sealed in the export) \u2014 importable into Nestor; not auto-served as verified until a human seals.",
+      "reason": "knowledge-corpus/README.md",
+      "sources": [
+        "DispatchesFromReality/research/knowledge-corpus/README.md",
+        "DispatchesFromReality/research/knowledge-corpus/nestor.bundle.json"
+      ]
+    }
+  ],
+  "research_pass": "sovereign-ai-research.json"
+}

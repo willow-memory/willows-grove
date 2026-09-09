@@ -1,0 +1,27 @@
+{
+  "domain": "dispatches-research-2026-09-02",
+  "classification": "novel",
+  "description": "Research ledger for kids / tabletop / right-to-fix load pass.",
+  "pairs": [
+    {
+      "source_text": "What did the 2026-09-02 research pass find about Nobody Counts the Ad Breaks public claims?",
+      "target_text": "Epic FTC Dec 2022 $520M ($275M COPPA + $245M dark-pattern refunds) corroborated via ftc.gov. Cognosphere/Genshin Jan 2025 $20M + under-16 loot-box parental-consent terms corroborated via ftc.gov. Xiao & Park Acta Psychologica 2025: 90/100 top SK iPhone games had paid loot boxes; 84.4% of those disclosed under Mar 2024 law — DOI corroborated. F-Droid AntiFeatures Ads/Tracking + Ads-rarely-applied-because-proprietary-ads-excluded caveat corroborated via f-droid.org docs. Playgate CI/assertion counts remain operator-asserted. Thesis (missing per-title interruption field) remains novel.",
+      "reason": "Cursor web research 2026-09-02; willow_web_search blocked (web_net missing) so used external search",
+      "sources": [
+        "https://www.ftc.gov/news-events/news/press-releases/2022/12/fortnite-video-game-maker-epic-games-pay-more-half-billion-dollars-over-ftc-allegations",
+        "https://www.ftc.gov/news-events/news/press-releases/2025/01/genshin-impact-game-developer-will-be-banned-selling-lootboxes-teens-under-16-without-parental",
+        "https://doi.org/10.1016/j.actpsy.2025.105490",
+        "https://f-droid.org/docs/Anti-Features/"
+      ]
+    },
+    {
+      "source_text": "What is the DispatchesFromReality adversarially verified knowledge corpus status in Nestor after 2026-09-02 import?",
+      "target_text": "nestor.bundle.json (1369 pairs, 2081 evidence) imported into the operator keep with --apply: 1361 draft + 8 demoted-to-draft (rita seals do not verify on this keyring). Store moved ~705 → 2074 pairs. Not sealed here; not auto-promoted to Jeles human. Packet README remains the public claim boundary.",
+      "reason": "Local nestor import receipt 2026-09-02",
+      "sources": [
+        "DispatchesFromReality/research/knowledge-corpus/README.md",
+        "DispatchesFromReality/research/knowledge-corpus/nestor.bundle.json"
+      ]
+    }
+  ]
+}
