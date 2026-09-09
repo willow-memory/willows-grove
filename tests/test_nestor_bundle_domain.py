@@ -60,7 +60,14 @@ if ROOT not in sys.path:
 from grove.nestor_client import DECISION_DOMAIN  # noqa: E402
 
 BUNDLE = os.path.join(ROOT, "nestor", "session-decisions.json")
-MCP_JSON = os.path.join(ROOT, ".mcp.json")
+# The tracked blueprint, not the live wiring. `.mcp.json` is untracked on an
+# operator box (`**/.mcp.json` is globally ignored) because it carries absolute
+# paths and a seat identity, so it does not exist in a fresh clone or in CI —
+# this test read it and died with FileNotFoundError the moment the root seat
+# moved. Same precedent as PR 45 untracking the envelope registry: the
+# blueprint travels, the live wiring does not. The assertions below are
+# unchanged; only the file they pin moved.
+MCP_JSON = os.path.join(ROOT, "mcp.template.json")
 SERVER = "nestor-grove-session"
 
 
@@ -127,7 +134,7 @@ class BundleDomainTests(unittest.TestCase):
 
 
 class McpEntryDomainTests(unittest.TestCase):
-    """``.mcp.json``'s serve argv agrees with the reader and the bundle."""
+    """``mcp.template.json``'s serve argv agrees with the reader and the bundle."""
 
     def test_serve_argv_pins_the_reader_domain(self) -> None:
         args = _serve_args()

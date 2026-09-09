@@ -34,6 +34,20 @@
       "type": "stdio",
       "command": "@HOME@/.local/bin/codebase-memory-mcp",
       "args": []
+    },
+    "nestor-grove-session": {
+      "_why": "Repo-local decision memory: the committed bundle at nestor/session-decisions.json, served read-only. Distinct from the vault `nestor` above, which reads the operator box's store. The --source-lang/--target-lang pins are load-bearing and tested by tests/test_nestor_bundle_domain.py: an entry without them answers through MCP while the bare CLI reports no decision on record.",
+      "command": "@HOME@/github/Die-Namic-Systems/nestor/.venv/bin/nestor",
+      "args": [
+        "serve",
+        "--db", "nestor/grove-session.db",
+        "--ledger", "nestor/grove-session.db.ledger.jsonl",
+        "--source-lang", "decision",
+        "--target-lang", "decision",
+        "--engine", "offline",
+        "--read-only"
+      ],
+      "env": {}
     }
   }
 }

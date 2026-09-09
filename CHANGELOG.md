@@ -85,7 +85,13 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
   unchanged: Heimdallr still owns served-page honesty, the resident watcher,
   Gjallarhorn and serve-mode auth. Two operator-ratified Nestor pairs in
   `seat/willow/jeles-intake/` still name the old path and need re-sealing by hand
-  — superseding a seal is a human act. PR 49.
+  — superseding a seal is a human act. `nestor-grove-session` keeps its entry and
+  gains an absolute command, replacing the bare `nestor` that raised ENOENT at
+  every session start; `tests/test_nestor_bundle_domain.py` now pins that argv
+  against `mcp.template.json` rather than the untracked `.mcp.json`, which does
+  not exist in a fresh clone or in CI — the assertions are unchanged, only the
+  file they read moved, on PR 45's precedent that the blueprint travels and the
+  live wiring does not. PR 49.
 
 - **Seat probe binds a Grove sender instead of asserting on an unbound one.**
   `willow-seat.sh probe` called `ratatosk.grove.send()` in a bare process, but
