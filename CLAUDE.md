@@ -13,13 +13,15 @@ in this repo:
 
 | Lens | Seat | `app_id` | Opened from |
 |------|------|----------|-------------|
-| **Watch** | Heimdallr | `heimdallr` | repo root |
-| **Desk** | Willow | `willow` | `seat/willow/` |
+| **Desk** | Willow | `willow` | repo root |
+| **Watch** | Heimdallr | `heimdallr` | `seat/heimdallr/` |
 
 If `session_enter` has not run, you do not yet know which seat you are. Run it
-before acting. A repo file that told you who you were would be a second source
-of truth for a fact the persona bundle already owns — and the seat would then
-depend on which directory you opened rather than which identity you hold.
+before acting. No prose in this file assigns an identity: the seat is carried by
+the `WILLOW_APP_ID` in the `.mcp.json` of the directory you opened, and
+`session_enter` reads it back from the persona bundle, which stays the single
+source of truth. The Desk is the default because this repo is Willow's Grove;
+the Watch is a lens you open on purpose.
 
 ## Grove is
 
@@ -39,7 +41,7 @@ This repo is **Willow's Grove** (possessive). Inside it:
 
 | Lens | Owner | Owns |
 |------|--------|------|
-| **Desk** | Willow | Operator seat under `seat/willow/`; what the desk is *for* — one Jarvis composition (priority bubbles underneath; not a Governance/PM/PA mode switch) |
+| **Desk** | Willow | The repo root — this is Willow's Grove, so the Desk is what you get by opening it; desk content (seat scripts, `jeles-intake/`) stays under `seat/willow/`; what the desk is *for* — one Jarvis composition (priority bubbles underneath; not a Governance/PM/PA mode switch) |
 | **Watch** | Heimdallr | Served page honesty, resident watcher, Gjallarhorn / `#alerts`, serve-mode auth |
 
 Rule of thumb: Willow decides what the desk is for; Heimdallr decides whether

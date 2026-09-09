@@ -28,6 +28,7 @@ C12 misfit note and [willow-grove-premise.md](willow-grove-premise.md) P8 clarif
 
 | Slice | Owner | Home in repo |
 |-------|--------|--------------|
+| Seat wiring — *where each lens opens*. Ratified 2026-09-09: the repo root is the Desk, because this is Willow's Grove; the Watch is opened deliberately. Each seat's `.mcp.json` is untracked (`**/.mcp.json` is globally ignored) beside a tracked `mcp.template.json`. | **Willow** at the root; **Heimdallr** in its own seat | `mcp.template.json` + `.claude/settings.json` (root); [`seat/heimdallr/`](../../seat/heimdallr/) |
 | Operator seat scripts, intake JSON, seat probe / routing doctrine | **Willow** | [`seat/willow/`](../../seat/willow/) |
 | Desk composition (what bubbles when); Governance / PM / PA as **internal triage vocabulary**; dispatch desk doctrine; federation unblock | **Willow** | `docs/design/` + `seat/willow/` |
 | Served page `127.0.0.1:8766`, grove serve / readers / Web Components honesty | **Heimdallr** | `grove/`, `web/`, [CLAUDE.md](../../CLAUDE.md) |

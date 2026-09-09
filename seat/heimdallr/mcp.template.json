@@ -1,0 +1,40 @@
+{
+  "_template": "The Watch. Copy to seat/heimdallr/.mcp.json and replace @HOME@ and @VAULT_BOX@. That file is NOT tracked — **/.mcp.json is globally ignored on an operator box because it carries absolute paths and a seat identity.",
+  "_why_here": "This repo is Willow's Grove: the root is the Desk and seats you as willow. The Watch is a lens you deliberately open — served-page honesty, the resident watcher, Gjallarhorn / #alerts, serve-mode auth. Opening Claude Code with this directory as the working directory makes it the project root, so this config is what loads and session_enter seats you as heimdallr. WILLOW_PROJECT_ROOT points at the grove root so the Watch reads the whole repository while the seat is chosen by where you opened it.",
+  "mcpServers": {
+    "willow-mcp": {
+      "type": "stdio",
+      "command": "@VAULT_BOX@/venvs/willow-mcp/bin/python",
+      "args": ["-m", "willow_mcp"],
+      "env": {
+        "WILLOW_APP_ID": "heimdallr",
+        "WILLOW_AGENT_NAME": "heimdallr",
+        "AGENT_NAME": "heimdallr",
+        "WILLOW_PG_DB": "willow_20",
+        "WILLOW_HOME": "@VAULT_BOX@",
+        "WILLOW_STORE_ROOT": "@VAULT_BOX@/store",
+        "WILLOW_HANDOFF_PROJECT": "willows-grove",
+        "WILLOW_PROJECT_ROOT": "@HOME@/github/willow-memory/willows-grove",
+        "WILLOW_DEV_SAFE_ROOT": "@HOME@/github",
+        "WILLOW_FLEET_ROSTER": "@VAULT_BOX@/fleet.json",
+        "WILLOW_KEYRING": "@VAULT_BOX@/config/verifiers.json"
+      }
+    },
+    "nestor": {
+      "type": "stdio",
+      "command": "@HOME@/github/Die-Namic-Systems/nestor/.venv/bin/nestor",
+      "args": ["serve", "--read-only"],
+      "env": {
+        "NESTOR_DB": "@VAULT_BOX@/nestor.db",
+        "NESTOR_LEDGER": "@VAULT_BOX@/ledger.jsonl",
+        "NESTOR_KEYRING": "@VAULT_BOX@/verifiers.json",
+        "NESTOR_REQUIRE_SEAL_KEY": "1"
+      }
+    },
+    "codebase-memory-mcp": {
+      "type": "stdio",
+      "command": "@HOME@/.local/bin/codebase-memory-mcp",
+      "args": []
+    }
+  }
+}

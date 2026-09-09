@@ -1,6 +1,6 @@
 {
-  "_template": "The Desk seat. Copy to seat/willow/.mcp.json and replace @HOME@ and @VAULT_BOX@. That file is NOT tracked — **/.mcp.json is globally ignored on an operator box because it carries absolute paths and a seat identity, the same rule deploy/kart-sandbox.template.json follows: the template travels, the wiring does not.",
-  "_why_here": "Opening Claude Code with this directory as the working directory makes it the project root, so this config is what loads and session_enter seats you as willow. The repo root is Heimdallr's Watch. WILLOW_PROJECT_ROOT points at the grove root so the Desk reasons over the whole repository while the seat is chosen by where you opened it.",
+  "_template": "The Desk. Copy to .mcp.json at the repo root and replace @HOME@ and @VAULT_BOX@. That file is NOT tracked — **/.mcp.json is globally ignored on an operator box because it carries absolute paths and a seat identity, the same rule deploy/kart-sandbox.template.json follows: the template travels, the wiring does not.",
+  "_why_here": "This repo is Willow's Grove. Opening it at the root seats you as willow — the Desk is the default, not a subdirectory you have to know about. Heimdallr's Watch is a seat you deliberately open at seat/heimdallr/. Ratified 2026-09-09.",
   "mcpServers": {
     "willow-mcp": {
       "type": "stdio",

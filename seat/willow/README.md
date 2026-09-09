@@ -39,25 +39,27 @@ Thin wrappers under `willow-memory/scripts/` still exec these paths for old habi
 
 ## Opening the Desk
 
-Open Claude Code **with this directory as the working directory**. That makes
-`seat/willow/` the project root, so `seat/willow/.mcp.json` is the config that
-loads and `session_enter` seats you as `willow` with
-`WILLOW_HUMAN_ORCHESTRATOR=1`. The repo root is Heimdallr's Watch and boots the
-`heimdallr` seat; which seat you get is decided by where you opened, not by a
-file that claims an identity. See [`../../CLAUDE.md`](../../CLAUDE.md).
+**Open the repo root.** This is Willow's Grove, so the Desk is what you get by
+opening it — there is no subdirectory to know about. The root
+[`.mcp.json`](../../mcp.template.json) seats you as `willow` with
+`WILLOW_HUMAN_ORCHESTRATOR=1`; Heimdallr's Watch is a lens you open on purpose
+at [`seat/heimdallr/`](../heimdallr/). Ratified 2026-09-09. See
+[`../../CLAUDE.md`](../../CLAUDE.md).
 
-`.mcp.json` is **not tracked** — `**/.mcp.json` is ignored on an operator box
-because it carries absolute paths and a seat identity. Copy
-[`mcp.template.json`](mcp.template.json) and substitute `@HOME@` and
-`@VAULT_BOX@`. Same rule as
-[`deploy/kart-sandbox.template.json`](../../deploy/kart-sandbox.template.json):
+This directory holds desk **content** — seat scripts and `jeles-intake/`. It no
+longer carries seat wiring; that moved to the root.
+
+Each seat's `.mcp.json` is **not tracked** — `**/.mcp.json` is ignored on an
+operator box because it carries absolute paths and a seat identity. Copy the
+seat's `mcp.template.json` and substitute `@HOME@` and `@VAULT_BOX@`. Same rule
+as [`deploy/kart-sandbox.template.json`](../../deploy/kart-sandbox.template.json):
 the template travels, the wiring does not.
 
-`WILLOW_PROJECT_ROOT` points at the grove root, so the Desk reasons over the
-whole repository even though the seat is chosen from this subdirectory.
-
-`.claude/settings.json` carries the willow-mcp PreToolUse guards. It resolves
-the interpreter through `$CLAUDE_PROJECT_DIR/../../.venv`, so it needs the repo
-venv to have willow-mcp installed with its dependencies — `forge-play` included.
-An editable install pins its dependency set at install time, so a venv whose
+The root `.claude/settings.json` carries the willow-mcp SessionStart /
+PreToolUse / SessionEnd hooks and pins `WILLOW_APP_ID` inline on each command —
+the hook resolves the seat from its own process env, not from `.mcp.json`, so an
+unpinned hook inherits whatever the launching shell exported. It resolves the
+interpreter through `$CLAUDE_PROJECT_DIR/.venv`, so it needs the repo venv to
+have willow-mcp installed with its dependencies — `forge-play` included. An
+editable install pins its dependency set at install time, so a venv whose
 `willow_mcp` import works can still be missing what `willow_mcp` requires.

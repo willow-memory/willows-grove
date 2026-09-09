@@ -1,0 +1,35 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "WILLOW_APP_ID=heimdallr WILLOW_HANDOFF_PROJECT=willows-grove \"$CLAUDE_PROJECT_DIR/../../.venv/bin/python3\" -m willow_mcp.session_start_hook"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash|task_submit|Write|Edit|MultiEdit|NotebookEdit|WebSearch|WebFetch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR/../../.venv/bin/python3\" -m willow_mcp.pre_tool_hook"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "WILLOW_APP_ID=heimdallr WILLOW_HANDOFF_PROJECT=willows-grove \"$CLAUDE_PROJECT_DIR/../../.venv/bin/python3\" -m willow_mcp.session_stop_hook"
+          }
+        ]
+      }
+    ]
+  }
+}
