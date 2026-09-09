@@ -267,7 +267,9 @@ today.
 > **Superseded 2026-09-01 by KB 2026B306** (operator directive, session
 > github-a8): the phone is *both* a thumb drive and a network peer, in three
 > tiers by gate cost (USB/adb; LAN u2u, signals only until Gate 6; remote via
-> Pangolin at :8765 only). This section removed a forced choice; it did not
+> Pangolin at ~~:8765~~ **:8768** only — 2026B306's port was re-ratified by the
+> operator 2026-09-09, *"serve is on 8768, update the map"*; 8765 is the code
+> default and is held here by the Nestor UI, 8768 is this box's operator bind). This section removed a forced choice; it did not
 > forbid the second mode. The app is a capability-composition chain with
 > install-time disclosure of what becomes possible and what becomes
 > reachable. Read this section as tier 0, still true, no longer the whole.
@@ -297,7 +299,7 @@ the three tiers do use one, deliberately, at escalating gate cost:
 | --- | --- | --- | --- |
 | 0 — USB/adb | none (removable volume) | already in production, no new gate | none — tier 0 never asks |
 | 1 — LAN, u2u | signals only, not contents, until Gate 6 | Ed25519-signed, plaintext wire (`docs/design/u2u-security-limits.md`) | none — u2u is its own transport, not a `:8766` bind |
-| 2 — remote, Pangolin | terminates at `:8765` only, never `:8766` | strongest: leaves the LAN | none — `:8766` stays loopback-only in every tier |
+| 2 — remote, Pangolin | terminates at `:8768` only, never `:8766` | strongest: leaves the LAN | none — `:8766` stays loopback-only in every tier |
 
 So the open item below — *"`:8766` has no authentication to widen"* — is
 answered, not outstanding: nobody widens it. Reach for tiers 1 and 2 is
@@ -509,7 +511,7 @@ label produces a well-proportioned unreadable label.
 - ~~A phone surface reverses D4's sealed loopback premise. That is a
   ratification.~~ — answered by KB 2026B306: it doesn't reverse it. `:8766`
   stays loopback in all three tiers; reach is added beside it (u2u, Pangolin
-  `:8765`), never through it. No ratification of D4 itself is pending.
+  `:8768`), never through it. No ratification of D4 itself is pending.
 - ~~`:8766` has no authentication to widen. Reaching it from a phone means
   either authenticating it, or tunnelling it, or moving the surface to
   `:8767`.~~ — answered the same way: none of those three. See "What it

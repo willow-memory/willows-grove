@@ -54,13 +54,24 @@ tunnel. Written down because two of them defaulted to the same port until
 
 | port | service | tunnel? |
 |---|---|---|
-| `8765` | `willow-mcp --serve` (its own MCP over HTTP+OAuth) | yes — the ratified remote-seat endpoint (KB `2026B306`) |
+| `8765` | `willow-mcp --serve` **code default** (`server.py:489`); on this box the Nestor UI holds it | no — not what a tunnel points at here |
 | `8766` | `grove_serve.py`, the desk page | **never.** Loopback-only, sealed D4 |
 | `8767` | `grove/mcp_local.py --serve`, Grove MCP | yes, as its own resource |
+| `8768` | `willow-mcp --serve` **operator bind** on this box | yes — the ratified remote-seat endpoint |
 
 Grove MCP moved 8765 → 8767 to end the collision. Pin the port explicitly in
 any unit or tunnel config rather than relying on a default: an inferred
 endpoint is not an endpoint.
+
+**8765 and 8768 are both true, and confusing them is the live failure mode.**
+8765 is the number compiled into the product; 8768 is where this box actually
+listens, set by the systemd drop-in `willow-mcp-serve.service.d/port-8768.conf`,
+which overrides the unit's own `--port 8765`. The move happened because the
+operator's browser verifier key is origin-bound to 8765 and signing outranks
+serve. Operator ruling 2026-09-09: *"serve is on 8768, update the map."* That
+re-ratifies KB `2026B306`'s "Pangolin terminates at :8765" — **tier 2 terminates
+at 8768.** A fresh deployment elsewhere still gets 8765 from the code and is not
+wrong; it is simply not this box.
 
 `.mcp.json` (local):
 ```json
