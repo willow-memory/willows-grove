@@ -1,0 +1,76 @@
+{
+  "domain": "sociotechnical-ai-sovereignty-research",
+  "classification": "novel",
+  "description": "Jeles research pass 2026-09-02 BEFORE treating sovereign-ai intake as settleable. Web (ddg) + institutional fan-out + verify_claim. verify_claim matched:true with low/zero overlap on several claims \u2014 treat as findable-not-verified.",
+  "researched_at": "2026-09-02T08:43:39.889215+00:00",
+  "method": [
+    "corpus_web_search",
+    "corpus_institutional_search",
+    "corpus_verify_claim"
+  ],
+  "findings": [
+    {
+      "question": "ASML / TSMC / NVIDIA chokepoint chain",
+      "status": "corroborated-public",
+      "notes": "Web + institutional hits consistently describe ASML as sole cutting-edge EUV supplier; TSMC as leading foundry; NVIDIA fabless. SSRN 2026 'Beyond the Picks and Shovels' (ASML/TSMC durability) is on-theme. verify_claim ASML sole supplier: matched=true but overlap=0.06 \u2014 DO NOT treat as verified.",
+      "sources": [
+        "https://doi.org/10.2139/ssrn.6453478",
+        "https://www.researchgate.net/publication/390535373_The_Global_Chip_Bottleneck_Intel_TSMC_and_ASML's_Monopoly_on_the_Future_of_Semiconductors",
+        "https://readthesignal.net/article/asml-euv-monopoly-chokepoint-ai-chips"
+      ]
+    },
+    {
+      "question": "Stargate equity funders SoftBank/OpenAI/Oracle/MGX Jan 2025",
+      "status": "corroborated-primary",
+      "notes": "OpenAI + SoftBank press name SoftBank, OpenAI, Oracle, MGX as initial equity funders; SoftBank financial / OpenAI operational; Son chair. Wikipedia Stargate LLC agrees. verify_claim returned wrong arxiv hit (overlap 0.0) \u2014 ignore that match.",
+      "sources": [
+        "https://openai.com/index/announcing-the-stargate-project/",
+        "https://group.softbank/en/news/press/20250122",
+        "https://en.wikipedia.org/wiki/Stargate_LLC"
+      ]
+    },
+    {
+      "question": "DeepSeek V3 ~$5\u20136M training / High-Flyer A100 stockpile",
+      "status": "contested-nuance",
+      "notes": "Public discourse repeats ~$5.6M for V3 final training run GPU cost; SemiAnalysis and others argue total GPU investment much higher (>$500M class). A100 ~10k cluster attributed to High-Flyer pre-controls appears widely but is secondary reporting. Intake must NOT equate $5.6M with total program cost.",
+      "sources": [
+        "https://newsletter.semianalysis.com/p/deepseek-debates",
+        "https://unanswered.io/guide/deepseek-5-million-development-cost",
+        "https://www.interconnects.ai/p/deepseek-v3-and-the-actual-cost-of"
+      ]
+    },
+    {
+      "question": "Hugging Face Series D investors include Google Amazon NVIDIA Salesforce",
+      "status": "corroborated-press",
+      "notes": "TechCrunch/CNBC Aug 2023: $235M Series D, ~$4.5B valuation; participants include Google, Amazon, Nvidia, Intel, AMD, Qualcomm, IBM, Salesforce, Sound Ventures. Essay claim holds; AMD/Qualcomm/IBM also in list.",
+      "sources": [
+        "https://techcrunch.com/2023/08/24/hugging-face-raises-235m-from-investors-including-salesforce-and-nvidia/",
+        "https://www.cnbc.com/2023/08/24/google-amazon-nvidia-amd-other-tech-giants-invest-in-hugging-face.html"
+      ]
+    },
+    {
+      "question": "European digital / AI sovereignty literature",
+      "status": "institutional-context",
+      "notes": "Institutional search surfaces academic work on digital sovereignty and AI political economy (e.g. European Digital Sovereignty layered approach; Digital Disintegration techno-blocs). Supports that 'sovereignty' is contested academic/policy term \u2014 aligns with essay's rhetorical-vs-operational distinction, does not prove five pillars.",
+      "sources": [
+        "https://doi.org/10.1007/s44206-022-00025-z",
+        "https://doi.org/10.1017/s0020818325101070",
+        "https://doi.org/10.1093/ijlit/eaae001"
+      ]
+    }
+  ],
+  "pairs": [
+    {
+      "source_text": "What did the 2026-09-02 Jeles research pass find about The Illusion of Sovereign AI chokepoint claims?",
+      "target_text": "Hardware chain (NVIDIA design \u2192 TSMC fab \u2192 ASML EUV) is widely corroborated in open web and institutional hits (including SSRN on ASML/TSMC durability). Stargate initial equity funders SoftBank/OpenAI/Oracle/MGX are corroborated by OpenAI and SoftBank primary press (Jan 2025). Hugging Face Series D participation by Google/Amazon/NVIDIA/Salesforce et al. is corroborated by TechCrunch/CNBC (Aug 2023). DeepSeek '$5\u20136M' figure is contested: often final-run GPU rental, not total GPU investment (SemiAnalysis and cost breakdowns warn against equating them). corpus_verify_claim returned matched:true with near-zero overlap on ASML/Stargate checks \u2014 findable \u2260 verified. Essay thesis pairs remain novel/asserted until a human seals after reading this pass.",
+      "reason": "Jeles research pass ledger 2026-09-02",
+      "sources": [
+        "https://openai.com/index/announcing-the-stargate-project/",
+        "https://group.softbank/en/news/press/20250122",
+        "https://techcrunch.com/2023/08/24/hugging-face-raises-235m-from-investors-including-salesforce-and-nvidia/",
+        "https://newsletter.semianalysis.com/p/deepseek-debates",
+        "https://doi.org/10.2139/ssrn.6453478"
+      ]
+    }
+  ]
+}

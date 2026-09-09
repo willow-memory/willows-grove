@@ -43,6 +43,19 @@
       ]
     },
     {
+      "topic": "dispatches/sovereign-ai",
+      "questions": [
+        "What does The Illusion of Sovereign AI argue is wrong with most sovereign AI narratives?",
+        "What five things does operational AI sovereignty require according to The Illusion of Sovereign AI?",
+        "What is the hardware chokepoint chain from a chat query to EUV lithography?",
+        "How does The Illusion of Sovereign AI connect Operation Paperclip / Huntsville to today's AI stack?",
+        "What are the claim boundaries for The Illusion of Sovereign AI research?",
+        "How does Willow relate to The Illusion of Sovereign AI?",
+        "What DispatchesFromReality research packets exist beyond Paperclip?",
+        "What is the DispatchesFromReality adversarially verified knowledge corpus?"
+      ]
+    },
+    {
       "topic": "institutional-genealogy/paperclip",
       "questions": [
         "What is the institutional genealogy chain from Operation Paperclip to present-day Huntsville aerospace and defense?",
@@ -53,6 +66,35 @@
         "Operation Paperclip to Golden Dome — how does von Braun's Huntsville rocketry lineage connect to 21st-century missile defense?",
         "U.S. Space Command relocation to Redstone Arsenal — 2026",
         "Leidos/Dynetics financials and Huntsville operations — FY2025"
+      ]
+    },
+    {
+      "topic": "dispatches/childrens-software",
+      "questions": [
+        "What was the Epic Games FTC settlement amount and split in December 2022?",
+        "What was the Cognosphere / Genshin Impact FTC outcome in January 2025?",
+        "What did Xiao and Park find about South Korean loot-box probability disclosure compliance?",
+        "What is the core gap argued in Nobody Counts the Ad Breaks?"
+      ]
+    },
+    {
+      "topic": "dispatches/right-to-fix",
+      "questions": [
+        "What is the core question of Right to Fix and the Loss of Mechanical Knowledge?",
+        "What learning loop does the right-to-fix essay treat as the spine of repair literacy?"
+      ]
+    },
+    {
+      "topic": "dispatches/tabletop",
+      "questions": [
+        "What is the core question of the tabletop mechanical engines research?",
+        "What is the Gateway Momentum Engine in this research?"
+      ]
+    },
+    {
+      "topic": "dispatches/knowledge-corpus",
+      "questions": [
+        "What is the DispatchesFromReality adversarially verified knowledge corpus status in Nestor after 2026-09-02 import?"
       ]
     }
   ]

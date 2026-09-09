@@ -21,6 +21,21 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
   blueprint travels, the live store does not.
   PR 45.
 
+- **The rest of `envelopes/` follows it out — the vault is the trust root.**
+  Supersedes PR 45's "the law it sat beside stays tracked": `syscall-table.json`,
+  `frank_head_anchor.json` and `review_queue.json` now live only at
+  `$WILLOW_HOME/constitutional/`. `WILLOW_CHARTER_REPO` is retired, so
+  `envelopes.registry_path()` falls through to a location that follows
+  `WILLOW_HOME` instead of pinning law to a checkout — the third instance of
+  gap `006e0144da95`, where which file is law depended on the launching
+  process. Measured before the move: `pre-approved.json` was identical in both
+  trees (63 grants, same ids); `syscall-table.json` had **diverged**, and the
+  vault copy was the newer one (2026-08-11 against 2026-07-06) already carrying
+  verb 13's bounds as `${WILLOW_HOME}/constitutional/pre-approved.json` — the
+  fix had been authored in August and the charter pointer had been overriding
+  it ever since. `frank_head_anchor.json` and `review_queue.json` existed only
+  in this tree and would have been orphaned by the repoint.
+
 ### Changed
 
 - **Seat probe binds a Grove sender instead of asserting on an unbound one.**
