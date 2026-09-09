@@ -57,6 +57,23 @@ def _declared_desk_port() -> int:
     return int(m.group(1))
 
 
+def _declared_toggle_port() -> int:
+    """The default `scripts/grove-serve` bakes into the unit it installs.
+
+    Added after that script was found defaulting to 8765 while every other
+    source said 8767 — and 8765 is the Nestor UI's port on the operator box,
+    where the origin-bound browser verifier key lives. `grove-serve install`
+    would have written a unit binding it.
+
+    The drift was possible because this file read the module and the launcher
+    and not the script that installs the unit. A number asserted in two places
+    out of three is a number that can still move.
+    """
+    src = (ROOT / "scripts" / "grove-serve").read_text()
+    m = re.search(r'^PORT="\$\{GROVE_MCP_PORT:-(\d+)\}"', src, re.M)
+    assert m, "GROVE_MCP_PORT default not found in scripts/grove-serve"
+    return int(m.group(1))
+
 def test_grove_mcp_default_does_not_collide_with_willow_mcp():
     assert _declared_mcp_port() == GROVE_MCP_PORT
     assert _declared_mcp_port() != WILLOW_MCP_SERVE_PORT, (
@@ -89,3 +106,18 @@ def test_the_three_ports_are_distinct():
 def test_phone_serve_bind_is_not_the_desk():
     assert PHONE_WILLOW_MCP_BIND != GROVE_DESK_PORT
     assert PHONE_WILLOW_MCP_BIND != GROVE_MCP_PORT
+
+
+def test_the_serve_toggle_installs_the_same_port_the_module_serves():
+    """The toggle writes the unit; the module binds it. They must agree."""
+    assert _declared_toggle_port() == _declared_mcp_port() == GROVE_MCP_PORT
+
+
+def test_the_serve_toggle_does_not_claim_the_signing_origin():
+    """8765 is Nestor UI here. A unit that takes it takes the origin the
+    operator's browser verifier key is bound to."""
+    assert _declared_toggle_port() != WILLOW_MCP_SERVE_PORT
+
+
+def test_the_serve_toggle_does_not_claim_the_desk_page():
+    assert _declared_toggle_port() != GROVE_DESK_PORT

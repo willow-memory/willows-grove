@@ -17,13 +17,16 @@
 # GROVE_MCP_URL to the public HTTPS base BEFORE `install` (or via a drop-in,
 # then re-run install). See docs/runbooks/grove.md for the Pangolin/tunnel guide.
 #
-#   GROVE_MCP_PORT   bind port (default 8765; loopback only)
+#   GROVE_MCP_PORT   bind port (default 8767; loopback only). 8767 is Grove MCP's
+#                    own port in the fleet map — NOT 8765 (Nestor UI, where the
+#                    operator's origin-bound browser key lives) and NOT 8768
+#                    (willow-mcp --serve, a different service).
 #   GROVE_MCP_URL    public base URL for OAuth/allowlist (default http://127.0.0.1:PORT)
 #   GROVE_VENV       python venv dir (default: repo ./.venv if present)
 set -euo pipefail
 
 UNIT="grove-mcp-serve"
-PORT="${GROVE_MCP_PORT:-8765}"
+PORT="${GROVE_MCP_PORT:-8767}"
 HOST="127.0.0.1"
 ENTRY_NAME="grove-serve"
 
