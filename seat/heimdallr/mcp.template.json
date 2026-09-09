@@ -1,20 +1,21 @@
 {
-  "_template": "The Desk seat. Copy to seat/willow/.mcp.json and replace @HOME@ and @VAULT_BOX@. That file is NOT tracked — **/.mcp.json is globally ignored on an operator box because it carries absolute paths and a seat identity, the same rule deploy/kart-sandbox.template.json follows: the template travels, the wiring does not.",
-  "_why_here": "Opening Claude Code with this directory as the working directory makes it the project root, so this config is what loads and session_enter seats you as willow. The repo root is Heimdallr's Watch. WILLOW_PROJECT_ROOT points at the grove root so the Desk reasons over the whole repository while the seat is chosen by where you opened it.",
+  "_template": "The Watch. Copy to seat/heimdallr/.mcp.json and replace @HOME@ and @VAULT_BOX@. That file is NOT tracked — **/.mcp.json is globally ignored on an operator box because it carries absolute paths and a seat identity.",
+  "_why_here": "This repo is Willow's Grove: the root is the Desk and seats you as willow. The Watch is a lens you deliberately open — served-page honesty, the resident watcher, Gjallarhorn / #alerts, serve-mode auth. Opening Claude Code with this directory as the working directory makes it the project root, so this config is what loads and session_enter seats you as heimdallr. WILLOW_PROJECT_ROOT points at the grove root so the Watch reads the whole repository while the seat is chosen by where you opened it.",
   "mcpServers": {
     "willow-mcp": {
       "type": "stdio",
       "command": "@VAULT_BOX@/venvs/willow-mcp/bin/python",
       "args": ["-m", "willow_mcp"],
       "env": {
-        "WILLOW_APP_ID": "willow",
-        "WILLOW_HUMAN_ORCHESTRATOR": "1",
+        "WILLOW_APP_ID": "heimdallr",
+        "WILLOW_AGENT_NAME": "heimdallr",
+        "AGENT_NAME": "heimdallr",
         "WILLOW_PG_DB": "willow_20",
         "WILLOW_HOME": "@VAULT_BOX@",
         "WILLOW_STORE_ROOT": "@VAULT_BOX@/store",
-        "WILLOW_MCP_EGRESS_PUBLIC_KEY": "@HOME@/.config/willow-mcp/egress/public.pem",
         "WILLOW_HANDOFF_PROJECT": "willows-grove",
         "WILLOW_PROJECT_ROOT": "@HOME@/github/willow-memory/willows-grove",
+        "WILLOW_DEV_SAFE_ROOT": "@HOME@/github",
         "WILLOW_FLEET_ROSTER": "@VAULT_BOX@/fleet.json",
         "WILLOW_KEYRING": "@VAULT_BOX@/config/verifiers.json"
       }

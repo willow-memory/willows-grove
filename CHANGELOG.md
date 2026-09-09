@@ -67,6 +67,32 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Changed
 
+- **The Desk takes the head of the repo; the Watch becomes a seat you open.**
+  Supersedes the arrangement added in PR 48: `seat/willow/` held the seat wiring
+  while the root held Heimdallr's, so reaching the Desk meant opening two levels
+  down — and the root's `.claude/settings.local.json` exported
+  `WILLOW_APP_ID=heimdallr` into every session regardless. That env is not scoped
+  to the root, and `session_start_hook.py:41` resolves `app_id` from its own
+  process environment rather than from `.mcp.json`, so the Desk was seated as the
+  Watch: `sessions/willow-793a857c-….json` and `sessions/heimdallr-793a857c-….json`
+  written in the same second for one session start (gaps `acceefc0ec77`,
+  `3727efb30041`). The root now carries `mcp.template.json` and a tracked
+  `.claude/settings.json` whose hooks pin `WILLOW_APP_ID` inline — the hook cannot
+  inherit a seat from the launching shell. Heimdallr moves to `seat/heimdallr/`
+  with the same shape. `seat/willow/` keeps desk *content* — scripts and
+  `jeles-intake/` — and loses its seat config; the root `.mcp.json` is untracked
+  like every other, beside its tracked template. The persona partition is
+  unchanged: Heimdallr still owns served-page honesty, the resident watcher,
+  Gjallarhorn and serve-mode auth. Two operator-ratified Nestor pairs in
+  `seat/willow/jeles-intake/` still name the old path and need re-sealing by hand
+  — superseding a seal is a human act. `nestor-grove-session` keeps its entry and
+  gains an absolute command, replacing the bare `nestor` that raised ENOENT at
+  every session start; `tests/test_nestor_bundle_domain.py` now pins that argv
+  against `mcp.template.json` rather than the untracked `.mcp.json`, which does
+  not exist in a fresh clone or in CI — the assertions are unchanged, only the
+  file they read moved, on PR 45's precedent that the blueprint travels and the
+  live wiring does not. PR 49.
+
 - **Seat probe binds a Grove sender instead of asserting on an unbound one.**
   `willow-seat.sh probe` called `ratatosk.grove.send()` in a bare process, but
   `crown.py` binds the sender only under `--mcp`, so the check reported
