@@ -8,9 +8,10 @@ same defect class as the unset WILLOW_ROOT that left `gate.py` writable
 
 The map, and why each line matters:
 
-    8765  willow-mcp --serve      tunnelled — the ratified remote seat (KB 2026B306)
+    8765  willow-mcp --serve code default; on this box Nestor UI holds it
     8766  grove_serve.py desk     NEVER tunnelled — loopback only, sealed D4
     8767  grove/mcp_local.py      tunnelled as its own resource
+    8768  operator bind for willow-mcp --serve (phone seat + remote OAuth)
 
 A design document already told a builder to front `willow-mcp --serve` "at
 127.0.0.1:8766" — wrong twice, and it would have published the desk page. These
@@ -29,9 +30,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
-WILLOW_MCP_SERVE_PORT = 8765   # willow-mcp/src/willow_mcp/server.py
+WILLOW_MCP_SERVE_PORT = 8765   # willow-mcp/src/willow_mcp/server.py code default
 GROVE_DESK_PORT = 8766         # grove_serve.py, loopback-only (D4)
 GROVE_MCP_PORT = 8767          # grove/mcp_local.py --serve
+PHONE_WILLOW_MCP_BIND = 8768   # operator table: phone signs in here, not 8765/8766
 
 
 def _declared_mcp_port() -> int:
@@ -82,3 +84,8 @@ def test_desk_page_port_is_unchanged():
 
 def test_the_three_ports_are_distinct():
     assert len({WILLOW_MCP_SERVE_PORT, GROVE_DESK_PORT, GROVE_MCP_PORT}) == 3
+
+
+def test_phone_serve_bind_is_not_the_desk():
+    assert PHONE_WILLOW_MCP_BIND != GROVE_DESK_PORT
+    assert PHONE_WILLOW_MCP_BIND != GROVE_MCP_PORT
