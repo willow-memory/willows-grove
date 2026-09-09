@@ -1,0 +1,117 @@
+#!/usr/bin/env python3
+# b17: GRVHK  ΔΣ=42
+"""grove-hook <client> <action> — the one command Grove's hooks call.
+
+Per governance/proposals/2026-09-02-grove-hooks-and-skills.md §3: one command,
+two dialects, **silence on allow**. A hook that speaks when nothing is wrong
+trains the reader to skip it, and a hook nobody reads is not a gate.
+
+Actions
+  orient    session start — expensive, once. What the seat cannot do, and why.
+  reinject  prompt submit / pre-compact — three lines, byte-stable, every turn.
+            This is the ONLY mid-session surface. A lease or an attestation
+            that dies at hour three is caught here; session start already
+            happened and will not run again.
+  gate      stop — refuse a turn claiming done with no evidence. NOT YET
+            IMPLEMENTED; fails open and says so once.
+  deposit   session end — journal, propose pairs, snapshot. NOT YET
+            IMPLEMENTED; fails open and says so once. A SessionEnd hook cannot
+            block anyway (Nestor's finding, §7).
+
+Exit codes follow the harness contract: 0 allows. This never exits non-zero —
+the two unimplemented actions fail OPEN deliberately, because a half-built hook
+that blocks a turn is worse than one that does nothing.
+"""
+from __future__ import annotations
+
+import json
+import os
+import sys
+
+SEAT_FILE = os.environ.get("GROVE_SEAT_FILE", "")
+APP_ID = os.environ.get("WILLOW_APP_ID", "")
+
+#: The three lines. Byte-stable by construction: a tuple, not a format string
+#: over live state, because §8 check 3 pins them across a session.
+REINJECT = (
+    "Three-state: populated / empty / unreachable — never collapsed.",
+    "Decisions go to Nestor as pairs, not into prose.",
+    "Check before asserting: read the artifact, not the recollection of it.",
+)
+
+
+def _seat_drift() -> str | None:
+    """One line if hooks/seat.md no longer carries the governance line."""
+    if not SEAT_FILE or not os.path.isfile(SEAT_FILE):
+        return f"seat file missing: {SEAT_FILE or '(unset)'}"
+    text = open(SEAT_FILE, encoding="utf-8").read()
+    # Whitespace-normalised on purpose: the anchor spans a line break in the
+    # file, and re-wrapping a paragraph is not drift. A check that fires on
+    # formatting teaches the reader to ignore it, which is how a drift check
+    # dies.
+    flat = " ".join(text.split())
+    anchor = "derived from the trees, never maintained by hand"
+    return None if anchor in flat else "seat.md no longer carries the derived-index line"
+
+
+def orient() -> int:
+    """What this seat cannot do. Reuses willow-mcp's reader rather than
+    re-deriving state here — the proposal's §2 rule that every value is a
+    reader's output, never a field someone sets."""
+    lines = []
+    try:
+        from willow_mcp import blockers
+
+        out = blockers.collect(APP_ID or "willow", os.environ.get("CLAUDE_SESSION_ID", ""))
+        if out["count"]:
+            lines.append(f"blocked on {out['count']}:")
+            for item in out["items"]:
+                lines.append(f"  - {item['summary']}")
+                lines.append(f"    -> {item['effect']}")
+    except Exception as exc:  # reader unavailable is itself worth one line
+        lines.append(f"blockers unreadable: {exc}")
+
+    drift = _seat_drift()
+    if drift:
+        lines.append(f"seat drift: {drift}")
+
+    if lines:  # silence on allow
+        print("\n".join(lines), file=sys.stderr)
+    return 0
+
+
+def reinject() -> int:
+    drift = _seat_drift()
+    payload = list(REINJECT)
+    if drift:
+        payload.append(f"(seat drift: {drift})")
+    print("\n".join(payload))
+    return 0
+
+
+def unimplemented(action: str) -> int:
+    print(
+        f"grove-hook: {action} is declared in hooks/wiring.json but not built yet "
+        f"— failing open. See the proposal §3.",
+        file=sys.stderr,
+    )
+    return 0
+
+
+def main(argv: list[str]) -> int:
+    if len(argv) < 3:
+        print("usage: grove-hook <client> <action>", file=sys.stderr)
+        return 0  # never block on our own misuse
+    action = argv[2]
+    if action == "orient":
+        return orient()
+    if action == "reinject":
+        return reinject()
+    if action in ("gate", "deposit"):
+        return unimplemented(action)
+    print(f"grove-hook: unknown action {action!r} — failing open", file=sys.stderr)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main(sys.argv))
