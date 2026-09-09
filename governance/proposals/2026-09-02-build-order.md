@@ -72,7 +72,7 @@ phone can work:
 |---|---|---|
 | 0 | USB, `adb` | none new; in production one direction already |
 | 1 | LAN, u2u | signed, plaintext: signals only until Gate 6 |
-| 2 | remote, Pangolin terminating at **:8765 only**, never :8766 | the ratified remote seat; Starlink is CGNAT so a public rendezvous is structurally required |
+| 2 | remote, Pangolin terminating at **:8768 only**, never :8766 | the ratified remote seat; Starlink is CGNAT so a public rendezvous is structurally required. Port re-ratified 2026-09-09 — see row 1 below |
 
 And the app itself is a **capability-composition chain**: if Nestor is
 installed, connect it to willow-mcp and Grove; if Jeles, wire the corpus; if
@@ -86,7 +86,7 @@ surfaced at install time instead of call time. Read against that:
 | # | Helps | Hinders or leaves open |
 |---|---|---|
 | 0 | The rung model *is* the phone: a worktree, a manifest, a harness, reach fixed by the box. | — |
-| 1 | Tier 0 and tier 1 touch no port. | **Tier 2 does.** 2026B306 says Pangolin terminates at :8765 only. Operator, 2026-09-02: signing outranks serve, so the Nestor UI holds 8765 and serve sits on 8768, recorded in the port table of the hooks proposal. The remote seat is re-ratified against that table, or serve returns to 8765 once the browser key's origin is fixed (gap `d8b0bea7e205`). The Pangolin adapter landed 2026-09-01 and fronts whichever port the table says. `apps/jarvis` signs in by the same URL. |
+| 1 | Tier 0 and tier 1 touch no port. | **Tier 2 does — SETTLED 2026-09-09.** 2026B306 said Pangolin terminates at :8765 only. Operator, 2026-09-02: signing outranks serve, so the Nestor UI holds 8765 and serve sits on 8768, recorded in the port table of the hooks proposal. Operator, 2026-09-09, ruling: *"serve is on 8768, update the map."* The remote seat is re-ratified against that table; 2026B306's port is superseded and serve does **not** return to 8765 pending the browser-key origin fix (gap `d8b0bea7e205`), which stays a Nestor UI problem rather than a blocker on tier 2. Note 8765 remains the *code* default (`server.py:489`); 8768 is this box's operator bind via the systemd drop-in. The Pangolin adapter landed 2026-09-01 and fronts whichever port the table says. `apps/jarvis` signs in by the same URL. |
 | 2 | The session-end deposit is the sync payload. What a phone session writes into its project Nestor is exactly what `nestor export` carries home and `nestor import --apply` lands. Decision 11 named that primitive; the deposit says what goes in it. | The "store is open, sign?" row assumes a UI on the box. On the phone, signing meets the origin-bound key problem from gap `d8b0bea7e205` a second time. |
 | 3 | A packet is a directory of JSON and Markdown: it copies to a volume unchanged. `failed` and `expires_at` are what a device that leaves for days needs. `envelope_ids` in signed meta make an offline accept checkable. | Accept re-checks the **enforced** registry. Off the box that is a snapshot; the ADR must say accept-offline checks the carried snapshot and re-verifies on sync. Expiry must exceed the sync cadence. |
 | 4 | The registry the snapshot is taken from cannot have been hand-edited. | — |
