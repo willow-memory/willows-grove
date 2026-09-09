@@ -33,6 +33,24 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
   a reader following it would have compiled against a tree that no longer holds
   the fleet.
 
+- **The hook manifest path is exercised, and the Grove declares its hooks
+  through it.** willow-mcp has carried `hook_manifest` / `project_wiring` — a
+  neutral event vocabulary (`session_start`, `prompt_submit`, `pre_compact`,
+  `pre_tool_use`, `stop`, `session_end`, `notification`) that compiles to
+  client-specific hook config — but no registered project declared one, so the
+  compiler had never been run against a real repo. Adds `hooks/wiring.json`
+  (five rows, no `pre_tool_use`), `hooks/grove-hook` (an `<client> <action>`
+  entrypoint whose `orient` reuses `willow_mcp.blockers` rather than
+  re-implementing the checks, and whose `gate`/`deposit` fail open), and
+  `hooks/seat.md`, the drift-pinned seat file. `tests/test_hook_manifest.py`
+  runs eleven assertions through willow-mcp's own compiler, so the wiring is
+  validated by the thing that will consume it rather than by a copy. The audit
+  this enables caught PR 49's hand-written tracked hook config mechanically,
+  which is the point: the manifest is what makes hook drift detectable instead
+  of a thing someone has to notice. `wiring.json` carries a `_provisional` key
+  admitting it is hand-authored contrary to §6 until the generator lands.
+  PR 53.
+
 ### Removed
 
 - **`envelopes/pre-approved.json` is no longer tracked — the live register is
