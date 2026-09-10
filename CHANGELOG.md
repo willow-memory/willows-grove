@@ -219,6 +219,16 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Fixed
 
+- **The persona checker kept its own copy of the fleet roster.** (PR 55)
+  `check_persona_provenance.py` held the closed persona set as a frozenset
+  literal, though INVARIANTS §11 names `governance/fleet_personas.json` as the
+  source. The two had already drifted: `schmidt` reached the roster and never
+  the literal, so a commit naming a real fleet member would have been reported
+  as drift. The checker now reads the file, refuses `_meta`, and fails closed
+  when the roster is missing, malformed or empty. The synthetic-repo fixture
+  stands up its own roster containing `quill` — a name in no fleet literal
+  anywhere, so a commit naming it passing proves the file was read.
+
 - **The coverage report could not see most of the constitution.** (PR 54)
   The charter says clauses inherit their article's Trace ID, but only Article 0
   wrote its clause IDs out, and `const_coverage.py` scanned for literal
