@@ -310,11 +310,14 @@ declared in-file (`roster-design-intent-unrecorded`).
 
 **D4 — May the Grove desktop run as served HTML?** *(sealed)*
 Yes, on 127.0.0.1 with OAuth 2.1 / PKCE — precedent set by
-`willow-mcp/src/willow_mcp/gates_serve.py` on `:8765`. The "no web ports"
+`willow-mcp/src/willow_mcp/gates_serve.py` on `:8788`. The "no web ports"
 rule in `safe-app-willow-grove/CLAUDE.md` is renegotiated by this
 pattern; the operator has confirmed there are examples of served surfaces
 within the rules.
-- evidence: `willow-mcp/src/willow_mcp/gates_serve.py` (127.0.0.1 admin surface with OAuth + polling refresh)
+- evidence: `willow-mcp/src/willow_mcp/gates_serve.py` (127.0.0.1 admin surface with OAuth + polling refresh; `run()` defaults to port 8788)
+- correction 2026-09-10: this block previously cited `:8765`, which is the
+  Nestor UI's port on the operator box, not the gates surface. Measured
+  against the module; the decision is unchanged, only the evidence line.
 
 **D5 — Does Grove re-implement Jarvis's memory?** *(sealed)*
 No. Grove calls `apps/jarvis` handlers (`remember`/`recall`/`forget`/
