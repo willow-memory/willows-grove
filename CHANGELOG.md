@@ -6,6 +6,16 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Added
 
+- **The first coverage verdict is on the record.** (PR 57) `CONST-X-4`, the
+  Concurrence Rule, is declared `differently`: `ratatosk.permission` composes
+  conjunctively and fails closed exactly as the clause requires, but over two
+  in-process tool vocabularies (`PolicyStore`, `CapabilityGate`) rather than the
+  six constitutional authorities it names — neither passing nor failing, which is
+  what Appendix A's four-verdict scale exists for. `_status` no longer says the
+  file is empty on purpose, and records that the remaining 64 undeclared rows are
+  a statement about what has been judged, not about what is enforced. `CONST-X`
+  stays undeclared; X.1–X.3 are untouched by anything in either tree.
+
 - **ratatosk is on the persona roster.** (PR 56) It was a fleet member by
   every measure except `governance/fleet_personas.json` — a willow-mcp manifest
   (`app_id ratatosk`, `role session_runtime`), a Grove sender identity posting
