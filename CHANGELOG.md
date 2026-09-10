@@ -6,6 +6,18 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Added
 
+- **ratatosk is on the persona roster.** (PR 56) It was a fleet member by
+  every measure except `governance/fleet_personas.json` — a willow-mcp manifest
+  (`app_id ratatosk`, `role session_runtime`), a Grove sender identity posting
+  under its own name, a released package on the `[tool.willow.fleet]` roster —
+  so §11 rejected trailers naming the seat that did the work. Registered at
+  `trust: WORKER` alongside jeles, binder, publius and schmidt, following its
+  manifest: it denies `envelope_ratify`, `envelope_propose`, `kb_promote`,
+  `knowledge_ingest` and `human_attestation_create`, so it carries work and
+  mints nothing. `voice_source: inferred`, with `_meta.notes` moved from 17
+  entries to 18 and the inferred count from 8 to 9. Inert until PR #55 makes the
+  checker read the roster.
+
 - **The Desk seat is wired, not only described.** `CLAUDE.md` (PR 46) named
   `seat/willow/` as where the Willow seat opens while nothing implemented it:
   the repo's only willow-mcp wiring was `.cursor/mcp.json`, and it declared
