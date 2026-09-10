@@ -11,10 +11,12 @@ Base branch:
 - CI: `$GITHUB_BASE_REF` (set by GitHub Actions on pull_request events).
 - Locally: falls back to `master`, then `main`.
 
-Fleet personas: the closed set below mirrors
-`willow-memory/willow/fleet_personas.json`. willow-memory is a sibling
-repo not always present in CI; the set is hardcoded and reviewed on any
-change to the fleet roster.
+Fleet personas: read from `governance/fleet_personas.json`, which is the
+roster §11 names as the source. That file is in this repo, so CI always
+has it. It used to be a frozenset copied into this script instead —
+justified by a sibling repo not always being present in CI, which the
+in-repo copy already solved — and the two drifted: `schmidt` reached the
+roster and never the literal.
 
 Exits 0 when every code-changing non-merge commit carries a valid
 trailer; non-zero and lists each drift on failure.
@@ -22,6 +24,7 @@ trailer; non-zero and lists each drift on failure.
 
 from __future__ import annotations
 
+import json
 import os
 import re
 import subprocess
@@ -30,27 +33,35 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
-# The closed set of fleet persona keys. Sourced from
-# willow-memory/willow/fleet_personas.json — verbatim, lowercase.
-# Any commit whose Persona: trailer names a value outside this set is drift.
-FLEET_PERSONAS = frozenset({
-    "willow",
-    "heimdallr",
-    "hanuman",
-    "opus",
-    "ada",
-    "steve",
-    "kart",
-    "shiva",
-    "ganesha",
-    "skirnir",
-    "loki",
-    "vishwakarma",
-    "jeles",
-    "binder",
-    "publius",
-    "nestor",
-})
+# The roster INVARIANTS.md §11 names as the source: "The trailer's value is a
+# key from `governance/fleet_personas.json` (verbatim, lowercase)".
+FLEET_ROSTER = REPO_ROOT / "governance" / "fleet_personas.json"
+
+
+def load_fleet_personas(path: Path = FLEET_ROSTER) -> tuple[frozenset[str], str | None]:
+    """Read the closed set of persona keys from the roster.
+
+    This used to be a frozenset copied into this file. Two copies of a list
+    drift, and this pair had: `schmidt` was added to the roster and never to
+    the literal, so a commit honestly naming a roster member was reported as
+    drift. §11 names the JSON as the source, so read the JSON.
+
+    `_meta` is not a persona and is refused — §11 says so outright.
+
+    Returns (personas, unreadable_reason). A checker that cannot read its own
+    subject has to fail closed rather than pass everything: Appendix B, *a gate
+    that cannot check its subject is not a weaker gate; it is no gate*.
+    """
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as err:
+        return frozenset(), f"could not read the fleet roster {path}: {err}"
+    if not isinstance(raw, dict):
+        return frozenset(), f"{path}: expected an object of persona keys"
+    names = {key.lower() for key in raw if key != "_meta"}
+    if not names:
+        return frozenset(), f"{path}: no personas found — refusing to validate against an empty roster"
+    return frozenset(names), None
 
 # File extensions §11 considers "tracked code" — a commit that only touches
 # files outside this set (worktree scaffolding, generated artifacts) is
@@ -118,7 +129,7 @@ def _personas_from_message(message: str) -> list[str]:
     return [m.group(1).lower() for m in TRAILER_RE.finditer(message)]
 
 
-def check_commit(sha: str) -> list[str]:
+def check_commit(sha: str, personas_allowed: frozenset[str]) -> list[str]:
     """Return a list of drift strings for this commit (empty if clean)."""
     if _is_merge(sha):
         return []
@@ -132,10 +143,10 @@ def check_commit(sha: str) -> list[str]:
         return [f"{sha[:12]}: no `Persona:` trailer — '{short}'"]
     drifts: list[str] = []
     for persona in personas:
-        if persona not in FLEET_PERSONAS:
+        if persona not in personas_allowed:
             drifts.append(
                 f"{sha[:12]}: `Persona: {persona}` names no fleet member — "
-                f"expected one of {sorted(FLEET_PERSONAS)}"
+                f"expected one of {sorted(personas_allowed)}"
             )
     return drifts
 
@@ -150,9 +161,16 @@ def main() -> int:
     if not commits:
         print(f"persona-provenance: no commits on HEAD past {base}")
         return 0
+    personas_allowed, roster_problem = load_fleet_personas()
+    if roster_problem:
+        # Fail closed. Validating every trailer against an empty set would pass
+        # nothing; validating against no set at all would pass everything, and
+        # the second is the dangerous one.
+        print(f"persona-provenance: {roster_problem}", file=sys.stderr)
+        return 1
     all_drifts: list[str] = []
     for sha in commits:
-        all_drifts.extend(check_commit(sha))
+        all_drifts.extend(check_commit(sha, personas_allowed))
     if all_drifts:
         print(
             f"persona-provenance: {len(all_drifts)} drift(s) across "

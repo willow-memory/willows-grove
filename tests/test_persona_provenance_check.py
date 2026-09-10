@@ -11,6 +11,7 @@ specific commit.
 
 from __future__ import annotations
 
+import json
 import subprocess
 import sys
 from pathlib import Path
@@ -52,14 +53,40 @@ def _run_checker(cwd: Path) -> subprocess.CompletedProcess:
     )
 
 
+#: The roster a synthetic repo stands up for itself. It deliberately does NOT
+#: match the real fleet: `quill` exists only here, so a test that accepts it
+#: proves the checker read this file rather than a set copied into the script.
+SYNTHETIC_ROSTER = {
+    "_meta": {"schema": "fleet-personas/v1", "note": "test fixture"},
+    "heimdallr": {"trust": "ENGINEER"},
+    "hanuman": {"trust": "ENGINEER"},
+    "loki": {"trust": "ENGINEER"},
+    "willow": {"trust": "OPERATOR"},
+    "quill": {"trust": "ENGINEER"},
+}
+
+
+def _write_roster(repo: Path, roster: dict) -> Path:
+    path = repo / "governance" / "fleet_personas.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(roster, indent=2), encoding="utf-8")
+    return path
+
+
 @pytest.fixture
 def synthetic_repo(tmp_path: Path) -> Path:
-    """A fresh git repo with a `master` branch and a working branch."""
+    """A fresh git repo with a `master` branch and a working branch.
+
+    It carries its own `governance/fleet_personas.json`, because the checker
+    reads the roster from the repo it is checking rather than from a literal
+    copied into the script.
+    """
     repo = tmp_path / "repo"
     repo.mkdir()
     _git(repo, "init", "-q", "-b", "master")
     _git(repo, "config", "user.email", "heimdallr@fleet.willow")
     _git(repo, "config", "user.name", "Heimdallr")
+    _write_roster(repo, SYNTHETIC_ROSTER)
     (repo / "seed.py").write_text("# seed\n", encoding="utf-8")
     _git(repo, "add", "seed.py")
     _git(repo, "commit", "-q", "-m", "seed\n\nPersona: heimdallr")
@@ -152,3 +179,65 @@ def test_repo_tree_clean() -> None:
         + result.stdout
         + result.stderr
     )
+
+
+def test_the_roster_file_is_what_is_read(synthetic_repo: Path) -> None:
+    """`quill` is in this repo's roster and in no fleet literal anywhere. If it
+    passes, the checker read the file."""
+    _commit(synthetic_repo, "feat: something\n\nPersona: quill")
+    result = _run_checker(synthetic_repo)
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_a_name_absent_from_the_roster_is_still_drift(synthetic_repo: Path) -> None:
+    _commit(synthetic_repo, "feat: something\n\nPersona: nobody")
+    result = _run_checker(synthetic_repo)
+    assert result.returncode != 0
+    assert "names no fleet member" in result.stdout + result.stderr
+
+
+def test_meta_is_not_a_persona(synthetic_repo: Path) -> None:
+    """§11 says so outright, and `_meta` is a key like any other in the JSON."""
+    _commit(synthetic_repo, "feat: something\n\nPersona: _meta")
+    result = _run_checker(synthetic_repo)
+    assert result.returncode != 0
+
+
+def test_an_unreadable_roster_fails_closed(synthetic_repo: Path) -> None:
+    """A checker that cannot read its own subject must not pass everything.
+
+    Appendix B: a gate that cannot check its subject is not a weaker gate; it
+    is no gate.
+    """
+    (synthetic_repo / "governance" / "fleet_personas.json").unlink()
+    _commit(synthetic_repo, "feat: something\n\nPersona: heimdallr")
+    result = _run_checker(synthetic_repo)
+    assert result.returncode != 0
+    assert "could not read the fleet roster" in result.stdout + result.stderr
+
+
+def test_a_roster_with_no_personas_is_refused(synthetic_repo: Path) -> None:
+    """An empty roster would reject every trailer; say why rather than
+    reporting each honest commit as drift."""
+    _write_roster(synthetic_repo, {"_meta": {"schema": "fleet-personas/v1"}})
+    _commit(synthetic_repo, "feat: something\n\nPersona: heimdallr")
+    result = _run_checker(synthetic_repo)
+    assert result.returncode != 0
+    assert "no personas found" in result.stdout + result.stderr
+
+
+def test_schmidt_is_accepted_by_the_real_roster() -> None:
+    """The drift that motivated this: `schmidt` reached
+    governance/fleet_personas.json and never the literal in the script, so a
+    commit naming a real fleet member was reported as drift."""
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("_persona_probe", SCRIPT)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    personas, problem = module.load_fleet_personas()
+    assert problem is None
+    assert "schmidt" in personas
+    assert "_meta" not in personas
