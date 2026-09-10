@@ -219,6 +219,19 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Fixed
 
+- **The coverage report could not see most of the constitution.** (PR 54)
+  The charter says clauses inherit their article's Trace ID, but only Article 0
+  wrote its clause IDs out, and `const_coverage.py` scanned for literal
+  `CONST-*` strings — so it reported 21 identifiers for a document that has 65,
+  counting the Trace-ID sentence's own examples as definitions while every
+  clause of Articles I–XIII stayed invisible. `CONST-X-4` could not be reported
+  at all, though ratatosk's permission seam enforces and cites it. Clause IDs
+  are now derived from the document's own headings. Adds the unchecked
+  direction too — a Trace ID cited in the tree that matches no clause, which
+  surfaces `CONST-0-3-II` (a compliance-case ID, not a clause) and
+  `CONST-X-N` (a shape placeholder). Verdicts are untouched and remain the
+  operator's to record.
+
 - **`scripts/grove-serve` installed a unit bound to 8765 — the port holding the
   operator's origin-bound browser key.** Grove MCP serve mode is 8767; the
   toggle script had kept 8765 as its default while the module and the launcher

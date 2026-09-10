@@ -56,8 +56,20 @@ EXIT_OK, EXIT_ANSWER_IS_NO, EXIT_CANNOT = 0, 1, 2
 
 VERDICTS = ("satisfied", "differently", "not applicable", "failing")
 
-# A Trace ID: CONST-0, CONST-IV, CONST-0-3, CONST-IV-5, CONST-0-3-II.
+# A Trace ID as an artifact writes it: CONST-0, CONST-IV, CONST-0-3, CONST-IV-5.
 TRACE_RE = re.compile(r"\bCONST-(?:0|[IVX]+)(?:-[0-9A-Za-z]+)*\b")
+
+# How the constitution declares an article and a clause. Trace IDs are derived
+# from these rather than read as literal `CONST-*` strings, because the document
+# says clauses INHERIT their article's identifier — "every Article carries a
+# stable identifier (CONST-0, CONST-I, …); clauses inherit it (CONST-0-1 …
+# CONST-0-6; CONST-I-1 …)". Only Article 0 ever wrote its clause IDs out, so a
+# literal scan saw 6 clauses plus whatever that sentence's own examples
+# mentioned, and reported ~21 where the charter has 51. Every clause of Articles
+# I–XIII was invisible, and so was any artifact citing one.
+_ARTICLE_HEADING = re.compile(r"##\s+Article\s+(0|[IVX]+)\s")
+#: `**§0.1 — …**`, `**I.1 — …**`, `**V.4a — …**`, `**VII.default — …**`
+_CLAUSE_HEADING = re.compile(r"\*\*§?(0|[IVX]+)\.([0-9A-Za-z]+)\s")
 
 SKIP_DIRS = {
     ".git", "node_modules", "__pycache__", ".venv", "venv", ".pytest_cache",
@@ -70,23 +82,37 @@ TEXT_SUFFIXES = {
 
 
 def clauses_from_constitution(path: Path) -> tuple[list[str], str | None]:
-    """Parse the Trace IDs this constitution defines.
+    """Derive the Trace IDs this constitution defines, from its own structure.
 
     Returns (ids, unreadable_reason). The reason is non-None when the document
-    could not be read at all — reported rather than silently yielding zero
-    clauses, which would render as a vacuously clean sweep.
+    could not be read or yielded no headings at all — reported rather than
+    silently returning zero clauses, which would render as a vacuously clean
+    sweep.
+
+    Definitions come from article and clause **headings**, in document order,
+    de-duplicated. They are deliberately not taken from prose any more: the
+    sentence that explains the Trace-ID scheme names `CONST-0-1` and `CONST-I-1`
+    as examples, and a literal scan counted those examples as definitions while
+    missing the 45 clauses that carry no written ID. Structure is the authority
+    here, and it is still only ever this document's own structure.
     """
     try:
         text = path.read_text(encoding="utf-8")
     except OSError as err:
         return [], f"could not read {path}: {err}"
-    # Definitions come from the headings and the clause markers, in document
-    # order, de-duplicated. Anything the document merely mentions in prose is
-    # still a definition here: this document is the only authority on which
-    # clauses exist.
+
     seen: dict[str, None] = {}
-    for match in TRACE_RE.finditer(text):
-        seen.setdefault(match.group(0), None)
+    for line in text.splitlines():
+        article = _ARTICLE_HEADING.match(line.strip())
+        if article:
+            seen.setdefault(f"CONST-{article.group(1)}", None)
+            continue
+        clause = _CLAUSE_HEADING.match(line.strip())
+        if clause:
+            seen.setdefault(f"CONST-{clause.group(1)}-{clause.group(2)}", None)
+
+    if not seen:
+        return [], f"{path}: no article or clause headings found — refusing to report a clean sweep"
     return list(seen), None
 
 
@@ -159,12 +185,26 @@ def build_report(roots: list[Path]) -> dict:
                 note = "no citation found in the scanned roots and no verdict recorded"
         rows.append({"clause": cid, "verdict": verdict, "citations": cites, "note": note})
 
+    # The other direction, which nothing checked: an artifact citing a Trace ID
+    # no clause defines. Such a citation reads as diligence and enforces
+    # nothing — it cannot appear in any row, so the report stayed silent about
+    # it. Both known kinds are worth seeing: a clause ID the charter never
+    # declares, and a *case* ID shaped like one (`CONST-0-3-II` is the TRACE_ID
+    # of a compliance case, not a clause).
+    known = set(clauses)
+    unknown = [
+        {"clause": cid, "citations": sorted(set(paths))}
+        for cid, paths in sorted(citations.items())
+        if cid not in known
+    ]
+
     return {
         "clauses_defined": len(clauses),
         "roots_scanned": [str(r) for r in roots],
         "unreadable": unreadable,
         "declarations_problem": decl_problem,
         "rows": rows,
+        "unknown_citations": unknown,
     }
 
 
@@ -196,6 +236,14 @@ def render(report: dict) -> str:
         out.append(f"  {row['clause']:<{width}}  {row['verdict']:<14}  {cites}")
         if row["note"]:
             out.append(f"  {'':<{width}}  └─ {row['note']}")
+    if report.get("unknown_citations"):
+        out.append("")
+        out.append("cited, but no such clause in the constitution:")
+        for entry in report["unknown_citations"]:
+            where = ", ".join(entry["citations"][:3])
+            if len(entry["citations"]) > 3:
+                where += f" (+{len(entry['citations']) - 3})"
+            out.append(f"  {entry['clause']}  —  {where}")
     if report["unreadable"]:
         out.append("")
         out.append("unreadable paths:")
