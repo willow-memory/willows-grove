@@ -21,8 +21,11 @@ This test reads both files and asserts they agree.
 from __future__ import annotations
 
 import re
+import sys
+import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 PYPROJECT = REPO_ROOT / "pyproject.toml"
@@ -57,6 +60,30 @@ class VersionChangelogSyncTests(unittest.TestCase):
             _released_versions(),
             f"no released `## [X.Y.Z]` section found in {CHANGELOG}",
         )
+
+    def test_both_readers_fire_on_a_planted_stale_fallback(self) -> None:
+        """Planted: a pyproject whose fallback still says 0.9.0 under a
+        changelog whose newest release is 0.10.0, with `[Unreleased]` above
+        it. The two readers must return exactly those — the stale fallback,
+        the releases newest-first, `Unreleased` nowhere — so the sync pin
+        above would fail on this pair."""
+        with tempfile.TemporaryDirectory() as tmp:
+            pyproject = Path(tmp) / "pyproject.toml"
+            pyproject.write_text(
+                '[tool.hatch.version]\nsource = "vcs"\nfallback-version = "0.9.0"\n',
+                encoding="utf-8",
+            )
+            changelog = Path(tmp) / "CHANGELOG.md"
+            changelog.write_text(
+                "# Changelog\n\n## [Unreleased]\n\n## [0.10.0] - 2026-09-01\n\n"
+                "## [0.9.0] - 2026-08-01\n",
+                encoding="utf-8",
+            )
+            module = sys.modules[__name__]
+            with mock.patch.object(module, "PYPROJECT", pyproject), \
+                    mock.patch.object(module, "CHANGELOG", changelog):
+                self.assertEqual(_fallback_version(), "0.9.0")
+                self.assertEqual(_released_versions(), ["0.10.0", "0.9.0"])
 
     def test_fallback_matches_latest_released_changelog_version(self) -> None:
         fallback = _fallback_version()

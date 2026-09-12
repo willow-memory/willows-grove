@@ -48,7 +48,10 @@ from __future__ import annotations
 
 import os
 import re
+import sys
+import tempfile
 import unittest
+from unittest import mock
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DOC_PATH = os.path.join(ROOT, "docs", "ARCHITECTURE.md")
@@ -115,6 +118,23 @@ class ArchitectureLinksTests(unittest.TestCase):
                     "tree (by design)' and lives at the archived "
                     "rudi193-cmd/safe-app-willow-grove — name it, do not link it",
                 )
+
+    def test_the_link_parser_fires_on_a_planted_dead_link(self) -> None:
+        """Planted: a document carrying one relative link to a file that
+        does not exist, one absolute URL and one bare anchor. The parser
+        must return exactly the relative target — the self-check above
+        proves it sees the real document; this proves it would object."""
+        with tempfile.TemporaryDirectory() as tmp:
+            doc = os.path.join(tmp, "ARCHITECTURE.md")
+            with open(doc, "w", encoding="utf-8") as fh:
+                fh.write(
+                    "See [the schema](../nowhere/schema.sql#tables), "
+                    "[the archive](https://example.invalid/x) and [below](#below).\n"
+                )
+            with mock.patch.object(sys.modules[__name__], "DOC_PATH", doc):
+                targets = _relative_targets()
+            self.assertEqual(targets, ["../nowhere/schema.sql"])
+            self.assertFalse(os.path.exists(os.path.join(tmp, targets[0])))
 
 
 if __name__ == "__main__":

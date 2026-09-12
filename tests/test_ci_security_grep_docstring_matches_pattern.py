@@ -93,3 +93,23 @@ def test_every_docstring_pattern_is_backed_by_PATTERN():
         "docstring claims pattern(s) with no counterpart in PATTERN: "
         f"{unbacked!r}. PATTERN was: {pattern_raw!r}"
     )
+
+
+def test_both_parsers_fire_on_a_planted_script_whose_docstring_overclaims():
+    """Planted: the m34 script as it was — a docstring bullet claiming
+    `input().*shell` and a PATTERN with no `input(` alternation. Both
+    parsers must return what they saw, so the reconciliation above would
+    name the unbacked token."""
+    planted = (
+        "#!/usr/bin/env bash\n"
+        "# Patterns\n"
+        "#   - os.system(              — arbitrary shell invocation\n"
+        "#   - input().*shell          — never in PATTERN\n"
+        "# Allowlist\n"
+        "#   - none\n"
+        "PATTERN='os\\.system\\('\n"
+    )
+    assert _docstring_claimed_patterns(planted) == ["os.system(", "input().*shell"]
+    decoded = _unescape(_extract_pattern_variable(planted))
+    assert decoded == "os.system("
+    assert "input(" not in decoded

@@ -207,3 +207,30 @@ def test_wrapper_runs_real_tests_when_present(tmp_path):
     assert "1 passed" in result.stdout, (
         f"expected pytest to actually collect and run the test: {result.stdout}"
     )
+
+
+def test_the_step_slicer_fires_on_a_planted_hashfiles_guard():
+    """Planted: a workflow whose target step still carries the hashFiles-only
+    guard, followed by another step and an aggregate job. The slice must
+    surface the guard — and stop at the next step, so a guard on a
+    neighbour (or an `if: always()` on the aggregate job) is never pinned
+    on this step."""
+    planted = (
+        "jobs:\n"
+        "  test-suite:\n"
+        "    steps:\n"
+        f"      - name: {STEP_NAMES[0]}\n"
+        "        if: ${{ hashFiles('tests/e2e_ollama/test_*.py') != '' }}\n"
+        "        run: python3 -m pytest tests/e2e_ollama\n"
+        "      - name: Next step\n"
+        "        if: ${{ always() }}\n"
+        "        run: echo next\n"
+        "  test:\n"
+        "    needs: [test-suite]\n"
+        "    if: always()\n"
+    )
+    body = _extract_step(planted, STEP_NAMES[0])
+    assert "hashFiles(" in body and "if:" in body, "the planted guard must be in the slice"
+    assert "echo next" not in body and "always()" not in body, (
+        "the slice must stop at the next step; a neighbour's guard is not this step's"
+    )

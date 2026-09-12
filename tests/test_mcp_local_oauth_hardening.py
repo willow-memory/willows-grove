@@ -37,6 +37,13 @@ MCP_LOCAL_PATH = REPO / "grove" / "mcp_local.py"
 
 # ── #14: `_gate` + `_resolve_serve_identity` are dead code, deleted ────────
 
+def _defined_at_module_scope(src: str, name: str) -> bool:
+    """True if `src` defines `def <name>(` at column 0 — the durable
+    statement that the function exists, as against a call site or a
+    nested helper that happens to share the name."""
+    return re.search(rf"^def {re.escape(name)}\(", src, flags=re.M) is not None
+
+
 def test_gate_dead_code_removed():
     """Loki finding #14 (PR 12) — `_gate` has zero call sites in
     grove/mcp_local.py. Actual serve-mode refusal is done by
@@ -48,14 +55,32 @@ def test_gate_dead_code_removed():
     gone, but the definition is the durable statement.
     """
     src = MCP_LOCAL_PATH.read_text()
-    assert not re.search(r"^def _gate\(", src, flags=re.M), (
+    assert not _defined_at_module_scope(src, "_gate"), (
         "_gate is dead code (INVARIANTS.md §7 refusal is via "
         "AuthSettings.required_scopes + _require_scope). Delete it."
     )
-    assert not re.search(r"^def _resolve_serve_identity\(", src, flags=re.M), (
+    assert not _defined_at_module_scope(src, "_resolve_serve_identity"), (
         "_resolve_serve_identity is dead code — the seam _gate consulted "
         "and _gate is gone. Delete it."
     )
+
+
+def test_the_definition_grep_fires_on_a_planted_revived_gate():
+    """Planted: a module that defines `_gate` at module scope again —
+    the pretender back — beside a nested `_gate` and a bare call, neither
+    of which is a definition. The grep must fire on the first and clear
+    the other two."""
+    revived = "def _gate(request):\n    return True\n"
+    assert _defined_at_module_scope(revived, "_gate")
+    assert not _defined_at_module_scope(revived, "_resolve_serve_identity")
+
+    not_a_definition = (
+        "def outer():\n"
+        "    def _gate(request):\n"
+        "        return True\n"
+        "    return _gate(None)\n"
+    )
+    assert not _defined_at_module_scope(not_a_definition, "_gate")
 
 
 # ── #15: `_remote_is_loopback` is proxy-aware (opt-in) ────────────────

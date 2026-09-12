@@ -28,7 +28,10 @@ from __future__ import annotations
 
 import os
 import re
+import sys
+import tempfile
 import unittest
+from unittest import mock
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SCHEMA_SQL = os.path.join(ROOT, "schema.sql")
@@ -140,6 +143,36 @@ class SchemaCompletenessTests(unittest.TestCase):
             "table to ALLOWED_SELF_CREATING with the runtime fallback "
             "that makes schema.sql's silence safe.",
         )
+
+    def test_both_readers_fire_on_a_planted_tree_with_an_uncreated_table(self) -> None:
+        """Planted: a reader that selects from `grove.ghosts`, joins
+        `public.tasks` and reads `pg_catalog.pg_trigger`, beside a schema.sql
+        that creates only `messages` (bare, so it qualifies to `grove.`).
+        The reference reader must return the two qualified application
+        tables and drop the catalog; the schema reader must return the one
+        created table qualified — so the set-diff above would name
+        `grove.ghosts` and `public.tasks` on this tree."""
+        with tempfile.TemporaryDirectory() as tmp:
+            os.mkdir(os.path.join(tmp, "grove"))
+            with open(os.path.join(tmp, "grove_reader.py"), "w", encoding="utf-8") as fh:
+                fh.write(
+                    'cur.execute("SELECT 1 FROM grove.ghosts g JOIN public.tasks t '
+                    'ON t.id = g.task_id")\n'
+                    'cur.execute("SELECT 1 FROM pg_catalog.pg_trigger")\n'
+                )
+            schema = os.path.join(tmp, "schema.sql")
+            with open(schema, "w", encoding="utf-8") as fh:
+                fh.write("CREATE TABLE IF NOT EXISTS messages (id bigint);\n")
+            module = sys.modules[__name__]
+            with mock.patch.object(module, "ROOT", tmp), \
+                    mock.patch.object(module, "SCHEMA_SQL", schema):
+                referenced = _referenced_tables()
+                created = _schema_sql_tables()
+        self.assertEqual(
+            referenced,
+            {"grove.ghosts": {"grove_reader.py"}, "public.tasks": {"grove_reader.py"}},
+        )
+        self.assertEqual(created, {"grove.messages"})
 
     def test_the_audit_actually_finds_table_references(self) -> None:
         """Guard against a regex that silently stops matching — the

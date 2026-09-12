@@ -52,6 +52,21 @@ class NoHardcodedStatusTests(unittest.TestCase):
         self.html = grove_html.render_page()
         self.visible = _visible_text_fragments(self.html)
 
+    def test_the_visible_text_reader_fires_on_a_planted_static_strip(self) -> None:
+        """Planted: the pre-fix top strip — `standing` and `grove stable` as
+        bare text between tags — beside the same words in a class and an
+        id. The reader must return the two visible claims and neither
+        attribute value, so both pins above would fail on this markup and
+        a `class="standing"` would still not trip them."""
+        planted = (
+            '<div class="standing" id="grove-stable">'
+            '<span>standing</span> <span> grove stable </span></div>'
+        )
+        self.assertEqual(
+            _visible_text_fragments(planted), ["standing", "grove stable"]
+        )
+        self.assertNotIn("grove-stable", _visible_text_fragments(planted))
+
     def test_top_strip_does_not_claim_standing_as_visible_text(self) -> None:
         """INVARIANTS.md §8 / Constraint 1: 'standing' must not appear as
         static visible text — that is a status claim with no source

@@ -121,3 +121,22 @@ def test_claude_md_does_not_reference_phantom_grove_standalone() -> None:
         "no such file or package exists in the tree (Grove v0.9 PR 12, "
         "Loki finding #24; INVARIANTS.md §6)."
     )
+
+
+def test_the_u2u_line_reader_fires_on_a_planted_encryption_claim() -> None:
+    """Planted: the withdrawn CLAUDE.md row — `u2u/` described as an
+    encrypted transport — beside a line that does not name u2u and one
+    that names `u2u-security-limits.md`. The reader must return exactly
+    the two u2u lines, offending one included, so the pin above would
+    fail on it."""
+    planted = (
+        "| `grove/` | Grove Python package |\n"
+        "| `u2u/` | Encrypted LAN transport for DMs |\n"
+        "See docs/design/u2u-security-limits.md for what u2u guarantees.\n"
+    )
+    lines = _u2u_lines(planted)
+    assert lines == [
+        "| `u2u/` | Encrypted LAN transport for DMs |",
+        "See docs/design/u2u-security-limits.md for what u2u guarantees.",
+    ]
+    assert any("Encrypted" in line for line in lines)

@@ -20,7 +20,10 @@ from __future__ import annotations
 import os
 import re
 import stat
+import sys
+import tempfile
 import unittest
+from unittest import mock
 
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -55,6 +58,27 @@ class DocumentedEntrypointsExistTests(unittest.TestCase):
         self.assertIn("deploy/grove-serve.service.template", refs)
         self.assertIn("scripts/grove-watcher-run", refs)
         self.assertIn("deploy/grove-watcher.service.template", refs)
+
+    def test_the_reference_parser_fires_on_a_planted_missing_launcher(self) -> None:
+        """Planted: a guide naming one launcher that does not ship and
+        one unit template that does not either, in the three spellings the
+        pattern is meant to read (bare, backticked, a markdown link). The
+        parser must return both paths so the existence audit above would
+        fail on the document."""
+        with tempfile.TemporaryDirectory() as tmp:
+            doc = os.path.join(tmp, "guide.md")
+            with open(doc, "w", encoding="utf-8") as fh:
+                fh.write(
+                    "Run ./scripts/grove-phantom-run, install "
+                    "`deploy/grove-phantom.service.template`, see "
+                    "[`scripts/grove-phantom-run`](../scripts/grove-phantom-run).\n"
+                )
+            with mock.patch.object(sys.modules[__name__], "DOC_PATH", doc):
+                refs = _referenced_paths()
+        self.assertEqual(
+            refs, {"scripts/grove-phantom-run", "deploy/grove-phantom.service.template"}
+        )
+        self.assertFalse(any(os.path.exists(os.path.join(ROOT, r)) for r in refs))
 
     def test_every_documented_path_exists(self) -> None:
         missing = sorted(

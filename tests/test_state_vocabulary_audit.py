@@ -106,6 +106,22 @@ class StateVocabularyAuditTests(unittest.TestCase):
             "ALLOWED_SENTINELS with the reason it is not a resting state.",
         )
 
+    def test_the_literal_reader_fires_on_a_planted_pre_section_1_component(self) -> None:
+        """Planted: the PR 9 shape — a component assigning `ready` and
+        `error`, branching on `data-state="ok"` and setting
+        `data-state` to `failed` — beside one §1 word. The reader must
+        return all five, so the audit above would name four strays on
+        this source."""
+        planted = (
+            'this._state = ok ? "ready" : "error";\n'
+            'this._state = "populated";\n'
+            'const css = `:host([data-state="ok"]) { color: red }`;\n'
+            "this.setAttribute('data-state', 'failed');\n"
+        )
+        literals = _state_literals(planted)
+        self.assertEqual(literals, {"ready", "error", "ok", "failed", "populated"})
+        self.assertEqual(literals - ALLOWED, {"ready", "error", "ok", "failed"})
+
     def test_the_audit_actually_reads_state_literals(self) -> None:
         """Guard against a regex that silently stops matching — the
         failure mode that turns this whole file into a green no-op."""

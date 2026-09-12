@@ -52,6 +52,7 @@ from __future__ import annotations
 import os
 import pathlib
 import re
+import tempfile
 import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -97,6 +98,31 @@ class SweepSanityTests(unittest.TestCase):
             f"found only {total} relative links across the docs — the pattern "
             "has stopped matching and this file is no longer auditing anything",
         )
+
+
+class SweepPlantTests(unittest.TestCase):
+    """The link parser, shown to fire."""
+
+    def test_the_link_parser_fires_on_a_planted_document(self) -> None:
+        """Planted: one dead relative link, one that climbs out of the
+        tree, one absolute URL and one bare anchor. The parser must return
+        the two relative targets and nothing else — the two audits above
+        then judge them, and both would fail on this document."""
+        with tempfile.TemporaryDirectory() as tmp:
+            doc = pathlib.Path(tmp) / "docs" / "planted.md"
+            doc.parent.mkdir()
+            doc.write_text(
+                "[dead](missing/file.md#top) "
+                "[escapes](../../../willow-mcp/README.md) "
+                "[public](https://github.com/willow-memory/willow-mcp) "
+                "[anchor](#top)\n",
+                encoding="utf-8",
+            )
+            links = _relative_links(doc)
+            self.assertEqual(links, ["missing/file.md", "../../../willow-mcp/README.md"])
+            self.assertFalse((doc.parent / links[0]).exists())
+            resolved = (doc.parent / links[1]).resolve()
+            self.assertNotIn(pathlib.Path(tmp).resolve(), resolved.parents)
 
 
 class DocsLinkResolutionTests(unittest.TestCase):
