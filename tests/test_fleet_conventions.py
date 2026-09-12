@@ -31,17 +31,15 @@ What the rules do and do not bite on, in *this* tree, today:
   `release-please-config.json`, which is likewise absent until Wave 4. The
   real-tree tests skip with that reason; their plants still run.
 * **numbered pile.** The rule requires `.github/workflows/trailers.yml`
-  once a repo keeps a numbered idea pile. This repo keeps none (no
-  `IDEAS.md`, `docs/ideas.md` or `docs/IDEAS.md`), so the rule is vacuous
-  and the real-tree test says so; `PILE` names where the fleet keeps one so
-  the plant is the real shape.
-* **CONTRIBUTING names the test command.** This repo has no
-  `CONTRIBUTING.md`. The command a contributor runs is named in
-  `README.md` ("Getting started as a tester") and run by CI, and that is
-  what `TEST_COMMAND` pins — but the published rule names CONTRIBUTING.md,
-  and the tree does not carry one, so the real-tree test is a strict
-  `xfail` until a follow-up adds it (or records the decision not to). The
-  rule is not weakened: the plant proves the helper fires.
+  once a repo keeps a numbered idea pile. This repo keeps one at
+  `docs/ideas.md` (E3-piles, fleet plan Wave 3) and carries the workflow
+  (E3-trailers), so the rule bites here and the real-tree test asserts
+  both.
+* **CONTRIBUTING names the test command.** `CONTRIBUTING.md` names the
+  command a contributor runs (the one `README.md` also names and CI runs),
+  and that is what `TEST_COMMAND` pins. It was absent when this file first
+  landed (PR 59 carried the test as a strict `xfail` naming the follow-up);
+  E3-trailers added it.
 """
 from __future__ import annotations
 
@@ -66,12 +64,12 @@ RULES = json.loads(VENDORED.read_text(encoding="utf-8"))
 RELEASE_PLEASE = ".github/workflows/release-please.yml"
 RELEASE_CONFIG = "release-please-config.json"
 CONTRIBUTING = "CONTRIBUTING.md"
-#: Where the fleet keeps a numbered idea pile. This repo keeps none — the
-#: pile rule is vacuous here — but the plant below is the real shape.
+#: This repo's numbered idea pile, in the shape `reconciler run` reads.
 PILE = "docs/ideas.md"
 ARMS_AUTOMERGE = "gh pr merge --auto"
-#: The command README.md names under "Getting started as a tester" and
-#: `.github/workflows/tests.yml` runs (with `--tb=short` added there).
+#: The command CONTRIBUTING.md names under "Build and test", README.md names
+#: under "Getting started as a tester", and `.github/workflows/tests.yml`
+#: runs (with `--tb=short` added there).
 TEST_COMMAND = (
     "python3 -m pytest -x -q --ignore=tests/e2e --ignore=tests/e2e_ollama "
     "--ignore=tests/e2e_willow_mcp"
@@ -176,14 +174,6 @@ def test_the_config_carries_every_required_reasoning_comment():
     assert _config_missing_comments(_release_config_text(), RULES["required_config_comments"]) == []
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "no CONTRIBUTING.md in this tree; README.md names the test command and "
-        "CI runs it, but the published rule names CONTRIBUTING.md — a follow-up "
-        "adds one naming TEST_COMMAND, or records the decision not to"
-    ),
-)
 def test_contributing_names_the_test_command():
     assert RULES["contributing_must_name_test_command"] is True
     contributing = REPO_ROOT / CONTRIBUTING
@@ -192,23 +182,18 @@ def test_contributing_names_the_test_command():
 
 
 def test_the_test_command_this_file_pins_is_the_one_the_readme_names():
-    """Until CONTRIBUTING.md exists, README.md is the document that names
-    the command a contributor runs. The constant pinned here must be that
-    command, or the xfail above is waiting for the wrong line."""
+    """README.md names the same command under "Getting started as a
+    tester". Two documents naming the command must name the same one, or
+    the pin above is holding CONTRIBUTING.md to a line the README
+    contradicts."""
     assert _names_test_command((REPO_ROOT / "README.md").read_text(encoding="utf-8"))
 
 
 def test_trailers_workflow_is_present_because_a_pile_exists():
-    """Vacuous in this tree, and asserted to be: no numbered pile is kept
-    here (checked at IDEAS.md, docs/ideas.md, docs/IDEAS.md), so
-    `trailers.yml` is not yet required. The day a pile appears at `PILE`
-    the rule bites, and E3-trailers (fleet plan Wave 3) is what satisfies
-    it."""
-    for candidate in ("IDEAS.md", "docs/ideas.md", "docs/IDEAS.md"):
-        assert not (REPO_ROOT / candidate).exists(), (
-            f"{candidate} has appeared: this repo now keeps a pile and "
-            "the pile rule is no longer vacuous — set PILE and rewrite this test"
-        )
+    """The rule bites here: `docs/ideas.md` is a numbered pile, so the
+    `reconciler verify` gate must run in CI (E3-trailers, fleet plan Wave
+    3). A pile without the gate is a doc whose join keys nothing checks."""
+    assert (REPO_ROOT / PILE).exists()
     assert _missing_when_pile_exists(REPO_ROOT, RULES["required_when_pile_exists"]) == []
 
 

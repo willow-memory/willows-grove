@@ -6,6 +6,18 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Added
 
+- **A numbered idea pile, and the `Idea-Id` trailer gate.** (PR 60) Fleet
+  loop plan Wave 3, E3-piles and E3-trailers. `docs/ideas.md` is the repo's
+  one numbered pile in the shape willow-reconciler reads: 29 items carried
+  over from `docs/KNOWN_GAPS.md` (now the `GAP-00N` → item map), the plan's
+  bites for this repo, and the open sections of the design record — never
+  invented, tagged shipped only where git history shows the landing.
+  `.github/workflows/trailers.yml` runs `reconciler verify` on every PR so an
+  `Idea-Id` trailer naming an item the pile does not contain fails loud, and
+  `CONTRIBUTING.md` (new) names the test command and the trailer convention.
+  `tests/test_fleet_conventions.py` now points `PILE` at the pile, asserts
+  the workflow is present, and the CONTRIBUTING rule's xfail is gone.
+
 - **The meta-scan, and the tree held to the fleet's published conventions.**
   (PR 59) Fleet loop plan Wave 2, G2-meta-scans-grove and
   G2-conventions-grove. `tests/test_scans_fire.py` is homestead-ledger's
