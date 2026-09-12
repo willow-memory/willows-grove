@@ -186,6 +186,13 @@ class NestorBundleQueryableTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             env = dict(os.environ)
             env["NESTOR_DB"] = os.path.join(tmp, "pin.db")
+            # nestor prints "\u2713 clear ..." with no encoding guard, and a
+            # Windows console's stdout is cp1252, which cannot encode it: the
+            # CLI died with UnicodeEncodeError and exit 2 on the floor's
+            # Windows leg. A UTF-8 stdout for the child (the same thing an
+            # operator there needs) and a UTF-8 decode on this side; the
+            # guard itself is nestor's to add.
+            env["PYTHONUTF8"] = "1"
             subprocess.run(
                 ["nestor", "import", "--apply", "--verifier", "pin", BUNDLE],
                 check=True,
@@ -199,7 +206,7 @@ class NestorBundleQueryableTests(unittest.TestCase):
                 ["nestor", "decision", "check", question],
                 check=False,
                 capture_output=True,
-                text=True,
+                encoding="utf-8",
                 env=env,
                 timeout=120,
             )
