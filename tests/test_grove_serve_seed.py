@@ -5,6 +5,7 @@ Runs the real Starlette + uvicorn app on an ephemeral loopback port and
 hits ``GET /seed/`` (six-card landing), ``GET /seed/3`` (one movement),
 and ``GET /seed/99`` (out-of-range → 404). Stdlib only.
 """
+
 from __future__ import annotations
 
 import contextlib

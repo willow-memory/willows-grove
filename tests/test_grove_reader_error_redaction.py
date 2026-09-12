@@ -31,6 +31,7 @@ INVARIANTS.md §1 — writer error responses are the caller's sole failure
 signal on the success surface (``{ok, error}``); they must not double as
 a channel that leaks database internals into the UI.
 """
+
 from __future__ import annotations
 
 import os
@@ -121,7 +122,8 @@ class GroveReaderErrorRedactionTests(unittest.TestCase):
         err = result.get("error")
         self.assertIsInstance(err, str)
         self.assertNotEqual(
-            err, "",
+            err,
+            "",
             "error must be a non-empty caller signal, not the empty string",
         )
 
@@ -129,19 +131,23 @@ class GroveReaderErrorRedactionTests(unittest.TestCase):
         # state substrings may reach the caller. On the unfixed tree
         # str(e) contains ALL of these and every assertion below fails.
         self.assertNotIn(
-            _CONSTRAINT_NAME, err,
+            _CONSTRAINT_NAME,
+            err,
             f"constraint name leaked in caller-facing error: {err!r}",
         )
         self.assertNotIn(
-            _SCHEMA_NAME, err,
+            _SCHEMA_NAME,
+            err,
             f"schema name leaked in caller-facing error: {err!r}",
         )
         self.assertNotIn(
-            _ROW_VALUE, err,
+            _ROW_VALUE,
+            err,
             f"row value leaked in caller-facing error: {err!r}",
         )
         self.assertNotIn(
-            _DETAIL_PREFIX, err,
+            _DETAIL_PREFIX,
+            err,
             f"psycopg2 DETAIL line leaked in caller-facing error: {err!r}",
         )
 

@@ -38,6 +38,7 @@ thread, one worker thread that drains the classification queue, one
 heartbeat thread. Ollama I/O never happens in the LISTEN callback: notifies
 enqueue and return so Postgres is never blocked by a slow model.
 """
+
 from __future__ import annotations
 
 import json
@@ -97,6 +98,7 @@ _CLASSIFY_PROMPT = (
 # SOIL — the operator's active-model file.
 # ---------------------------------------------------------------------------
 
+
 def _soil_active_model_path() -> Path:
     """Where SOIL stores the operator's current active-model choice.
 
@@ -128,6 +130,7 @@ def read_active_model() -> tuple[str, bool]:
 # ---------------------------------------------------------------------------
 # The watcher.
 # ---------------------------------------------------------------------------
+
 
 class ResidentWatcher:
     """Willow's Grove resident watcher — Gate 5 v1, L1-capped.
@@ -162,7 +165,11 @@ class ResidentWatcher:
         ollama_url: str = DEFAULT_OLLAMA_URL,
         heartbeat_seconds: int = DEFAULT_HEARTBEAT_SECONDS,
     ) -> None:
-        self._db_url = db_url if db_url is not None else os.environ.get("WILLOW_DB_URL", "").strip() or None
+        self._db_url = (
+            db_url
+            if db_url is not None
+            else os.environ.get("WILLOW_DB_URL", "").strip() or None
+        )
         if model_name:
             self._model = model_name
             self._model_from_soil = True
@@ -204,9 +211,15 @@ class ResidentWatcher:
 
         self._abort.clear()
 
-        listen_t = threading.Thread(target=self._listen_loop, name="grove-watcher-listen", daemon=True)
-        worker_t = threading.Thread(target=self._worker_loop, name="grove-watcher-worker", daemon=True)
-        heartbeat_t = threading.Thread(target=self._heartbeat_loop, name="grove-watcher-heartbeat", daemon=True)
+        listen_t = threading.Thread(
+            target=self._listen_loop, name="grove-watcher-listen", daemon=True
+        )
+        worker_t = threading.Thread(
+            target=self._worker_loop, name="grove-watcher-worker", daemon=True
+        )
+        heartbeat_t = threading.Thread(
+            target=self._heartbeat_loop, name="grove-watcher-heartbeat", daemon=True
+        )
         self._threads = [listen_t, worker_t, heartbeat_t]
         for t in self._threads:
             t.start()
@@ -216,11 +229,15 @@ class ResidentWatcher:
         if threading.current_thread() is threading.main_thread():
             for sig in (signal.SIGTERM, signal.SIGINT):
                 try:
-                    self._prev_signal_handlers[sig] = signal.signal(sig, self._on_signal)
+                    self._prev_signal_handlers[sig] = signal.signal(
+                        sig, self._on_signal
+                    )
                 except (ValueError, OSError):
                     pass
 
-    def _on_signal(self, signum, frame):  # pragma: no cover — exercised in prod, not unit tests
+    def _on_signal(
+        self, signum, frame
+    ):  # pragma: no cover — exercised in prod, not unit tests
         log.info("resident_watcher: received signal %d — shutting down.", signum)
         self.stop()
 
@@ -274,16 +291,26 @@ class ResidentWatcher:
         try:
             with urllib.request.urlopen(req, timeout=_OLLAMA_TIMEOUT_SECONDS) as resp:  # noqa: S310
                 raw = resp.read().decode("utf-8", errors="replace")
-        except (urllib.error.URLError, urllib.error.HTTPError, OSError, TimeoutError) as err:
+        except (
+            urllib.error.URLError,
+            urllib.error.HTTPError,
+            OSError,
+            TimeoutError,
+        ) as err:
             if not self._logged_ollama_error:
-                log.warning("resident_watcher: Ollama unreachable/slow (%s) — domains fall back to 'unknown'.", err)
+                log.warning(
+                    "resident_watcher: Ollama unreachable/slow (%s) — domains fall back to 'unknown'.",
+                    err,
+                )
                 self._logged_ollama_error = True
             return "unknown"
         try:
             data = json.loads(raw)
         except json.JSONDecodeError:
             if not self._logged_ollama_error:
-                log.warning("resident_watcher: Ollama returned unparseable body — domains fall back to 'unknown'.")
+                log.warning(
+                    "resident_watcher: Ollama returned unparseable body — domains fall back to 'unknown'."
+                )
                 self._logged_ollama_error = True
             return "unknown"
         answer = ""
@@ -315,7 +342,9 @@ class ResidentWatcher:
             import psycopg2  # type: ignore
         except Exception as err:  # noqa: BLE001
             if not self._logged_db_absent:
-                log.warning("resident_watcher: psycopg2 unavailable (%s) — heartbeat-only.", err)
+                log.warning(
+                    "resident_watcher: psycopg2 unavailable (%s) — heartbeat-only.", err
+                )
                 self._logged_db_absent = True
             return
 
@@ -327,7 +356,9 @@ class ResidentWatcher:
             cur.execute("LISTEN grove_channel")
         except Exception as err:  # noqa: BLE001
             if not self._logged_listen_error:
-                log.warning("resident_watcher: LISTEN setup failed (%s) — heartbeat-only.", err)
+                log.warning(
+                    "resident_watcher: LISTEN setup failed (%s) — heartbeat-only.", err
+                )
                 self._logged_listen_error = True
             try:
                 if conn is not None:
@@ -457,7 +488,9 @@ class ResidentWatcher:
             )
         except Unreachable as err:
             # Nestor absent — heartbeat-only proceed (INVARIANTS.md §1).
-            log.debug("resident_watcher: Nestor unreachable (%s) — proceeding.", err.reason)
+            log.debug(
+                "resident_watcher: Nestor unreachable (%s) — proceeding.", err.reason
+            )
             return True
         except Exception as err:  # noqa: BLE001
             log.debug("resident_watcher: Nestor call raised (%s) — proceeding.", err)
@@ -468,7 +501,9 @@ class ResidentWatcher:
         status = _extract_nestor_status(resp)
         if status == "refused":
             if not self._logged_nestor_refused:
-                log.info("resident_watcher: Nestor refused a classification — skipping journal write.")
+                log.info(
+                    "resident_watcher: Nestor refused a classification — skipping journal write."
+                )
                 self._logged_nestor_refused = True
             return False
         return True
@@ -489,9 +524,14 @@ class ResidentWatcher:
         except Unreachable as err:
             # willow-mcp not reachable — degrade to heartbeat-only for this
             # atom (INVARIANTS.md §1). One log line, not per-atom noise.
-            log.debug("resident_watcher: journal_writer unreachable (%s) — dropping atom.", err.reason)
+            log.debug(
+                "resident_watcher: journal_writer unreachable (%s) — dropping atom.",
+                err.reason,
+            )
         except Exception as err:  # noqa: BLE001
-            log.warning("resident_watcher: journal_writer raised (%s) — dropping atom.", err)
+            log.warning(
+                "resident_watcher: journal_writer raised (%s) — dropping atom.", err
+            )
 
     # ---- heartbeat ----
     def _heartbeat(self) -> None:
@@ -523,7 +563,10 @@ class ResidentWatcher:
             if expires_at is None:
                 continue
             seconds_remaining = expires_at - now
-            if seconds_remaining < 0 or seconds_remaining > _ENVELOPE_REATTEST_WINDOW_SECONDS:
+            if (
+                seconds_remaining < 0
+                or seconds_remaining > _ENVELOPE_REATTEST_WINDOW_SECONDS
+            ):
                 continue
             if env_id in self._envelope_noted:
                 continue
@@ -547,6 +590,7 @@ class ResidentWatcher:
 # ---------------------------------------------------------------------------
 # Small helpers.
 # ---------------------------------------------------------------------------
+
 
 def _extract_nestor_status(resp: Any) -> str:
     """Best-effort status extraction from a decision_check response.
@@ -589,17 +633,22 @@ def _parse_expires_at(value: Any) -> Optional[float]:
 # Entry point — ``python3 -m grove.resident_watcher``.
 # ---------------------------------------------------------------------------
 
+
 def main() -> None:  # pragma: no cover — foreground process entry
     logging.basicConfig(
         level=os.environ.get("GROVE_WATCHER_LOGLEVEL", "INFO"),
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
     )
-    ollama_url = os.environ.get("GROVE_WATCHER_OLLAMA", "").strip() or DEFAULT_OLLAMA_URL
+    ollama_url = (
+        os.environ.get("GROVE_WATCHER_OLLAMA", "").strip() or DEFAULT_OLLAMA_URL
+    )
     watcher = ResidentWatcher(ollama_url=ollama_url)
     watcher.start()
     log.info(
         "resident_watcher: at post — model=%s ollama=%s heartbeat=%ss",
-        watcher._model, watcher._ollama_url, watcher._heartbeat_seconds,
+        watcher._model,
+        watcher._ollama_url,
+        watcher._heartbeat_seconds,
     )
     try:
         while not watcher._abort.is_set():

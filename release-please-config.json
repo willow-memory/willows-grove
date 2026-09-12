@@ -1,0 +1,36 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "$comment-bootstrap": "v0.10.0 was cut by hand in 1b418ec (CHANGELOG section, hatch fallback-version) and never tagged — the only tag on origin is v0.9.0. bootstrap-sha anchors release-please's first run at that cut so the first release PR carries what landed since 0.10.0, not the whole history. Tagging v0.10.0 at 1b418ec is a human act (release.yml publishes on a tag push) and is left to the operator.",
+  "bootstrap-sha": "1b418ec5d3448e8af3bdb28d19fc34b3c102566a",
+  "packages": {
+    ".": {
+      "release-type": "python",
+      "package-name": "willows-grove",
+      "changelog-path": "CHANGELOG.md",
+      "include-component-in-tag": false,
+      "bump-minor-pre-major": false,
+      "bump-patch-for-minor-pre-major": false,
+      "$comment-extra-files": "pyproject.toml carries no static version (hatch-vcs derives it from the tag, and release-please's python updater skips a dynamic version with a warning), but two files do carry the number and release.yml refuses a tag that disagrees with either: the hatch fallback-version, which tests/test_version_changelog_sync.py holds equal to CHANGELOG.md's newest release, and safe-app-manifest.json's version. Both are bumped in the release PR.",
+      "extra-files": [
+        { "type": "toml", "path": "pyproject.toml", "jsonpath": "$.tool.hatch.version.fallback-version" },
+        { "type": "json", "path": "safe-app-manifest.json", "jsonpath": "$.version" }
+      ],
+      "changelog-sections": [
+        { "type": "feat", "section": "Added" },
+        { "type": "fix", "section": "Fixed" },
+        { "type": "security", "section": "Security" },
+        { "type": "perf", "section": "Performance" },
+        { "type": "refactor", "section": "Changed" },
+        { "type": "build", "section": "Build" },
+        { "type": "deps", "section": "Build" },
+        { "type": "docs", "section": "Docs", "hidden": true },
+        { "type": "test", "section": "Tests", "hidden": true },
+        { "type": "ci", "section": "CI", "hidden": true },
+        { "type": "chore", "section": "Chores", "hidden": true }
+      ],
+      "$comment-what-cuts-a-release": "EVERY type listed above without \"hidden\": true cuts a release on its own — not just feat and fix. jeles learned this the expensive way: v0.4.1 was tagged and published to PyPI for a single ci: commit that changed a workflow file and nothing a user installs. That is survivable while release PRs are merged by hand, because you see what is in them; release-please.yml here arms auto-merge, so an un-hidden type ships to PyPI unattended, and a PyPI version can never be reused. The set is the fleet's (tests/fleet_conventions.json, release_cutting_types) and tests/test_fleet_conventions.py holds this file to it.",
+      "$comment-hidden-rule": "The line is: does this commit change what someone gets from `pip install willows-grove`? docs/test/ci/chore do not — tests and workflows are not packaged, and a README edit only moves the PyPI page — so they are hidden and ride along with the next real release. build and deps stay visible because a dependency or packaging change genuinely alters the installed artifact, and hiding them would mean a dependency fix never reaching anyone, silently. refactor and perf stay visible because they change shipped code, and a version number is what you point at when a refactor turns out to have broken something. Hidden also means absent from the generated CHANGELOG section — release-please has no 'list it but do not release on it' setting, so this is a real trade, taken deliberately; the hand-written [Unreleased] bullets INVARIANTS.md §3 requires are the record of hidden work. The set is the fleet's (tests/fleet_conventions.json, hidden_types).",
+      "$comment-changelog-shape": "CHANGELOG.md is hand-written Keep-a-Changelog with a [Unreleased] section that INVARIANTS.md §3 requires every code PR to append to. release-please inserts its generated section before the first '## [' heading it finds, which is [Unreleased], so a release section lands above the unreleased notes rather than absorbing them; and the release PR's own commit carries no Persona: trailer and touches safe-app-manifest.json, so INVARIANTS.md §11 and §3's checkers reject it as written. Both are governance questions, proposed on PR #62, not settled here."
+    }
+  }
+}

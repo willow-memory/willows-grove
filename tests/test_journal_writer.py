@@ -1,5 +1,6 @@
 # b17: WGRV1 ΔΣ=42
 """Tests for grove.journal_writer — degradation, MCP transport, empty-text guard."""
+
 from __future__ import annotations
 
 import os
@@ -67,7 +68,9 @@ class WriteOperatorTurnTests(unittest.TestCase):
             return {"id": "AB12CD34", "domain": "journal"}
 
         with patch.object(willow_mcp_client, "call_tool", side_effect=_fake_call):
-            result = journal_writer.write_operator_turn("hello willow", sender="operator")
+            result = journal_writer.write_operator_turn(
+                "hello willow", sender="operator"
+            )
 
         self.assertTrue(result.get("ok"), result)
         self.assertEqual(result.get("id"), "AB12CD34")
@@ -96,9 +99,14 @@ class WriteOperatorTurnTests(unittest.TestCase):
         self.assertEqual(captured["arguments"]["content"], weird)
 
     def test_reachable_but_error_raises_unreachable_with_reason(self) -> None:
-        with patch.object(
-            willow_mcp_client, "call_tool", return_value={"error": "schema_unusable"}
-        ), self.assertRaises(Unreachable) as ctx:
+        with (
+            patch.object(
+                willow_mcp_client,
+                "call_tool",
+                return_value={"error": "schema_unusable"},
+            ),
+            self.assertRaises(Unreachable) as ctx,
+        ):
             journal_writer.write_operator_turn("hello")
         self.assertEqual(ctx.exception.reason, "schema_unusable")
 

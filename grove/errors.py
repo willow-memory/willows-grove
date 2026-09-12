@@ -24,6 +24,7 @@ tamper-evidence, so a swallowed write is a lie. Callers that want
 best-effort semantics wrap the call in ``try/except LedgerWriteFailed``
 at the call site, so the primitive is honest and the policy is local.
 """
+
 from __future__ import annotations
 
 

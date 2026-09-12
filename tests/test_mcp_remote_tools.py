@@ -7,6 +7,7 @@ responsible for: argument handling (clamping, @-stripping, defaults) and that
 the result is JSON-safe (datetimes coerced to ISO strings — the MCP result must
 serialize).
 """
+
 from __future__ import annotations
 
 from datetime import datetime, timezone
@@ -37,7 +38,8 @@ def test_jsonify_coerces_decimal_and_set():
 
 def test_grove_agents_serializes_last_seen(monkeypatch):
     monkeypatch.setattr(
-        mcp_local._grove_reader, "grove_agents",
+        mcp_local._grove_reader,
+        "grove_agents",
         lambda: [{"sender": "loki", "last_seen_at": _DT, "age_secs": 5}],
     )
     out = mcp_local.grove_agents()
@@ -53,18 +55,19 @@ def test_grove_fleet_status_clamps_limit(monkeypatch):
 
     monkeypatch.setattr(mcp_local._grove_reader, "grove_agent_fleet_rows", fake)
     out = mcp_local.grove_fleet_status(limit=9999)
-    assert seen["limit"] == 100          # clamped to the ceiling
+    assert seen["limit"] == 100  # clamped to the ceiling
     assert out[0]["last_seen_at"] == _ISO
 
 
 def test_grove_fleet_status_floor(monkeypatch):
     seen = {}
     monkeypatch.setattr(
-        mcp_local._grove_reader, "grove_agent_fleet_rows",
+        mcp_local._grove_reader,
+        "grove_agent_fleet_rows",
         lambda limit: seen.setdefault("limit", limit) or [],
     )
     mcp_local.grove_fleet_status(limit=0)
-    assert seen["limit"] == 1            # clamped to the floor
+    assert seen["limit"] == 1  # clamped to the floor
 
 
 def test_grove_mentions_strips_at_and_clamps(monkeypatch):
@@ -78,18 +81,19 @@ def test_grove_mentions_strips_at_and_clamps(monkeypatch):
     monkeypatch.setattr(mcp_local._grove_reader, "grove_mentions", fake)
     out = mcp_local.grove_mentions("@Auto", limit=999)
     assert seen["name"] == "Auto"
-    assert seen["limit"] == 50           # clamped
+    assert seen["limit"] == 50  # clamped
     assert out[0]["created_at"] == _ISO
 
 
 def test_grove_mentions_empty_handle_returns_empty(monkeypatch):
     called = {"n": 0}
     monkeypatch.setattr(
-        mcp_local._grove_reader, "grove_mentions",
+        mcp_local._grove_reader,
+        "grove_mentions",
         lambda *a, **k: called.__setitem__("n", called["n"] + 1) or [],
     )
     assert mcp_local.grove_mentions("   @  ") == []
-    assert called["n"] == 0              # never reached the reader
+    assert called["n"] == 0  # never reached the reader
 
 
 def test_grove_human_required_passes_flags(monkeypatch):

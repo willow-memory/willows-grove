@@ -12,7 +12,6 @@ the specific drift.
 
 from __future__ import annotations
 
-import os
 import subprocess
 import sys
 from pathlib import Path
@@ -60,13 +59,7 @@ def _seed_clean_tree(tree: Path) -> None:
         encoding="utf-8",
     )
     (tree / "CHANGELOG.md").write_text(
-        "# Changelog\n"
-        "\n"
-        "## [Unreleased]\n"
-        "\n"
-        "### Added\n"
-        "- Ok bullet (PR 42).\n"
-        "\n",
+        "# Changelog\n\n## [Unreleased]\n\n### Added\n- Ok bullet (PR 42).\n\n",
         encoding="utf-8",
     )
     (tree / "tests" / "test_ok.py").write_text("# ok\n", encoding="utf-8")
@@ -96,13 +89,7 @@ def test_changelog_bullet_without_pr_flagged(tmp_path: Path) -> None:
     """Property 2: [Unreleased] bullet with no PR/#N citation → drift."""
     _seed_clean_tree(tmp_path)
     (tmp_path / "CHANGELOG.md").write_text(
-        "# Changelog\n"
-        "\n"
-        "## [Unreleased]\n"
-        "\n"
-        "### Added\n"
-        "- A bullet with no citation.\n"
-        "\n",
+        "# Changelog\n\n## [Unreleased]\n\n### Added\n- A bullet with no citation.\n\n",
         encoding="utf-8",
     )
     result = _run_against(tmp_path)
@@ -181,7 +168,5 @@ def test_repo_tree_is_clean() -> None:
         cwd=str(REPO_ROOT),
     )
     assert result.returncode == 0, (
-        "docs-drift dirty on the real tree:\n"
-        + result.stdout
-        + result.stderr
+        "docs-drift dirty on the real tree:\n" + result.stdout + result.stderr
     )

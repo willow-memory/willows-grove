@@ -9,6 +9,7 @@ our idea of the schema and fails willow-mcp's is a manifest that will fail at
 Context worth keeping: when this was written, no project in the 27-entry
 registry declared a `hook_manifest` at all. This path had never run.
 """
+
 from __future__ import annotations
 
 import json
@@ -19,7 +20,7 @@ import pytest
 pw = pytest.importorskip(
     "willow_mcp.project_wiring",
     reason="willow-mcp is the consumer of this manifest; without it there is "
-           "nothing to check the manifest against",
+    "nothing to check the manifest against",
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -62,12 +63,23 @@ def test_it_adds_no_second_gate_on_tool_calls(manifest):
     assert not any(h["event"] == "pre_tool_use" for h in manifest["hooks"])
 
 
-@pytest.mark.parametrize("client,expected", [
-    ("claude", {"SessionStart", "UserPromptSubmit", "PreCompact", "Stop", "SessionEnd"}),
-    ("cursor", {"sessionStart", "beforeSubmitPrompt", "preCompact", "stop", "sessionEnd"}),
-])
+@pytest.mark.parametrize(
+    "client,expected",
+    [
+        (
+            "claude",
+            {"SessionStart", "UserPromptSubmit", "PreCompact", "Stop", "SessionEnd"},
+        ),
+        (
+            "cursor",
+            {"sessionStart", "beforeSubmitPrompt", "preCompact", "stop", "sessionEnd"},
+        ),
+    ],
+)
 def test_it_compiles_for_both_dialects(manifest, client, expected):
-    compiled = pw._compile_hook_manifest("willows-grove", ENTRY, manifest, client=client)
+    compiled = pw._compile_hook_manifest(
+        "willows-grove", ENTRY, manifest, client=client
+    )
     assert set(compiled) == expected
 
 
@@ -75,7 +87,9 @@ def test_the_command_is_owned_by_the_project(manifest):
     """_owned_path refuses anything escaping the root. A hook command outside
     the repo would be a project reaching past itself."""
     for client in ("claude", "cursor"):
-        compiled = pw._compile_hook_manifest("willows-grove", ENTRY, manifest, client=client)
+        compiled = pw._compile_hook_manifest(
+            "willows-grove", ENTRY, manifest, client=client
+        )
         for entries in compiled.values():
             blob = json.dumps(entries)
             assert "hooks/grove-hook" in blob
@@ -97,6 +111,7 @@ def test_the_seat_file_env_placeholder_is_substituted(manifest):
 
 
 # ── the artifacts the manifest points at ─────────────────────────────────────
+
 
 def test_the_hook_command_exists_and_is_executable():
     cmd = ROOT / "hooks" / "grove-hook"

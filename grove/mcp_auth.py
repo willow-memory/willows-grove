@@ -34,6 +34,7 @@ just means the client re-auths). Tokens are persisted to token_path so
 reconnects work; that file is created 0600 and replaced atomically, and a
 corrupt one is a hard error rather than a silent reset — see _load_state.
 """
+
 import json
 import os
 import secrets
@@ -46,7 +47,6 @@ from mcp.server.auth.provider import (
     AuthorizationCode,
     AuthorizationParams,
     RefreshToken,
-    construct_redirect_uri,
 )
 from mcp.shared.auth import OAuthClientInformationFull, OAuthToken
 
@@ -55,18 +55,18 @@ from mcp.shared.auth import OAuthClientInformationFull, OAuthToken
 # these; a bounded lifetime is what turns "reachable" back into "needs
 # consent again". Refresh keeps the multi-day horizon so a benign
 # reconnect the next day does not walk the consent page again.
-_ACCESS_TTL  = 24 * 3600   # 24 hours — INVARIANTS.md §7
-_CODE_TTL    = 300         # 5 minutes
+_ACCESS_TTL = 24 * 3600  # 24 hours — INVARIANTS.md §7
+_CODE_TTL = 300  # 5 minutes
 _REFRESH_TTL = 30 * 86400  # 30 days (client reconnect horizon; still user-revocable)
-_PENDING_TTL = 300         # 5 minutes for a human to click Allow — INVARIANTS.md §7
+_PENDING_TTL = 300  # 5 minutes for a human to click Allow — INVARIANTS.md §7
 
 # Scope vocabulary — mirrors grove/mcp_local.py's AuthSettings. Duplicated
 # rather than imported: mcp_local imports GroveOAuthProvider from this module
 # only in serve mode, so importing back from here would risk a cycle for no
 # real gain (three string constants).
-SCOPE_READ  = "grove:read"
+SCOPE_READ = "grove:read"
 SCOPE_WRITE = "grove:write"
-SCOPE_FULL  = "grove"  # back-compat superscope: implies both read and write
+SCOPE_FULL = "grove"  # back-compat superscope: implies both read and write
 DEFAULT_SCOPES = [SCOPE_READ, SCOPE_WRITE]
 
 
@@ -148,12 +148,14 @@ class GroveOAuthProvider:
         base_url: str,
     ) -> None:
         self._token_path = Path(token_path)
-        self._base_url   = base_url.rstrip("/")
+        self._base_url = base_url.rstrip("/")
 
         # In-memory: pending approvals {key: (client, params, expires_at)}
-        self._pending: dict[str, tuple[OAuthClientInformationFull, AuthorizationParams, float]] = {}
+        self._pending: dict[
+            str, tuple[OAuthClientInformationFull, AuthorizationParams, float]
+        ] = {}
         # In-memory: issued auth codes {code: AuthorizationCode}
-        self._codes:   dict[str, AuthorizationCode] = {}
+        self._codes: dict[str, AuthorizationCode] = {}
 
         # Persisted state
         self._state: dict[str, Any] = self._load_state()
@@ -173,7 +175,9 @@ class GroveOAuthProvider:
         try:
             raw = self._token_path.read_text()
         except OSError as e:
-            raise TokenStateError(f"cannot read token state {self._token_path}: {e}") from e
+            raise TokenStateError(
+                f"cannot read token state {self._token_path}: {e}"
+            ) from e
 
         hint = (
             f" Move {self._token_path} aside (or delete it) to start from an "
@@ -212,7 +216,9 @@ class GroveOAuthProvider:
         the result is 0600 whether or not the target already existed.
         """
         self._token_path.parent.mkdir(parents=True, exist_ok=True)
-        tmp = self._token_path.with_name(f"{self._token_path.name}.{os.getpid()}.{secrets.token_hex(6)}.tmp")
+        tmp = self._token_path.with_name(
+            f"{self._token_path.name}.{os.getpid()}.{secrets.token_hex(6)}.tmp"
+        )
         try:
             # O_EXCL: never write through a pre-existing (possibly planted, possibly
             # world-readable) path. Mode 0600 at create time, so there is no window
@@ -308,7 +314,9 @@ class GroveOAuthProvider:
         return OAuthClientInformationFull(**data)
 
     async def register_client(self, client_info: OAuthClientInformationFull) -> None:
-        self._state["clients"][client_info.client_id] = client_info.model_dump(mode="json")
+        self._state["clients"][client_info.client_id] = client_info.model_dump(
+            mode="json"
+        )
         self._save_state()
 
     async def authorize(
@@ -351,20 +359,20 @@ class GroveOAuthProvider:
         # Consume the code
         self._codes.pop(authorization_code.code, None)
 
-        access_tok  = _tok()
+        access_tok = _tok()
         refresh_tok = _tok()
-        now         = int(time.time())
+        now = int(time.time())
 
         self._state["access_tokens"][access_tok] = {
-            "token":     access_tok,
+            "token": access_tok,
             "client_id": client.client_id,
-            "scopes":    authorization_code.scopes,
+            "scopes": authorization_code.scopes,
             "expires_at": now + _ACCESS_TTL,
         }
         self._state["refresh_tokens"][refresh_tok] = {
-            "token":     refresh_tok,
+            "token": refresh_tok,
             "client_id": client.client_id,
-            "scopes":    authorization_code.scopes,
+            "scopes": authorization_code.scopes,
             "expires_at": now + _REFRESH_TTL,
         }
         self._save_state()
@@ -404,20 +412,20 @@ class GroveOAuthProvider:
         self._state["refresh_tokens"].pop(refresh_token.token, None)
 
         effective_scopes = scopes or refresh_token.scopes
-        access_tok  = _tok()
+        access_tok = _tok()
         new_refresh = _tok()
-        now         = int(time.time())
+        now = int(time.time())
 
         self._state["access_tokens"][access_tok] = {
-            "token":     access_tok,
+            "token": access_tok,
             "client_id": client.client_id,
-            "scopes":    effective_scopes,
+            "scopes": effective_scopes,
             "expires_at": now + _ACCESS_TTL,
         }
         self._state["refresh_tokens"][new_refresh] = {
-            "token":     new_refresh,
+            "token": new_refresh,
             "client_id": client.client_id,
-            "scopes":    effective_scopes,
+            "scopes": effective_scopes,
             "expires_at": now + _REFRESH_TTL,
         }
         self._save_state()

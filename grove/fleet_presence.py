@@ -15,6 +15,7 @@ OR empty) OR raises ``grove.errors.Unreachable``. A bare ``[]`` from
 ``roster()`` means "seam reached, nobody announcing" — never "seam
 absent" and never "seam raised".
 """
+
 from __future__ import annotations
 
 import logging
@@ -41,7 +42,10 @@ def _available() -> bool:
     if _fp is not None:
         return True
     if not _logged_missing:
-        log.info("fleet_presence not installed (%s) — Grove runs without presence (D7).", _import_error)
+        log.info(
+            "fleet_presence not installed (%s) — Grove runs without presence (D7).",
+            _import_error,
+        )
         _logged_missing = True
     return False
 
@@ -79,9 +83,7 @@ def roster() -> list[dict[str, Any]]:
     nobody home." §1 forbids that; both are ``Unreachable`` now.
     """
     if not _available():
-        raise Unreachable(
-            f"fleet_presence add-on not installed: {_import_error}"
-        )
+        raise Unreachable(f"fleet_presence add-on not installed: {_import_error}")
     try:
         rows = _fp.roster()
     except Exception as err:  # noqa: BLE001 — seam failure is unreachable, not empty

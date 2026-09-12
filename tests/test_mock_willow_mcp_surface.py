@@ -44,6 +44,7 @@ environment, so the skip above can never hide a new route.
 Routes are read from the live ``build_app()`` object rather than grepped
 out of the source, so the pin sees what Starlette actually serves.
 """
+
 from __future__ import annotations
 
 import importlib.util
@@ -89,7 +90,8 @@ class MockRouteInventoryTests(unittest.TestCase):
 
     def test_tool_names_are_exactly_the_expected_set(self) -> None:
         self.assertEqual(
-            _tool_names(), set(_EXPECTED_TOOL_NAMES),
+            _tool_names(),
+            set(_EXPECTED_TOOL_NAMES),
             "the mock's tool surface changed. Adding a tool here means the "
             "C11 suite starts asserting a contract — check it exists in "
             "willow-mcp first, then update _EXPECTED_TOOL_NAMES (and "
@@ -99,7 +101,8 @@ class MockRouteInventoryTests(unittest.TestCase):
     def test_every_pending_entry_is_a_tool_we_actually_serve(self) -> None:
         stale = sorted(set(_PENDING_UPSTREAM) - _tool_names())
         self.assertEqual(
-            stale, [],
+            stale,
+            [],
             f"_PENDING_UPSTREAM names tools the mock no longer serves: {stale}",
         )
 
@@ -121,11 +124,13 @@ class ToolSurfaceTests(unittest.TestCase):
 
     def test_non_pending_tools_exist_upstream(self) -> None:
         missing = sorted(
-            name for name in _tool_names() - set(_PENDING_UPSTREAM)
+            name
+            for name in _tool_names() - set(_PENDING_UPSTREAM)
             if not hasattr(self.upstream, name)
         )
         self.assertEqual(
-            missing, [],
+            missing,
+            [],
             "the mock serves MCP tools willow-mcp does not implement, and "
             "they are not recorded in _PENDING_UPSTREAM. The C11 suite would "
             f"go green against contracts nothing upstream honours: {missing}",
@@ -141,7 +146,8 @@ class ToolSurfaceTests(unittest.TestCase):
             name for name in _PENDING_UPSTREAM if hasattr(self.upstream, name)
         )
         self.assertEqual(
-            landed, [],
+            landed,
+            [],
             f"{landed} now exists in willow-mcp — the dependency landed. "
             "Remove it from _PENDING_UPSTREAM, drop the pending note from "
             "tests/e2e_willow_mcp/conftest.py, and close GAP-007: the C11 "

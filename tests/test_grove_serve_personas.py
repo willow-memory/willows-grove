@@ -13,6 +13,7 @@ Covers both D10 cases:
   ``$WILLOW_HOME/fleet_personas.json`` — 200 + parsed body matches what
   the reader would see.
 """
+
 from __future__ import annotations
 
 import contextlib
@@ -101,7 +102,7 @@ _FIXTURE = {
             "voice": {"register": "warm", "mandate": "the seat"},
             "visual": {
                 "color": "#8FBC8F",
-                "sigil": "\U0001F333",
+                "sigil": "\U0001f333",
                 "color_token": "willow.green",
             },
             "canonical_file": "willow-memory/willow/personas/willow.md",
@@ -112,7 +113,7 @@ _FIXTURE = {
             "role": "scout",
             "trust": "utility",
             "voice": {"register": "sharp"},
-            "visual": {"color": "#7C1F3F", "sigil": "\U0001F98A"},
+            "visual": {"color": "#7C1F3F", "sigil": "\U0001f98a"},
             "canonical_file": "personas/loki.md",
             "emission_fields": ["utterance"],
         },
@@ -127,9 +128,7 @@ class PersonasRouteTests(unittest.TestCase):
         # Every test isolates HOME + WILLOW_HOME so the reader cannot see the
         # host's real registry file. persona_roster caches nothing between
         # calls, so the environ override is enough — no module reload needed.
-        self._prior_env = {
-            k: os.environ.get(k) for k in ("HOME", "WILLOW_HOME")
-        }
+        self._prior_env = {k: os.environ.get(k) for k in ("HOME", "WILLOW_HOME")}
         self._tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self._tmp.cleanup)
         self.addCleanup(self._restore_env)
@@ -163,11 +162,14 @@ class PersonasRouteTests(unittest.TestCase):
         # Reset the log-once flag so the D7 info log fires cleanly in a fresh
         # process, matching test_persona_roster.
         from grove import persona_roster as pr
+
         pr._logged_missing = False
         return fake_home
 
     def _get(self, url: str) -> tuple[int, dict]:
-        req = urllib.request.Request(url, method="GET", headers={"accept": "application/json"})
+        req = urllib.request.Request(
+            url, method="GET", headers={"accept": "application/json"}
+        )
         try:
             with urllib.request.urlopen(req, timeout=2.0) as resp:
                 return resp.status, json.loads(resp.read().decode("utf-8"))

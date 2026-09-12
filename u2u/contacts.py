@@ -3,7 +3,7 @@
 """U2U contact store — ~/.willow/grove_contacts.json"""
 
 import json
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, asdict
 from datetime import datetime, UTC
 from pathlib import Path
 from typing import Optional
@@ -51,10 +51,12 @@ class ContactStore:
 
     def save(self):
         self._path.parent.mkdir(parents=True, exist_ok=True)
-        self._path.write_text(json.dumps(
-            {addr: asdict(c) for addr, c in self._contacts.items()},
-            indent=2,
-        ))
+        self._path.write_text(
+            json.dumps(
+                {addr: asdict(c) for addr, c in self._contacts.items()},
+                indent=2,
+            )
+        )
 
     def add(self, addr: str, public_key_hex: str, name: str = "") -> Contact:
         """Admit a NEW contact.
@@ -71,7 +73,9 @@ class ContactStore:
                 f"its key; add() would reset blocked and consent flags"
             )
         c = Contact(
-            addr=addr, public_key_hex=public_key_hex, name=name,
+            addr=addr,
+            public_key_hex=public_key_hex,
+            name=name,
             added=datetime.now(UTC).isoformat(),
         )
         self._contacts[addr] = c
@@ -100,6 +104,7 @@ class ContactStore:
         flags.
         """
         import logging as _logging
+
         _log = _logging.getLogger("u2u.contacts")
 
         contact = self._contacts.get(addr)

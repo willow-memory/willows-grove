@@ -6,6 +6,7 @@ Absent add-on and seam-fetch failure raise ``Unreachable`` — they no
 longer collapse into ``[]``. See ``test_fleet_presence_unreachable.py``
 for the dedicated §1 pin.
 """
+
 from __future__ import annotations
 
 import types
@@ -19,7 +20,9 @@ from grove.errors import Unreachable
 class _FakeFP:
     def __init__(self):
         self.calls = []
-        self._roster = [{"app_id": "willow", "summary": "primary interface", "counts": {}}]
+        self._roster = [
+            {"app_id": "willow", "summary": "primary interface", "counts": {}}
+        ]
 
     def announce(self, app_id, summary, counts):
         self.calls.append(("announce", app_id, summary, counts))
@@ -64,7 +67,9 @@ def test_withdraw_calls_seam(monkeypatch):
 def test_absent_seam_is_noop_for_writes_and_unreachable_for_reader(monkeypatch, caplog):
     """Writes stay bool-no-op; the reader raises ``Unreachable`` per §1."""
     monkeypatch.setattr(gfp, "_fp", None)
-    monkeypatch.setattr(gfp, "_import_error", ImportError("fleet_presence not installed"))
+    monkeypatch.setattr(
+        gfp, "_import_error", ImportError("fleet_presence not installed")
+    )
     monkeypatch.setattr(gfp, "_logged_missing", False)
     caplog.set_level("INFO")
 
@@ -82,15 +87,18 @@ def test_announce_swallows_seam_exception(monkeypatch):
     class _Bad:
         def announce(self, *a, **k):
             raise RuntimeError("db locked")
+
     _install(monkeypatch, fake=_Bad())
     assert gfp.announce_grove("x", {}) is False
 
 
 def test_roster_raises_unreachable_on_seam_exception(monkeypatch):
     """Post-M7: a seam that raises is unreachable, not empty (§1)."""
+
     class _Bad:
         def roster(self):
             raise RuntimeError("db locked")
+
     _install(monkeypatch, fake=_Bad())
     with pytest.raises(Unreachable):
         gfp.roster()

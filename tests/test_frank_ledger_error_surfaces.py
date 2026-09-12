@@ -20,13 +20,12 @@ Pre-fix, this test fails on two assertions at once: no `LedgerWriteFailed`
 is raised (the error is swallowed) AND no ERROR-level record reaches
 `caplog` (the error is `print()`ed).
 """
+
 from __future__ import annotations
 
 import logging
 import sys
 from pathlib import Path
-
-import pytest
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -46,8 +45,7 @@ class _RaisingCursor:
         import psycopg2.errors
 
         raise psycopg2.errors.UniqueViolation(
-            "duplicate key value violates unique constraint "
-            "\"frank_ledger_no_fork\""
+            'duplicate key value violates unique constraint "frank_ledger_no_fork"'
         )
 
     def fetchone(self):

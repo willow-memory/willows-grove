@@ -5,6 +5,7 @@ stdlib unittest only; a tmp WILLOW_HOME + isolated fake HOME per test
 so the real fleet directories under ~/willow-memory and ~/.willow can
 never accidentally satisfy a probe.
 """
+
 from __future__ import annotations
 
 import json
@@ -166,7 +167,8 @@ class EnvelopeReaderTests(unittest.TestCase):
 
         self.assertEqual([e["id"] for e in result["envelopes"]], ["good-1"])
         skip_logs = [
-            r for r in caplog.records
+            r
+            for r in caplog.records
             if "skipping malformed" in r.getMessage() and "bad.json" in r.getMessage()
         ]
         self.assertEqual(
@@ -265,8 +267,12 @@ class EnvelopeReaderTests(unittest.TestCase):
         env_dir.mkdir(parents=True)
         (env_dir / "pre-approved.json").write_text(
             json.dumps(
-                {"schema": er.SCHEMA_ID, "pre_approved": [], "active": [],
-                 "proposals": []}
+                {
+                    "schema": er.SCHEMA_ID,
+                    "pre_approved": [],
+                    "active": [],
+                    "proposals": [],
+                }
             ),
             encoding="utf-8",
         )

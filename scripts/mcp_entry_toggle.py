@@ -11,6 +11,7 @@ without systemd.
 The file is created (with an empty mcpServers map) if it does not yet exist, so
 `add` works on a repo that has never had an .mcp.json.
 """
+
 import json
 import os
 import sys

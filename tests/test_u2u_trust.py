@@ -240,9 +240,7 @@ def test_forged_signature_never_dispatches(
     )
 
 
-def test_unsigned_knock_from_unknown_peer_cannot_inject_trust(
-    listener, store, peer_id
-):
+def test_unsigned_knock_from_unknown_peer_cannot_inject_trust(listener, store, peer_id):
     """The P0-A exploit, end to end.
 
     The bridge's KNOCK handler admits the key carried in the packet. Before this
@@ -252,6 +250,7 @@ def test_unsigned_knock_from_unknown_peer_cannot_inject_trust(
     """
     dispatcher.clear()
     try:
+
         def admit(packet):
             # Mirrors bridge.app._grove_knock's admission behaviour.
             addr = packet["header"]["from"]
@@ -368,9 +367,10 @@ def test_update_key_mutates_only_the_key(store, peer_id, other_id):
 
     # `require_confirmation=False` is the confirmed-by-human affordance;
     # the default refuses. See INVARIANTS.md §5 and test_u2u_consent_order.
-    assert store.update_key(
-        PEER, peer_id.public_key_hex, require_confirmation=False
-    ) is True
+    assert (
+        store.update_key(PEER, peer_id.public_key_hex, require_confirmation=False)
+        is True
+    )
 
     after = store.get(PEER)
     assert after.public_key_hex == peer_id.public_key_hex
@@ -380,18 +380,17 @@ def test_update_key_mutates_only_the_key(store, peer_id, other_id):
 
 
 def test_update_key_does_not_create_contacts(store, peer_id):
-    assert store.update_key(
-        PEER, peer_id.public_key_hex, require_confirmation=False
-    ) is False
+    assert (
+        store.update_key(PEER, peer_id.public_key_hex, require_confirmation=False)
+        is False
+    )
     assert store.get(PEER) is None
 
 
 def test_update_key_survives_a_reload(store, tmp_path, peer_id, other_id):
     store.add(PEER, other_id.public_key_hex)
     store.block(PEER)
-    store.update_key(
-        PEER, peer_id.public_key_hex, require_confirmation=False
-    )
+    store.update_key(PEER, peer_id.public_key_hex, require_confirmation=False)
 
     reloaded = ContactStore(tmp_path / "contacts.json").get(PEER)
     assert reloaded.public_key_hex == peer_id.public_key_hex
@@ -465,24 +464,24 @@ def test_bridge_ignores_a_knock_with_no_key(bridge, store):
 EXPECTED = {
     "unknown": {
         PacketType.KNOCK: ConsentResult.PENDING,
-        PacketType.NOTE:  ConsentResult.DENY,
-        PacketType.ASK:   ConsentResult.DENY,
+        PacketType.NOTE: ConsentResult.DENY,
+        PacketType.ASK: ConsentResult.DENY,
         PacketType.REPLY: ConsentResult.DENY,
         PacketType.ALERT: ConsentResult.DENY,
         PacketType.SHARE: ConsentResult.DENY,
     },
     "known_all_off": {
         PacketType.KNOCK: ConsentResult.ALLOW,
-        PacketType.NOTE:  ConsentResult.DENY,
-        PacketType.ASK:   ConsentResult.DENY,
+        PacketType.NOTE: ConsentResult.DENY,
+        PacketType.ASK: ConsentResult.DENY,
         PacketType.REPLY: ConsentResult.DENY,
         PacketType.ALERT: ConsentResult.DENY,
         PacketType.SHARE: ConsentResult.DENY,
     },
     "known_all_on": {
         PacketType.KNOCK: ConsentResult.ALLOW,
-        PacketType.NOTE:  ConsentResult.ALLOW,
-        PacketType.ASK:   ConsentResult.ALLOW,
+        PacketType.NOTE: ConsentResult.ALLOW,
+        PacketType.ASK: ConsentResult.ALLOW,
         PacketType.REPLY: ConsentResult.DENY,
         PacketType.ALERT: ConsentResult.ALLOW,
         PacketType.SHARE: ConsentResult.ALLOW,
@@ -508,9 +507,7 @@ def test_reply_without_a_thread_is_denied(store, gate, other_id):
     assert gate.check(PEER, PacketType.REPLY, None) == ConsentResult.DENY
 
 
-def test_reply_to_an_outstanding_thread_is_allowed_exactly_once(
-    store, gate, other_id
-):
+def test_reply_to_an_outstanding_thread_is_allowed_exactly_once(store, gate, other_id):
     make_peer_state(store, "known_all_on", other_id.public_key_hex)
     gate.open_thread("t-1", PEER)
 

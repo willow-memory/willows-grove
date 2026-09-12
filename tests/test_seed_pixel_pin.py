@@ -20,6 +20,7 @@ These two assertions pin the fix on-tree so a future edit cannot silently
 re-skip the pixel subtests or drop the `pixelmatch` wiring and re-open the
 inert-comparator hole.
 """
+
 from pathlib import Path
 
 

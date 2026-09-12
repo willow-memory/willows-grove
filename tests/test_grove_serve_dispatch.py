@@ -7,6 +7,7 @@ the new dispatch route with stdlib urllib. Asserts status 200 and a JSON
 list body — the kart_reader graceful-tolerance path guarantees a list even
 when the DB is empty, missing, or shape-drifted.
 """
+
 from __future__ import annotations
 
 import contextlib
@@ -84,7 +85,9 @@ class _ServerHarness:
 
 def _get_dispatch(url: str) -> tuple[int, dict]:
     """GET with 4xx/5xx tolerated so we can assert the 503 body."""
-    req = urllib.request.Request(url, method="GET", headers={"accept": "application/json"})
+    req = urllib.request.Request(
+        url, method="GET", headers={"accept": "application/json"}
+    )
     try:
         with urllib.request.urlopen(req, timeout=3.0) as resp:
             return resp.status, json.loads(resp.read().decode("utf-8"))
@@ -131,10 +134,10 @@ class DispatchRouteTests(unittest.TestCase):
         def _boom(*_a, **_kw):
             raise Unreachable("test — DSN gone")
 
-        with _ServerHarness() as srv, patch.object(
-            grove_serve.kart_reader, "read_queue", _boom
-        ), patch.object(
-            grove_serve.kart_reader, "read_by_lens", _boom
+        with (
+            _ServerHarness() as srv,
+            patch.object(grove_serve.kart_reader, "read_queue", _boom),
+            patch.object(grove_serve.kart_reader, "read_by_lens", _boom),
         ):
             status, body = _get_dispatch(srv.url("/api/dispatch"))
         self.assertEqual(status, 503)
@@ -146,10 +149,12 @@ class DispatchRouteTests(unittest.TestCase):
         import grove_serve
         from unittest.mock import patch
 
-        with _ServerHarness() as srv, patch.object(
-            grove_serve.kart_reader, "read_queue", lambda: []
-        ), patch.object(
-            grove_serve.kart_reader, "read_by_lens", lambda *_a, **_kw: []
+        with (
+            _ServerHarness() as srv,
+            patch.object(grove_serve.kart_reader, "read_queue", lambda: []),
+            patch.object(
+                grove_serve.kart_reader, "read_by_lens", lambda *_a, **_kw: []
+            ),
         ):
             status, body = _get_dispatch(srv.url("/api/dispatch"))
         self.assertEqual(status, 200)
@@ -165,8 +170,9 @@ class DispatchRouteTests(unittest.TestCase):
             {"id": 1, "status": "queued", "task": "reply to Ada"},
             {"id": 2, "status": "queued", "task": "roll build"},
         ]
-        with _ServerHarness() as srv, patch.object(
-            grove_serve.kart_reader, "read_queue", lambda: rows
+        with (
+            _ServerHarness() as srv,
+            patch.object(grove_serve.kart_reader, "read_queue", lambda: rows),
         ):
             status, body = _get_dispatch(srv.url("/api/dispatch"))
         self.assertEqual(status, 200)

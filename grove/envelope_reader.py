@@ -30,6 +30,7 @@ Any file that fails to parse is skipped with a single log line naming the
 path and the reason — one malformed file must not deny the operator sight
 of the rest.
 """
+
 from __future__ import annotations
 
 import json
@@ -122,7 +123,7 @@ def _entries_from_payload(data: Any, path: Path) -> list[dict]:
             return []
         if "id" in data:
             return [data]
-    raise ValueError(f"no envelope entries found (unknown top-level shape)")
+    raise ValueError("no envelope entries found (unknown top-level shape)")
 
 
 def _load_dir(directory: Path) -> list[dict]:
@@ -137,7 +138,9 @@ def _load_dir(directory: Path) -> list[dict]:
     except OSError as err:
         key = str(directory)
         if key not in _logged_malformed:
-            log.info("[grove.envelope_reader] skipping unreadable %s: %s", directory, err)
+            log.info(
+                "[grove.envelope_reader] skipping unreadable %s: %s", directory, err
+            )
             _logged_malformed.add(key)
         return out
 

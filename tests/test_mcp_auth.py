@@ -67,7 +67,10 @@ def _mode(path: Path) -> int:
         pytest.param("not json at all", id="garbage"),
         pytest.param("[]", id="json-but-not-an-object"),
         pytest.param('{"clients": {}}', id="missing-sections"),
-        pytest.param('{"clients": [], "access_tokens": {}, "refresh_tokens": {}}', id="section-wrong-type"),
+        pytest.param(
+            '{"clients": [], "access_tokens": {}, "refresh_tokens": {}}',
+            id="section-wrong-type",
+        ),
     ],
 )
 def test_corrupt_token_file_raises_instead_of_yielding_empty_state(tmp_path, body):
@@ -108,7 +111,21 @@ def test_valid_token_file_round_trips(tmp_path):
 
 # ── Token file permissions ───────────────────────────────────────────────────
 
+# The three mode pins below assert POSIX permission bits. Windows has none —
+# `os.chmod` there toggles a read-only flag and `stat` reports 0o666 for every
+# file — and grove/mcp_auth.py sets no ACL, so on the floor's Windows leg the
+# token file's confidentiality is genuinely not established. A strict expected
+# failure records exactly that: it goes red the day an ACL is set and the
+# pins start passing (docs/ideas.md item 32), rather than hiding the gap
+# behind a skip.
+_POSIX_MODE_BITS = pytest.mark.xfail(
+    os.name == "nt",
+    strict=True,
+    reason="POSIX mode bits: Windows has ACLs, and mcp_auth sets none (docs/ideas.md item 32)",
+)
 
+
+@_POSIX_MODE_BITS
 def test_token_file_is_0600_on_fresh_create(tmp_path):
     """The file holds live bearer tokens; it must never be group/world readable."""
     token_path = tmp_path / "nested" / "grove_mcp_token"
@@ -119,13 +136,16 @@ def test_token_file_is_0600_on_fresh_create(tmp_path):
     assert _mode(token_path) == 0o600, f"expected 0600, got {_mode(token_path):#o}"
 
 
+@_POSIX_MODE_BITS
 def test_token_file_is_0600_after_overwriting_a_wide_open_file(tmp_path):
     """Overwriting must narrow an existing wide mode, not inherit it.
 
     An in-place write to a pre-existing 0644 file leaves it 0644 forever.
     """
     token_path = tmp_path / "grove_mcp_token"
-    token_path.write_text(json.dumps({"clients": {}, "access_tokens": {}, "refresh_tokens": {}}))
+    token_path.write_text(
+        json.dumps({"clients": {}, "access_tokens": {}, "refresh_tokens": {}})
+    )
     os.chmod(token_path, 0o644)
     assert _mode(token_path) == 0o644
 
@@ -135,6 +155,7 @@ def test_token_file_is_0600_after_overwriting_a_wide_open_file(tmp_path):
     assert _mode(token_path) == 0o600, f"expected 0600, got {_mode(token_path):#o}"
 
 
+@_POSIX_MODE_BITS
 def test_token_file_is_0600_under_a_permissive_umask(tmp_path):
     """0600 must come from the create mode, not from luck about the umask."""
     token_path = tmp_path / "grove_mcp_token"
@@ -161,19 +182,32 @@ def test_save_replaces_the_file_rather_than_writing_through_it(tmp_path):
     asyncio.run(provider.register_client(_client()))
 
     first_inode = token_path.stat().st_ino
-    with token_path.open() as held:
+    # On POSIX a reader holding the old inode keeps seeing the complete
+    # previous state across the install — the strongest form of the
+    # property, so hold one. On Windows an open handle without
+    # FILE_SHARE_DELETE makes `os.replace` itself fail (WinError 5), so the
+    # replacement is proved by the file id changing, with no handle held.
+    held = token_path.open() if os.name != "nt" else None
+    try:
         asyncio.run(provider.register_client(_client("client-2")))
 
         assert token_path.stat().st_ino != first_inode, (
             "token file was written through in place — a crash mid-write "
             "truncates it and _load_state has nothing to recover"
         )
-        # The old inode is still whole and still parses.
-        previous = json.loads(held.read())
-        assert set(previous["clients"]) == {"client-1"}
+        if held is not None:
+            # The old inode is still whole and still parses.
+            previous = json.loads(held.read())
+            assert set(previous["clients"]) == {"client-1"}
+    finally:
+        if held is not None:
+            held.close()
 
     # And the installed file is the new state, with no temp files left over.
-    assert set(json.loads(token_path.read_text())["clients"]) == {"client-1", "client-2"}
+    assert set(json.loads(token_path.read_text())["clients"]) == {
+        "client-1",
+        "client-2",
+    }
     assert [p.name for p in tmp_path.iterdir()] == ["grove_mcp_token"]
 
 
@@ -242,6 +276,7 @@ def test_access_ttl_is_bounded_for_operator_seat():
     """Access tokens live for the operator seat's horizon, not 30 days.
     INVARIANTS.md §7 (bounded TTL suitable for the operator seat)."""
     import grove.mcp_auth as mcp_auth
+
     # 24 hours — bounded, defensible. Not 30 days.
     assert mcp_auth._ACCESS_TTL == 24 * 3600
     assert mcp_auth._PENDING_TTL == 300  # 5 minutes for the approval click
@@ -293,7 +328,9 @@ def test_pending_requests_expire(tmp_path, monkeypatch):
     import grove.mcp_auth as mcp_auth
 
     real_time = mcp_auth.time.time
-    monkeypatch.setattr(mcp_auth.time, "time", lambda: real_time() + mcp_auth._PENDING_TTL + 1)
+    monkeypatch.setattr(
+        mcp_auth.time, "time", lambda: real_time() + mcp_auth._PENDING_TTL + 1
+    )
     assert provider.pop_pending(key) is None
 
 
@@ -325,4 +362,7 @@ def test_code_is_not_usable_by_a_different_client(tmp_path):
     provider = _provider(tmp_path)
     client, params = _client(), _params()
     code_str = provider.issue_code(client, params)
-    assert asyncio.run(provider.load_authorization_code(_client("other"), code_str)) is None
+    assert (
+        asyncio.run(provider.load_authorization_code(_client("other"), code_str))
+        is None
+    )

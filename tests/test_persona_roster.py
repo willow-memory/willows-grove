@@ -4,6 +4,7 @@
 stdlib unittest only; a minimal fleet-personas/v1 fixture is written
 into a tmp WILLOW_HOME per test.
 """
+
 from __future__ import annotations
 
 import json
@@ -31,7 +32,7 @@ def _fixture_bytes(rows=None) -> str:
                     "voice": {"register": "warm", "mandate": "the seat"},
                     "visual": {
                         "color": "#8FBC8F",
-                        "sigil": "\U0001F333",
+                        "sigil": "\U0001f333",
                         "color_token": "willow.green",
                     },
                     "canonical_file": "willow-memory/willow/personas/willow.md",
@@ -42,7 +43,7 @@ def _fixture_bytes(rows=None) -> str:
                     "role": "scout",
                     "trust": "utility",
                     "voice": {"register": "sharp"},
-                    "visual": {"color": "#7C1F3F", "sigil": "\U0001F98A"},
+                    "visual": {"color": "#7C1F3F", "sigil": "\U0001f98a"},
                     "canonical_file": "personas/loki.md",
                     "emission_fields": ["utterance"],
                 },
@@ -167,7 +168,7 @@ class PersonaRosterTests(unittest.TestCase):
                         "trust": "flagship",
                         "role": "primary",
                         "voice": {"register": "warm"},
-                        "visual": {"color": "#8FBC8F", "sigil": "\U0001F333"},
+                        "visual": {"color": "#8FBC8F", "sigil": "\U0001f333"},
                     },
                     "heimdallr": {
                         "trust": "watch",
@@ -179,7 +180,7 @@ class PersonaRosterTests(unittest.TestCase):
                         "trust": "utility",
                         "role": "builder",
                         "voice": {"register": "eager"},
-                        "visual": {"color": "#D97706", "sigil": "\U0001F412"},
+                        "visual": {"color": "#D97706", "sigil": "\U0001f412"},
                     },
                 }
             ),
@@ -204,7 +205,7 @@ class PersonaRosterTests(unittest.TestCase):
         assert willow is not None
         self.assertEqual(willow.trust, "flagship")
         self.assertEqual(willow.role, "primary")
-        self.assertEqual(willow.visual["sigil"], "\U0001F333")
+        self.assertEqual(willow.visual["sigil"], "\U0001f333")
         self.assertEqual(willow.voice["register"], "warm")
 
         heim = roster.get("heimdallr")
@@ -272,9 +273,7 @@ class PersonaRosterTests(unittest.TestCase):
         self.assertIn("fleet_personas.json", ctx1.exception.reason)
         self.assertIn("fleet_personas.json", ctx2.exception.reason)
 
-        missing_msgs = [
-            r for r in caplog.records if "not found" in r.getMessage()
-        ]
+        missing_msgs = [r for r in caplog.records if "not found" in r.getMessage()]
         self.assertEqual(
             len(missing_msgs),
             1,

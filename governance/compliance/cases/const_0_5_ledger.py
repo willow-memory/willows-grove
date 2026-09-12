@@ -4,6 +4,7 @@ Declarative compliance card (charter). No executable probe body.
 
 The forbidden act, in one line: *silently rewriting what was already recorded.*
 """
+
 from __future__ import annotations
 
 TRACE_ID = "CONST-0-5"

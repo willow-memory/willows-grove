@@ -17,6 +17,7 @@ callers raise ``Unreachable`` — the honest three-state posture
 
 Sync only, no asyncio in callers; HTTP uses ``asyncio.run`` per call.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -179,11 +180,15 @@ class WillowMcpClient:
                 env=env or None,
             )
         except (FileNotFoundError, OSError) as err:
-            log.warning("willow_mcp_client: failed to spawn %r: %s", self._stdio_argv, err)
+            log.warning(
+                "willow_mcp_client: failed to spawn %r: %s", self._stdio_argv, err
+            )
             self._proc = None
             self._available = False
 
-    def _rpc_stdio(self, method: str, params: dict[str, Any], *, notify: bool = False) -> Optional[dict[str, Any]]:
+    def _rpc_stdio(
+        self, method: str, params: dict[str, Any], *, notify: bool = False
+    ) -> Optional[dict[str, Any]]:
         with self._lock:
             if self._proc is None or self._proc.poll() is not None:
                 self._start_stdio()
@@ -201,7 +206,9 @@ class WillowMcpClient:
                     return {}
                 line = proc.stdout.readline()
             except (BrokenPipeError, OSError) as err:
-                log.warning("willow_mcp_client: stdio transport error on %s: %s", method, err)
+                log.warning(
+                    "willow_mcp_client: stdio transport error on %s: %s", method, err
+                )
                 self._session_ready = False
                 return None
         if not line:
@@ -235,7 +242,9 @@ class WillowMcpClient:
         resp = self._rpc_stdio("tools/call", {"name": name, "arguments": arguments})
         return _parse_stdio_tool_response(resp)
 
-    async def _call_http_async(self, name: str, arguments: dict[str, Any]) -> Optional[Any]:
+    async def _call_http_async(
+        self, name: str, arguments: dict[str, Any]
+    ) -> Optional[Any]:
         from mcp import ClientSession
         from mcp.client.streamable_http import streamable_http_client
 

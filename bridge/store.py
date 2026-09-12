@@ -32,16 +32,24 @@ class BridgeStore:
             "SELECT * FROM mappings WHERE matrix_room = ?", (room_id,)
         ).fetchone()
 
-    def upsert(self, grove_addr: str, matrix_room: str, matrix_user: str,
-               state: str = "pending_knock") -> None:
-        self._db.execute("""
+    def upsert(
+        self,
+        grove_addr: str,
+        matrix_room: str,
+        matrix_user: str,
+        state: str = "pending_knock",
+    ) -> None:
+        self._db.execute(
+            """
             INSERT INTO mappings (grove_addr, matrix_room, matrix_user, state)
             VALUES (?, ?, ?, ?)
             ON CONFLICT (grove_addr) DO UPDATE SET
                 matrix_room = excluded.matrix_room,
                 matrix_user = excluded.matrix_user,
                 state       = excluded.state
-        """, (grove_addr, matrix_room, matrix_user, state))
+        """,
+            (grove_addr, matrix_room, matrix_user, state),
+        )
         self._db.commit()
 
     def activate(self, grove_addr: str) -> None:
@@ -51,10 +59,13 @@ class BridgeStore:
         self._db.commit()
 
     def set_pending_knock(self, grove_addr: str, public_key: str) -> None:
-        self._db.execute("""
+        self._db.execute(
+            """
             INSERT OR REPLACE INTO pending_knocks (grove_addr, public_key)
             VALUES (?, ?)
-        """, (grove_addr, public_key))
+        """,
+            (grove_addr, public_key),
+        )
         self._db.commit()
 
     def get_pending_knock(self, grove_addr: str) -> Optional[sqlite3.Row]:

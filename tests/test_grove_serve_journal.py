@@ -8,6 +8,7 @@ The writer is patched at the module level (``grove_serve.journal_writer``)
 so we exercise the route wiring end-to-end without depending on willow-mcp
 availability.
 """
+
 from __future__ import annotations
 
 import contextlib
@@ -129,8 +130,11 @@ class JournalRouteTests(unittest.TestCase):
             self.assertEqual(sender, "operator")
             return {"ok": True, "id": "ABCD1234", "ts": "2026-08-27T00:00:00Z"}
 
-        with _ServerHarness() as srv, patch.object(
-            grove_serve.journal_writer, "write_operator_turn", _fake_write
+        with (
+            _ServerHarness() as srv,
+            patch.object(
+                grove_serve.journal_writer, "write_operator_turn", _fake_write
+            ),
         ):
             status, body = _post_json(
                 srv.url("/api/journal"),
@@ -150,8 +154,9 @@ class JournalRouteTests(unittest.TestCase):
         def _boom(_text, *, sender="operator"):  # noqa: ARG001
             raise Unreachable("willow-mcp not reachable")
 
-        with _ServerHarness() as srv, patch.object(
-            grove_serve.journal_writer, "write_operator_turn", _boom
+        with (
+            _ServerHarness() as srv,
+            patch.object(grove_serve.journal_writer, "write_operator_turn", _boom),
         ):
             status, body = _post_json(
                 srv.url("/api/journal"),
@@ -174,8 +179,9 @@ class JournalRouteTests(unittest.TestCase):
             return {"ok": True, "id": "Z", "ts": "t"}
 
         weird = "  \tunedited — with newlines\n\nand spaces.  "
-        with _ServerHarness() as srv, patch.object(
-            grove_serve.journal_writer, "write_operator_turn", _cap
+        with (
+            _ServerHarness() as srv,
+            patch.object(grove_serve.journal_writer, "write_operator_turn", _cap),
         ):
             _post_json(srv.url("/api/journal"), {"text": weird, "sender": "operator"})
         self.assertEqual(captured["text"], weird)

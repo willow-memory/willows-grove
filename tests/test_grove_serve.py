@@ -6,6 +6,7 @@ background thread, then hits `/health` and `/` with stdlib `urllib`. Stdlib
 only (no httpx/requests) so the test lands green anywhere the repo's own
 requirements resolve.
 """
+
 from __future__ import annotations
 
 import contextlib

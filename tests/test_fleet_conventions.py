@@ -17,19 +17,15 @@ re-sync from the reconciler (or to record the decision not to). When the
 reconciler happens to be importable, the vendored copy is also held equal
 to the live document.
 
-What the rules do and do not bite on, in *this* tree, today:
+What the rules bite on in *this* tree, today:
 
-* **pr-title guard.** The rule requires `.github/workflows/pr-title.yml`
-  once `release-please.yml` arms auto-merge on the release PR. This repo
-  has no `release-please.yml` — it gains release-please in the plan's
-  Wave 4 (C4-grove-release) — so `_arms_automerge` is False and the rule is
-  vacuous here. The real-tree test asserts exactly that, so the day the
-  workflow lands the assertion flips and the test has to be rewritten to
-  the reference shape (armed, and guarded). The plant proves the helper
-  fires regardless.
-* **hidden set and reasoning comments.** Both read
-  `release-please-config.json`, which is likewise absent until Wave 4. The
-  real-tree tests skip with that reason; their plants still run.
+* **pr-title guard.** `release-please.yml` arms auto-merge on the release
+  PR (C4-grove-release, fleet plan Wave 4), so `.github/workflows/pr-title.yml`
+  is required and present; the real-tree test asserts both.
+* **hidden set and reasoning comments.** `release-please-config.json`'s
+  hidden set is the published one and both reasoning comments sit beside
+  it. Nothing here is vacuous any more: before Wave 4 these three tests
+  asserted or skipped on the absence, and said so.
 * **numbered pile.** The rule requires `.github/workflows/trailers.yml`
   once a repo keeps a numbered idea pile. This repo keeps one at
   `docs/ideas.md` (E3-piles, fleet plan Wave 3) and carries the workflow
@@ -41,6 +37,7 @@ What the rules do and do not bite on, in *this* tree, today:
   landed (PR 59 carried the test as a strict `xfail` naming the follow-up);
   E3-trailers added it.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -147,31 +144,26 @@ def test_the_vendored_document_equals_the_live_one_when_the_reconciler_is_here()
 
 
 def test_pr_title_guard_is_present_wherever_automerge_is_armed():
-    """Vacuous in this tree, and asserted to be: there is no
-    `release-please.yml` here until C4-grove-release (fleet plan Wave 4),
-    so nothing arms auto-merge and the guard is not yet required. When that
-    workflow lands this assertion flips, and this test must be rewritten to
-    the reference shape — armed, and `pr-title.yml` present."""
-    assert _arms_automerge(REPO_ROOT) is False
-    assert _missing_when_armed(REPO_ROOT, RULES["required_when_release_please_arms_automerge"]) == []
-
-
-def _release_config_text() -> str:
-    config = REPO_ROOT / RELEASE_CONFIG
-    if not config.exists():
-        pytest.skip(
-            f"no {RELEASE_CONFIG} in this tree until C4-grove-release (fleet "
-            "plan Wave 4); vacuous here — the plant below still runs"
+    """The rule bites here: `release-please.yml` arms auto-merge on the
+    release PR, so a PR title alone could cut a release unattended, and
+    `pr-title.yml` is the guard (C4-grove-release, fleet plan Wave 4)."""
+    assert _arms_automerge(REPO_ROOT)
+    assert (
+        _missing_when_armed(
+            REPO_ROOT, RULES["required_when_release_please_arms_automerge"]
         )
-    return config.read_text(encoding="utf-8")
+        == []
+    )
 
 
 def test_the_configs_hidden_set_equals_the_published_set():
-    assert _config_hidden_types(_release_config_text()) == set(RULES["hidden_types"])
+    text = (REPO_ROOT / RELEASE_CONFIG).read_text(encoding="utf-8")
+    assert _config_hidden_types(text) == set(RULES["hidden_types"])
 
 
 def test_the_config_carries_every_required_reasoning_comment():
-    assert _config_missing_comments(_release_config_text(), RULES["required_config_comments"]) == []
+    text = (REPO_ROOT / RELEASE_CONFIG).read_text(encoding="utf-8")
+    assert _config_missing_comments(text, RULES["required_config_comments"]) == []
 
 
 def test_contributing_names_the_test_command():
@@ -194,17 +186,21 @@ def test_trailers_workflow_is_present_because_a_pile_exists():
     `reconciler verify` gate must run in CI (E3-trailers, fleet plan Wave
     3). A pile without the gate is a doc whose join keys nothing checks."""
     assert (REPO_ROOT / PILE).exists()
-    assert _missing_when_pile_exists(REPO_ROOT, RULES["required_when_pile_exists"]) == []
+    assert (
+        _missing_when_pile_exists(REPO_ROOT, RULES["required_when_pile_exists"]) == []
+    )
 
 
 # ── the plants ───────────────────────────────────────────────────────────────
 
 
-def _tree(tmp_path: Path, label: str, *, arms: bool, files: tuple[str, ...] = ()) -> Path:
+def _tree(
+    tmp_path: Path, label: str, *, arms: bool, files: tuple[str, ...] = ()
+) -> Path:
     root = tmp_path / label
     (root / ".github" / "workflows").mkdir(parents=True)
     body = "jobs:\n  release-please:\n    steps:\n      - run: |\n"
-    body += f"          {ARMS_AUTOMERGE} \"$pr\"\n" if arms else "          gh pr list\n"
+    body += f'          {ARMS_AUTOMERGE} "$pr"\n' if arms else "          gh pr list\n"
     (root / RELEASE_PLEASE).write_text(body, encoding="utf-8")
     for f in files:
         (root / f).parent.mkdir(parents=True, exist_ok=True)
@@ -215,24 +211,42 @@ def _tree(tmp_path: Path, label: str, *, arms: bool, files: tuple[str, ...] = ()
 def test_the_armed_tree_check_fires_on_a_planted_tree_missing_the_guard(tmp_path):
     required = RULES["required_when_release_please_arms_automerge"]
     assert _missing_when_armed(_tree(tmp_path, "bare", arms=True), required) == required
-    assert _missing_when_armed(_tree(tmp_path, "guarded", arms=True, files=tuple(required)), required) == []
+    assert (
+        _missing_when_armed(
+            _tree(tmp_path, "guarded", arms=True, files=tuple(required)), required
+        )
+        == []
+    )
     assert _missing_when_armed(_tree(tmp_path, "manual", arms=False), required) == []
 
 
 def test_the_hidden_set_check_catches_a_planted_config_that_unhides_ci():
-    planted = json.dumps({"packages": {".": {"changelog-sections": [
-        {"type": "feat", "section": "Added"},
-        {"type": "docs", "section": "Docs", "hidden": True},
-        {"type": "test", "section": "Tests", "hidden": True},
-        {"type": "ci", "section": "CI"},
-        {"type": "chore", "section": "Chores", "hidden": True},
-    ], "$comment-what-cuts-a-release": "kept"}}})
+    planted = json.dumps(
+        {
+            "packages": {
+                ".": {
+                    "changelog-sections": [
+                        {"type": "feat", "section": "Added"},
+                        {"type": "docs", "section": "Docs", "hidden": True},
+                        {"type": "test", "section": "Tests", "hidden": True},
+                        {"type": "ci", "section": "CI"},
+                        {"type": "chore", "section": "Chores", "hidden": True},
+                    ],
+                    "$comment-what-cuts-a-release": "kept",
+                }
+            }
+        }
+    )
     assert _config_hidden_types(planted) == {"chore", "docs", "test"}
     assert _config_hidden_types(planted) != set(RULES["hidden_types"])
-    assert _config_missing_comments(planted, RULES["required_config_comments"]) == ["$comment-hidden-rule"]
+    assert _config_missing_comments(planted, RULES["required_config_comments"]) == [
+        "$comment-hidden-rule"
+    ]
 
 
-def test_the_pile_check_fires_on_a_planted_tree_with_a_pile_and_no_verify_gate(tmp_path):
+def test_the_pile_check_fires_on_a_planted_tree_with_a_pile_and_no_verify_gate(
+    tmp_path,
+):
     required = RULES["required_when_pile_exists"]
     with_pile = _tree(tmp_path, "pile", arms=False, files=(PILE,))
     assert _missing_when_pile_exists(with_pile, required) == required

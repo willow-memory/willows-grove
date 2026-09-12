@@ -135,9 +135,7 @@ def check_changelog_pr_citations() -> list[str]:
     )
     if not m:
         # No frozen release yet — scan from [Unreleased] to EOF.
-        m = re.search(
-            r"^##\s*\[Unreleased\]\s*\n(.*)", text, re.MULTILINE | re.DOTALL
-        )
+        m = re.search(r"^##\s*\[Unreleased\]\s*\n(.*)", text, re.MULTILINE | re.DOTALL)
     if not m:
         return ["CHANGELOG.md has no [Unreleased] section — required by §3"]
     block = m.group(1)
@@ -152,7 +150,8 @@ def check_changelog_pr_citations() -> list[str]:
     bullet: list[str] = []
     bullets: list[tuple[int, str]] = []
     line_start = m.start(1)
-    line_number_offset = text[: line_start].count("\n") + 1
+    line_number_offset = text[:line_start].count("\n") + 1
+    bullet_line = line_number_offset
     for idx, line in enumerate(lines):
         stripped = line.lstrip()
         if stripped.startswith("- "):
@@ -160,7 +159,12 @@ def check_changelog_pr_citations() -> list[str]:
                 bullets.append((bullet_line, " ".join(bullet)))
             bullet = [stripped[2:]]
             bullet_line = line_number_offset + idx
-        elif stripped and bullet and not line.startswith("###") and not line.startswith("## "):
+        elif (
+            stripped
+            and bullet
+            and not line.startswith("###")
+            and not line.startswith("## ")
+        ):
             bullet.append(stripped)
         elif not stripped and bullet:
             # Blank line ends a bullet paragraph.
@@ -219,9 +223,11 @@ def main() -> int:
         for line in all_drifts:
             print("  " + line, file=sys.stderr)
         return 1
-    print("docs-drift: clean ({} INVARIANTS §-sections checked)".format(
-        len(section_numbers)
-    ))
+    print(
+        "docs-drift: clean ({} INVARIANTS §-sections checked)".format(
+            len(section_numbers)
+        )
+    )
     return 0
 
 

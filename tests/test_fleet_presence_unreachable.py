@@ -15,6 +15,7 @@ Only the actually-empty case still returns ``[]``.
 These tests are designed to fail on the pre-fix reader (which returns
 ``[]`` in the unreachable branches) and pass once the reader raises.
 """
+
 from __future__ import annotations
 
 import pytest

@@ -25,11 +25,7 @@ def _run(body: str) -> subprocess.CompletedProcess:
 
 def test_clean_ratification_passes() -> None:
     """§12: the ratification line signs off at the BOTTOM of the body."""
-    body = (
-        "The PR body comes first.\n"
-        "\n"
-        'Ratified-by: sean — "go ahead with §12"\n'
-    )
+    body = 'The PR body comes first.\n\nRatified-by: sean — "go ahead with §12"\n'
     r = _run(body)
     assert r.returncode == 0, r.stdout + r.stderr
     assert "clean" in r.stdout
@@ -61,7 +57,7 @@ def test_ascii_dash_variant_passes() -> None:
 
 
 def test_curly_quotes_variant_passes() -> None:
-    body = 'Ratified-by: sean — “go ahead with §12”\n'
+    body = "Ratified-by: sean — “go ahead with §12”\n"
     r = _run(body)
     assert r.returncode == 0, r.stdout + r.stderr
 
@@ -83,11 +79,7 @@ def test_ratification_above_other_lines_flagged() -> None:
     """A line at the top is no longer the shape §12 asks for. Position is
     load-bearing: without it, any `Ratified-by:` mentioned in passing
     anywhere in a long body would satisfy the check."""
-    body = (
-        'Ratified-by: sean — "go"\n'
-        "\n"
-        "Summary of the changes.\n"
-    )
+    body = 'Ratified-by: sean — "go"\n\nSummary of the changes.\n'
     r = _run(body)
     assert r.returncode == 1, r.stdout + r.stderr
 
@@ -117,7 +109,7 @@ def test_tool_appended_footer_below_the_line_passes() -> None:
         "\n"
         "Persona: heimdallr\n"
         "\n"
-        '🤖 Generated with [Claude Code](https://claude.com/claude-code)\n'
+        "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n"
         "\n"
         "https://claude.ai/code/session_01TfZLArksQMHhhCni2ZjRZV\n"
         "\n"

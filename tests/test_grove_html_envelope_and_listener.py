@@ -21,6 +21,7 @@ the envelope surface and the persona-registry unreachable event:
 Must fail against pre-fix ``grove_html.py`` — the three needles are
 absent from the current render.
 """
+
 from __future__ import annotations
 
 import os

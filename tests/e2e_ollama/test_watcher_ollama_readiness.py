@@ -15,6 +15,7 @@ from ``conftest.py`` — the model it pulls is cached for the sibling
 watcher e2e in the same session, so no double-pay of the ~30-60s pull
 cost.
 """
+
 from __future__ import annotations
 
 import json

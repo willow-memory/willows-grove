@@ -43,6 +43,7 @@ cleanly and only shows up at query time, so this pin has to be
 structural to run everywhere. ``NestorBundleQueryableTests`` adds the
 end-to-end check when the binary happens to be installed.
 """
+
 from __future__ import annotations
 
 import json
@@ -185,6 +186,13 @@ class NestorBundleQueryableTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             env = dict(os.environ)
             env["NESTOR_DB"] = os.path.join(tmp, "pin.db")
+            # nestor prints "\u2713 clear ..." with no encoding guard, and a
+            # Windows console's stdout is cp1252, which cannot encode it: the
+            # CLI died with UnicodeEncodeError and exit 2 on the floor's
+            # Windows leg. A UTF-8 stdout for the child (the same thing an
+            # operator there needs) and a UTF-8 decode on this side; the
+            # guard itself is nestor's to add.
+            env["PYTHONUTF8"] = "1"
             subprocess.run(
                 ["nestor", "import", "--apply", "--verifier", "pin", BUNDLE],
                 check=True,
@@ -196,12 +204,21 @@ class NestorBundleQueryableTests(unittest.TestCase):
             # operator types, and it must not answer "no decision on record".
             done = subprocess.run(
                 ["nestor", "decision", "check", question],
-                check=True,
+                check=False,
                 capture_output=True,
-                text=True,
+                encoding="utf-8",
                 env=env,
                 timeout=120,
             )
+        # check=False so a non-zero exit reports what the CLI said, not only
+        # its status: the floor's Windows leg failed here with "exit status 2"
+        # and nothing else to go on.
+        self.assertEqual(
+            done.returncode,
+            0,
+            f"`nestor decision check` exited {done.returncode}\n"
+            f"stdout:\n{done.stdout}\nstderr:\n{done.stderr}",
+        )
         self.assertNotIn(
             "no decision on record",
             done.stdout,

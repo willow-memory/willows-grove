@@ -20,6 +20,7 @@ Two tests pin this at the two layers the invariant covers:
 stdlib only (unittest + uvicorn in a background thread) to match
 tests/test_grove_serve_personas.py.
 """
+
 from __future__ import annotations
 
 import contextlib

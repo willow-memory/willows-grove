@@ -24,6 +24,7 @@ Endpoints exercised:
 Stdlib only. Same harness shape as ``tests/test_grove_serve_envelopes.py`` and
 ``tests/test_grove_serve_nestor.py``.
 """
+
 from __future__ import annotations
 
 import contextlib
@@ -103,7 +104,9 @@ class _ServerHarness:
 
 
 def _get(url: str) -> tuple[int, dict]:
-    req = urllib.request.Request(url, method="GET", headers={"accept": "application/json"})
+    req = urllib.request.Request(
+        url, method="GET", headers={"accept": "application/json"}
+    )
     try:
         with urllib.request.urlopen(req, timeout=2.0) as resp:
             return resp.status, json.loads(resp.read().decode("utf-8"))
@@ -144,6 +147,7 @@ class EnvelopesWiringTests(unittest.TestCase):
 
     def setUp(self) -> None:
         from grove import envelope_reader as er
+
         er._logged_missing_dirs = False
         er._logged_missing_files = False
         er._logged_malformed = set()
@@ -190,10 +194,14 @@ class EnvelopesWiringTests(unittest.TestCase):
         env_dir = willow_home / "constitutional"
         env_dir.mkdir(parents=True)
         (env_dir / "a.json").write_text(
-            json.dumps({
-                "schema": "envelope-registry/v1.1",
-                "envelopes": [{"id": "env-a", "grantee": "kart", "attestation": "attested"}],
-            }),
+            json.dumps(
+                {
+                    "schema": "envelope-registry/v1.1",
+                    "envelopes": [
+                        {"id": "env-a", "grantee": "kart", "attestation": "attested"}
+                    ],
+                }
+            ),
             encoding="utf-8",
         )
         with self._env(willow_home):
@@ -221,6 +229,7 @@ class PersonasWiringTests(unittest.TestCase):
 
     def setUp(self) -> None:
         from grove import persona_roster as pr
+
         pr._logged_missing = False
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
@@ -271,9 +280,7 @@ class PersonasWiringTests(unittest.TestCase):
         """File present with ``agents: []`` → 200 + state=empty."""
         willow_home = Path(self.tmp.name) / "empty_registry"
         willow_home.mkdir()
-        self._write_registry(
-            willow_home, {"schema": "fleet-personas/v1", "agents": []}
-        )
+        self._write_registry(willow_home, {"schema": "fleet-personas/v1", "agents": []})
         with self._env(willow_home):
             with _ServerHarness() as srv:
                 status, body = _get(srv.url("/api/personas"))
@@ -297,7 +304,7 @@ class PersonasWiringTests(unittest.TestCase):
                         "role": "primary",
                         "trust": "flagship",
                         "voice": {"register": "warm"},
-                        "visual": {"color": "#8FBC8F", "sigil": "\U0001F333"},
+                        "visual": {"color": "#8FBC8F", "sigil": "\U0001f333"},
                     },
                 ],
             },
@@ -324,6 +331,7 @@ class NestorDecideWiringTests(unittest.TestCase):
 
     def setUp(self) -> None:
         import grove_serve
+
         grove_serve._NESTOR_CLIENT = None
 
     def test_decide_populated_sealed(self) -> None:
@@ -334,9 +342,11 @@ class NestorDecideWiringTests(unittest.TestCase):
         def _sealed(_self, _q):
             return {"verdict": "sealed", "pair": pair}
 
-        with _ServerHarness() as srv, \
-                mock.patch.object(grove_serve.NestorClient, "available", return_value=True), \
-                mock.patch.object(grove_serve.NestorClient, "decision_check", _sealed):
+        with (
+            _ServerHarness() as srv,
+            mock.patch.object(grove_serve.NestorClient, "available", return_value=True),
+            mock.patch.object(grove_serve.NestorClient, "decision_check", _sealed),
+        ):
             status, body = _post_json(srv.url("/api/nestor/decide"), {"claim": "q"})
         self.assertEqual(status, 200)
         self.assertEqual(body.get("state"), "populated")
@@ -355,9 +365,11 @@ class NestorDecideWiringTests(unittest.TestCase):
         def _refused(_self, _q):
             return {"verdict": "refused", "refusal": refusal}
 
-        with _ServerHarness() as srv, \
-                mock.patch.object(grove_serve.NestorClient, "available", return_value=True), \
-                mock.patch.object(grove_serve.NestorClient, "decision_check", _refused):
+        with (
+            _ServerHarness() as srv,
+            mock.patch.object(grove_serve.NestorClient, "available", return_value=True),
+            mock.patch.object(grove_serve.NestorClient, "decision_check", _refused),
+        ):
             status, body = _post_json(srv.url("/api/nestor/decide"), {"claim": "q"})
         self.assertEqual(status, 200)
         self.assertEqual(body.get("state"), "populated")
@@ -371,9 +383,11 @@ class NestorDecideWiringTests(unittest.TestCase):
         def _no_match(_self, _q):
             return None
 
-        with _ServerHarness() as srv, \
-                mock.patch.object(grove_serve.NestorClient, "available", return_value=True), \
-                mock.patch.object(grove_serve.NestorClient, "decision_check", _no_match):
+        with (
+            _ServerHarness() as srv,
+            mock.patch.object(grove_serve.NestorClient, "available", return_value=True),
+            mock.patch.object(grove_serve.NestorClient, "decision_check", _no_match),
+        ):
             status, body = _post_json(srv.url("/api/nestor/decide"), {"claim": "novel"})
         self.assertEqual(status, 200)
         self.assertEqual(body.get("state"), "populated")
@@ -395,8 +409,10 @@ class DispatchWiringTests(unittest.TestCase):
     def test_dispatch_empty_when_no_rows(self) -> None:
         from grove import kart_reader
 
-        with _ServerHarness() as srv, \
-                mock.patch.object(kart_reader, "read_queue", return_value=[]):
+        with (
+            _ServerHarness() as srv,
+            mock.patch.object(kart_reader, "read_queue", return_value=[]),
+        ):
             status, body = _get(srv.url("/api/dispatch"))
         self.assertEqual(status, 200)
         self.assertEqual(body.get("state"), "empty")
@@ -404,12 +420,20 @@ class DispatchWiringTests(unittest.TestCase):
 
     def test_dispatch_populated_when_rows_present(self) -> None:
         from grove import kart_reader
+
         rows = [
-            {"id": 1, "origin": "kart", "proposed_action": "seal PR-42",
-             "authority_needed": "L2", "urgency": "operator-visible"},
+            {
+                "id": 1,
+                "origin": "kart",
+                "proposed_action": "seal PR-42",
+                "authority_needed": "L2",
+                "urgency": "operator-visible",
+            },
         ]
-        with _ServerHarness() as srv, \
-                mock.patch.object(kart_reader, "read_queue", return_value=rows):
+        with (
+            _ServerHarness() as srv,
+            mock.patch.object(kart_reader, "read_queue", return_value=rows),
+        ):
             status, body = _get(srv.url("/api/dispatch"))
         self.assertEqual(status, 200)
         self.assertEqual(body.get("state"), "populated")
@@ -442,8 +466,11 @@ class JournalWriterWiringTests(unittest.TestCase):
             captured["sender"] = sender
             return {"ok": True, "id": "ATOM-1", "ts": "2026-08-27T00:00:00Z"}
 
-        with _ServerHarness() as srv, mock.patch.object(
-            grove_serve.journal_writer, "write_operator_turn", _fake_write
+        with (
+            _ServerHarness() as srv,
+            mock.patch.object(
+                grove_serve.journal_writer, "write_operator_turn", _fake_write
+            ),
         ):
             status, body = _post_json(
                 srv.url("/api/journal"),
@@ -466,8 +493,9 @@ class JournalWriterWiringTests(unittest.TestCase):
         def _boom(_text, *, sender="operator"):  # noqa: ARG001
             raise Unreachable("willow-mcp not reachable")
 
-        with _ServerHarness() as srv, mock.patch.object(
-            grove_serve.journal_writer, "write_operator_turn", _boom
+        with (
+            _ServerHarness() as srv,
+            mock.patch.object(grove_serve.journal_writer, "write_operator_turn", _boom),
         ):
             status, body = _post_json(
                 srv.url("/api/journal"),
@@ -489,12 +517,25 @@ class JournalRecentWiringTests(unittest.TestCase):
 
     def test_journal_recent_populated(self) -> None:
         from grove import journal_reader
+
         atoms = [
-            {"id": "a1", "text": "first", "sender": "operator", "ts": "2026-08-27T00:00:00Z"},
-            {"id": "a2", "text": "second", "sender": "watcher", "ts": "2026-08-27T00:00:01Z"},
+            {
+                "id": "a1",
+                "text": "first",
+                "sender": "operator",
+                "ts": "2026-08-27T00:00:00Z",
+            },
+            {
+                "id": "a2",
+                "text": "second",
+                "sender": "watcher",
+                "ts": "2026-08-27T00:00:01Z",
+            },
         ]
-        with _ServerHarness() as srv, \
-                mock.patch.object(journal_reader, "read_recent", return_value=atoms):
+        with (
+            _ServerHarness() as srv,
+            mock.patch.object(journal_reader, "read_recent", return_value=atoms),
+        ):
             status, body = _get(srv.url("/api/journal/recent"))
         self.assertEqual(status, 200)
         self.assertEqual(body.get("state"), "populated")
@@ -502,8 +543,11 @@ class JournalRecentWiringTests(unittest.TestCase):
 
     def test_journal_recent_empty(self) -> None:
         from grove import journal_reader
-        with _ServerHarness() as srv, \
-                mock.patch.object(journal_reader, "read_recent", return_value=[]):
+
+        with (
+            _ServerHarness() as srv,
+            mock.patch.object(journal_reader, "read_recent", return_value=[]),
+        ):
             status, body = _get(srv.url("/api/journal/recent"))
         self.assertEqual(status, 200)
         self.assertEqual(body.get("state"), "empty")
@@ -516,8 +560,10 @@ class JournalRecentWiringTests(unittest.TestCase):
         def _boom(*_a, **_kw):
             raise Unreachable("willow-mcp not reachable")
 
-        with _ServerHarness() as srv, \
-                mock.patch.object(journal_reader, "read_recent", side_effect=_boom):
+        with (
+            _ServerHarness() as srv,
+            mock.patch.object(journal_reader, "read_recent", side_effect=_boom),
+        ):
             status, body = _get(srv.url("/api/journal/recent"))
         self.assertEqual(status, 503)
         self.assertEqual(body.get("state"), "unreachable")

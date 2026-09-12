@@ -91,7 +91,9 @@ def http():
 def client(http, tmp_path, monkeypatch):
     provider = mcp_local._auth_provider
     monkeypatch.setattr(provider, "_token_path", tmp_path / "grove_mcp_token")
-    monkeypatch.setattr(provider, "_state", {"clients": {}, "access_tokens": {}, "refresh_tokens": {}})
+    monkeypatch.setattr(
+        provider, "_state", {"clients": {}, "access_tokens": {}, "refresh_tokens": {}}
+    )
     monkeypatch.setattr(provider, "_pending", {})
     monkeypatch.setattr(provider, "_codes", {})
     # `_auto_approve` no longer exists as of PR 6 — the escape hatch is gone
@@ -173,7 +175,7 @@ def test_registration_alone_grants_nothing(client):
 def test_allow_completes_the_flow_and_the_code_exchanges(client):
     client_id = _register(client)
     approve_url = _authorize(client, client_id).headers["location"]
-    path_and_query = approve_url[len(BASE_URL):]
+    path_and_query = approve_url[len(BASE_URL) :]
 
     client.get(path_and_query)  # render the page (re-stashes the pending entry)
     posted = client.post(path_and_query, data={"action": "allow"})
@@ -204,7 +206,7 @@ def test_allow_completes_the_flow_and_the_code_exchanges(client):
 def test_deny_issues_no_code(client):
     client_id = _register(client)
     approve_url = _authorize(client, client_id).headers["location"]
-    path_and_query = approve_url[len(BASE_URL):]
+    path_and_query = approve_url[len(BASE_URL) :]
 
     client.get(path_and_query)
     posted = client.post(path_and_query, data={"action": "deny"})
@@ -219,13 +221,13 @@ def test_ignoring_the_page_issues_no_code(client):
     """Closing the tab is a denial. Nothing is granted by inaction."""
     client_id = _register(client)
     approve_url = _authorize(client, client_id).headers["location"]
-    client.get(approve_url[len(BASE_URL):])
+    client.get(approve_url[len(BASE_URL) :])
     assert mcp_local._auth_provider._codes == {}
 
 
 def test_approval_link_is_not_replayable(client):
     client_id = _register(client)
-    path_and_query = _authorize(client, client_id).headers["location"][len(BASE_URL):]
+    path_and_query = _authorize(client, client_id).headers["location"][len(BASE_URL) :]
 
     client.get(path_and_query)
     first = client.post(path_and_query, data={"action": "allow"})
@@ -269,7 +271,7 @@ def test_approval_page_escapes_registrant_supplied_values(client):
     client_id = r.json()["client_id"]
 
     approve_url = _authorize(client, client_id).headers["location"]
-    page = client.get(approve_url[len(BASE_URL):])
+    page = client.get(approve_url[len(BASE_URL) :])
 
     assert "<img src=x" not in page.text
     assert "&lt;img src=x" in page.text

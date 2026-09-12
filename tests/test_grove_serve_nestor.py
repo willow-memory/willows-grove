@@ -9,6 +9,7 @@ land on a fresh instance. ``NestorClient.decision_check`` and
 ``.available`` are patched at the class level so we exercise route wiring
 end-to-end without depending on a real ``nestor`` binary.
 """
+
 from __future__ import annotations
 
 import contextlib
@@ -87,7 +88,9 @@ class _ServerHarness:
         return f"http://{self.host}:{self.port}{path}"
 
 
-def _post(url: str, body: bytes | None, *, content_type: str = "application/json") -> tuple[int, dict, bytes]:
+def _post(
+    url: str, body: bytes | None, *, content_type: str = "application/json"
+) -> tuple[int, dict, bytes]:
     """POST; return (status, parsed body, raw bytes). No raise on 4xx/5xx."""
     req = urllib.request.Request(
         url,
@@ -121,6 +124,7 @@ class NestorDecideRouteTests(unittest.TestCase):
         # Reset the lazy singleton so each test starts from a fresh client
         # object that our patch.object can rebind.
         import grove_serve
+
         grove_serve._NESTOR_CLIENT = None
 
     # ---- 400 shape ----
@@ -149,10 +153,12 @@ class NestorDecideRouteTests(unittest.TestCase):
         state=unreachable + verdict=unavailable (preserved for
         back-compat)."""
         import grove_serve
+
         # Force the client's availability probe to say "no", so the
         # response is 503 regardless of local $PATH state.
-        with _ServerHarness() as srv, patch.object(
-            grove_serve.NestorClient, "available", return_value=False
+        with (
+            _ServerHarness() as srv,
+            patch.object(grove_serve.NestorClient, "available", return_value=False),
         ):
             status, body = _post_json(
                 srv.url("/api/nestor/decide"), {"claim": "may we ship?"}
@@ -171,14 +177,12 @@ class NestorDecideRouteTests(unittest.TestCase):
         def _boom(_self, _question):
             raise Unreachable("child process died")
 
-        with _ServerHarness() as srv, patch.object(
-            grove_serve.NestorClient, "available", return_value=True
-        ), patch.object(
-            grove_serve.NestorClient, "decision_check", _boom
+        with (
+            _ServerHarness() as srv,
+            patch.object(grove_serve.NestorClient, "available", return_value=True),
+            patch.object(grove_serve.NestorClient, "decision_check", _boom),
         ):
-            status, body = _post_json(
-                srv.url("/api/nestor/decide"), {"claim": "novel"}
-            )
+            status, body = _post_json(srv.url("/api/nestor/decide"), {"claim": "novel"})
         self.assertEqual(status, 503)
         self.assertEqual(body.get("state"), "unreachable")
         self.assertEqual(body.get("reason"), "child process died")
@@ -186,6 +190,7 @@ class NestorDecideRouteTests(unittest.TestCase):
     # ---- 200 shapes ----
     def test_sealed_pair_response(self) -> None:
         import grove_serve
+
         pair = {
             "id": "PAIR-42",
             "question": "may we merge?",
@@ -197,10 +202,10 @@ class NestorDecideRouteTests(unittest.TestCase):
             self.assertEqual(question, "may we merge?")
             return {"verdict": "sealed", "pair": pair}
 
-        with _ServerHarness() as srv, patch.object(
-            grove_serve.NestorClient, "available", return_value=True
-        ), patch.object(
-            grove_serve.NestorClient, "decision_check", _sealed
+        with (
+            _ServerHarness() as srv,
+            patch.object(grove_serve.NestorClient, "available", return_value=True),
+            patch.object(grove_serve.NestorClient, "decision_check", _sealed),
         ):
             status, body = _post_json(
                 srv.url("/api/nestor/decide"), {"claim": "may we merge?"}
@@ -213,6 +218,7 @@ class NestorDecideRouteTests(unittest.TestCase):
     def test_refusal_response_verbatim(self) -> None:
         """V5 — Nestor's refusal payload passes through byte-for-byte."""
         import grove_serve
+
         refusal = {
             "persona": "nestor",
             "act": "durable_rejection",
@@ -230,10 +236,10 @@ class NestorDecideRouteTests(unittest.TestCase):
         def _refused(_self, _question):
             return payload_out
 
-        with _ServerHarness() as srv, patch.object(
-            grove_serve.NestorClient, "available", return_value=True
-        ), patch.object(
-            grove_serve.NestorClient, "decision_check", _refused
+        with (
+            _ServerHarness() as srv,
+            patch.object(grove_serve.NestorClient, "available", return_value=True),
+            patch.object(grove_serve.NestorClient, "decision_check", _refused),
         ):
             status, body = _post_json(
                 srv.url("/api/nestor/decide"), {"claim": "should we deploy?"}
@@ -253,10 +259,10 @@ class NestorDecideRouteTests(unittest.TestCase):
         def _no_match(_self, _question):
             return None
 
-        with _ServerHarness() as srv, patch.object(
-            grove_serve.NestorClient, "available", return_value=True
-        ), patch.object(
-            grove_serve.NestorClient, "decision_check", _no_match
+        with (
+            _ServerHarness() as srv,
+            patch.object(grove_serve.NestorClient, "available", return_value=True),
+            patch.object(grove_serve.NestorClient, "decision_check", _no_match),
         ):
             status, body = _post_json(
                 srv.url("/api/nestor/decide"), {"claim": "novel claim"}
@@ -276,10 +282,10 @@ class NestorDecideRouteTests(unittest.TestCase):
             seen.append(id(self))
             return None
 
-        with _ServerHarness() as srv, patch.object(
-            grove_serve.NestorClient, "available", return_value=True
-        ), patch.object(
-            grove_serve.NestorClient, "decision_check", _no_match
+        with (
+            _ServerHarness() as srv,
+            patch.object(grove_serve.NestorClient, "available", return_value=True),
+            patch.object(grove_serve.NestorClient, "decision_check", _no_match),
         ):
             _post_json(srv.url("/api/nestor/decide"), {"claim": "one"})
             _post_json(srv.url("/api/nestor/decide"), {"claim": "two"})

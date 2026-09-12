@@ -18,6 +18,7 @@ hold.
 
 This test reads both files and asserts they agree.
 """
+
 from __future__ import annotations
 
 import re
@@ -80,8 +81,10 @@ class VersionChangelogSyncTests(unittest.TestCase):
                 encoding="utf-8",
             )
             module = sys.modules[__name__]
-            with mock.patch.object(module, "PYPROJECT", pyproject), \
-                    mock.patch.object(module, "CHANGELOG", changelog):
+            with (
+                mock.patch.object(module, "PYPROJECT", pyproject),
+                mock.patch.object(module, "CHANGELOG", changelog),
+            ):
                 self.assertEqual(_fallback_version(), "0.9.0")
                 self.assertEqual(_released_versions(), ["0.10.0", "0.9.0"])
 

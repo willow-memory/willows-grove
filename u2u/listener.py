@@ -19,16 +19,18 @@ _MAX_PACKET_BYTES = 16_384
 
 class U2UListener:
     def __init__(self, host: str, port: int, identity: Identity, consent: ConsentGate):
-        self.host    = host
-        self.port    = port
-        self._ident  = identity
+        self.host = host
+        self.port = port
+        self._ident = identity
         self._consent = consent
-        self._server  = None
+        self._server = None
 
     @asynccontextmanager
     async def serve(self):
         self._server = await asyncio.start_server(
-            self._handle, self.host, self.port,
+            self._handle,
+            self.host,
+            self.port,
             limit=_MAX_PACKET_BYTES,
         )
         log.info("U2U listening on %s:%s", self.host, self.port)
@@ -49,7 +51,9 @@ class U2UListener:
         finally:
             writer.close()
 
-    def _verification_key(self, packet: dict, sender_addr: str, ptype: PacketType) -> str:
+    def _verification_key(
+        self, packet: dict, sender_addr: str, ptype: PacketType
+    ) -> str:
         """The ONLY key this packet is allowed to be checked against.
 
         A known contact is always verified against its stored key — never
@@ -74,12 +78,12 @@ class U2UListener:
         return ""
 
     async def _process(self, packet: dict, peer):
-        header      = packet.get("header")
+        header = packet.get("header")
         if not isinstance(header, dict):
             log.warning("packet without header from %s — dropped", peer)
             return
         sender_addr = header.get("from", "")
-        ptype_str   = header.get("type", "")
+        ptype_str = header.get("type", "")
 
         try:
             ptype = PacketType(ptype_str)
@@ -105,7 +109,8 @@ class U2UListener:
         if not key:
             log.warning(
                 "no verification key for %s from %s — dropped",
-                ptype_str, sender_addr,
+                ptype_str,
+                sender_addr,
             )
             return
         try:
@@ -113,13 +118,16 @@ class U2UListener:
         except PacketMalformed as e:
             log.warning(
                 "packet malformed for %s from %s — dropped: %s",
-                ptype_str, sender_addr, e,
+                ptype_str,
+                sender_addr,
+                e,
             )
             return
         if not ok:
             log.warning(
                 "signature invalid for %s from %s — dropped",
-                ptype_str, sender_addr,
+                ptype_str,
+                sender_addr,
             )
             return
 
@@ -128,17 +136,21 @@ class U2UListener:
         if result == ConsentResult.DENY:
             log.debug("denied %s from %s", ptype_str, sender_addr)
             if ptype == PacketType.NOTE:
-                dispatcher.dispatch({
-                    "header": {**header, "_denied": True},
-                    "payload": {},
-                })
+                dispatcher.dispatch(
+                    {
+                        "header": {**header, "_denied": True},
+                        "payload": {},
+                    }
+                )
             return
         if result == ConsentResult.PENDING:
             log.info("KNOCK pending approval from %s", sender_addr)
-            dispatcher.dispatch({
-                "header": {**header, "_pending": True},
-                "payload": packet.get("payload", {}),
-            })
+            dispatcher.dispatch(
+                {
+                    "header": {**header, "_pending": True},
+                    "payload": packet.get("payload", {}),
+                }
+            )
             return
 
         dispatcher.dispatch(packet)

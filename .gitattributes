@@ -1,0 +1,7 @@
+# The floor runs the suite on Windows too. Several pins compare a committed
+# file's bytes (tests/fleet_conventions.json is sha256-pinned) or read text
+# a script wrote; a CRLF checkout on the Windows runner would change those
+# bytes without changing the file. Every text file checks out with LF on
+# every platform; binaries are detected by git and left alone.
+* text=auto eol=lf
+*.png binary

@@ -21,6 +21,7 @@ Must fail against pre-fix ``grove_html.py`` — the top strip currently
 renders ``<span>standing</span>`` and ``<span>grove stable</span>``
 verbatim.
 """
+
 from __future__ import annotations
 
 import os
@@ -60,11 +61,9 @@ class NoHardcodedStatusTests(unittest.TestCase):
         a `class="standing"` would still not trip them."""
         planted = (
             '<div class="standing" id="grove-stable">'
-            '<span>standing</span> <span> grove stable </span></div>'
+            "<span>standing</span> <span> grove stable </span></div>"
         )
-        self.assertEqual(
-            _visible_text_fragments(planted), ["standing", "grove stable"]
-        )
+        self.assertEqual(_visible_text_fragments(planted), ["standing", "grove stable"])
         self.assertNotIn("grove-stable", _visible_text_fragments(planted))
 
     def test_top_strip_does_not_claim_standing_as_visible_text(self) -> None:

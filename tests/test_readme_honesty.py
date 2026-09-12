@@ -127,16 +127,12 @@ def test_grove_serve_rows_do_not_claim_hmac_or_command_server() -> None:
     rows = _grove_serve_row_lines(readme)
 
     entry_rows = [line for line in rows if "python3 grove_serve.py" in line]
-    arch_rows = [
-        line for line in rows if "python3 grove_serve.py" not in line
-    ]
+    arch_rows = [line for line in rows if "python3 grove_serve.py" not in line]
     assert entry_rows, (
-        "expected the Entry-points table row for `python3 grove_serve.py` "
-        "in README.md"
+        "expected the Entry-points table row for `python3 grove_serve.py` in README.md"
     )
     assert arch_rows, (
-        "expected the Architecture table row for `grove_serve.py` in "
-        "README.md"
+        "expected the Architecture table row for `grove_serve.py` in README.md"
     )
 
     banned = ("HMAC", "command server")

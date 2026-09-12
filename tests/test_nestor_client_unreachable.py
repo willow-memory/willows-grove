@@ -22,6 +22,7 @@ bypass ``available()`` and just ``return self._call(...)``, which yields
 assertions fail. On the fixed tree they probe first and raise, matching
 ``decision_check``'s existing shape.
 """
+
 from __future__ import annotations
 
 import pytest
@@ -58,7 +59,9 @@ def test_refusal_raises_unreachable_when_binary_absent(monkeypatch):
     nc.close()
 
 
-def test_call_returning_none_while_reachable_is_still_empty_not_unreachable(monkeypatch):
+def test_call_returning_none_while_reachable_is_still_empty_not_unreachable(
+    monkeypatch,
+):
     """The reachable-but-no-data branch must stay ``None``; §1 reserves
     ``Unreachable`` for the source-not-reached state.
 
@@ -67,7 +70,9 @@ def test_call_returning_none_while_reachable_is_still_empty_not_unreachable(monk
     ``None`` here, not raise. This half of the contract is what prevents
     the fix from over-shooting into raising on every empty response.
     """
-    monkeypatch.setattr(nestor_client.shutil, "which", lambda _exe: "/usr/local/bin/nestor")
+    monkeypatch.setattr(
+        nestor_client.shutil, "which", lambda _exe: "/usr/local/bin/nestor"
+    )
     monkeypatch.setattr(NestorClient, "_call", lambda self, method, params: None)
     nc = NestorClient()
     assert nc.available() is True

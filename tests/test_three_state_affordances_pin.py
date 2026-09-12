@@ -14,12 +14,11 @@ operator") forbids.
 These two assertions pin the fix on-tree so a future edit cannot silently
 re-widen the compared string and re-open the loophole.
 """
+
 from pathlib import Path
 
 
-SPEC = (
-    Path(__file__).resolve().parent / "e2e" / "three-state-affordances.spec.js"
-)
+SPEC = Path(__file__).resolve().parent / "e2e" / "three-state-affordances.spec.js"
 
 
 def _spec_text() -> str:

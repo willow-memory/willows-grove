@@ -47,6 +47,7 @@ Stdlib only. Reads files, touches no network — an absolute URL is not
 fetched, because a link into an archived repository is legitimate history
 and a network check would buy flakiness for nothing.
 """
+
 from __future__ import annotations
 
 import os
@@ -86,7 +87,8 @@ class SweepSanityTests(unittest.TestCase):
     def test_the_sweep_finds_documents(self) -> None:
         docs = _docs()
         self.assertGreaterEqual(
-            len(docs), 20,
+            len(docs),
+            20,
             f"found only {len(docs)} markdown docs — the glob has stopped "
             "matching and this file is no longer auditing anything",
         )
@@ -94,7 +96,8 @@ class SweepSanityTests(unittest.TestCase):
     def test_the_sweep_finds_links(self) -> None:
         total = sum(len(_relative_links(d)) for d in _docs())
         self.assertGreaterEqual(
-            total, 20,
+            total,
+            20,
             f"found only {total} relative links across the docs — the pattern "
             "has stopped matching and this file is no longer auditing anything",
         )
@@ -119,7 +122,9 @@ class SweepPlantTests(unittest.TestCase):
                 encoding="utf-8",
             )
             links = _relative_links(doc)
-            self.assertEqual(links, ["missing/file.md", "../../../willow-mcp/README.md"])
+            self.assertEqual(
+                links, ["missing/file.md", "../../../willow-mcp/README.md"]
+            )
             self.assertFalse((doc.parent / links[0]).exists())
             resolved = (doc.parent / links[1]).resolve()
             self.assertNotIn(pathlib.Path(tmp).resolve(), resolved.parents)
@@ -135,7 +140,8 @@ class DocsLinkResolutionTests(unittest.TestCase):
                 if not (doc.parent / target).exists():
                     broken.append(f"{_rel(doc)} -> {target}")
         self.assertEqual(
-            sorted(broken), [],
+            sorted(broken),
+            [],
             "documents link to files this repository does not contain. Point "
             "at an absolute URL when the target is public and reachable; name "
             "it with its location, unlinked, when it is not (a URL into a "
@@ -161,7 +167,8 @@ class DocsLinkEscapeTests(unittest.TestCase):
                 if ROOT not in resolved.parents and resolved != ROOT:
                     escaping.append(f"{_rel(doc)} -> {target}")
         self.assertEqual(
-            sorted(escaping), [],
+            sorted(escaping),
+            [],
             "relative links climb out of the repository. They resolve only "
             "when a sibling checkout happens to sit beside this one, so they "
             "are dead on a fresh clone and in CI while looking healthy to "

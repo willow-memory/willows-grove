@@ -19,6 +19,7 @@ vocabulary or an explicitly-allowlisted in-flight sentinel named below.
 Adding a word here is a deliberate act with a reason attached; drifting
 into one is not.
 """
+
 from __future__ import annotations
 
 import os
@@ -83,9 +84,7 @@ class StateVocabularyAuditTests(unittest.TestCase):
     def test_components_dir_exists(self) -> None:
         """Sanity: a moved components dir must fail loudly, not vacuously
         pass by finding nothing to audit."""
-        self.assertTrue(
-            os.path.isdir(COMPONENTS_DIR), f"missing {COMPONENTS_DIR}"
-        )
+        self.assertTrue(os.path.isdir(COMPONENTS_DIR), f"missing {COMPONENTS_DIR}")
         self.assertTrue(_component_files(), "no components found to audit")
 
     def test_every_state_literal_is_section_1_vocabulary(self) -> None:
@@ -106,7 +105,9 @@ class StateVocabularyAuditTests(unittest.TestCase):
             "ALLOWED_SENTINELS with the reason it is not a resting state.",
         )
 
-    def test_the_literal_reader_fires_on_a_planted_pre_section_1_component(self) -> None:
+    def test_the_literal_reader_fires_on_a_planted_pre_section_1_component(
+        self,
+    ) -> None:
         """Planted: the PR 9 shape — a component assigning `ready` and
         `error`, branching on `data-state="ok"` and setting
         `data-state` to `failed` — beside one §1 word. The reader must

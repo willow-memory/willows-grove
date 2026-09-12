@@ -12,6 +12,7 @@ specific commit.
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -22,7 +23,9 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 SCRIPT = REPO_ROOT / "scripts" / "check_persona_provenance.py"
 
 
-def _git(cwd: Path, *args: str, check: bool = True, env: dict | None = None) -> subprocess.CompletedProcess:
+def _git(
+    cwd: Path, *args: str, check: bool = True, env: dict | None = None
+) -> subprocess.CompletedProcess:
     return subprocess.run(
         ["git", *args],
         cwd=str(cwd),
@@ -42,8 +45,12 @@ def _run_checker(cwd: Path) -> subprocess.CompletedProcess:
     # Write outside the tree the checker walks — no self-reference.
     rerooted = cwd.parent / f"_check_{cwd.name}.py"
     rerooted.write_text(body, encoding="utf-8")
-    # Clear GITHUB_BASE_REF so the local `master` fallback runs.
-    env = {"PATH": "/usr/bin:/bin:/usr/local/bin", "HOME": str(cwd.parent)}
+    # Clear GITHUB_BASE_REF so the local `master` fallback runs. Everything
+    # else is inherited: a PATH scrubbed to POSIX directories has no git and
+    # no python on the Windows leg, and HOME is redirected so no user git
+    # config reaches the synthetic repo.
+    env = {k: v for k, v in os.environ.items() if k != "GITHUB_BASE_REF"}
+    env["HOME"] = str(cwd.parent)
     return subprocess.run(
         [sys.executable, str(rerooted)],
         capture_output=True,
@@ -94,7 +101,9 @@ def synthetic_repo(tmp_path: Path) -> Path:
     return repo
 
 
-def _commit(repo: Path, message: str, filename: str = "notes.py", content: str = "# noted\n") -> str:
+def _commit(
+    repo: Path, message: str, filename: str = "notes.py", content: str = "# noted\n"
+) -> str:
     (repo / filename).write_text(content, encoding="utf-8")
     _git(repo, "add", filename)
     _git(repo, "commit", "-q", "-m", message)
@@ -139,7 +148,12 @@ def test_merge_commit_exempt(synthetic_repo: Path) -> None:
 
 def test_untracked_ext_commit_exempt(synthetic_repo: Path) -> None:
     """Commit touching only untracked-code extensions carries no trailer requirement."""
-    _commit(synthetic_repo, "chore: scratch", filename="notes.scratch", content="not tracked\n")
+    _commit(
+        synthetic_repo,
+        "chore: scratch",
+        filename="notes.scratch",
+        content="not tracked\n",
+    )
     result = _run_checker(synthetic_repo)
     assert result.returncode == 0, result.stdout + result.stderr
 
@@ -175,9 +189,7 @@ def test_repo_tree_clean() -> None:
         cwd=str(REPO_ROOT),
     )
     assert result.returncode == 0, (
-        "persona-provenance dirty on the real tree:\n"
-        + result.stdout
-        + result.stderr
+        "persona-provenance dirty on the real tree:\n" + result.stdout + result.stderr
     )
 
 

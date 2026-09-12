@@ -23,6 +23,7 @@ fails) — this test fails on the unfixed code.
 
 Stdlib only. No live database.
 """
+
 from __future__ import annotations
 
 import os

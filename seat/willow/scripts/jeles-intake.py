@@ -8,6 +8,7 @@ where the seat intake tree is visible; default intake lives at
     . $WILLOW_HOME/fleet.env
     python3 seat/willow/scripts/jeles-intake.py --probe-only
 """
+
 from __future__ import annotations
 
 import os
@@ -41,7 +42,13 @@ except ImportError:
     candidates.append(Path(willow_home) / "venvs" / "willow-mcp" / "bin" / "python")
     candidates.append(Path(willow_home) / "venvs" / "jeles" / "bin" / "python3")
     candidates.append(
-        Path.home() / "github" / "willow-memory" / "willow-mcp" / ".venv" / "bin" / "python"
+        Path.home()
+        / "github"
+        / "willow-memory"
+        / "willow-mcp"
+        / ".venv"
+        / "bin"
+        / "python"
     )
 
     this_exe = Path(sys.executable).absolute()

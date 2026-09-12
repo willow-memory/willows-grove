@@ -23,6 +23,7 @@ the operator's own utterance is the one thing this module refuses to touch.
 
 Sync only, no asyncio, matching the rest of ``grove/*.py``.
 """
+
 from __future__ import annotations
 
 import datetime as _dt
@@ -45,7 +46,9 @@ def _log_unreachable_once(reason: str) -> None:
     if _UNREACHABLE_LOGGED:
         return
     _UNREACHABLE_LOGGED = True
-    log.warning("journal_writer: willow-mcp not reachable (%s) — running as no-op (D7).", reason)
+    log.warning(
+        "journal_writer: willow-mcp not reachable (%s) — running as no-op (D7).", reason
+    )
 
 
 def _reset_log_once_for_tests() -> None:
@@ -55,7 +58,11 @@ def _reset_log_once_for_tests() -> None:
 
 
 def _now_iso() -> str:
-    return _dt.datetime.now(_dt.timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+    return (
+        _dt.datetime.now(_dt.timezone.utc)
+        .isoformat(timespec="seconds")
+        .replace("+00:00", "Z")
+    )
 
 
 def _build_tags(sender: str, ts: str, domain: Optional[str]) -> list[str]:
@@ -65,7 +72,9 @@ def _build_tags(sender: str, ts: str, domain: Optional[str]) -> list[str]:
     return tags
 
 
-def _try_mcp_write(text: str, sender: str, ts: str, domain: Optional[str] = None) -> Optional[dict[str, Any]]:
+def _try_mcp_write(
+    text: str, sender: str, ts: str, domain: Optional[str] = None
+) -> Optional[dict[str, Any]]:
     """Call ``kb_journal`` over MCP; ``None`` when transport fails."""
     result = _wmc.call_tool(
         "kb_journal",

@@ -32,6 +32,7 @@ The probed locations, in order (D7/D10 discipline — mirrors
 
 Read-only — writes to the seed source are an operator act, never Grove's.
 """
+
 from __future__ import annotations
 
 import logging
@@ -152,7 +153,8 @@ def _movements_from_canon_dir(canon: Path) -> list[dict[str, Any]] | None:
         return None
     files.sort(key=lambda t: t[0])
     files = files[:6]
-    lowest = files[0][0]  # 0 for the charter shape, 1 for 01..06
+    # files[0][0] is 0 for the charter shape, 1 for 01..06; the URL index
+    # below is always 1..6 regardless.
     out: list[dict[str, Any]] = []
     for idx, (_raw_n, path) in enumerate(files):
         canon_n = idx + 1  # URL index, always 1..6
@@ -173,7 +175,7 @@ def _movements_from_canon_dir(canon: Path) -> list[dict[str, Any]] | None:
 # Match a movement function definition in seed.py — captures the number,
 # the slug (with underscores) and the docstring's first paragraph.
 _MOVE_RE = re.compile(
-    r'^def\s+movement_(\d+)_([a-z_]+)\s*\([^)]*\)\s*[^:]*:\s*\n'
+    r"^def\s+movement_(\d+)_([a-z_]+)\s*\([^)]*\)\s*[^:]*:\s*\n"
     r'\s+"""(.+?)"""',
     re.M | re.S,
 )

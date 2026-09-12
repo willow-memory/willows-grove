@@ -137,3 +137,31 @@ include = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+# The fleet CI floor (fleet plan decision 5, docs/ideas.md item 30). ruff is
+# pinned to an exact version in .github/workflows/tests.yml's lint job and
+# runs `ruff check` + `ruff format --check`; tests/test_ci_floor.py holds the
+# pin. The rule set is the classic pyflakes + pycodestyle-errors baseline on
+# purpose: ruff 0.16.7's own default set is 413 rules and reports 377
+# findings on this tree, which is a sweep of its own (item 31), not the
+# floor. Widen here one family at a time, with the fixes each needs.
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
+
+[tool.ruff.lint.per-file-ignores]
+# These modules put the repo root on sys.path and only then import from it,
+# so their imports are deliberately not at the top of the file. E402 is the
+# rule saying "imports go first"; here they go second by design, and moving
+# them would break the import. Ignored per file, with the reason, rather than
+# reshaped to satisfy the rule.
+"grove/mcp_local.py" = ["E402"]
+"seat/willow/scripts/jeles-intake.py" = ["E402"]
+"tests/test_journal_reader.py" = ["E402"]
+"tests/test_journal_reader_unreachable.py" = ["E402"]
+"tests/test_journal_writer.py" = ["E402"]
+"tests/test_kart_reader.py" = ["E402"]
+"tests/test_mock_willow_mcp_surface.py" = ["E402"]

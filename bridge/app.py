@@ -75,12 +75,12 @@ class GroveMatrixBridge:
         identity_path: Path,
         store_path: Path,
     ):
-        self._hs_name    = hs_name
+        self._hs_name = hs_name
         self._grove_port = grove_port
-        self._as_port    = as_port
+        self._as_port = as_port
 
         self.identity = Identity.load_or_generate(identity_path)
-        self.store    = BridgeStore(store_path)
+        self.store = BridgeStore(store_path)
 
         local_ip = _resolve_local_ip()
         self._bridge_addr = f"grove_bridge@{local_ip}:{grove_port}"
@@ -89,7 +89,7 @@ class GroveMatrixBridge:
         self.contacts = ContactStore(contacts_path)
 
         self._bot_id = f"@grove_bridge:{hs_name}"
-        self.matrix  = MatrixClient(homeserver, as_token, self._bot_id)
+        self.matrix = MatrixClient(homeserver, as_token, self._bot_id)
         self._as_srv = ASServer(hs_token, self._on_matrix_event)
 
         log.info("bridge addr: %s", self._bridge_addr)
@@ -110,32 +110,30 @@ class GroveMatrixBridge:
         gate = ConsentGate(self.contacts)
 
         def _on_note(packet: dict) -> None:
-            h         = packet["header"]
-            pl        = packet.get("payload", {})
+            h = packet["header"]
+            pl = packet.get("payload", {})
             from_addr = h.get("from", "")
-            body      = pl.get("body", "")
+            body = pl.get("body", "")
             if h.get("_denied"):
                 log.debug("denied NOTE from %s", from_addr)
                 return
-            asyncio.get_running_loop().create_task(
-                self._grove_note(from_addr, body)
-            )
+            asyncio.get_running_loop().create_task(self._grove_note(from_addr, body))
 
         def _on_knock(packet: dict) -> None:
-            h         = packet["header"]
-            pl        = packet.get("payload", {})
+            h = packet["header"]
+            pl = packet.get("payload", {})
             from_addr = h.get("from", "")
-            pubkey    = pl.get("public_key", "")
-            asyncio.get_running_loop().create_task(
-                self._grove_knock(from_addr, pubkey)
-            )
+            pubkey = pl.get("public_key", "")
+            asyncio.get_running_loop().create_task(self._grove_knock(from_addr, pubkey))
 
-        dispatcher.register(PacketType.NOTE,  _on_note)
+        dispatcher.register(PacketType.NOTE, _on_note)
         dispatcher.register(PacketType.KNOCK, _on_knock)
 
         listener = U2UListener(
-            host="0.0.0.0", port=self._grove_port,
-            identity=self.identity, consent=gate,
+            host="0.0.0.0",
+            port=self._grove_port,
+            identity=self.identity,
+            consent=gate,
         )
         async with listener.serve():
             await asyncio.Event().wait()
@@ -163,7 +161,8 @@ class GroveMatrixBridge:
         log.warning(
             "REFUSED key rotation for %s — inbound key %s… does not match the "
             "stored key; existing key, blocked state and consent flags kept",
-            from_addr, pubkey[:16],
+            from_addr,
+            pubkey[:16],
         )
         return False
 
@@ -211,7 +210,7 @@ class GroveMatrixBridge:
     # ── Matrix AS server ───────────────────────────────────────────
 
     async def _run_as_server(self) -> None:
-        app   = self._as_srv.build_app()
+        app = self._as_srv.build_app()
         runner = web.AppRunner(app)
         await runner.setup()
         site = web.TCPSite(runner, "0.0.0.0", self._as_port)
@@ -231,14 +230,14 @@ class GroveMatrixBridge:
         if event.get("content", {}).get("membership") != "invite":
             return
 
-        state_key = event.get("state_key", "")   # the invited user
-        room_id   = event.get("room_id", "")
-        inviter   = event.get("sender", "")
+        state_key = event.get("state_key", "")  # the invited user
+        room_id = event.get("room_id", "")
+        inviter = event.get("sender", "")
 
         if not state_key.startswith("@grove_"):
             return
 
-        localpart = state_key.split(":")[0].lstrip("@")[len("grove_"):]
+        localpart = state_key.split(":")[0].lstrip("@")[len("grove_") :]
 
         # Bridge bot itself invited → just join
         if localpart == "bridge":
@@ -270,17 +269,17 @@ class GroveMatrixBridge:
 
         notice = (
             f"Knocked Grove user at {grove_addr}. Waiting for them to approve."
-            if ok else
-            f"Could not reach Grove user at {grove_addr} — are they online?"
+            if ok
+            else f"Could not reach Grove user at {grove_addr} — are they online?"
         )
         await self.matrix.send_notice(room_id, notice)
         log.info("Matrix→Grove KNOCK: %s → %s (ok=%s)", inviter, grove_addr, ok)
 
     async def _mx_message(self, event: dict) -> None:
         """Matrix message → u2u NOTE to Grove user."""
-        sender  = event.get("sender", "")
+        sender = event.get("sender", "")
         room_id = event.get("room_id", "")
-        body    = event.get("content", {}).get("body", "")
+        body = event.get("content", {}).get("body", "")
 
         # Ignore messages from our own puppets to avoid loops
         if sender.startswith("@grove_"):
@@ -307,5 +306,7 @@ class GroveMatrixBridge:
             self.identity,
         )
         if not ok:
-            await self.matrix.send_notice(room_id, "Grove user appears offline — message not delivered.")
+            await self.matrix.send_notice(
+                room_id, "Grove user appears offline — message not delivered."
+            )
         log.info("Matrix→Grove NOTE: %s → %s (ok=%s)", sender, grove_addr, ok)

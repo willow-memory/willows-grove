@@ -10,7 +10,7 @@ from u2u.packets import Packet, PacketType
 log = logging.getLogger("u2u.sender")
 
 _CONNECT_TIMEOUT = 10.0
-_WRITE_TIMEOUT   = 5.0
+_WRITE_TIMEOUT = 5.0
 
 
 def _parse_endpoint(addr: str) -> tuple[str, int]:
@@ -48,8 +48,14 @@ async def send_packet(
         return False
 
 
-def send(ptype: PacketType, from_addr: str, to_addr: str,
-         payload: dict, identity: Identity, **kwargs) -> bool:
+def send(
+    ptype: PacketType,
+    from_addr: str,
+    to_addr: str,
+    payload: dict,
+    identity: Identity,
+    **kwargs,
+) -> bool:
     """Sync wrapper. Raises RuntimeError if called inside a running event loop — use send_packet() directly there."""
     try:
         loop = asyncio.get_running_loop()
@@ -60,4 +66,6 @@ def send(ptype: PacketType, from_addr: str, to_addr: str,
             "u2u.send() called inside a running event loop. "
             "Use 'await send_packet()' instead."
         )
-    return asyncio.run(send_packet(ptype, from_addr, to_addr, payload, identity, **kwargs))
+    return asyncio.run(
+        send_packet(ptype, from_addr, to_addr, payload, identity, **kwargs)
+    )

@@ -55,9 +55,9 @@ from pathlib import Path
 
 # The em dash (U+2014), an en dash (U+2013), or a spaced hyphen are all accepted.
 RATIFICATION_RE = re.compile(
-    r'^\s*Ratified-by:\s*'
-    r'([A-Za-z0-9_.\-@]+)'
-    r'\s*(?:—|–|-)\s*'
+    r"^\s*Ratified-by:\s*"
+    r"([A-Za-z0-9_.\-@]+)"
+    r"\s*(?:—|–|-)\s*"
     r'["“](.+?)["”]\s*$'
 )
 
@@ -115,15 +115,14 @@ def check_body(body: str) -> tuple[bool, str]:
         return False, (
             "last authored line (trailing tool footers skipped) does not "
             "match "
-            "'Ratified-by: <identifier> — \"<verbatim quote>\"' — got:\n  "
-            + last
+            "'Ratified-by: <identifier> — \"<verbatim quote>\"' — got:\n  " + last
         )
     identifier, quote = m.group(1), m.group(2).strip()
     if not identifier:
         return False, "Ratified-by identifier is empty"
     if not quote:
         return False, "Ratified-by quote is empty"
-    return True, f"ratified by {identifier}: \"{quote}\""
+    return True, f'ratified by {identifier}: "{quote}"'
 
 
 def _load_github_event() -> tuple[str, str]:

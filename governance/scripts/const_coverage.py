@@ -39,6 +39,7 @@ Usage
 Exit codes follow the house convention: 0 the report was produced, 1 the answer
 is no (a clause is declared ``failing``), 2 the report could not be produced.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -72,12 +73,31 @@ _ARTICLE_HEADING = re.compile(r"##\s+Article\s+(0|[IVX]+)\s")
 _CLAUSE_HEADING = re.compile(r"\*\*§?(0|[IVX]+)\.([0-9A-Za-z]+)\s")
 
 SKIP_DIRS = {
-    ".git", "node_modules", "__pycache__", ".venv", "venv", ".pytest_cache",
-    ".mypy_cache", "dist", "build", ".ruff_cache",
+    ".git",
+    "node_modules",
+    "__pycache__",
+    ".venv",
+    "venv",
+    ".pytest_cache",
+    ".mypy_cache",
+    "dist",
+    "build",
+    ".ruff_cache",
 }
 TEXT_SUFFIXES = {
-    ".py", ".js", ".ts", ".sh", ".sql", ".json", ".yaml", ".yml", ".toml",
-    ".md", ".cfg", ".ini", ".txt",
+    ".py",
+    ".js",
+    ".ts",
+    ".sh",
+    ".sql",
+    ".json",
+    ".yaml",
+    ".yml",
+    ".toml",
+    ".md",
+    ".cfg",
+    ".ini",
+    ".txt",
 }
 
 
@@ -112,7 +132,10 @@ def clauses_from_constitution(path: Path) -> tuple[list[str], str | None]:
             seen.setdefault(f"CONST-{clause.group(1)}-{clause.group(2)}", None)
 
     if not seen:
-        return [], f"{path}: no article or clause headings found — refusing to report a clean sweep"
+        return (
+            [],
+            f"{path}: no article or clause headings found — refusing to report a clean sweep",
+        )
     return list(seen), None
 
 
@@ -136,7 +159,11 @@ def scan(roots: list[Path], skip: set[Path]) -> tuple[dict[str, list[str]], list
                     unreadable.append(f"{fp}: {type(err).__name__}")
                     continue
                 for match in set(TRACE_RE.findall(body)):
-                    rel = str(fp.relative_to(REPO_ROOT)) if REPO_ROOT in fp.parents else str(fp)
+                    rel = (
+                        str(fp.relative_to(REPO_ROOT))
+                        if REPO_ROOT in fp.parents
+                        else str(fp)
+                    )
                     citations.setdefault(match, []).append(rel)
     return citations, unreadable
 
@@ -183,7 +210,9 @@ def build_report(roots: list[Path]) -> dict:
                 note = "cited in the tree but no human verdict recorded"
             else:
                 note = "no citation found in the scanned roots and no verdict recorded"
-        rows.append({"clause": cid, "verdict": verdict, "citations": cites, "note": note})
+        rows.append(
+            {"clause": cid, "verdict": verdict, "citations": cites, "note": note}
+        )
 
     # The other direction, which nothing checked: an artifact citing a Trace ID
     # no clause defines. Such a citation reads as diligence and enforces
@@ -221,7 +250,9 @@ def render(report: dict) -> str:
     if report["declarations_problem"]:
         out.append(f"declarations:    {report['declarations_problem']}")
     if report["unreadable"]:
-        out.append(f"unreadable:      {len(report['unreadable'])} path(s) — listed below")
+        out.append(
+            f"unreadable:      {len(report['unreadable'])} path(s) — listed below"
+        )
     out.append("")
     counts: dict[str, int] = {}
     for row in report["rows"]:
@@ -253,8 +284,12 @@ def render(report: dict) -> str:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("--root", action="append", default=None,
-                    help="tree to scan for upward Trace-ID citations (repeatable)")
+    ap.add_argument(
+        "--root",
+        action="append",
+        default=None,
+        help="tree to scan for upward Trace-ID citations (repeatable)",
+    )
     ap.add_argument("--json", action="store_true", help="emit the report as JSON")
     args = ap.parse_args()
 

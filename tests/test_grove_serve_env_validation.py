@@ -22,6 +22,7 @@ handler prints a traceback (not the words "not a valid port") and exits
 with status 1, so the message assertion below fails until the fix wraps
 the parse and prints the operator-legible refusal itself.
 """
+
 from __future__ import annotations
 
 import os

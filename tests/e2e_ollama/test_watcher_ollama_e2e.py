@@ -26,14 +26,13 @@ Cost caveat: pulling the model is slow (~30-60s) on a cold CI runner.
 The ``pulled_model`` fixture is session-scoped and caches the winner,
 so the readiness canary and this test share one pull.
 """
+
 from __future__ import annotations
 
-import os
 import sys
 import time
 from pathlib import Path
 
-import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
@@ -50,9 +49,9 @@ from grove.resident_watcher import DOMAINS, SENDER, ResidentWatcher  # noqa: E40
 # below is on the *shape* of the write, not on which domain the model
 # picked.
 _TEST_MESSAGES = [
-    ("alice", "hey, how's your weekend going?"),           # chat-shaped
+    ("alice", "hey, how's your weekend going?"),  # chat-shaped
     ("board", "We move to seal the pair; motion carries."),  # governance-shaped
-    ("pm-bot", "Ship PR 8 by EOD Friday. Blocker on CI."),   # pm-shaped
+    ("pm-bot", "Ship PR 8 by EOD Friday. Blocker on CI."),  # pm-shaped
 ]
 
 _WAIT_FOR_JOURNAL_TIMEOUT = 60.0  # generous — model warm-up on cold CI
@@ -170,9 +169,7 @@ def test_watcher_listen_classify_journal_e2e(
         # Base tag surface — journal_writer._build_tags contract.
         assert "journal" in tags, f"missing 'journal' base tag: {tags!r}"
         sender_tags = [t for t in tags if t.startswith("sender:")]
-        assert sender_tags == [f"sender:{SENDER}"], (
-            f"sender tag drift: {sender_tags!r}"
-        )
+        assert sender_tags == [f"sender:{SENDER}"], f"sender tag drift: {sender_tags!r}"
         ts_tags = [t for t in tags if t.startswith("ts:")]
         assert len(ts_tags) == 1, f"expected exactly one ts:* tag, got {ts_tags!r}"
 

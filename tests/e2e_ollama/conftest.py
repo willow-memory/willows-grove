@@ -38,13 +38,13 @@ to ``pytest.fail`` on CI or ``pytest.skip`` locally — preserving developer
 ergonomics on laptops while making CI honest. (Grove v0.9 PR 12, Loki
 finding M14.)
 """
+
 from __future__ import annotations
 
 import json
 import os
 import sys
 import time
-import types
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -109,7 +109,9 @@ def _http_get(url: str, timeout: float = 5.0) -> tuple[int, bytes]:
         return resp.getcode(), resp.read()
 
 
-def _http_post_json(url: str, payload: dict[str, Any], timeout: float = 30.0) -> tuple[int, bytes]:
+def _http_post_json(
+    url: str, payload: dict[str, Any], timeout: float = 30.0
+) -> tuple[int, bytes]:
     body = json.dumps(payload).encode("utf-8")
     req = urllib.request.Request(
         url,
@@ -124,6 +126,7 @@ def _http_post_json(url: str, payload: dict[str, Any], timeout: float = 30.0) ->
 # ---------------------------------------------------------------------------
 # Ollama readiness — poll /api/tags until it answers, or give up.
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture(scope="session")
 def ollama_ready() -> str:
@@ -141,7 +144,12 @@ def ollama_ready() -> str:
     while time.monotonic() < deadline:
         try:
             code, _ = _http_get(base + "/api/tags", timeout=3.0)
-        except (urllib.error.URLError, urllib.error.HTTPError, OSError, TimeoutError) as err:
+        except (
+            urllib.error.URLError,
+            urllib.error.HTTPError,
+            OSError,
+            TimeoutError,
+        ) as err:
             last_err = f"{type(err).__name__}: {err}"
             time.sleep(1.0)
             continue
@@ -160,6 +168,7 @@ def ollama_ready() -> str:
 # ---------------------------------------------------------------------------
 # Model pull — once per session, cached across tests.
 # ---------------------------------------------------------------------------
+
 
 def _list_models(base: str) -> list[str]:
     """Names currently held by the Ollama server (empty on any error)."""
@@ -247,6 +256,7 @@ def pulled_model(ollama_ready: str) -> str:
 # Postgres schema — grove.channels + grove.messages + NOTIFY trigger.
 # ---------------------------------------------------------------------------
 
+
 def _ensure_grove_schema(cur: Any) -> None:
     """Idempotent create — mirrors the shape in ``schema.sql``.
 
@@ -333,12 +343,16 @@ def grove_pg_schema():
     try:
         import psycopg2  # type: ignore
     except Exception as err:  # noqa: BLE001
-        _missing_witness(f"psycopg2 unavailable ({err}) — e2e_ollama needs it (INVARIANTS.md §10).")
+        _missing_witness(
+            f"psycopg2 unavailable ({err}) — e2e_ollama needs it (INVARIANTS.md §10)."
+        )
 
     try:
         conn = psycopg2.connect(dsn)
     except Exception as err:  # noqa: BLE001
-        _missing_witness(f"Postgres unreachable at {dsn} ({err}) — e2e_ollama needs it (INVARIANTS.md §10).")
+        _missing_witness(
+            f"Postgres unreachable at {dsn} ({err}) — e2e_ollama needs it (INVARIANTS.md §10)."
+        )
 
     conn.autocommit = True
     channel_id: int | None = None
@@ -353,7 +367,9 @@ def grove_pg_schema():
         )
         row = cur.fetchone()
         if not row:
-            _missing_witness("Could not create test channel row — schema anomaly (INVARIANTS.md §10).")
+            _missing_witness(
+                "Could not create test channel row — schema anomaly (INVARIANTS.md §10)."
+            )
         channel_id = int(row[0])
 
         yield {"dsn": dsn, "channel_id": channel_id, "channel_name": channel_name}
@@ -380,6 +396,7 @@ def grove_pg_schema():
 # ---------------------------------------------------------------------------
 # Fake willow_mcp.server — capture kb_journal writes without a live organ.
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture(scope="function")
 def willow_mcp_capture():

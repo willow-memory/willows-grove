@@ -36,6 +36,7 @@ that reaches the app that way. The operator opts in to X-Forwarded-For
 consultation via GROVE_MCP_TRUSTED_PROXIES=<comma,ips>; default-closed
 (unset → prior behavior). INVARIANTS.md §7.
 """
+
 import functools
 import os
 import select
@@ -80,7 +81,7 @@ def _pg_notify_thread() -> None:
 
     dsn = os.getenv("WILLOW_DB_URL", "")
     if not dsn:
-        pg_db   = os.getenv("WILLOW_PG_DB", "willow_20")
+        pg_db = os.getenv("WILLOW_PG_DB", "willow_20")
         pg_user = os.getenv("WILLOW_PG_USER", os.environ.get("USER", ""))
         dsn = f"dbname={pg_db} user={pg_user}"
 
@@ -112,11 +113,14 @@ def _pg_notify_thread() -> None:
                     name = _channel_name_for_id(channel_id)
                     if name and _main_loop:
                         asyncio.run_coroutine_threadsafe(
-                            _bus.publish(ResourceUpdated(uri=f"grove://channel/{name}")),
+                            _bus.publish(
+                                ResourceUpdated(uri=f"grove://channel/{name}")
+                            ),
                             _main_loop,
                         )
         except Exception:
             import time
+
             time.sleep(3)
 
 
@@ -255,13 +259,13 @@ def _public_mcp_url() -> str:
 # Defined at module level (not inside `if _SERVE_MODE:`) so both the stdio and
 # serve import paths see the same constants — decorators below are applied to
 # tool functions unconditionally, and just no-op under stdio.
-SCOPE_READ  = "grove:read"
+SCOPE_READ = "grove:read"
 SCOPE_WRITE = "grove:write"
-SCOPE_FULL  = "grove"
+SCOPE_FULL = "grove"
 
-VALID_SCOPES   = [SCOPE_FULL, SCOPE_READ, SCOPE_WRITE]
-DEFAULT_SCOPES = [SCOPE_READ, SCOPE_WRITE]   # a normal connect still gets full access
-REQUIRED_SCOPES = [SCOPE_READ]               # the floor every token must clear
+VALID_SCOPES = [SCOPE_FULL, SCOPE_READ, SCOPE_WRITE]
+DEFAULT_SCOPES = [SCOPE_READ, SCOPE_WRITE]  # a normal connect still gets full access
+REQUIRED_SCOPES = [SCOPE_READ]  # the floor every token must clear
 
 
 def _require_scope(required_scope: str) -> None:
@@ -308,6 +312,7 @@ def writes(fn):
     parameters and docstring, not `(*args, **kwargs)`. Verified in
     tests/test_tool_scopes.py rather than assumed.
     """
+
     @functools.wraps(fn)
     def _scope_checked(*args, **kwargs):
         _require_scope(SCOPE_WRITE)
@@ -344,6 +349,7 @@ def _build_serve_provider(base_url: str):
     module. See tests/test_serve_mode_identity.py.
     """
     from grove.mcp_auth import GroveOAuthProvider  # local import: serve-only dep
+
     return GroveOAuthProvider(
         token_path=Path.home() / ".willow" / "grove_mcp_token",
         base_url=base_url,
@@ -375,7 +381,8 @@ def _log_forwarded_refusal_once(effective_host: str) -> None:
         f"[grove-mcp] WARNING: /grove-approve POST refused — X-Forwarded-For "
         f"reports non-loopback client ({effective_host}) through a trusted "
         "proxy (GROVE_MCP_TRUSTED_PROXIES). See INVARIANTS.md §7.",
-        file=sys.stderr, flush=True,
+        file=sys.stderr,
+        flush=True,
     )
 
 
@@ -396,7 +403,8 @@ def _warn_public_tunnel_if_unacknowledged(base_url: str) -> bool:
         "protection stays on regardless, but the operator should set "
         "WILLOW_MCP_TUNNEL_ACKNOWLEDGED=1 to acknowledge that the tunnel is "
         "intended. See INVARIANTS.md §7.",
-        file=sys.stderr, flush=True,
+        file=sys.stderr,
+        flush=True,
     )
     return True
 
@@ -435,8 +443,12 @@ def grove_list_channels() -> list[dict]:
     try:
         rows = db.list_channels(conn)
         return [
-            {"id": r["id"], "name": r["name"], "type": r["channel_type"],
-             "description": r.get("description")}
+            {
+                "id": r["id"],
+                "name": r["name"],
+                "type": r["channel_type"],
+                "description": r.get("description"),
+            }
             for r in rows
         ]
     finally:
@@ -444,7 +456,9 @@ def grove_list_channels() -> list[dict]:
 
 
 @mcp.tool()
-def grove_get_history(channel_name: str, limit: int = 50, since_id: int = 0) -> list[dict]:
+def grove_get_history(
+    channel_name: str, limit: int = 50, since_id: int = 0
+) -> list[dict]:
     """
     Get message history from a Grove channel.
 
@@ -462,7 +476,9 @@ def grove_get_history(channel_name: str, limit: int = 50, since_id: int = 0) -> 
         if not ch:
             return []
         if since_id > 0:
-            msgs = db.get_history(conn, ch["id"], limit=min(limit, 200), since_id=since_id)
+            msgs = db.get_history(
+                conn, ch["id"], limit=min(limit, 200), since_id=since_id
+            )
         else:
             msgs = db.get_history(conn, ch["id"], limit=min(limit, 200))
             msgs = list(reversed(msgs))
@@ -471,7 +487,9 @@ def grove_get_history(channel_name: str, limit: int = 50, since_id: int = 0) -> 
                 "id": m["id"],
                 "sender": m["sender"],
                 "content": m["content"],
-                "created_at": m["created_at"].isoformat() if m.get("created_at") else None,
+                "created_at": m["created_at"].isoformat()
+                if m.get("created_at")
+                else None,
             }
             for m in msgs
         ]
@@ -523,7 +541,9 @@ def grove_search(query: str, channel_name: str = "") -> list[dict]:
             {
                 "sender": m["sender"],
                 "content": m["content"],
-                "created_at": m["created_at"].isoformat() if m.get("created_at") else None,
+                "created_at": m["created_at"].isoformat()
+                if m.get("created_at")
+                else None,
             }
             for m in msgs[:50]
         ]
@@ -535,6 +555,7 @@ def grove_search(query: str, channel_name: str = "") -> list[dict]:
 def grove_get_identity() -> dict:
     """Get this Grove node's u2u address and public key."""
     from u2u.identity import Identity
+
     identity_path = Path.home() / ".willow" / "grove_identity.json"
     identity = Identity.load_or_generate(identity_path)
     name = os.getenv("GROVE_NAME", os.getenv("USER", "me"))
@@ -569,6 +590,7 @@ def _msgs_to_dicts(msgs: list) -> list[dict]:
 
 
 # ── Resources (serve mode) ────────────────────────────────────────────
+
 
 @mcp.resource("grove://channel/{channel_name}")
 def grove_channel_resource(channel_name: str) -> str:
@@ -682,10 +704,22 @@ def grove_reply(channel_name: str, content: str, sender: str, reply_to_id: int) 
         ch = db.find_channel_in(channels, channel_name)
         if not ch:
             return {"error": f"channel '{channel_name}' not found"}
-        msg = db.send_message(conn, channel_id=ch["id"], sender=sender,
-                              content=content, reply_to_id=reply_to_id)
-        db.clear_flag(conn, message_id=reply_to_id, sender="__system__", flag="needs-reply")
-        return {"id": msg["id"], "channel": channel_name, "reply_to_id": reply_to_id, "sent": True}
+        msg = db.send_message(
+            conn,
+            channel_id=ch["id"],
+            sender=sender,
+            content=content,
+            reply_to_id=reply_to_id,
+        )
+        db.clear_flag(
+            conn, message_id=reply_to_id, sender="__system__", flag="needs-reply"
+        )
+        return {
+            "id": msg["id"],
+            "channel": channel_name,
+            "reply_to_id": reply_to_id,
+            "sent": True,
+        }
     finally:
         db.release_connection(conn)
 
@@ -701,7 +735,9 @@ def grove_get_thread(message_id: int) -> dict:
     conn = db.get_connection()
     try:
         cur = conn.cursor()
-        cur.execute("SELECT * FROM messages WHERE id = %s AND is_deleted = 0", (message_id,))
+        cur.execute(
+            "SELECT * FROM messages WHERE id = %s AND is_deleted = 0", (message_id,)
+        )
         row = cur.fetchone()
         if not row:
             return {"error": "message not found"}
@@ -760,10 +796,16 @@ def grove_unflag(message_id: int, flag: str, sender: str) -> dict:
 
 @mcp.tool()
 @writes
-def grove_bus_send(channel_name: str, sender: str, content: str,
-                   to_agent: str = "__all__", bus_type: str = "EVENT",
-                   priority: int = 3, correlation_id: str = "",
-                   ttl: int = 0) -> dict:
+def grove_bus_send(
+    channel_name: str,
+    sender: str,
+    content: str,
+    to_agent: str = "__all__",
+    bus_type: str = "EVENT",
+    priority: int = 3,
+    correlation_id: str = "",
+    ttl: int = 0,
+) -> dict:
     """
     Send a structured bus message — addressed, typed, and prioritized.
 
@@ -784,25 +826,37 @@ def grove_bus_send(channel_name: str, sender: str, content: str,
         if not ch:
             ch = db.create_channel(conn, name=channel_name, channel_type="group")
         msg = db.bus_send(
-            conn, channel_id=ch["id"], sender=sender, content=content,
+            conn,
+            channel_id=ch["id"],
+            sender=sender,
+            content=content,
             to_agent=to_agent or db.BUS_BROADCAST,
-            bus_type=bus_type, priority=priority,
+            bus_type=bus_type,
+            priority=priority,
             correlation_id=correlation_id or None,
             ttl=ttl or None,
         )
         if bus_type in ("COMMAND", "INTERRUPT"):
-            db.set_flag(conn, message_id=msg["id"], sender="__system__", flag="needs-reply")
+            db.set_flag(
+                conn, message_id=msg["id"], sender="__system__", flag="needs-reply"
+            )
         return {
-            "id": msg["id"], "channel": ch["name"], "to_agent": to_agent,
-            "bus_type": bus_type, "priority": priority,
-            "correlation_id": correlation_id or None, "sent": True,
+            "id": msg["id"],
+            "channel": ch["name"],
+            "to_agent": to_agent,
+            "bus_type": bus_type,
+            "priority": priority,
+            "correlation_id": correlation_id or None,
+            "sent": True,
         }
     finally:
         db.release_connection(conn)
 
 
 @mcp.tool()
-def grove_bus_receive(agent: str, channel_name: str = "", since_id: int = 0) -> list[dict]:
+def grove_bus_receive(
+    agent: str, channel_name: str = "", since_id: int = 0
+) -> list[dict]:
     """
     Fetch bus messages addressed to this agent (or broadcast), ordered by priority.
 
@@ -849,8 +903,9 @@ def grove_bus_delete(channel_name: str, sender: str, message_id: int) -> dict:
 
 @mcp.tool()
 @writes
-def grove_ack(channel_name: str, sender: str, correlation_id: str,
-              original_id: int) -> dict:
+def grove_ack(
+    channel_name: str, sender: str, correlation_id: str, original_id: int
+) -> dict:
     """
     Acknowledge a received message. Clears needs-reply flag on the original.
 
@@ -867,12 +922,17 @@ def grove_ack(channel_name: str, sender: str, correlation_id: str,
         if not ch:
             return {"error": f"channel '{channel_name}' not found"}
         msg = db.bus_send(
-            conn, channel_id=ch["id"], sender=sender,
+            conn,
+            channel_id=ch["id"],
+            sender=sender,
             content=f"ACK {correlation_id}",
-            bus_type="ACK", priority=2,
+            bus_type="ACK",
+            priority=2,
             correlation_id=correlation_id,
         )
-        db.clear_flag(conn, message_id=original_id, sender="__system__", flag="needs-reply")
+        db.clear_flag(
+            conn, message_id=original_id, sender="__system__", flag="needs-reply"
+        )
         db.set_flag(conn, message_id=original_id, sender=sender, flag="read")
         return {"id": msg["id"], "acked": original_id, "correlation_id": correlation_id}
     finally:
@@ -895,9 +955,12 @@ def grove_heartbeat(sender: str) -> dict:
         if not ch:
             ch = db.create_channel(conn, name="general", channel_type="group")
         msg = db.bus_send(
-            conn, channel_id=ch["id"], sender=sender,
+            conn,
+            channel_id=ch["id"],
+            sender=sender,
             content=f"{sender} online",
-            bus_type="HEARTBEAT", priority=6,
+            bus_type="HEARTBEAT",
+            priority=6,
             to_agent=db.BUS_BROADCAST,
         )
         return {"id": msg["id"], "sender": sender, "bus_type": "HEARTBEAT"}
@@ -921,7 +984,9 @@ def grove_inbox(agent: str = "", since_id: int = 0, limit: int = 35) -> list[dic
     """
     who = agent.strip() if agent.strip() else None
     cap = max(5, min(int(limit), 80))
-    return _grove_reader.grove_inbox_bundle(who, since_id=max(0, int(since_id)), merge_limit=cap)
+    return _grove_reader.grove_inbox_bundle(
+        who, since_id=max(0, int(since_id)), merge_limit=cap
+    )
 
 
 @mcp.tool()
@@ -1029,7 +1094,9 @@ def grove_human_required(limit: int = 30, open_only: bool = True) -> list[dict]:
         open_only: When true (default) only items with status='open'.
     """
     cap = max(1, min(int(limit), 100))
-    return _jsonify(_grove_reader.human_required_queue(limit=cap, open_only=bool(open_only)))
+    return _jsonify(
+        _grove_reader.human_required_queue(limit=cap, open_only=bool(open_only))
+    )
 
 
 @mcp.tool()
@@ -1129,7 +1196,10 @@ if _SERVE_MODE and _auth_provider is not None:
 
         if request.method == "GET":
             if not entry:
-                return HTMLResponse("<h2>Grove OAuth</h2><p>Invalid or expired approval link.</p>", status_code=400)
+                return HTMLResponse(
+                    "<h2>Grove OAuth</h2><p>Invalid or expired approval link.</p>",
+                    status_code=400,
+                )
             client, params = entry
             # Re-stash so POST can use it
             _auth_provider.stash_pending(pending_key, client, params)
@@ -1230,7 +1300,10 @@ def _watch_serve_supervisor() -> None:
                         reload_requested = True
                         break
                 if reload_requested:
-                    print("[grove-mcp] watch: source changed — restarting child", flush=True)
+                    print(
+                        "[grove-mcp] watch: source changed — restarting child",
+                        flush=True,
+                    )
                     proc.terminate()
                     try:
                         proc.wait(timeout=15)
@@ -1241,7 +1314,10 @@ def _watch_serve_supervisor() -> None:
             else:
                 rc = proc.returncode if proc is not None else -1
                 if rc == 0:
-                    print("[grove-mcp] watch: child exited cleanly — supervisor done", flush=True)
+                    print(
+                        "[grove-mcp] watch: child exited cleanly — supervisor done",
+                        flush=True,
+                    )
                     return
                 print(f"[grove-mcp] watch: child exited {rc}; retry in 2s", flush=True)
                 time.sleep(2)
@@ -1261,9 +1337,15 @@ def main():
         # Approval is always required per INVARIANTS.md §7 — the pre-PR-6
         # auto-approve escape hatch is gone. Every /authorize walks through
         # /grove-approve and needs a loopback click.
-        reg_hint = "dynamic-reg=ON" if _ALLOW_DYNAMIC_REG else "dynamic-reg=OFF (opt-in via GROVE_MCP_ALLOW_DYNAMIC_REGISTRATION=1)"
+        reg_hint = (
+            "dynamic-reg=ON"
+            if _ALLOW_DYNAMIC_REG
+            else "dynamic-reg=OFF (opt-in via GROVE_MCP_ALLOW_DYNAMIC_REGISTRATION=1)"
+        )
         gate = f"OAuth: enabled, approval required at /grove-approve, {reg_hint}"
-        print(f"[grove-mcp] serving on http://127.0.0.1:{_PORT}/mcp  ({gate})", flush=True)
+        print(
+            f"[grove-mcp] serving on http://127.0.0.1:{_PORT}/mcp  ({gate})", flush=True
+        )
         # SDK 2.x: host/port/transport_security/path all belong to the
         # transport now, not the server object — the stateless core making
         # "where and how this instance listens" a property of the run.
