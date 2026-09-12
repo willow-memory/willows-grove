@@ -69,7 +69,7 @@ shift || true
 case "$cmd" in
   help|-h|--help)
     sed -n '2,12p' "$0" | tr -d '#'
-    echo "Commands: probe desk wtool jeles seams ollama lint-mai"
+    echo "Commands: probe desk wtool jeles seams ollama lint-mai pr-watch pr-watch-loop"
     ;;
 
   probe)
@@ -191,8 +191,28 @@ for g in json.load(sys.stdin):
     "$PY" "$WMCP_REPO/tools/mai_lint.py" "$@"
     ;;
 
+  pr-watch)
+    if command -v willow-bot-steward >/dev/null 2>&1; then
+      exec willow-bot-steward tick "$@"
+    elif [[ -x "${WILLOW_BOT_VENV:-$HOME/github/workshop/willow-bot/.venv}/bin/willow-bot-steward" ]]; then
+      exec "${WILLOW_BOT_VENV:-$HOME/github/workshop/willow-bot/.venv}/bin/willow-bot-steward" tick "$@"
+    else
+      exec bash "$WMCP_REPO/scripts/loki_pr_watch.sh" "$@"
+    fi
+    ;;
+
+  pr-watch-loop)
+    if command -v willow-bot-steward >/dev/null 2>&1; then
+      exec willow-bot-steward loop "$@"
+    elif [[ -x "${WILLOW_BOT_VENV:-$HOME/github/workshop/willow-bot/.venv}/bin/willow-bot-steward" ]]; then
+      exec "${WILLOW_BOT_VENV:-$HOME/github/workshop/willow-bot/.venv}/bin/willow-bot-steward" loop "$@"
+    else
+      exec bash "$WMCP_REPO/scripts/loki_pr_watch_loop.sh" "$@"
+    fi
+    ;;
+
   *)
-    echo "unknown command: $cmd (try: probe desk wtool jeles seams ollama lint-mai)" >&2
+    echo "unknown command: $cmd (try: probe desk wtool jeles seams ollama lint-mai pr-watch pr-watch-loop)" >&2
     exit 2
     ;;
 esac

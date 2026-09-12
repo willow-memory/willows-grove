@@ -14,6 +14,8 @@ One Jarvis seat — not a Governance / PM / PA mode switch. See
 | `scripts/setup-jeles.sh` | Install / seed / ratify jeles-corpus |
 | `scripts/consent-reconcile.sh` | Reconcile consent mirror (TTY + sudo) |
 | `scripts/kart-watch-prs.sh` | Poll PR checks via `gh` |
+| `willow-seat.sh pr-watch` | One-shot steward tick (`willow-bot-steward tick`; falls back to mcp `loki_pr_watch.sh`) |
+| `willow-seat.sh pr-watch-loop` | Steward loop + `AGENT_LOOP_TICK_PR_AUDIT` (`willow-bot-steward loop`) |
 | `scripts/jeles-intake.py` | Load / probe intake JSON |
 | `jeles-intake/` | Novel intake pairs (Paperclip, willow-local, …) |
 
