@@ -9,6 +9,9 @@
 #   bash seat/willow/scripts/willow-seat.sh jeles corpus_sources
 #   bash seat/willow/scripts/willow-seat.sh seams
 #   bash seat/willow/scripts/willow-seat.sh ollama
+#   bash seat/willow/scripts/willow-seat.sh heartbeat
+#   bash seat/willow/scripts/willow-seat.sh scan
+#   bash seat/willow/scripts/willow-seat.sh intake --probe-only
 #
 set -euo pipefail
 
@@ -59,6 +62,34 @@ fi
 WTOOL="$WMCP_REPO/tools/wtool.py"
 JELES_SERVER_ID="8cae3d1dcdf4"
 
+find_steward() {
+  if command -v willow-bot-steward >/dev/null 2>&1; then
+    echo "willow-bot-steward"
+    return 0
+  fi
+  local cands=(
+    "${WILLOW_BOT_VENV:-$HOME/sean-data-vault/willow-operator-box/venvs/willow-bot}/bin/willow-bot-steward"
+    "${HOME}/github/willow-memory/willow-bot/.venv/bin/willow-bot-steward"
+    "${HOME}/github/workshop/willow-bot/.venv/bin/willow-bot-steward"
+  )
+  for c in "${cands[@]}"; do
+    if [[ -x "$c" ]]; then
+      echo "$c"
+      return 0
+    fi
+  done
+  return 1
+}
+
+steward_exec() {
+  local bin
+  if bin="$(find_steward)"; then
+    exec "$bin" "$@"
+  fi
+  echo "error: willow-bot-steward not found" >&2
+  exit 1
+}
+
 wtool() {
   "$PY" "$WTOOL" "$@"
 }
@@ -68,8 +99,8 @@ shift || true
 
 case "$cmd" in
   help|-h|--help)
-    sed -n '2,12p' "$0" | tr -d '#'
-    echo "Commands: probe desk wtool jeles seams ollama lint-mai pr-watch pr-watch-loop"
+    sed -n '2,15p' "$0" | tr -d '#'
+    echo "Commands: probe desk wtool jeles seams ollama lint-mai pr-watch pr-watch-loop heartbeat scan steward intake"
     ;;
 
   probe)
@@ -192,35 +223,39 @@ for g in json.load(sys.stdin):
     ;;
 
   pr-watch)
-    if command -v willow-bot-steward >/dev/null 2>&1; then
-      exec willow-bot-steward tick "$@"
-    elif [[ -x "${WILLOW_BOT_VENV:-$HOME/sean-data-vault/willow-operator-box/venvs/willow-bot}/bin/willow-bot-steward" ]]; then
-      exec "${WILLOW_BOT_VENV:-$HOME/sean-data-vault/willow-operator-box/venvs/willow-bot}/bin/willow-bot-steward" tick "$@"
-    elif [[ -x "${HOME}/github/willow-memory/willow-bot/.venv/bin/willow-bot-steward" ]]; then
-      exec "${HOME}/github/willow-memory/willow-bot/.venv/bin/willow-bot-steward" tick "$@"
-    elif [[ -x "${HOME}/github/workshop/willow-bot/.venv/bin/willow-bot-steward" ]]; then
-      exec "${HOME}/github/workshop/willow-bot/.venv/bin/willow-bot-steward" tick "$@"
+    if find_steward >/dev/null 2>&1; then
+      steward_exec tick "$@"
     else
       exec bash "$WMCP_REPO/scripts/loki_pr_watch.sh" "$@"
     fi
     ;;
 
   pr-watch-loop)
-    if command -v willow-bot-steward >/dev/null 2>&1; then
-      exec willow-bot-steward loop "$@"
-    elif [[ -x "${WILLOW_BOT_VENV:-$HOME/sean-data-vault/willow-operator-box/venvs/willow-bot}/bin/willow-bot-steward" ]]; then
-      exec "${WILLOW_BOT_VENV:-$HOME/sean-data-vault/willow-operator-box/venvs/willow-bot}/bin/willow-bot-steward" loop "$@"
-    elif [[ -x "${HOME}/github/willow-memory/willow-bot/.venv/bin/willow-bot-steward" ]]; then
-      exec "${HOME}/github/willow-memory/willow-bot/.venv/bin/willow-bot-steward" loop "$@"
-    elif [[ -x "${HOME}/github/workshop/willow-bot/.venv/bin/willow-bot-steward" ]]; then
-      exec "${HOME}/github/workshop/willow-bot/.venv/bin/willow-bot-steward" loop "$@"
+    if find_steward >/dev/null 2>&1; then
+      steward_exec loop "$@"
     else
       exec bash "$WMCP_REPO/scripts/loki_pr_watch_loop.sh" "$@"
     fi
     ;;
 
+  heartbeat)
+    steward_exec heartbeat "$@"
+    ;;
+
+  scan)
+    steward_exec scan "$@"
+    ;;
+
+  steward)
+    steward_exec "$@"
+    ;;
+
+  intake)
+    "$PY" "$SEAT_DIR/scripts/jeles-intake.py" "$@"
+    ;;
+
   *)
-    echo "unknown command: $cmd (try: probe desk wtool jeles seams ollama lint-mai pr-watch pr-watch-loop)" >&2
+    echo "unknown command: $cmd (try: probe desk wtool jeles seams ollama lint-mai pr-watch pr-watch-loop heartbeat scan steward intake)" >&2
     exit 2
     ;;
 esac

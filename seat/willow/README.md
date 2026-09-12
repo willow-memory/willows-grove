@@ -13,10 +13,14 @@ One Jarvis seat — not a Governance / PM / PA mode switch. See
 | `scripts/unblock-jeles-federation.sh` | Operator: consent.federation + egress lease |
 | `scripts/setup-jeles.sh` | Install / seed / ratify jeles-corpus |
 | `scripts/consent-reconcile.sh` | Reconcile consent mirror (TTY + sudo) |
-| `scripts/kart-watch-prs.sh` | Poll PR checks via `gh` |
+| `scripts/kart-watch-prs.sh` | Poll PR checks via `gh` (accepts `repo#num ...` args or `$WATCH_PRS`) |
 | `willow-seat.sh pr-watch` | One-shot steward tick (`willow-bot-steward tick`; falls back to mcp `loki_pr_watch.sh`) |
 | `willow-seat.sh pr-watch-loop` | Steward loop + `AGENT_LOOP_TICK_PR_AUDIT` (`willow-bot-steward loop`) |
-| `scripts/jeles-intake.py` | Load / probe intake JSON |
+| `willow-seat.sh heartbeat` | Curated MCP tool heartbeat (`willow-bot-steward heartbeat`) |
+| `willow-seat.sh scan` | One-shot scan of open fleet PRs (`willow-bot-steward scan`) |
+| `willow-seat.sh steward` | Run any `willow-bot-steward` command directly |
+| `willow-seat.sh intake` | Run `jeles-intake.py` using seated Python environment |
+| `scripts/jeles-intake.py` | Load / probe intake JSON (auto-resolves Jeles venv) |
 | `jeles-intake/` | Novel intake pairs (Paperclip, willow-local, …) |
 
 Design: [docs/design/seat-stack.md](../../docs/design/seat-stack.md) —
