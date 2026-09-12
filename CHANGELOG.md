@@ -22,6 +22,15 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
   `tests/test_ci_workflows_declare_permissions.py` holds every workflow to
   it, planted.
 
+### Changed
+
+- **Polish Willow desk and steward seat tooling.** (PR 61) Auto-resolve the
+  Jeles Python runtime in `seat/willow/scripts/jeles-intake.py` across venvs;
+  wire `heartbeat`, `scan`, `steward`, and `intake` subcommands into
+  `seat/willow/scripts/willow-seat.sh`; fix bash arithmetic truthiness bug
+  and accept CLI PR args in `seat/willow/scripts/kart-watch-prs.sh`; and
+  document the desk subcommands in `seat/willow/README.md`.
+
 - **The meta-scan, and the tree held to the fleet's published conventions.**
   (PR 59) Fleet loop plan Wave 2, G2-meta-scans-grove and
   G2-conventions-grove. `tests/test_scans_fire.py` is homestead-ledger's

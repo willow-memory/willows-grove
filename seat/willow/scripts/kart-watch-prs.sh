@@ -1,13 +1,25 @@
 #!/usr/bin/env bash
 # Kart task: poll open PR checks until all complete or one fails.
 # Uses `gh pr checks` (current state) — not statusCheckRollup, which keeps stale failures.
+#
+# Usage:
+#   kart-watch-prs.sh [repo#num ...]
+#
 set -euo pipefail
-PRS=(
-  "hornbook-knowledge/Jeles#78"
-  "Die-Namic-Systems/Nestor#276"
-  "willow-memory/willow-mcp#417"
-  "rudi193-cmd/Forge#12"
-)
+
+if [[ $# -gt 0 ]]; then
+  PRS=("$@")
+elif [[ -n "${WATCH_PRS:-}" ]]; then
+  read -ra PRS <<< "$WATCH_PRS"
+else
+  PRS=(
+    "hornbook-knowledge/Jeles#78"
+    "Die-Namic-Systems/Nestor#276"
+    "willow-memory/willow-mcp#417"
+    "rudi193-cmd/Forge#12"
+  )
+fi
+
 INTERVAL="${INTERVAL:-45}"
 MAX_ROUNDS="${MAX_ROUNDS:-40}"
 
@@ -35,8 +47,14 @@ while (( round < MAX_ROUNDS )); do
     echo "$repo#$num  $mergeable|$summary"
     pend=$(echo "$summary" | sed -n 's/.*pending=\([0-9]*\).*/\1/p')
     fail=$(echo "$summary" | sed -n 's/.*fail=\([0-9]*\).*/\1/p')
-    [[ "$pend" =~ ^[0-9]+$ ]] && (( pending += pend )) || pending=999
-    [[ "$fail" =~ ^[0-9]+$ ]] && (( failed += fail )) || true
+    if [[ "$pend" =~ ^[0-9]+$ ]]; then
+      pending=$((pending + pend))
+    else
+      pending=999
+    fi
+    if [[ "$fail" =~ ^[0-9]+$ ]]; then
+      failed=$((failed + fail))
+    fi
   done
   if (( failed > 0 )); then
     echo "FAIL: $failed failing check(s) — exiting"
