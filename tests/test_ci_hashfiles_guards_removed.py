@@ -36,7 +36,9 @@ does not exist yet.
 
 from __future__ import annotations
 
+import os
 import re
+import shutil
 import stat
 import subprocess
 from pathlib import Path
@@ -139,9 +141,28 @@ def _make_executable_copy(tmp_path: Path) -> Path:
     return dest
 
 
+def _bash() -> str:
+    """The bash that runs the wrapper. On POSIX that is `bash`. On a Windows
+    runner a bare `bash` resolves to `C:\\Windows\\System32\\bash.exe` — the
+    WSL launcher, which answers "Windows Subsystem for Linux has no installed
+    distributions" and exits 1 — because System32 precedes Git's bin on
+    PATH. The wrapper is a Git Bash script, so on Windows it is found beside
+    git: `<git>/bin/bash.exe` (git.exe lives in `<git>/cmd/`), falling back
+    to whatever `bash` PATH offers."""
+    if os.name != "nt":
+        return "bash"
+    git = shutil.which("git")
+    if git:
+        root = Path(git).resolve().parent.parent
+        for candidate in (root / "bin" / "bash.exe", root / "usr" / "bin" / "bash.exe"):
+            if candidate.exists():
+                return str(candidate)
+    return shutil.which("bash") or "bash"
+
+
 def _run_wrapper(script: Path, target_dir: Path) -> subprocess.CompletedProcess:
     return subprocess.run(
-        ["bash", str(script), str(target_dir), "-q", "--tb=short"],
+        [_bash(), str(script), str(target_dir), "-q", "--tb=short"],
         cwd=REPO_ROOT,
         capture_output=True,
         text=True,

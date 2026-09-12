@@ -215,8 +215,11 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      # No `-x` here, deliberately: this leg exists to surface the Windows
+      # class of failure, and a run that stops at the first one hides the
+      # rest until the next push.
       - name: Run test suite (no container services on Windows)
-        run: python -m pytest -x -q --tb=short --ignore=tests/e2e --ignore=tests/e2e_ollama --ignore=tests/e2e_willow_mcp
+        run: python -m pytest -q --tb=short --ignore=tests/e2e --ignore=tests/e2e_ollama --ignore=tests/e2e_willow_mcp
 
   # The lint leg. ruff is pinned to an exact version: an unpinned linter is
   # a gate whose rules change under the tree with every release, and a
