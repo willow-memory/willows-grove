@@ -33,7 +33,9 @@ def _docs_naming_the_dead_envvar(docs: list[Path], root: Path) -> list[str]:
         if not doc.exists():
             continue
         if DEAD_ENVVAR in doc.read_text(encoding="utf-8"):
-            offenders.append(str(doc.relative_to(root)))
+            # Repo form, forward slashes, on every platform: the sweep names a
+            # path in the tree, not a path on this filesystem.
+            offenders.append(doc.relative_to(root).as_posix())
     return offenders
 
 

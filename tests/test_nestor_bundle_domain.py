@@ -197,12 +197,21 @@ class NestorBundleQueryableTests(unittest.TestCase):
             # operator types, and it must not answer "no decision on record".
             done = subprocess.run(
                 ["nestor", "decision", "check", question],
-                check=True,
+                check=False,
                 capture_output=True,
                 text=True,
                 env=env,
                 timeout=120,
             )
+        # check=False so a non-zero exit reports what the CLI said, not only
+        # its status: the floor's Windows leg failed here with "exit status 2"
+        # and nothing else to go on.
+        self.assertEqual(
+            done.returncode,
+            0,
+            f"`nestor decision check` exited {done.returncode}\n"
+            f"stdout:\n{done.stdout}\nstderr:\n{done.stderr}",
+        )
         self.assertNotIn(
             "no decision on record",
             done.stdout,
