@@ -1,17 +1,21 @@
 ## Known gaps (documentation index)
 
-This file is intentionally short. It links to canonical writeups (or notes “missing writeup”) so gaps don’t get rediscovered repeatedly.
+The gaps this file used to describe now live in [`ideas.md`](ideas.md), the
+repo's one numbered pile, where each is an item a commit can land and
+`reconciler run --repo . --doc docs/ideas.md` reads it. This file stays as
+the map, because the `GAP-00N` ids are already cited in `CHANGELOG.md` and
+in commit messages and a cited id must keep resolving: item N in `ideas.md`
+is GAP-00N, and the pile's numbers are permanent, so the map cannot drift.
 
-- **GAP-001 — MCP URL / ngrok is undocumented**: `GROVE_MCP_URL` shows up in `.mcp.json` and `grove/mcp_local.py` supports a `--serve` mode that requires a public base URL, but tester docs historically didn’t explain when it’s needed vs when it’s not.
-  - Canonical doc: `docs/TESTER_ONBOARDING.md` (“Optional: MCP (Claude Code / agents) and GROVE_MCP_URL (ngrok)”)
-- **GAP-002 — DB bootstrapping duplicated**: `schema.sql` exists, but there’s no single “one true setup” doc for `willow_20` vs `grove_local` naming and `.env` vs `export` usage.
-- **GAP-003 — Python version drift**: `README.md`/`TESTER_ONBOARDING.md` say Python 3.11+, but at least one historical implementation plan cites Python 3.13. Standardize on 3.11+ unless/until the code requires newer.
-- **GAP-004 — the served page has no authentication, and its loopback bind is a default rather than a gate**: `grove_serve.py`'s `run()` prints a WARNING for a non-loopback host and then calls `uvicorn.run(...)` unconditionally; `_host_looks_invalid` rejects malformed values, not public ones. A grep of the module for `authorization|bearer|token|cookie|api_key` returns one hit, the word "session" in an unrelated docstring. So `GROVE_SERVE_HOST=0.0.0.0` exposes agents, dispatch, envelopes, refusals and the journal to the LAN with no credential anywhere in the path. `playgate`'s `serve()` genuinely refuses a non-loopback bind; this does not. No test pins the warn-then-bind behavior, so tightening it fights no existing pin. Verified 2026-08-30. Not a phone-surface question — the phone is a removable volume and never reaches the desk.
-  - Canonical doc: missing writeup.
-- **GAP-005 — u2u dispatches without destination binding, replay defence, or a header allowlist**: `u2u/dispatcher.py`'s `dispatch()` reads `header.type`, looks up a handler and calls it; that is every check it performs. Packets carry `to_addr` (`u2u/packets.py:46`) which it never reads, so a signed packet addressed to a third party dispatches here. There is no nonce, seen-set or packet id anywhere in `u2u/*.py`, so the same packet six times dispatches six times. Nothing strips attacker-supplied header keys, so forged `_denied`/admin markers reach the handler. Signature verification upstream prevents forging a trusted peer — not replay, not relay, not extra keys on the attacker's own signed packet. These are separate from, and worse than, the documented missing cipher (`docs/design/u2u-security-limits.md`), which at least has a Gate-6 writeup. Verified 2026-08-30.
-  - Canonical doc: missing writeup. Confidentiality's gap is covered by `docs/design/u2u-security-limits.md`; these three are not.
-- **GAP-007 — CLOSED 2026-09-01**: `kb_journal_read` landed in `willow-memory/willow-mcp` (`server.py`). Grove's C11 seam speaks MCP (`grove/willow_mcp_client.py` → `tools/call` on stdio or `{WILLOW_MCP_URL}/mcp`); `_PENDING_UPSTREAM` in `tests/test_mock_willow_mcp_surface.py` is empty. Issue #16.
+| Gap | Pile item | State (2026-09-12) |
+|---|---|---|
+| GAP-001 — MCP URL / ngrok undocumented | [`ideas.md`](ideas.md) 1 | shipped |
+| GAP-002 — DB bootstrapping duplicated | [`ideas.md`](ideas.md) 2 | open |
+| GAP-003 — Python version drift | [`ideas.md`](ideas.md) 3 | open |
+| GAP-004 — served page warns, then binds, on a public host | [`ideas.md`](ideas.md) 4 | open |
+| GAP-005 — u2u dispatch: no destination binding, replay defence or header allowlist | [`ideas.md`](ideas.md) 5 | open |
+| GAP-006 — `check_changelog_bullet.py` reports counts it did not compute | [`ideas.md`](ideas.md) 6 | open |
+| GAP-007 — `kb_journal_read` pending upstream | [`ideas.md`](ideas.md) 7 | shipped (closed 2026-09-01, issue #16) |
 
-- **GAP-006 — `check_changelog_bullet.py` reports counts it did not compute**: on a clean tree with no changes it prints `clean (2 [Unreleased] bullet(s) added for 2 code file(s) changed)` while `_added_bullet_lines()` returns 0. The pass/fail verdict looks correct; the evidence in the message is not, and the script runs in CI on every PR. Found 2026-08-30 by the author of the script, one day after shipping it.
-  - Canonical doc: missing writeup.
-
+New gaps go into `ideas.md` as new items with new numbers; this table is not
+extended.
