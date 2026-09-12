@@ -62,3 +62,24 @@ def test_playwright_install_step_uses_yes_flag():
         "Playwright browser install step must pass '--yes' to npx "
         f"(INVARIANTS.md §10). Got run: {cmd!r}"
     )
+
+
+def test_the_install_step_finder_fires_on_a_planted_workflow_without_yes(tmp_path, monkeypatch):
+    """Planted: a workflow whose install step is the pre-fix command, no
+    `--yes`. The finder must return that command verbatim so the pin
+    above would fail on it — and return None for a workflow with no
+    install step at all, so absence is reported rather than passed."""
+    workflow = tmp_path / "tests.yml"
+    workflow.write_text(
+        "steps:\n"
+        "  - name: Install Playwright browsers (chromium)\n"
+        "    run: npx playwright install --with-deps chromium\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setitem(globals(), "_WORKFLOW_PATH", workflow)
+    cmd = _find_playwright_install_run_command()
+    assert cmd == "npx playwright install --with-deps chromium"
+    assert "--yes" not in cmd
+
+    workflow.write_text("steps:\n  - run: npm install\n", encoding="utf-8")
+    assert _find_playwright_install_run_command() is None

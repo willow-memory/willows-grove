@@ -6,6 +6,26 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Added
 
+- **The meta-scan, and the tree held to the fleet's published conventions.**
+  (PR 59) Fleet loop plan Wave 2, G2-meta-scans-grove and
+  G2-conventions-grove. `tests/test_scans_fire.py` is homestead-ledger's
+  meta-scan ported and re-grounded here: every module-level helper in
+  `tests/` shaped like a violation-scanner (walks `ast`, runs a pattern,
+  reads a file and asks a membership question of it, or walks a word list)
+  must be reached by a planted-violation test in the same file, and no test
+  body may itself be an unfactored scan. Against this tree it reported
+  twenty-one never-fired helpers across fifteen files and three inline
+  scans; all twenty-one are now planted and the three are factored into
+  helpers with plants of their own. One re-grounding, planted: this suite
+  writes its tests as `unittest.TestCase` methods, so a plant method counts.
+  `tests/test_fleet_conventions.py` reads its rules from the vendored
+  `tests/fleet_conventions.json` (`reconciler conventions --json`,
+  willow-reconciler 0.6.0, sha256-pinned with a planted one-byte change)
+  and holds the tree to them: no `release-please.yml` here until Wave 4, so
+  the pr-title rule is asserted vacuous; no pile, so the trailers rule is
+  vacuous; no `CONTRIBUTING.md`, so the test-command rule is a strict
+  `xfail` naming the follow-up rather than a bent test.
+
 - **The first coverage verdict is on the record.** (PR 57) `CONST-X-4`, the
   Concurrence Rule, is declared `differently`: `ratatosk.permission` composes
   conjunctively and fails closed exactly as the clause requires, but over two

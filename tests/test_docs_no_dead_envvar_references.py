@@ -22,20 +22,41 @@ DOCS_TO_CHECK = [
 ]
 
 
-def test_docs_do_not_reference_dead_auto_approve_envvar() -> None:
+def _docs_naming_the_dead_envvar(docs: list[Path], root: Path) -> list[str]:
+    """Every shipped doc in `docs` whose text still names the dead knob,
+    as a path relative to `root`. A doc that is absent is skipped: the
+    dead knob cannot be referenced from a doc that isn't shipped, and the
+    clean v0.9 tree omits the pre-v0.9 runbook + skill files that once
+    carried these references — the honesty pin is satisfied by absence."""
     offenders = []
-    for doc in DOCS_TO_CHECK:
+    for doc in docs:
         if not doc.exists():
-            # File absent — the dead knob can't be referenced from a doc
-            # that isn't shipped. The clean v0.9 tree omits the pre-v0.9
-            # runbook + skill files that once carried these references;
-            # the honesty pin is satisfied by absence.
             continue
-        text = doc.read_text(encoding="utf-8")
-        if DEAD_ENVVAR in text:
-            offenders.append(str(doc.relative_to(REPO_ROOT)))
+        if DEAD_ENVVAR in doc.read_text(encoding="utf-8"):
+            offenders.append(str(doc.relative_to(root)))
+    return offenders
 
+
+def test_docs_do_not_reference_dead_auto_approve_envvar() -> None:
+    offenders = _docs_naming_the_dead_envvar(DOCS_TO_CHECK, REPO_ROOT)
     assert not offenders, (
         f"{DEAD_ENVVAR} no longer exists in code (INVARIANTS.md §7) but is "
         f"still referenced as a live knob in: {offenders}"
     )
+
+
+def test_the_dead_envvar_sweep_fires_on_a_planted_runbook(tmp_path) -> None:
+    """Planted: a runbook that still tells the operator not to set the
+    dead knob, beside one that never names it and one that does not
+    exist. The sweep must name exactly the first, relative to the tree."""
+    runbook = tmp_path / "docs" / "runbooks" / "grove.md"
+    runbook.parent.mkdir(parents=True)
+    runbook.write_text(f"Never set {DEAD_ENVVAR}=1 in production.\n", encoding="utf-8")
+    clean = tmp_path / "skills" / "grove-serve.md"
+    clean.parent.mkdir()
+    clean.write_text("Approval is a human act at the served page.\n", encoding="utf-8")
+    absent = tmp_path / "docs" / "gone.md"
+
+    assert _docs_naming_the_dead_envvar([runbook, clean, absent], tmp_path) == [
+        "docs/runbooks/grove.md"
+    ]

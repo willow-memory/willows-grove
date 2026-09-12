@@ -156,6 +156,29 @@ def _h1_from_source(canon_path: Path) -> str:
     raise AssertionError(f"no '# ' heading in {canon_path}")
 
 
+class CanonHeadingReaderTests(unittest.TestCase):
+    """The heading reader, shown to fire — no server needed."""
+
+    def test_the_heading_reader_fires_on_a_planted_canon_file(self) -> None:
+        """Planted: a canon file whose first `# ` heading sits under a
+        comment line, carries a trailing hash and surrounding whitespace;
+        and a second file with no `# ` heading at all. The reader must
+        return the cleaned title from the first and refuse the second,
+        rather than fall back to any hardcoded name."""
+        with tempfile.TemporaryDirectory() as tmp:
+            titled = Path(tmp) / "1-planted.md"
+            titled.write_text(
+                "<!-- seed -->\n\n  #   The Planted Movement  #  \n\nBody.\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(_h1_from_source(titled), "The Planted Movement")
+
+            untitled = Path(tmp) / "2-planted.md"
+            untitled.write_text("## Only a subheading\n\nBody.\n", encoding="utf-8")
+            with self.assertRaises(AssertionError):
+                _h1_from_source(untitled)
+
+
 class SeedCanonContentIntegrationTests(unittest.TestCase):
     """/seed/{1..6} render real canon content — one test per movement."""
 

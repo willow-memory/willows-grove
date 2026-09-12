@@ -121,3 +121,29 @@ def test_the_serve_toggle_does_not_claim_the_signing_origin():
 
 def test_the_serve_toggle_does_not_claim_the_desk_page():
     assert _declared_toggle_port() != GROVE_DESK_PORT
+
+
+def test_all_four_declared_port_readers_fire_on_a_planted_collision(tmp_path, monkeypatch):
+    """Planted: a tree in which every one of the four sources declares
+    8765 — the willow-mcp port, the collision this file exists to refuse.
+    Each reader must return the planted number so every pin above would
+    fail on that tree; a reader that quietly returned 8767 here would be
+    asserting a default it never read."""
+    (tmp_path / "grove").mkdir()
+    (tmp_path / "scripts").mkdir()
+    (tmp_path / "grove" / "mcp_local.py").write_text(
+        '_PORT = int(os.getenv("GROVE_MCP_PORT", "8765"))\n', encoding="utf-8"
+    )
+    (tmp_path / "run_mcp.sh").write_text(
+        'export GROVE_MCP_PORT="${GROVE_MCP_PORT:-8765}"\n', encoding="utf-8"
+    )
+    (tmp_path / "grove_serve.py").write_text("DEFAULT_PORT = 8765\n", encoding="utf-8")
+    (tmp_path / "scripts" / "grove-serve").write_text(
+        'PORT="${GROVE_MCP_PORT:-8765}"\n', encoding="utf-8"
+    )
+    monkeypatch.setitem(globals(), "ROOT", tmp_path)
+
+    assert _declared_mcp_port() == WILLOW_MCP_SERVE_PORT
+    assert _declared_launcher_port() == WILLOW_MCP_SERVE_PORT
+    assert _declared_desk_port() == WILLOW_MCP_SERVE_PORT
+    assert _declared_toggle_port() == WILLOW_MCP_SERVE_PORT

@@ -104,3 +104,28 @@ def test_unreachable_branch_clears_empty_state_div():
         "the banner is the only content on the RIGHT column "
         "(INVARIANTS.md §1)."
     )
+
+
+def test_the_method_slicer_fires_on_a_planted_component():
+    """Planted: a component whose `_render()` seeds the empty-state pixel
+    and whose `_pollReadback()` calls the bare unreachable setter — the
+    M11 shape. The slicer must return each method's own body and only
+    that body, so both pins above would fail on this source, and a call
+    site at deeper indentation must not be mistaken for the declaration."""
+    planted = (
+        "class GroveChat extends HTMLElement {\n"
+        "  _render() {\n"
+        "    this.right.innerHTML = '<div class=\"readback-empty\">no messages yet</div>';\n"
+        "    if (x) { this._pollReadback(); }\n"
+        "  }\n"
+        "  async _pollReadback() {\n"
+        "    this._setReadbackStatus(\"unreachable\", err);\n"
+        "  }\n"
+        "}\n"
+    )
+    render = _method_body(planted, "_render")
+    assert "no messages yet" in render.lower()
+    assert "_setReadbackStatus" not in render, "the slice must close at _render's own brace"
+    poll = _method_body(planted, "_pollReadback")
+    assert '_setReadbackStatus("unreachable"' in poll
+    assert "no messages yet" not in poll

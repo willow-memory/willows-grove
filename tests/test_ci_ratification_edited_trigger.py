@@ -88,3 +88,24 @@ def test_the_default_triggers_are_not_dropped() -> None:
             "`types:` overrides the default set rather than adding to it, so "
             f"every default trigger must be listed explicitly; got: {types}"
         )
+
+
+def test_the_types_reader_fires_on_a_planted_workflow(tmp_path, monkeypatch) -> None:
+    """Planted twice: the pre-fix workflow (`pull_request:` with no
+    `types:` at all, so the default set applies and `edited` is absent)
+    must read as None; a workflow declaring only `opened` must read as
+    exactly that list, so both pins above would fail on it."""
+    workflow = tmp_path / "tests.yml"
+    monkeypatch.setitem(globals(), "_WORKFLOW_PATH", workflow)
+
+    workflow.write_text(
+        "on:\n  push:\n    branches: [master]\n  pull_request:\n    branches: [master]\n",
+        encoding="utf-8",
+    )
+    assert _pull_request_trigger_types() is None
+
+    workflow.write_text(
+        "on:\n  pull_request:\n    types: [opened]\n",
+        encoding="utf-8",
+    )
+    assert _pull_request_trigger_types() == ["opened"]

@@ -29,12 +29,18 @@ CITED_FILES = [
 ]
 
 
-@pytest.mark.parametrize("relpath", CITED_FILES)
-def test_file_cites_section_5_anchor(relpath):
-    path = os.path.join(REPO_ROOT, relpath)
+def _cites_anchor(path: str) -> bool:
+    """True if the file at `path` names the §5 anchor anywhere in its
+    text — a comment, a docstring, a string; the citation trail only
+    needs the anchor to be findable."""
     with open(path, "r", encoding="utf-8") as f:
         contents = f.read()
-    assert ANCHOR in contents, (
+    return ANCHOR in contents
+
+
+@pytest.mark.parametrize("relpath", CITED_FILES)
+def test_file_cites_section_5_anchor(relpath):
+    assert _cites_anchor(os.path.join(REPO_ROOT, relpath)), (
         f"{relpath} implements/describes the §5 trust order (signature -> "
         f"consent -> dispatch) but no comment or docstring in the file cites "
         f"{ANCHOR!r} by anchor."
@@ -59,3 +65,20 @@ def test_bridge_admit_contact_cites_anchor_near_definition():
         "bridge/app.py:_admit_contact has no INVARIANTS.md §5 citation in "
         "its leading comment or docstring."
     )
+
+
+def test_the_anchor_check_fires_on_a_planted_module_citing_by_line_number(tmp_path):
+    """Planted: the pre-fix shape — a module that describes the trust
+    order in prose and cites INVARIANTS.md by line number, never by the
+    §5 anchor — beside one that cites the anchor. The check must refuse
+    the first and pass the second."""
+    by_line = tmp_path / "consent.py"
+    by_line.write_text(
+        "# Signature before consent — see INVARIANTS.md lines 160-175.\n",
+        encoding="utf-8",
+    )
+    by_anchor = tmp_path / "listener.py"
+    by_anchor.write_text(f"# {ANCHOR}: signature -> consent -> dispatch.\n", encoding="utf-8")
+
+    assert not _cites_anchor(str(by_line))
+    assert _cites_anchor(str(by_anchor))
