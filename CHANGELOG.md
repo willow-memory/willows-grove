@@ -6,7 +6,7 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Added
 
-- **The fleet CI floor, and release-please.** (PR 61) Fleet plan Wave 4,
+- **The fleet CI floor, and release-please.** (PR 62) Fleet plan Wave 4,
   decision 5: C4-tests-yml-grove and C4-grove-release. `tests.yml` now runs
   the suite on a Linux matrix derived from the `pyproject.toml` classifiers
   (3.11, 3.12, 3.13), a Windows leg on the floor and ceiling (3.11, 3.13),
