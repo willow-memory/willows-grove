@@ -20,7 +20,7 @@ from __future__ import annotations
 
 import os
 import re
-import stat
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -37,6 +37,24 @@ DOC_PATH = os.path.join(ROOT, "docs", "grove-served-page.md")
 # Path segment: no whitespace, backticks, parens, or markdown/punctuation
 # that would terminate the reference.
 _REF_RE = re.compile(r"\b(scripts|deploy)/([A-Za-z0-9_.-]+)")
+
+
+def _committed_as_executable(rel: str) -> bool:
+    """The executable bit as the repository records it (`git ls-files -s`
+    mode 100755), not as the checkout's filesystem reports it. The two agree
+    on Linux; on Windows `os.stat` derives the bit from the file extension,
+    so every extensionless launcher under `scripts/` read as not executable
+    there and the floor's Windows leg failed a pin about the *repository*.
+    What "chmod +x" means for a documented entry point is the mode git
+    ships, and that is what a fresh clone on any platform gets."""
+    out = subprocess.run(
+        ["git", "ls-files", "-s", "--", rel],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.split()
+    return bool(out) and out[0] == "100755"
 
 
 def _referenced_paths() -> set[str]:
@@ -106,8 +124,7 @@ class DocumentedEntrypointsExistTests(unittest.TestCase):
             full = os.path.join(ROOT, rel)
             if not os.path.isfile(full):
                 continue  # caught by test_every_documented_path_exists
-            mode = os.stat(full).st_mode
-            if not (mode & stat.S_IXUSR):
+            if not _committed_as_executable(rel):
                 not_executable.append(rel)
         self.assertEqual(
             not_executable,

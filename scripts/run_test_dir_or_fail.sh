@@ -72,7 +72,9 @@ elif [[ -x "${REPO_ROOT}/.venv/bin/python3" ]]; then
 elif [[ -x "$(pwd)/.venv/bin/python3" ]]; then
   PY="$(pwd)/.venv/bin/python3"
 else
-  PY="$(command -v python3)"
+  # Git Bash on a Windows runner ships `python` and not always `python3`;
+  # the same interpreter under either name.
+  PY="$(command -v python3 || command -v python)"
 fi
 
 exec "$PY" -m pytest "$@" "$DIR"

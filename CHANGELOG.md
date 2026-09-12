@@ -6,6 +6,24 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Added
 
+- **The fleet CI floor, and release-please.** (PR 61) Fleet plan Wave 4,
+  decision 5: C4-tests-yml-grove and C4-grove-release. `tests.yml` now runs
+  the suite on a Linux matrix derived from the `pyproject.toml` classifiers
+  (3.11, 3.12, 3.13), a Windows leg on the floor and ceiling (3.11, 3.13),
+  and a lint leg with ruff pinned to 0.16.7 (`ruff check` on the E4/E7/E9/F
+  baseline, `ruff format --check`); the aggregate `test` job needs every leg
+  and its verdict is `scripts/ci_gate.py`, which treats skipped and cancelled
+  as failures and is planted. `tests/test_ci_floor.py` holds the workflow to
+  that shape. The tree is ruff-formatted (128 files) and its 48 baseline
+  findings fixed; `.gitattributes` pins LF on every checkout; the executable
+  pin reads git's mode rather than the filesystem's. release-please (manifest
+  config, hidden types chore/ci/docs/test per the vendored fleet
+  conventions, `$comment-hidden-rule` and `$comment-what-cuts-a-release` in
+  place, `extra-files` bumping the hatch fallback version and
+  `safe-app-manifest.json`) and the pr-title guard with this repo's
+  `PACKAGED` set land beside it; `tests/test_fleet_conventions.py`'s
+  real-tree tests no longer have a vacuous branch.
+
 - **A numbered idea pile, and the `Idea-Id` trailer gate.** (PR 60) Fleet
   loop plan Wave 3, E3-piles and E3-trailers. `docs/ideas.md` is the repo's
   one numbered pile in the shape willow-reconciler reads: 29 items carried

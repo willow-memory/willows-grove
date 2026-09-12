@@ -12,6 +12,7 @@ specific commit.
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -44,8 +45,12 @@ def _run_checker(cwd: Path) -> subprocess.CompletedProcess:
     # Write outside the tree the checker walks — no self-reference.
     rerooted = cwd.parent / f"_check_{cwd.name}.py"
     rerooted.write_text(body, encoding="utf-8")
-    # Clear GITHUB_BASE_REF so the local `master` fallback runs.
-    env = {"PATH": "/usr/bin:/bin:/usr/local/bin", "HOME": str(cwd.parent)}
+    # Clear GITHUB_BASE_REF so the local `master` fallback runs. Everything
+    # else is inherited: a PATH scrubbed to POSIX directories has no git and
+    # no python on the Windows leg, and HOME is redirected so no user git
+    # config reaches the synthetic repo.
+    env = {k: v for k, v in os.environ.items() if k != "GITHUB_BASE_REF"}
+    env["HOME"] = str(cwd.parent)
     return subprocess.run(
         [sys.executable, str(rerooted)],
         capture_output=True,

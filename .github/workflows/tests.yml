@@ -23,8 +23,20 @@ permissions:
   contents: read
 
 jobs:
+  # The fleet CI floor (fleet plan decision 5; docs/ideas.md item 30). Four
+  # legs and one gate. tests/test_ci_floor.py holds this file to the shape:
+  # the Linux matrix equals pyproject.toml's Python classifiers, the Windows
+  # leg runs the floor and ceiling of that list, ruff is pinned to an exact
+  # version, and the aggregate `test` job needs every other job here.
   test-suite:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Derived from pyproject.toml's `Programming Language :: Python :: 3.X`
+        # classifiers — every listed minor, nothing else. A version the
+        # package claims to support is a version CI runs.
+        python-version: ["3.11", "3.12", "3.13"]
 
     services:
       postgres:
@@ -75,7 +87,7 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ matrix.python-version }}
           cache: pip
 
       - name: Install dependencies
@@ -176,12 +188,65 @@ jobs:
       - name: Run willow-mcp mock e2e (PR 10+)
         run: bash scripts/run_test_dir_or_fail.sh tests/e2e_willow_mcp -x -q --tb=short
 
+  # The Windows leg: the floor and ceiling of the classifier list, so the
+  # path-separator, tempfile and line-ending class of failure is seen on the
+  # oldest and newest Python the package claims. Container services are
+  # Linux-only on GitHub runners, so this leg runs the suite without
+  # Postgres (the DB-backed tests skip themselves, as they do on any box
+  # without WILLOW_DB_URL) and without the Ollama / willow-mcp-mock legs,
+  # which are the Linux job's. .gitattributes pins every text file to LF on
+  # checkout so byte-pinned fixtures hash the same here as on Linux.
+  test-windows:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run test suite (no container services on Windows)
+        run: python -m pytest -x -q --tb=short --ignore=tests/e2e --ignore=tests/e2e_ollama --ignore=tests/e2e_willow_mcp
+
+  # The lint leg. ruff is pinned to an exact version: an unpinned linter is
+  # a gate whose rules change under the tree with every release, and a
+  # green run on Monday says nothing about Tuesday. Bump the pin on purpose,
+  # with the fixes the new version asks for. The rule set lives in
+  # pyproject.toml's [tool.ruff]; tests/test_ci_floor.py pins the pin.
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install ruff (pinned)
+        run: pip install ruff==0.16.7
+
+      - name: ruff check
+        run: ruff check .
+
+      - name: ruff format --check
+        run: ruff format --check .
+
   # Aggregate gate: branch protection requires a single check named exactly
   # "test" across the whole fleet, so the ruleset never has to name the job
   # that happens to run the suite. This job's name is the contract; what
-  # feeds it is free to change. Green only when test-suite is.
+  # feeds it is free to change. Green only when every leg is.
   test:
-    needs: [test-suite]
+    needs: [test-suite, test-windows, lint]
     # `if: always()` is load-bearing, not boilerplate. Without it a failing
     # dependency does not fail this job — it SKIPS it, because that is what
     # `needs:` means. GitHub does not treat a skipped required check as a
@@ -192,11 +257,15 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     steps:
-      - name: Assert test-suite actually succeeded
-        # skipped and cancelled count as failures: a leg that did not run has
-        # told us nothing, and this gate speaks for it.
-        if: ${{ needs.test-suite.result != 'success' }}
-        run: |
-          echo "::error::test-suite did not succeed (result: ${{ needs.test-suite.result }})"
-          exit 1
-      - run: echo "test-suite green"
+      - uses: actions/checkout@v4
+
+      # The verdict is a script, not an `if:` expression, so it can be
+      # planted: tests/test_ci_floor.py hands scripts/ci_gate.py a `needs`
+      # with one leg skipped and asserts the gate goes red. Every needed
+      # result must be exactly `success`; skipped and cancelled are
+      # failures — a leg that did not run has told us nothing, and this
+      # gate speaks for it.
+      - name: Assert every needed leg actually succeeded
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: python3 scripts/ci_gate.py "$NEEDS"
