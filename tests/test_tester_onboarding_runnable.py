@@ -37,6 +37,7 @@ document was suffering from.
 
 Stdlib only. Reads the doc, touches no network and no database.
 """
+
 from __future__ import annotations
 
 import os
@@ -90,7 +91,8 @@ class DocPresenceTests(unittest.TestCase):
         failure mode that turns this whole file into a green no-op."""
         blocks = _bash_blocks()
         self.assertGreaterEqual(
-            len(blocks), 5,
+            len(blocks),
+            5,
             "found almost no ```bash blocks in TESTER_ONBOARDING.md — the "
             "fence parser has stopped matching and this file is no longer "
             "auditing anything",
@@ -105,7 +107,8 @@ class VirtualenvStepTests(unittest.TestCase):
     def test_a_virtualenv_is_created(self) -> None:
         joined = "\n".join(_bash_blocks())
         self.assertIn(
-            "python3 -m venv .venv", joined,
+            "python3 -m venv .venv",
+            joined,
             "TESTER_ONBOARDING.md must tell a tester to create .venv — both "
             "run_mcp.sh and scripts/grove-serve-run resolve ./.venv/bin/python3 "
             "before falling back to the system interpreter, and a global "
@@ -121,7 +124,8 @@ class VirtualenvStepTests(unittest.TestCase):
         self.assertNotEqual(venv_at, -1)
         self.assertNotEqual(install_at, -1)
         self.assertLess(
-            venv_at, install_at,
+            venv_at,
+            install_at,
             "the venv must be created BEFORE `pip install -r requirements.txt`",
         )
 
@@ -143,7 +147,8 @@ class DocumentedFilesExistTests(unittest.TestCase):
     def test_the_audit_actually_finds_references(self) -> None:
         refs = self._referenced()
         self.assertTrue(
-            refs, "found no runnable file references in TESTER_ONBOARDING.md — "
+            refs,
+            "found no runnable file references in TESTER_ONBOARDING.md — "
             "the pattern has stopped matching",
         )
         self.assertIn("scripts/grove-serve-run", refs)
@@ -151,11 +156,13 @@ class DocumentedFilesExistTests(unittest.TestCase):
 
     def test_every_referenced_file_exists(self) -> None:
         missing = sorted(
-            ref for ref in self._referenced()
+            ref
+            for ref in self._referenced()
             if not os.path.exists(os.path.join(ROOT, ref))
         )
         self.assertEqual(
-            missing, [],
+            missing,
+            [],
             f"TESTER_ONBOARDING.md names files that are not on disk: {missing}",
         )
 
@@ -178,7 +185,8 @@ class ShellCommandsAreExecutableTests(unittest.TestCase):
             if any(ch in line for ch in _SMART_QUOTES)
         ]
         self.assertEqual(
-            offenders, [],
+            offenders,
+            [],
             "curly quotes inside a shell command do not quote anything — "
             f"the command fails as written: {offenders}",
         )
@@ -192,7 +200,9 @@ class ShellCommandsAreExecutableTests(unittest.TestCase):
         ]
         duplicates = sorted({h for h in headings if headings.count(h) > 1})
         self.assertEqual(
-            duplicates, [], f"duplicated section headings: {duplicates}",
+            duplicates,
+            [],
+            f"duplicated section headings: {duplicates}",
         )
 
 

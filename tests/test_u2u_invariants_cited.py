@@ -55,12 +55,10 @@ def test_bridge_admit_contact_cites_anchor_near_definition():
     with open(path, "r", encoding="utf-8") as f:
         lines = f.readlines()
 
-    def_idx = next(
-        i for i, line in enumerate(lines) if "def _admit_contact(" in line
-    )
+    def_idx = next(i for i, line in enumerate(lines) if "def _admit_contact(" in line)
     # Look at a window spanning a leading comment above the def and the
     # function's own docstring below it.
-    window = "".join(lines[max(0, def_idx - 5): def_idx + 12])
+    window = "".join(lines[max(0, def_idx - 5) : def_idx + 12])
     assert ANCHOR in window, (
         "bridge/app.py:_admit_contact has no INVARIANTS.md §5 citation in "
         "its leading comment or docstring."
@@ -78,7 +76,9 @@ def test_the_anchor_check_fires_on_a_planted_module_citing_by_line_number(tmp_pa
         encoding="utf-8",
     )
     by_anchor = tmp_path / "listener.py"
-    by_anchor.write_text(f"# {ANCHOR}: signature -> consent -> dispatch.\n", encoding="utf-8")
+    by_anchor.write_text(
+        f"# {ANCHOR}: signature -> consent -> dispatch.\n", encoding="utf-8"
+    )
 
     assert not _cites_anchor(str(by_line))
     assert _cites_anchor(str(by_anchor))

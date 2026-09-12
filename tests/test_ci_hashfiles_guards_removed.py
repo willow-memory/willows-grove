@@ -33,13 +33,12 @@ Must fail on the unfixed tree: the workflow still carries the
 hashFiles guard verbatim, and ``scripts/run_test_dir_or_fail.sh``
 does not exist yet.
 """
+
 from __future__ import annotations
 
-import os
 import re
 import stat
 import subprocess
-import sys
 from pathlib import Path
 
 import pytest
@@ -82,7 +81,7 @@ def _extract_step(text: str, step_name: str) -> str:
     next_job = re.search(r"\n  [A-Za-z_][A-Za-z0-9_-]*:", text[body_start:])
     if next_job:
         ends.append(body_start + next_job.start())
-    return text[body_start:min(ends)] if ends else text[body_start:]
+    return text[body_start : min(ends)] if ends else text[body_start:]
 
 
 def _workflow_text() -> str:
@@ -132,8 +131,7 @@ def test_step_routes_through_fail_loud_wrapper(step_name):
 
 def _make_executable_copy(tmp_path: Path) -> Path:
     assert WRAPPER.exists(), (
-        "scripts/run_test_dir_or_fail.sh is missing — the m36 fix has not "
-        "landed."
+        "scripts/run_test_dir_or_fail.sh is missing — the m36 fix has not landed."
     )
     dest = tmp_path / "run_test_dir_or_fail.sh"
     dest.write_bytes(WRAPPER.read_bytes())
@@ -230,7 +228,9 @@ def test_the_step_slicer_fires_on_a_planted_hashfiles_guard():
         "    if: always()\n"
     )
     body = _extract_step(planted, STEP_NAMES[0])
-    assert "hashFiles(" in body and "if:" in body, "the planted guard must be in the slice"
+    assert "hashFiles(" in body and "if:" in body, (
+        "the planted guard must be in the slice"
+    )
     assert "echo next" not in body and "always()" not in body, (
         "the slice must stop at the next step; a neighbour's guard is not this step's"
     )

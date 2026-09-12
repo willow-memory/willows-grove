@@ -21,6 +21,7 @@ Harness-only HTTP routes (not part of willow-mcp):
   * ``GET /health`` — liveness for the conftest wait-loop.
   * ``POST /kill`` / ``POST /restore`` / ``POST /reset`` — test controls.
 """
+
 from __future__ import annotations
 
 import datetime as _dt
@@ -71,7 +72,9 @@ class _Store:
 
 
 def _now_iso() -> str:
-    return _dt.datetime.now(_dt.UTC).isoformat(timespec="seconds").replace("+00:00", "Z")
+    return (
+        _dt.datetime.now(_dt.UTC).isoformat(timespec="seconds").replace("+00:00", "Z")
+    )
 
 
 def _new_id() -> str:

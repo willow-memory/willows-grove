@@ -17,14 +17,14 @@ from u2u.packets import PacketType
 
 
 class ConsentResult(str, Enum):
-    ALLOW   = "allow"
-    DENY    = "deny"
+    ALLOW = "allow"
+    DENY = "deny"
     PENDING = "pending"
 
 
 _TYPE_TO_FIELD = {
-    PacketType.NOTE:  "consent_note",
-    PacketType.ASK:   "consent_ask",
+    PacketType.NOTE: "consent_note",
+    PacketType.ASK: "consent_ask",
     PacketType.ALERT: "consent_alert",
     PacketType.SHARE: "consent_share",
 }
@@ -98,7 +98,11 @@ class ConsentGate:
 
         if contact is None:
             # An unknown peer may only ask to be introduced.
-            return ConsentResult.PENDING if ptype == PacketType.KNOCK else ConsentResult.DENY
+            return (
+                ConsentResult.PENDING
+                if ptype == PacketType.KNOCK
+                else ConsentResult.DENY
+            )
 
         if contact.blocked:
             return ConsentResult.DENY

@@ -67,7 +67,10 @@ def _mode(path: Path) -> int:
         pytest.param("not json at all", id="garbage"),
         pytest.param("[]", id="json-but-not-an-object"),
         pytest.param('{"clients": {}}', id="missing-sections"),
-        pytest.param('{"clients": [], "access_tokens": {}, "refresh_tokens": {}}', id="section-wrong-type"),
+        pytest.param(
+            '{"clients": [], "access_tokens": {}, "refresh_tokens": {}}',
+            id="section-wrong-type",
+        ),
     ],
 )
 def test_corrupt_token_file_raises_instead_of_yielding_empty_state(tmp_path, body):
@@ -125,7 +128,9 @@ def test_token_file_is_0600_after_overwriting_a_wide_open_file(tmp_path):
     An in-place write to a pre-existing 0644 file leaves it 0644 forever.
     """
     token_path = tmp_path / "grove_mcp_token"
-    token_path.write_text(json.dumps({"clients": {}, "access_tokens": {}, "refresh_tokens": {}}))
+    token_path.write_text(
+        json.dumps({"clients": {}, "access_tokens": {}, "refresh_tokens": {}})
+    )
     os.chmod(token_path, 0o644)
     assert _mode(token_path) == 0o644
 
@@ -173,7 +178,10 @@ def test_save_replaces_the_file_rather_than_writing_through_it(tmp_path):
         assert set(previous["clients"]) == {"client-1"}
 
     # And the installed file is the new state, with no temp files left over.
-    assert set(json.loads(token_path.read_text())["clients"]) == {"client-1", "client-2"}
+    assert set(json.loads(token_path.read_text())["clients"]) == {
+        "client-1",
+        "client-2",
+    }
     assert [p.name for p in tmp_path.iterdir()] == ["grove_mcp_token"]
 
 
@@ -242,6 +250,7 @@ def test_access_ttl_is_bounded_for_operator_seat():
     """Access tokens live for the operator seat's horizon, not 30 days.
     INVARIANTS.md §7 (bounded TTL suitable for the operator seat)."""
     import grove.mcp_auth as mcp_auth
+
     # 24 hours — bounded, defensible. Not 30 days.
     assert mcp_auth._ACCESS_TTL == 24 * 3600
     assert mcp_auth._PENDING_TTL == 300  # 5 minutes for the approval click
@@ -293,7 +302,9 @@ def test_pending_requests_expire(tmp_path, monkeypatch):
     import grove.mcp_auth as mcp_auth
 
     real_time = mcp_auth.time.time
-    monkeypatch.setattr(mcp_auth.time, "time", lambda: real_time() + mcp_auth._PENDING_TTL + 1)
+    monkeypatch.setattr(
+        mcp_auth.time, "time", lambda: real_time() + mcp_auth._PENDING_TTL + 1
+    )
     assert provider.pop_pending(key) is None
 
 
@@ -325,4 +336,7 @@ def test_code_is_not_usable_by_a_different_client(tmp_path):
     provider = _provider(tmp_path)
     client, params = _client(), _params()
     code_str = provider.issue_code(client, params)
-    assert asyncio.run(provider.load_authorization_code(_client("other"), code_str)) is None
+    assert (
+        asyncio.run(provider.load_authorization_code(_client("other"), code_str))
+        is None
+    )

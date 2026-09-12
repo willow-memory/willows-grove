@@ -7,6 +7,7 @@ on disk for harness or quiet tooling; the served page must not mount it.
 
 Stdlib-only, per the pattern set by `tests/test_grove_serve.py`.
 """
+
 from __future__ import annotations
 
 import os

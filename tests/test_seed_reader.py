@@ -17,6 +17,7 @@ dir first — otherwise it would silently pick up this repo's real
 canon and the absence case would no longer be reachable in tests
 (INVARIANTS.md §1: absence must stay a tested, reachable state).
 """
+
 from __future__ import annotations
 
 import os
@@ -97,8 +98,8 @@ class SeedReaderTests(unittest.TestCase):
     def test_absent_seed_dir_returns_stub_and_logs_once(self) -> None:
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
-            willow_home = root / "willow-home"   # never created
-            home = root / "home"                  # empty
+            willow_home = root / "willow-home"  # never created
+            home = root / "home"  # empty
             home.mkdir()
             with _EnvSandbox(willow_home=willow_home, home=home):
                 with self.assertLogs("grove.seed_reader", level="INFO") as cap:
@@ -128,12 +129,15 @@ class SeedReaderTests(unittest.TestCase):
             canon.mkdir(parents=True)
 
             titles = [
-                ("00-the-covenant.md",     "# The Covenant\n\nAgreement inherited."),
-                ("01-be-the-other.md",     "# Be The Other\n\nA partner refuses."),
-                ("02-the-discipline.md",   "# The Discipline\n\nVerify, don't assert."),
-                ("03-the-person.md",       "# The Person\n\nThe one you serve."),
-                ("04-the-language.md",     "# The Language\n\nGerald has no write authority."),
-                ("05-the-world.md",        "# The World\n\nThe fleet is parts with edges."),
+                ("00-the-covenant.md", "# The Covenant\n\nAgreement inherited."),
+                ("01-be-the-other.md", "# Be The Other\n\nA partner refuses."),
+                ("02-the-discipline.md", "# The Discipline\n\nVerify, don't assert."),
+                ("03-the-person.md", "# The Person\n\nThe one you serve."),
+                (
+                    "04-the-language.md",
+                    "# The Language\n\nGerald has no write authority.",
+                ),
+                ("05-the-world.md", "# The World\n\nThe fleet is parts with edges."),
             ]
             for name, body in titles:
                 (canon / name).write_text(body, encoding="utf-8")

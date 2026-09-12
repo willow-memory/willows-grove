@@ -25,15 +25,16 @@ version of this file passed alone and failed in the full run for exactly that
 reason. The declared default is what a fresh deployment gets, and it is what
 this file is about.
 """
+
 import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
-WILLOW_MCP_SERVE_PORT = 8765   # willow-mcp/src/willow_mcp/server.py code default
-GROVE_DESK_PORT = 8766         # grove_serve.py, loopback-only (D4)
-GROVE_MCP_PORT = 8767          # grove/mcp_local.py --serve
-PHONE_WILLOW_MCP_BIND = 8768   # operator table: phone signs in here, not 8765/8766
+WILLOW_MCP_SERVE_PORT = 8765  # willow-mcp/src/willow_mcp/server.py code default
+GROVE_DESK_PORT = 8766  # grove_serve.py, loopback-only (D4)
+GROVE_MCP_PORT = 8767  # grove/mcp_local.py --serve
+PHONE_WILLOW_MCP_BIND = 8768  # operator table: phone signs in here, not 8765/8766
 
 
 def _declared_mcp_port() -> int:
@@ -73,6 +74,7 @@ def _declared_toggle_port() -> int:
     m = re.search(r'^PORT="\$\{GROVE_MCP_PORT:-(\d+)\}"', src, re.M)
     assert m, "GROVE_MCP_PORT default not found in scripts/grove-serve"
     return int(m.group(1))
+
 
 def test_grove_mcp_default_does_not_collide_with_willow_mcp():
     assert _declared_mcp_port() == GROVE_MCP_PORT
@@ -123,7 +125,9 @@ def test_the_serve_toggle_does_not_claim_the_desk_page():
     assert _declared_toggle_port() != GROVE_DESK_PORT
 
 
-def test_all_four_declared_port_readers_fire_on_a_planted_collision(tmp_path, monkeypatch):
+def test_all_four_declared_port_readers_fire_on_a_planted_collision(
+    tmp_path, monkeypatch
+):
     """Planted: a tree in which every one of the four sources declares
     8765 — the willow-mcp port, the collision this file exists to refuse.
     Each reader must return the planted number so every pin above would

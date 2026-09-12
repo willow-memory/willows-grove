@@ -23,6 +23,7 @@ sender's own bytes, no paraphrase, no truncation, no normalize.
 
 Sync only, no asyncio, matching the rest of ``grove/*.py``.
 """
+
 from __future__ import annotations
 
 import logging
@@ -44,7 +45,9 @@ def _log_unreachable_once(reason: str) -> None:
     if _UNREACHABLE_LOGGED:
         return
     _UNREACHABLE_LOGGED = True
-    log.info("journal_reader: willow-mcp not reachable (%s) — empty read-back (D7).", reason)
+    log.info(
+        "journal_reader: willow-mcp not reachable (%s) — empty read-back (D7).", reason
+    )
 
 
 def _reset_log_once_for_tests() -> None:
@@ -57,7 +60,7 @@ def _extract_ts_from_tags(tags: Any) -> str:
         return ""
     for tag in tags:
         if isinstance(tag, str) and tag.startswith("ts:"):
-            return tag[len("ts:"):]
+            return tag[len("ts:") :]
     return ""
 
 
@@ -66,7 +69,7 @@ def _extract_sender_from_tags(tags: Any) -> str:
         return ""
     for tag in tags:
         if isinstance(tag, str) and tag.startswith("sender:"):
-            return tag[len("sender:"):]
+            return tag[len("sender:") :]
     return ""
 
 
@@ -116,7 +119,9 @@ def _atoms_from_payload(payload: Any) -> list[dict[str, Any]]:
     return out
 
 
-def _apply_since(atoms: list[dict[str, Any]], since_id: Optional[str]) -> list[dict[str, Any]]:
+def _apply_since(
+    atoms: list[dict[str, Any]], since_id: Optional[str]
+) -> list[dict[str, Any]]:
     if not since_id:
         return atoms
     for i, atom in enumerate(atoms):
@@ -125,7 +130,9 @@ def _apply_since(atoms: list[dict[str, Any]], since_id: Optional[str]) -> list[d
     return atoms
 
 
-def _try_mcp_read(limit: int, since_id: Optional[str]) -> Optional[list[dict[str, Any]]]:
+def _try_mcp_read(
+    limit: int, since_id: Optional[str]
+) -> Optional[list[dict[str, Any]]]:
     """Call ``kb_journal_read`` over MCP; ``None`` when transport fails."""
     args: dict[str, Any] = {"app_id": _APP_ID, "limit": limit}
     if since_id:

@@ -27,7 +27,6 @@ import sys
 import tempfile
 from pathlib import Path
 
-import pytest
 
 REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO))
@@ -36,6 +35,7 @@ MCP_LOCAL_PATH = REPO / "grove" / "mcp_local.py"
 
 
 # ── #14: `_gate` + `_resolve_serve_identity` are dead code, deleted ────────
+
 
 def _defined_at_module_scope(src: str, name: str) -> bool:
     """True if `src` defines `def <name>(` at column 0 — the durable

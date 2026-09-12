@@ -37,6 +37,7 @@ Three-state contract:
 INVARIANTS.md §2 supersedes the earlier "[] on absence" reading: [] now
 means "reached the source, nothing queued", never "could not reach".
 """
+
 from __future__ import annotations
 
 import logging

@@ -7,6 +7,7 @@ thread and hits the new envelope route with stdlib urllib. Asserts the
 P1 shape (``schema`` + ``envelopes``) survives the round-trip in both
 degraded (no dir) and populated cases.
 """
+
 from __future__ import annotations
 
 import contextlib
@@ -89,6 +90,7 @@ class EnvelopesRouteTests(unittest.TestCase):
     def setUp(self) -> None:
         # Reset envelope_reader log-once state so this suite is order-independent.
         from grove import envelope_reader as er
+
         er._logged_missing_dirs = False
         er._logged_missing_files = False
         er._logged_malformed = set()
@@ -116,7 +118,9 @@ class EnvelopesRouteTests(unittest.TestCase):
         return mock.patch.dict(os.environ, env, clear=True)
 
     def _get(self, url: str) -> tuple[int, dict]:
-        req = urllib.request.Request(url, method="GET", headers={"accept": "application/json"})
+        req = urllib.request.Request(
+            url, method="GET", headers={"accept": "application/json"}
+        )
         try:
             with urllib.request.urlopen(req, timeout=2.0) as resp:
                 return resp.status, json.loads(resp.read().decode("utf-8"))
@@ -157,7 +161,11 @@ class EnvelopesRouteTests(unittest.TestCase):
                     "schema": "envelope-registry/v1.1",
                     "envelopes": [
                         {"id": "env-a", "grantee": "kart", "attestation": "attested"},
-                        {"id": "env-b", "grantee": "loki", "attestation": "attestation_missing"},
+                        {
+                            "id": "env-b",
+                            "grantee": "loki",
+                            "attestation": "attestation_missing",
+                        },
                     ],
                 }
             ),

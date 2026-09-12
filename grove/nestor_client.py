@@ -23,6 +23,7 @@ line, matching request ids). Style is synchronous to keep the surface
 small; Grove's Starlette layer (mirroring willow-mcp's ``gates_serve``)
 runs client calls in a threadpool.
 """
+
 from __future__ import annotations
 
 import json
@@ -144,12 +145,16 @@ class NestorClient:
         executable: str = "nestor",
     ) -> None:
         self._exe = executable
-        self._store_path = Path(store_path).expanduser() if store_path else _default_store_path()
+        self._store_path = (
+            Path(store_path).expanduser() if store_path else _default_store_path()
+        )
         self._proc: Optional[subprocess.Popen[str]] = None
         self._lock = threading.Lock()
         self._next_id = 0
         self._session_ready = False
-        self._available: Optional[bool] = None  # tri-state: None=unprobed, True/False cached
+        self._available: Optional[bool] = (
+            None  # tri-state: None=unprobed, True/False cached
+        )
 
     # ---- lifecycle ----
     def __enter__(self) -> "NestorClient":
@@ -167,7 +172,9 @@ class NestorClient:
 
     def _start(self) -> None:
         if not self.available():
-            log.info("nestor_client: %r not on PATH — running as no-op (D7).", self._exe)
+            log.info(
+                "nestor_client: %r not on PATH — running as no-op (D7).", self._exe
+            )
             return
         if self._proc is not None and self._proc.poll() is None:
             return
@@ -185,7 +192,9 @@ class NestorClient:
                 env=env,
             )
         except (FileNotFoundError, OSError) as err:
-            log.warning("nestor_client: failed to spawn %r: %s — no-op mode.", self._exe, err)
+            log.warning(
+                "nestor_client: failed to spawn %r: %s — no-op mode.", self._exe, err
+            )
             self._proc = None
             self._available = False
 
@@ -211,7 +220,9 @@ class NestorClient:
                 pass
 
     # ---- MCP call ----
-    def _rpc(self, method: str, params: dict[str, Any], *, notify: bool = False) -> Optional[dict[str, Any]]:
+    def _rpc(
+        self, method: str, params: dict[str, Any], *, notify: bool = False
+    ) -> Optional[dict[str, Any]]:
         """One JSON-RPC request/response round trip (no response for notifications)."""
         if not self.available():
             return None
@@ -391,7 +402,11 @@ class NestorClient:
             return None
         result = resp.get("result") if isinstance(resp, dict) else None
         if isinstance(result, dict):
-            text = result.get("text") or result.get("speech_act") or result.get("utterance")
+            text = (
+                result.get("text")
+                or result.get("speech_act")
+                or result.get("utterance")
+            )
             if isinstance(text, str):
                 return text
         if isinstance(result, str):

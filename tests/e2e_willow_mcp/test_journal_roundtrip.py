@@ -21,6 +21,7 @@ Discipline pinned:
 * special characters (quotes, unicode, embedded newlines) survive the
   round-trip verbatim.
 """
+
 from __future__ import annotations
 
 import unittest
@@ -31,6 +32,7 @@ from grove import journal_reader, journal_writer
 from grove.errors import Unreachable
 
 # --- Test 1: single-atom round-trip ------------------------------------
+
 
 def test_single_atom_round_trip(mock_mcp):
     """A single write goes in; the reader hands it back with text intact."""
@@ -48,6 +50,7 @@ def test_single_atom_round_trip(mock_mcp):
 
 # --- Test 2: five atoms, newest first ----------------------------------
 
+
 def test_five_atoms_round_trip_newest_first(mock_mcp):
     """Five sequential writes come back newest-first through the reader."""
     payloads = ["atom-a", "atom-b", "atom-c", "atom-d", "atom-e"]
@@ -61,6 +64,7 @@ def test_five_atoms_round_trip_newest_first(mock_mcp):
 
 
 # --- Test 3: since_id filter ------------------------------------------
+
 
 def test_since_id_filters_to_strictly_newer_atoms(mock_mcp):
     """``since_id`` returns atoms strictly newer than the given id."""
@@ -78,6 +82,7 @@ def test_since_id_filters_to_strictly_newer_atoms(mock_mcp):
 
 
 # --- Test 4: three-state discipline — kill the mock -------------------
+
 
 def test_kill_the_mock_raises_unreachable_on_both_seams(mock_mcp):
     """Kill the mock → writer AND reader raise ``Unreachable``.
@@ -106,6 +111,7 @@ def test_kill_the_mock_raises_unreachable_on_both_seams(mock_mcp):
 
 # --- Test 5: restore the mock — the seam recovers ----------------------
 
+
 def test_restore_the_mock_and_subsequent_writes_succeed(mock_mcp):
     """After ``/restore`` the writer and reader work again — no state stuck."""
     mock_mcp.kill()
@@ -128,6 +134,7 @@ def test_restore_the_mock_and_subsequent_writes_succeed(mock_mcp):
 
 
 # --- Test 6: verbatim preservation across special characters -----------
+
 
 def test_verbatim_text_preservation_across_special_characters(mock_mcp):
     """Operator words survive quotes, unicode, and embedded newlines.
@@ -152,6 +159,7 @@ def test_verbatim_text_preservation_across_special_characters(mock_mcp):
 
 
 # --- unittest wrapper so the module still runs under `python -m unittest` ---
+
 
 class JournalRoundTripUnittest(unittest.TestCase):
     """Sentinel so a stray ``python -m unittest tests/...`` at least fails

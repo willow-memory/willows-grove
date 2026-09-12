@@ -60,8 +60,12 @@ def load_fleet_personas(path: Path = FLEET_ROSTER) -> tuple[frozenset[str], str 
         return frozenset(), f"{path}: expected an object of persona keys"
     names = {key.lower() for key in raw if key != "_meta"}
     if not names:
-        return frozenset(), f"{path}: no personas found — refusing to validate against an empty roster"
+        return (
+            frozenset(),
+            f"{path}: no personas found — refusing to validate against an empty roster",
+        )
     return frozenset(names), None
+
 
 # File extensions §11 considers "tracked code" — a commit that only touches
 # files outside this set (worktree scaffolding, generated artifacts) is
@@ -70,7 +74,9 @@ TRACKED_EXTS = {".py", ".js", ".sh", ".md", ".yml", ".yaml", ".sql", ".json", ".
 
 # Match a `Persona: <name>` trailer line (RFC-5322-ish trailer block).
 # Whitespace-tolerant; case-insensitive on the key.
-TRAILER_RE = re.compile(r"^\s*Persona\s*:\s*([A-Za-z0-9_-]+)\s*$", re.MULTILINE | re.IGNORECASE)
+TRAILER_RE = re.compile(
+    r"^\s*Persona\s*:\s*([A-Za-z0-9_-]+)\s*$", re.MULTILINE | re.IGNORECASE
+)
 
 
 def _git(*args: str) -> str:

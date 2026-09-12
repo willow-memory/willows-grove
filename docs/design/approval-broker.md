@@ -18,7 +18,9 @@ def require_operator_terminal() -> None:
         raise PermissionError("mutation requires an interactive operator terminal")
     ...
     if owner_uid != os.getuid():
-        raise PermissionError("controlling terminal is not owned by the invoking operator")
+        raise PermissionError(
+            "controlling terminal is not owned by the invoking operator"
+        )
 ```
 
 `human_session.py:307-331`, mirrored inline at `server.py:6538`, `:6719`,

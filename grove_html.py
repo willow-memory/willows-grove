@@ -17,6 +17,7 @@ frame text in `widgets/hero.py` ever changes the drift is caught by
 D4 (served HTML on 127.0.0.1) is the pattern this joins:
 `willow-mcp/src/willow_mcp/gates_serve.py` — same shape, different port.
 """
+
 from __future__ import annotations
 
 
@@ -144,13 +145,13 @@ _TOP_STRIP = (
     '<div class="strip" data-standing-state="loading">'
     '<span class="dot"></span>'
     '<span class="name">ƒ willow</span>'
-    '<span>·</span>'
+    "<span>·</span>"
     # `data-standing` is the slot ``/web/boot/standing-boot.js`` paints
     # from ``GET /health``. The served markup carries the pre-fetch
     # sentinel so there is no flash of a status claim before the first
     # answer — and so the page still makes no claim if JS never runs.
     '<span class="standing" data-standing>reading standing…</span>'
-    '</div>'
+    "</div>"
 )
 
 
@@ -172,7 +173,7 @@ _LENS_SWITCH_REMOVED_FROM_HERO = True  # documentation pin for greppers
 _CONSTITUTIONAL_PANELS = (
     '<section class="constitutional-panels">'
     '<grove-envelope-panel data-source="/api/envelopes"></grove-envelope-panel>'
-    '</section>'
+    "</section>"
 )
 
 
@@ -187,37 +188,33 @@ _CONSTITUTIONAL_PANELS = (
 # `tests/test_grove_html_boot_wire.py::test_boot_script_is_last_module_in_head`
 # pins on the layout-memory boot tag.
 _REGISTRY_UNREACHABLE_LISTENER = (
-    '<script>'
-    '(function(){'
-    'try{'
-    'var logged=false;'
+    "<script>"
+    "(function(){"
+    "try{"
+    "var logged=false;"
     'window.addEventListener("registry-unreachable",function(ev){'
-    'try{'
-    'if(!logged){'
-    'logged=true;'
+    "try{"
+    "if(!logged){"
+    "logged=true;"
     'var reason=(ev&&ev.detail&&ev.detail.reason)||"unknown";'
-    'if(window.console&&console.info){'
+    "if(window.console&&console.info){"
     'console.info("[grove] registry-unreachable:",reason);'
-    '}'
-    '}'
-    '}catch(_e){}'
-    'try{'
-    'if(document&&document.body&&document.body.classList){'
+    "}"
+    "}"
+    "}catch(_e){}"
+    "try{"
+    "if(document&&document.body&&document.body.classList){"
     'document.body.classList.add("registry-unreachable");'
-    '}'
-    '}catch(_e){}'
-    '});'
-    '}catch(_e){}'
-    '})();'
-    '</script>'
+    "}"
+    "}catch(_e){}"
+    "});"
+    "}catch(_e){}"
+    "})();"
+    "</script>"
 )
 
 
-_FOOTER = (
-    '<footer>'
-    'grove.willow_20 · 127.0.0.1:8766 · b17: WGRV1 ΔΣ=42'
-    '</footer>'
-)
+_FOOTER = "<footer>grove.willow_20 · 127.0.0.1:8766 · b17: WGRV1 ΔΣ=42</footer>"
 
 
 def _tree_block() -> str:
@@ -236,7 +233,7 @@ def render_page() -> str:
     """
     return (
         "<!doctype html>\n"
-        "<html lang=\"en\">\n"
+        '<html lang="en">\n'
         "<head>\n"
         '<meta charset="utf-8">\n'
         '<meta name="viewport" content="width=device-width,initial-scale=1">\n'
@@ -283,7 +280,7 @@ def render_page() -> str:
         # so it registers at parse time — before the element upgrades — and
         # so it does NOT participate in the module-src ordering pinned by
         # `tests/test_grove_html_boot_wire.py`.
-        f'{_REGISTRY_UNREACHABLE_LISTENER}\n'
+        f"{_REGISTRY_UNREACHABLE_LISTENER}\n"
         # Ambient-strip standing boot — polls GET /health and paints the
         # top strip's `data-standing` slot with the seat's live state
         # (INVARIANTS.md §1 / §8). Touches only the strip, defines no
@@ -301,14 +298,14 @@ def render_page() -> str:
         '<script type="module" src="/web/boot/layout-memory-boot.js"></script>\n'
         "</head>\n"
         "<body>\n"
-        '<grove-persona-registry></grove-persona-registry>\n'
+        "<grove-persona-registry></grove-persona-registry>\n"
         f"{_TOP_STRIP}\n"
         "<main>\n"
         f"  {_tree_block()}\n"
         '  <p class="here">the grove is here.</p>\n'
         '  <grove-chat home-edge="bottom"></grove-chat>\n'
         # Default dispatch rail without operator mode switch (C12 demoted).
-        '  <grove-dispatch-rail></grove-dispatch-rail>\n'
+        "  <grove-dispatch-rail></grove-dispatch-rail>\n"
         f"  {_CONSTITUTIONAL_PANELS}\n"
         "</main>\n"
         f"{_FOOTER}\n"

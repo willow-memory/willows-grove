@@ -8,6 +8,7 @@ where the seat intake tree is visible; default intake lives at
     . $WILLOW_HOME/fleet.env
     python3 seat/willow/scripts/jeles-intake.py --probe-only
 """
+
 from __future__ import annotations
 
 import os

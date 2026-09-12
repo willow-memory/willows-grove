@@ -26,7 +26,6 @@ the primitive.
 import logging
 import os
 import threading
-from datetime import datetime
 from typing import Optional, List, Dict, Any
 
 _pool = None
@@ -41,23 +40,31 @@ VALID_MESSAGE_TYPES = frozenset({"text", "system", "file_share", "reaction"})
 VALID_FLAGS = frozenset({"needs-reply", "starred", "read", "urgent", "resolved"})
 
 # Bus protocol constants
-BUS_TYPES = frozenset({
-    "COMMAND",    # instruct an agent to do something
-    "RESPONSE",   # reply to a COMMAND
-    "EVENT",      # something happened (fire and forget)
-    "INTERRUPT",  # act immediately, preempt normal flow
-    "HEARTBEAT",  # I am alive
-    "ACK",        # I received and understood your message
-    "DATA",       # bulk payload, routed to Kart/DMA layer
-    "SYNC",       # synchronise state between agents
-})
+BUS_TYPES = frozenset(
+    {
+        "COMMAND",  # instruct an agent to do something
+        "RESPONSE",  # reply to a COMMAND
+        "EVENT",  # something happened (fire and forget)
+        "INTERRUPT",  # act immediately, preempt normal flow
+        "HEARTBEAT",  # I am alive
+        "ACK",  # I received and understood your message
+        "DATA",  # bulk payload, routed to Kart/DMA layer
+        "SYNC",  # synchronise state between agents
+    }
+)
 
 # Priority 0 = highest (INTERRUPT), 7 = lowest (DEBUG) — mirrors CAN bus
 BUS_PRIORITY = {
-    "INTERRUPT": 0, "URGENT": 1, "HIGH": 2, "NORMAL": 3,
-    "LOW": 4, "BACKGROUND": 5, "HEARTBEAT": 6, "DEBUG": 7,
+    "INTERRUPT": 0,
+    "URGENT": 1,
+    "HIGH": 2,
+    "NORMAL": 3,
+    "LOW": 4,
+    "BACKGROUND": 5,
+    "HEARTBEAT": 6,
+    "DEBUG": 7,
 }
-BUS_BROADCAST = "__all__"   # sentinel: message is addressed to every agent
+BUS_BROADCAST = "__all__"  # sentinel: message is addressed to every agent
 
 
 def _connect_timeout_secs() -> int:
@@ -105,9 +112,10 @@ def _get_pool():
     with _pool_lock:
         if _pool is None:
             import psycopg2.pool
+
             dsn = os.getenv("WILLOW_DB_URL", "")
             if not dsn:
-                pg_db   = os.getenv("WILLOW_PG_DB", "willow_20")
+                pg_db = os.getenv("WILLOW_PG_DB", "willow_20")
                 pg_user = os.getenv("WILLOW_PG_USER", os.environ.get("USER", ""))
                 dsn = f"dbname={pg_db} user={pg_user}"
             # Timeouts pass through ThreadedConnectionPool's *args/**kwargs
@@ -179,10 +187,11 @@ def listen_connection():
     ``poll_notify`` idle path.
     """
     import psycopg2
-    pg_db   = os.getenv("WILLOW_PG_DB",   "willow_20")
-    pg_user = os.getenv("WILLOW_PG_USER",  os.getenv("USER", ""))
-    dsn     = os.getenv("WILLOW_DB_URL",   "") or f"dbname={pg_db} user={pg_user}"
-    conn    = psycopg2.connect(dsn, **_connect_kwargs())
+
+    pg_db = os.getenv("WILLOW_PG_DB", "willow_20")
+    pg_user = os.getenv("WILLOW_PG_USER", os.getenv("USER", ""))
+    dsn = os.getenv("WILLOW_DB_URL", "") or f"dbname={pg_db} user={pg_user}"
+    conn = psycopg2.connect(dsn, **_connect_kwargs())
     conn.autocommit = True
     return conn
 
@@ -228,22 +237,32 @@ def init_schema(conn):
     """)
     existing_msg_cols = {r[0] for r in cur.fetchall()}
     for col_name, col_sql in [
-        ("to_agent",       "ALTER TABLE messages ADD COLUMN to_agent TEXT DEFAULT '__all__'"),
-        ("bus_type",       "ALTER TABLE messages ADD COLUMN bus_type TEXT DEFAULT 'EVENT'"),
-        ("priority",       "ALTER TABLE messages ADD COLUMN priority INTEGER DEFAULT 3"),
+        ("to_agent", "ALTER TABLE messages ADD COLUMN to_agent TEXT DEFAULT '__all__'"),
+        ("bus_type", "ALTER TABLE messages ADD COLUMN bus_type TEXT DEFAULT 'EVENT'"),
+        ("priority", "ALTER TABLE messages ADD COLUMN priority INTEGER DEFAULT 3"),
         ("correlation_id", "ALTER TABLE messages ADD COLUMN correlation_id TEXT"),
-        ("ttl",            "ALTER TABLE messages ADD COLUMN ttl INTEGER"),
-        ("deleted_by",     "ALTER TABLE messages ADD COLUMN deleted_by TEXT"),
+        ("ttl", "ALTER TABLE messages ADD COLUMN ttl INTEGER"),
+        ("deleted_by", "ALTER TABLE messages ADD COLUMN deleted_by TEXT"),
     ]:
         if col_name not in existing_msg_cols:
             cur.execute(col_sql)
 
-    cur.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_channels_name ON channels (name)")
-    cur.execute("CREATE INDEX IF NOT EXISTS idx_channels_type ON channels (channel_type)")
-    cur.execute("CREATE INDEX IF NOT EXISTS idx_messages_channel ON messages (channel_id)")
+    cur.execute(
+        "CREATE UNIQUE INDEX IF NOT EXISTS idx_channels_name ON channels (name)"
+    )
+    cur.execute(
+        "CREATE INDEX IF NOT EXISTS idx_channels_type ON channels (channel_type)"
+    )
+    cur.execute(
+        "CREATE INDEX IF NOT EXISTS idx_messages_channel ON messages (channel_id)"
+    )
     cur.execute("CREATE INDEX IF NOT EXISTS idx_messages_sender ON messages (sender)")
-    cur.execute("CREATE INDEX IF NOT EXISTS idx_messages_created ON messages (created_at)")
-    cur.execute("CREATE INDEX IF NOT EXISTS idx_messages_reply ON messages (reply_to_id)")
+    cur.execute(
+        "CREATE INDEX IF NOT EXISTS idx_messages_created ON messages (created_at)"
+    )
+    cur.execute(
+        "CREATE INDEX IF NOT EXISTS idx_messages_reply ON messages (reply_to_id)"
+    )
 
     cur.execute("""
         CREATE TABLE IF NOT EXISTS message_flags (
@@ -255,12 +274,22 @@ def init_schema(conn):
             UNIQUE (message_id, sender, flag)
         )
     """)
-    cur.execute("CREATE INDEX IF NOT EXISTS idx_flags_message ON message_flags (message_id)")
+    cur.execute(
+        "CREATE INDEX IF NOT EXISTS idx_flags_message ON message_flags (message_id)"
+    )
     cur.execute("CREATE INDEX IF NOT EXISTS idx_flags_flag ON message_flags (flag)")
-    cur.execute("CREATE INDEX IF NOT EXISTS idx_messages_to_agent ON messages (to_agent)")
-    cur.execute("CREATE INDEX IF NOT EXISTS idx_messages_bus_type ON messages (bus_type)")
-    cur.execute("CREATE INDEX IF NOT EXISTS idx_messages_priority ON messages (priority)")
-    cur.execute("CREATE INDEX IF NOT EXISTS idx_messages_correlation ON messages (correlation_id) WHERE correlation_id IS NOT NULL")
+    cur.execute(
+        "CREATE INDEX IF NOT EXISTS idx_messages_to_agent ON messages (to_agent)"
+    )
+    cur.execute(
+        "CREATE INDEX IF NOT EXISTS idx_messages_bus_type ON messages (bus_type)"
+    )
+    cur.execute(
+        "CREATE INDEX IF NOT EXISTS idx_messages_priority ON messages (priority)"
+    )
+    cur.execute(
+        "CREATE INDEX IF NOT EXISTS idx_messages_correlation ON messages (correlation_id) WHERE correlation_id IS NOT NULL"
+    )
 
     # Optional agent_name column on channels — only ALTER when absent (avoids ACCESS EXCLUSIVE lock)
     cur.execute("""
@@ -324,6 +353,7 @@ def init_schema(conn):
 # Channels
 # ---------------------------------------------------------------------------
 
+
 def normalize_channel_name(name: str) -> str:
     """Fold a channel name to the form stored in the channels table.
 
@@ -334,7 +364,9 @@ def normalize_channel_name(name: str) -> str:
     return (name or "").strip().lstrip("#").strip()
 
 
-def find_channel_in(channels: List[Dict[str, Any]], name: str) -> Optional[Dict[str, Any]]:
+def find_channel_in(
+    channels: List[Dict[str, Any]], name: str
+) -> Optional[Dict[str, Any]]:
     """Locate a channel by name, folding sender-side spelling variants."""
     target = normalize_channel_name(name)
     if not target:
@@ -345,7 +377,9 @@ def find_channel_in(channels: List[Dict[str, Any]], name: str) -> Optional[Dict[
     )
 
 
-def duplicate_channel_groups(channels: List[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]:
+def duplicate_channel_groups(
+    channels: List[Dict[str, Any]],
+) -> Dict[str, List[Dict[str, Any]]]:
     """Group channels whose names collide once normalized.
 
     A non-empty result means at least one channel is a shadow: writes land in it
@@ -357,18 +391,23 @@ def duplicate_channel_groups(channels: List[Dict[str, Any]]) -> Dict[str, List[D
     return {k: v for k, v in groups.items() if len(v) > 1}
 
 
-def create_channel(conn, *, name: str, channel_type: str, description: str = None) -> Dict[str, Any]:
+def create_channel(
+    conn, *, name: str, channel_type: str, description: str = None
+) -> Dict[str, Any]:
     if channel_type not in VALID_CHANNEL_TYPES:
         raise ValueError(f"channel_type must be one of {VALID_CHANNEL_TYPES}")
     name = normalize_channel_name(name)
     if not name:
         raise ValueError("channel name must not be empty after normalization")
     cur = conn.cursor()
-    cur.execute("""
+    cur.execute(
+        """
         INSERT INTO channels (name, channel_type, description)
         VALUES (%s, %s, %s)
         RETURNING id, name, channel_type, description, created_at, updated_at, is_archived
-    """, (name, channel_type, description))
+    """,
+        (name, channel_type, description),
+    )
     row = cur.fetchone()
     cols = [d[0] for d in cur.description]
     conn.commit()
@@ -400,7 +439,7 @@ def archive_channel(conn, channel_id: int) -> bool:
     cur = conn.cursor()
     cur.execute(
         "UPDATE channels SET is_archived = TRUE, updated_at = CURRENT_TIMESTAMP WHERE id = %s",
-        (channel_id,)
+        (channel_id,),
     )
     conn.commit()
     return cur.rowcount > 0
@@ -409,6 +448,7 @@ def archive_channel(conn, channel_id: int) -> bool:
 # ---------------------------------------------------------------------------
 # Messages
 # ---------------------------------------------------------------------------
+
 
 def _frank_ledger_append(event_type: str, content: dict) -> None:
     """Write one tamper-evident entry to frank_ledger in willow_20.
@@ -430,27 +470,39 @@ def _frank_ledger_append(event_type: str, content: dict) -> None:
     # Lazy import so grove_db has no import-time coupling to grove.errors
     # (mirrors cursor_load's pattern).
     from grove.errors import LedgerWriteFailed
+
     try:
         import hashlib as _hl
         import json as _j
         import uuid as _u
         import psycopg2
         import psycopg2.extras
-        db   = os.environ.get("WILLOW_PG_DB", "willow_20")
+
+        db = os.environ.get("WILLOW_PG_DB", "willow_20")
         user = os.environ.get("WILLOW_PG_USER", os.environ.get("USER", ""))
         conn = psycopg2.connect(dbname=db, user=user, **_connect_kwargs())
         try:
             cur = conn.cursor()
-            cur.execute("SELECT hash FROM frank_ledger ORDER BY created_at DESC LIMIT 1")
-            row       = cur.fetchone()
+            cur.execute(
+                "SELECT hash FROM frank_ledger ORDER BY created_at DESC LIMIT 1"
+            )
+            row = cur.fetchone()
             prev_hash = row[0] if row else None
-            payload   = _j.dumps({"event_type": event_type, "content": content}, sort_keys=True)
-            new_hash  = _hl.sha256(f"{prev_hash or ''}{payload}".encode()).hexdigest()
+            payload = _j.dumps(
+                {"event_type": event_type, "content": content}, sort_keys=True
+            )
+            new_hash = _hl.sha256(f"{prev_hash or ''}{payload}".encode()).hexdigest()
             cur.execute(
                 "INSERT INTO frank_ledger (id, project, event_type, content, prev_hash, hash) "
                 "VALUES (%s, %s, %s, %s, %s, %s)",
-                (str(_u.uuid4()), "grove", event_type,
-                 psycopg2.extras.Json(content), prev_hash, new_hash),
+                (
+                    str(_u.uuid4()),
+                    "grove",
+                    event_type,
+                    psycopg2.extras.Json(content),
+                    prev_hash,
+                    new_hash,
+                ),
             )
             conn.commit()
         finally:
@@ -459,8 +511,12 @@ def _frank_ledger_append(event_type: str, content: dict) -> None:
         # Never wrap our own sentinel.
         raise
     except Exception as e:
-        log.error("frank_ledger append failed for event_type=%r: %s",
-                  event_type, e, exc_info=True)
+        log.error(
+            "frank_ledger append failed for event_type=%r: %s",
+            event_type,
+            e,
+            exc_info=True,
+        )
         raise LedgerWriteFailed(f"frank_ledger append failed: {e}") from e
 
 
@@ -474,17 +530,27 @@ def _is_human_sender(sender: str) -> bool:
     return bool(human) and (sender or "").strip().lower() == human
 
 
-def send_message(conn, *, channel_id: int, sender: str, content: str,
-                 message_type: str = "text", reply_to_id: int = None) -> Dict[str, Any]:
+def send_message(
+    conn,
+    *,
+    channel_id: int,
+    sender: str,
+    content: str,
+    message_type: str = "text",
+    reply_to_id: int = None,
+) -> Dict[str, Any]:
     if message_type not in VALID_MESSAGE_TYPES:
         raise ValueError(f"message_type must be one of {VALID_MESSAGE_TYPES}")
     cur = conn.cursor()
-    cur.execute("""
+    cur.execute(
+        """
         INSERT INTO messages (channel_id, sender, content, message_type, reply_to_id)
         VALUES (%s, %s, %s, %s, %s)
         RETURNING id, channel_id, sender, content, message_type, reply_to_id,
                   willow_indexed_at, created_at, is_deleted
-    """, (channel_id, sender, content, message_type, reply_to_id))
+    """,
+        (channel_id, sender, content, message_type, reply_to_id),
+    )
     row = cur.fetchone()
     cols = [d[0] for d in cur.description]
     conn.commit()
@@ -496,22 +562,30 @@ def send_message(conn, *, channel_id: int, sender: str, content: str,
     # rolls back a real message send, but it also never vanishes silently.
     if not _is_human_sender(sender):
         from grove.errors import LedgerWriteFailed
+
         try:
-            _frank_ledger_append("grove_agent_message", {
-                "msg_id": result.get("id"),
-                "channel_id": channel_id,
-                "sender": sender,
-                "content": (content or "")[:500],
-                "message_type": message_type,
-            })
+            _frank_ledger_append(
+                "grove_agent_message",
+                {
+                    "msg_id": result.get("id"),
+                    "channel_id": channel_id,
+                    "sender": sender,
+                    "content": (content or "")[:500],
+                    "message_type": message_type,
+                },
+            )
         except LedgerWriteFailed as e:
-            log.warning("frank_ledger append skipped for msg_id=%r (best-effort): %s",
-                        result.get("id"), e.reason)
+            log.warning(
+                "frank_ledger append skipped for msg_id=%r (best-effort): %s",
+                result.get("id"),
+                e.reason,
+            )
     return result
 
 
-def get_history(conn, channel_id: int, limit: int = 100,
-                before_id: int = None, since_id: int = None) -> List[Dict[str, Any]]:
+def get_history(
+    conn, channel_id: int, limit: int = 100, before_id: int = None, since_id: int = None
+) -> List[Dict[str, Any]]:
     """Return top-level messages (no replies).
 
     before_id: newest-first pagination (go backward).
@@ -519,23 +593,32 @@ def get_history(conn, channel_id: int, limit: int = 100,
     """
     cur = conn.cursor()
     if since_id is not None:
-        cur.execute("""
+        cur.execute(
+            """
             SELECT * FROM messages
             WHERE channel_id = %s AND reply_to_id IS NULL AND is_deleted = 0 AND id > %s
             ORDER BY id ASC LIMIT %s
-        """, (channel_id, since_id, limit))
+        """,
+            (channel_id, since_id, limit),
+        )
     elif before_id:
-        cur.execute("""
+        cur.execute(
+            """
             SELECT * FROM messages
             WHERE channel_id = %s AND reply_to_id IS NULL AND is_deleted = 0 AND id < %s
             ORDER BY created_at DESC LIMIT %s
-        """, (channel_id, before_id, limit))
+        """,
+            (channel_id, before_id, limit),
+        )
     else:
-        cur.execute("""
+        cur.execute(
+            """
             SELECT * FROM messages
             WHERE channel_id = %s AND reply_to_id IS NULL AND is_deleted = 0
             ORDER BY created_at DESC LIMIT %s
-        """, (channel_id, limit))
+        """,
+            (channel_id, limit),
+        )
     rows = cur.fetchall()
     cols = [d[0] for d in cur.description]
     return [dict(zip(cols, r)) for r in rows]
@@ -544,11 +627,14 @@ def get_history(conn, channel_id: int, limit: int = 100,
 def get_thread(conn, parent_id: int) -> List[Dict[str, Any]]:
     """Return all replies to a message, oldest first."""
     cur = conn.cursor()
-    cur.execute("""
+    cur.execute(
+        """
         SELECT * FROM messages
         WHERE reply_to_id = %s AND is_deleted = 0
         ORDER BY created_at ASC
-    """, (parent_id,))
+    """,
+        (parent_id,),
+    )
     rows = cur.fetchall()
     cols = [d[0] for d in cur.description]
     return [dict(zip(cols, r)) for r in rows]
@@ -564,17 +650,23 @@ def delete_message(conn, message_id: int) -> bool:
 def search_messages(conn, query: str, channel_id: int = None) -> List[Dict[str, Any]]:
     cur = conn.cursor()
     if channel_id is not None:
-        cur.execute("""
+        cur.execute(
+            """
             SELECT * FROM messages
             WHERE content ILIKE %s AND channel_id = %s AND is_deleted = 0
             ORDER BY created_at DESC LIMIT 100
-        """, (f"%{query}%", channel_id))
+        """,
+            (f"%{query}%", channel_id),
+        )
     else:
-        cur.execute("""
+        cur.execute(
+            """
             SELECT * FROM messages
             WHERE content ILIKE %s AND is_deleted = 0
             ORDER BY created_at DESC LIMIT 100
-        """, (f"%{query}%",))
+        """,
+            (f"%{query}%",),
+        )
     rows = cur.fetchall()
     cols = [d[0] for d in cur.description]
     return [dict(zip(cols, r)) for r in rows]
@@ -584,53 +676,71 @@ def search_messages(conn, query: str, channel_id: int = None) -> List[Dict[str, 
 # Flags
 # ---------------------------------------------------------------------------
 
+
 def set_flag(conn, *, message_id: int, sender: str, flag: str) -> bool:
     if flag not in VALID_FLAGS:
         raise ValueError(f"flag must be one of {VALID_FLAGS}")
     cur = conn.cursor()
-    cur.execute("""
+    cur.execute(
+        """
         INSERT INTO message_flags (message_id, sender, flag)
         VALUES (%s, %s, %s) ON CONFLICT (message_id, sender, flag) DO NOTHING
-    """, (message_id, sender, flag))
+    """,
+        (message_id, sender, flag),
+    )
     conn.commit()
     return cur.rowcount > 0
 
 
 def clear_flag(conn, *, message_id: int, sender: str, flag: str) -> bool:
     cur = conn.cursor()
-    cur.execute("""
+    cur.execute(
+        """
         DELETE FROM message_flags WHERE message_id = %s AND sender = %s AND flag = %s
-    """, (message_id, sender, flag))
+    """,
+        (message_id, sender, flag),
+    )
     conn.commit()
     return cur.rowcount > 0
 
 
 def get_flags(conn, message_id: int) -> list[dict]:
     cur = conn.cursor()
-    cur.execute("""
+    cur.execute(
+        """
         SELECT sender, flag, created_at FROM message_flags WHERE message_id = %s ORDER BY created_at
-    """, (message_id,))
+    """,
+        (message_id,),
+    )
     rows = cur.fetchall()
-    return [{"sender": r[0], "flag": r[1], "created_at": r[2].isoformat() if r[2] else None}
-            for r in rows]
+    return [
+        {"sender": r[0], "flag": r[1], "created_at": r[2].isoformat() if r[2] else None}
+        for r in rows
+    ]
 
 
 def get_flagged(conn, flag: str, channel_id: int = None, limit: int = 50) -> list[dict]:
     cur = conn.cursor()
     if channel_id is not None:
-        cur.execute("""
+        cur.execute(
+            """
             SELECT m.* FROM messages m
             JOIN message_flags f ON f.message_id = m.id
             WHERE f.flag = %s AND m.channel_id = %s AND m.is_deleted = 0
             ORDER BY m.created_at DESC LIMIT %s
-        """, (flag, channel_id, limit))
+        """,
+            (flag, channel_id, limit),
+        )
     else:
-        cur.execute("""
+        cur.execute(
+            """
             SELECT m.* FROM messages m
             JOIN message_flags f ON f.message_id = m.id
             WHERE f.flag = %s AND m.is_deleted = 0
             ORDER BY m.created_at DESC LIMIT %s
-        """, (flag, limit))
+        """,
+            (flag, limit),
+        )
     rows = cur.fetchall()
     cols = [d[0] for d in cur.description]
     return [dict(zip(cols, r)) for r in rows]
@@ -640,29 +750,53 @@ def get_flagged(conn, flag: str, channel_id: int = None, limit: int = 50) -> lis
 # Bus
 # ---------------------------------------------------------------------------
 
-def bus_send(conn, *, channel_id: int, sender: str, content: str,
-             to_agent: str = BUS_BROADCAST, bus_type: str = "EVENT",
-             priority: int = 3, correlation_id: str = None,
-             ttl: int = None) -> Dict[str, Any]:
+
+def bus_send(
+    conn,
+    *,
+    channel_id: int,
+    sender: str,
+    content: str,
+    to_agent: str = BUS_BROADCAST,
+    bus_type: str = "EVENT",
+    priority: int = 3,
+    correlation_id: str = None,
+    ttl: int = None,
+) -> Dict[str, Any]:
     if bus_type not in BUS_TYPES:
         raise ValueError(f"bus_type must be one of {BUS_TYPES}")
     cur = conn.cursor()
-    cur.execute("""
+    cur.execute(
+        """
         INSERT INTO messages
             (channel_id, sender, content, message_type, to_agent, bus_type, priority, correlation_id, ttl)
         VALUES (%s, %s, %s, 'text', %s, %s, %s, %s, %s)
         RETURNING id, channel_id, sender, content, to_agent, bus_type, priority,
                   correlation_id, ttl, created_at
-    """, (channel_id, sender, content, to_agent, bus_type, priority, correlation_id, ttl))
+    """,
+        (
+            channel_id,
+            sender,
+            content,
+            to_agent,
+            bus_type,
+            priority,
+            correlation_id,
+            ttl,
+        ),
+    )
     row = cur.fetchone()
     cols = [d[0] for d in cur.description]
     conn.commit()
     return dict(zip(cols, row))
 
 
-def bus_receive(conn, agent: str, since_id: int = 0, limit: int = 50) -> List[Dict[str, Any]]:
+def bus_receive(
+    conn, agent: str, since_id: int = 0, limit: int = 50
+) -> List[Dict[str, Any]]:
     cur = conn.cursor()
-    cur.execute("""
+    cur.execute(
+        """
         SELECT * FROM messages
         WHERE (
             LOWER(TRIM(COALESCE(to_agent, ''))) = LOWER(TRIM(%s))
@@ -673,7 +807,9 @@ def bus_receive(conn, agent: str, since_id: int = 0, limit: int = 50) -> List[Di
           AND (ttl IS NULL OR created_at + (ttl || ' seconds')::interval > NOW())
         ORDER BY priority ASC, id ASC
         LIMIT %s
-    """, (agent, BUS_BROADCAST, since_id, limit))
+    """,
+        (agent, BUS_BROADCAST, since_id, limit),
+    )
     rows = cur.fetchall()
     cols = [d[0] for d in cur.description]
     return [dict(zip(cols, r)) for r in rows]
@@ -682,7 +818,9 @@ def bus_receive(conn, agent: str, since_id: int = 0, limit: int = 50) -> List[Di
 def bus_delete(conn, message_id: int, sender: str) -> Dict[str, Any]:
     """Soft-delete a bus message. Sender must own the message; '__system__' bypasses."""
     cur = conn.cursor()
-    cur.execute("SELECT id, sender, is_deleted FROM messages WHERE id = %s", (message_id,))
+    cur.execute(
+        "SELECT id, sender, is_deleted FROM messages WHERE id = %s", (message_id,)
+    )
     row = cur.fetchone()
     if not row:
         raise ValueError(f"message {message_id} not found")
@@ -690,7 +828,9 @@ def bus_delete(conn, message_id: int, sender: str) -> Dict[str, Any]:
     if is_deleted:
         return {"id": msg_id, "deleted": False, "reason": "already deleted"}
     if sender != "__system__" and msg_sender != sender:
-        raise PermissionError(f"'{sender}' cannot delete message owned by '{msg_sender}'")
+        raise PermissionError(
+            f"'{sender}' cannot delete message owned by '{msg_sender}'"
+        )
     cur.execute(
         "UPDATE messages SET is_deleted = 1, deleted_by = %s WHERE id = %s",
         (sender, message_id),
@@ -703,8 +843,10 @@ def bus_delete(conn, message_id: int, sender: str) -> Dict[str, Any]:
 # Cursors
 # ---------------------------------------------------------------------------
 
+
 def cursor_save(conn, agent: str, cursors: dict) -> None:
     import json
+
     cur = conn.cursor()
     cur.execute("""
         CREATE TABLE IF NOT EXISTS agent_cursors (
@@ -713,12 +855,15 @@ def cursor_save(conn, agent: str, cursors: dict) -> None:
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
-    cur.execute("""
+    cur.execute(
+        """
         INSERT INTO agent_cursors (agent, cursors, updated_at)
         VALUES (%s, %s, CURRENT_TIMESTAMP)
         ON CONFLICT (agent) DO UPDATE
         SET cursors = EXCLUDED.cursors, updated_at = CURRENT_TIMESTAMP
-    """, (agent, json.dumps(cursors)))
+    """,
+        (agent, json.dumps(cursors)),
+    )
     conn.commit()
 
 
@@ -736,6 +881,7 @@ def cursor_load(conn, agent: str) -> dict:
     """
     import json
     from grove.errors import Unreachable
+
     try:
         cur = conn.cursor()
         cur.execute("""
@@ -765,13 +911,17 @@ def cursor_load(conn, agent: str) -> dict:
 # Indexing
 # ---------------------------------------------------------------------------
 
+
 def get_unindexed(conn, limit: int = 100) -> List[Dict[str, Any]]:
     cur = conn.cursor()
-    cur.execute("""
+    cur.execute(
+        """
         SELECT * FROM messages
         WHERE willow_indexed_at IS NULL AND is_deleted = 0
         ORDER BY created_at ASC LIMIT %s
-    """, (limit,))
+    """,
+        (limit,),
+    )
     rows = cur.fetchall()
     cols = [d[0] for d in cur.description]
     return [dict(zip(cols, r)) for r in rows]
@@ -783,7 +933,7 @@ def mark_indexed(conn, message_ids: List[int]) -> int:
     cur = conn.cursor()
     cur.execute(
         "UPDATE messages SET willow_indexed_at = CURRENT_TIMESTAMP WHERE id = ANY(%s)",
-        (message_ids,)
+        (message_ids,),
     )
     conn.commit()
     return cur.rowcount
@@ -792,6 +942,7 @@ def mark_indexed(conn, message_ids: List[int]) -> int:
 # ---------------------------------------------------------------------------
 # Grove-specific helpers
 # ---------------------------------------------------------------------------
+
 
 def ensure_card_builder_channel() -> None:
     """Idempotent: create #card-builder channel if absent."""

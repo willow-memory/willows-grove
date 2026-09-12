@@ -17,6 +17,7 @@ and this test is red. After the §1 fix (each of the 16 sites raises
 
 Stdlib unittest only — no live Postgres required.
 """
+
 from __future__ import annotations
 
 import os

@@ -18,6 +18,7 @@ The WRITE and READ halves are both real MCP tools: ``kb_journal`` and
 A green read-back here is evidence the C11 seam speaks MCP end to end;
 the mock pins that protocol for CI runs that deliberately omit upstream.
 """
+
 from __future__ import annotations
 
 import contextlib

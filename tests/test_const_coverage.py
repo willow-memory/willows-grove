@@ -4,10 +4,10 @@ Appendix B: *a gate's own report about itself is not evidence about that gate*,
 so const_coverage.py's coverage is established here rather than by its own
 green.
 """
+
 import importlib.util
 from pathlib import Path
 
-import pytest
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -19,7 +19,9 @@ def _load_const_coverage():
     way to get at it.
     """
     path = _REPO_ROOT / "governance" / "scripts" / "const_coverage.py"
-    spec = importlib.util.spec_from_file_location("governance._const_coverage_probe", path)
+    spec = importlib.util.spec_from_file_location(
+        "governance._const_coverage_probe", path
+    )
     assert spec is not None and spec.loader is not None, path
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)

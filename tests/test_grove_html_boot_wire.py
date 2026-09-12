@@ -11,6 +11,7 @@ Asserts that ``grove_html.render_page()``:
 Also asserts the boot .js file exists on disk so ``/web/boot/…`` resolves
 under ``grove_serve.py``'s recursive ``/web`` StaticFiles mount.
 """
+
 from __future__ import annotations
 
 import os
@@ -26,6 +27,7 @@ if ROOT not in sys.path:
 class BootWireTests(unittest.TestCase):
     def setUp(self) -> None:
         import grove_html
+
         self.html = grove_html.render_page()
 
     def test_boot_script_tag_present_in_head(self) -> None:
@@ -70,9 +72,7 @@ class BootWireTests(unittest.TestCase):
         `layout-memory-boot.js` walks the DOM by tag name, so every
         `customElements.define(…)` it depends on must already have run.
         """
-        boot_idx = self.html.find(
-            "/web/boot/layout-memory-boot.js"
-        )
+        boot_idx = self.html.find("/web/boot/layout-memory-boot.js")
         self.assertNotEqual(boot_idx, -1)
         card_idx = self.html.find("/web/components/grove-card.js")
         self.assertNotEqual(

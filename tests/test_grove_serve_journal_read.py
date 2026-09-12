@@ -7,6 +7,7 @@ thread, hits the new route with stdlib urllib, patches the reader at the
 module level so the wiring is exercised end-to-end without depending on
 a live willow-mcp.
 """
+
 from __future__ import annotations
 
 import contextlib
@@ -85,7 +86,9 @@ class _ServerHarness:
 
 
 def _get_json(url: str) -> tuple[int, object]:
-    req = urllib.request.Request(url, method="GET", headers={"accept": "application/json"})
+    req = urllib.request.Request(
+        url, method="GET", headers={"accept": "application/json"}
+    )
     try:
         with urllib.request.urlopen(req, timeout=3.0) as resp:
             raw = resp.read().decode("utf-8")
@@ -104,15 +107,28 @@ class JournalRecentRouteTests(unittest.TestCase):
         import grove_serve
 
         atoms = [
-            {"id": "A", "ts": "t1", "sender": "watcher", "text": "one", "domain": "journal"},
-            {"id": "B", "ts": "t0", "sender": "watcher", "text": "two", "domain": "journal"},
+            {
+                "id": "A",
+                "ts": "t1",
+                "sender": "watcher",
+                "text": "one",
+                "domain": "journal",
+            },
+            {
+                "id": "B",
+                "ts": "t0",
+                "sender": "watcher",
+                "text": "two",
+                "domain": "journal",
+            },
         ]
 
         def _fake_read(limit=50, since_id=None):  # noqa: ARG001
             return atoms
 
-        with _ServerHarness() as srv, patch.object(
-            grove_serve.journal_reader, "read_recent", _fake_read
+        with (
+            _ServerHarness() as srv,
+            patch.object(grove_serve.journal_reader, "read_recent", _fake_read),
         ):
             status, body = _get_json(srv.url("/api/journal/recent"))
         self.assertEqual(status, 200)
@@ -123,8 +139,9 @@ class JournalRecentRouteTests(unittest.TestCase):
         """Reader reached, no atoms → 200 + state=empty."""
         import grove_serve
 
-        with _ServerHarness() as srv, patch.object(
-            grove_serve.journal_reader, "read_recent", lambda **_kw: []
+        with (
+            _ServerHarness() as srv,
+            patch.object(grove_serve.journal_reader, "read_recent", lambda **_kw: []),
         ):
             status, body = _get_json(srv.url("/api/journal/recent"))
         self.assertEqual(status, 200)
@@ -139,8 +156,9 @@ class JournalRecentRouteTests(unittest.TestCase):
         def _boom(**_kw):
             raise Unreachable("willow-mcp not reachable")
 
-        with _ServerHarness() as srv, patch.object(
-            grove_serve.journal_reader, "read_recent", _boom
+        with (
+            _ServerHarness() as srv,
+            patch.object(grove_serve.journal_reader, "read_recent", _boom),
         ):
             status, body = _get_json(srv.url("/api/journal/recent"))
         self.assertEqual(status, 503)
@@ -157,8 +175,9 @@ class JournalRecentRouteTests(unittest.TestCase):
             captured["since_id"] = since_id
             return []
 
-        with _ServerHarness() as srv, patch.object(
-            grove_serve.journal_reader, "read_recent", _capture
+        with (
+            _ServerHarness() as srv,
+            patch.object(grove_serve.journal_reader, "read_recent", _capture),
         ):
             _get_json(srv.url("/api/journal/recent?limit=1000"))
         self.assertEqual(captured["limit"], 200)
@@ -172,8 +191,9 @@ class JournalRecentRouteTests(unittest.TestCase):
             captured["limit"] = limit
             return []
 
-        with _ServerHarness() as srv, patch.object(
-            grove_serve.journal_reader, "read_recent", _capture
+        with (
+            _ServerHarness() as srv,
+            patch.object(grove_serve.journal_reader, "read_recent", _capture),
         ):
             _get_json(srv.url("/api/journal/recent"))
         self.assertEqual(captured["limit"], 50)
@@ -187,8 +207,9 @@ class JournalRecentRouteTests(unittest.TestCase):
             captured["limit"] = limit
             return []
 
-        with _ServerHarness() as srv, patch.object(
-            grove_serve.journal_reader, "read_recent", _capture
+        with (
+            _ServerHarness() as srv,
+            patch.object(grove_serve.journal_reader, "read_recent", _capture),
         ):
             _get_json(srv.url("/api/journal/recent?limit=notanumber"))
         self.assertEqual(captured["limit"], 50)
@@ -203,8 +224,9 @@ class JournalRecentRouteTests(unittest.TestCase):
             captured["since_id"] = since_id
             return []
 
-        with _ServerHarness() as srv, patch.object(
-            grove_serve.journal_reader, "read_recent", _capture
+        with (
+            _ServerHarness() as srv,
+            patch.object(grove_serve.journal_reader, "read_recent", _capture),
         ):
             _get_json(srv.url("/api/journal/recent?since=ABCD1234&limit=10"))
         self.assertEqual(captured["limit"], 10)

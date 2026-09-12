@@ -30,6 +30,7 @@ Style: one small synchronous class, no threading or async. Writes are
 governance acts (Article VIII) and belong to the charter — this module
 never writes to the registry.
 """
+
 from __future__ import annotations
 
 import json
@@ -244,7 +245,9 @@ class PersonaRoster:
     ) -> None:
         if rows is not None:
             self._path = Path(path) if path is not None else None
-            self._rows = [r if isinstance(r, PersonaRow) else PersonaRow(r) for r in rows]
+            self._rows = [
+                r if isinstance(r, PersonaRow) else PersonaRow(r) for r in rows
+            ]
             return
         if path is None:
             resolved = locate_personas_file()
@@ -289,9 +292,7 @@ class PersonaRoster:
         try:
             return cls(path=path)
         except ValueError as err:
-            reason = (
-                f"fleet_personas.json at {path} could not be loaded: {err}"
-            )
+            reason = f"fleet_personas.json at {path} could not be loaded: {err}"
             if not _logged_drift:
                 log.info("persona_roster: %s — treating as unreachable", reason)
                 _logged_drift = True

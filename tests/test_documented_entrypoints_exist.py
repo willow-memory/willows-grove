@@ -15,6 +15,7 @@ follows the house pattern of `tests/test_state_vocabulary_audit.py`:
 a self-check guards against the regex silently finding nothing, which
 would turn this file into a green no-op instead of a real audit.
 """
+
 from __future__ import annotations
 
 import os
@@ -52,8 +53,11 @@ class DocumentedEntrypointsExistTests(unittest.TestCase):
         """Guard against the regex silently matching nothing — the failure
         mode that turns this whole file into a green no-op."""
         refs = _referenced_paths()
-        self.assertTrue(refs, "found no scripts/* or deploy/* references in "
-                         f"{DOC_PATH} — the pattern has stopped matching")
+        self.assertTrue(
+            refs,
+            "found no scripts/* or deploy/* references in "
+            f"{DOC_PATH} — the pattern has stopped matching",
+        )
         self.assertIn("scripts/grove-serve-run", refs)
         self.assertIn("deploy/grove-serve.service.template", refs)
         self.assertIn("scripts/grove-watcher-run", refs)
@@ -82,7 +86,8 @@ class DocumentedEntrypointsExistTests(unittest.TestCase):
 
     def test_every_documented_path_exists(self) -> None:
         missing = sorted(
-            rel for rel in _referenced_paths()
+            rel
+            for rel in _referenced_paths()
             if not os.path.exists(os.path.join(ROOT, rel))
         )
         self.assertEqual(

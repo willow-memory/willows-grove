@@ -1,11 +1,11 @@
 # b17: WGRV1 ΔΣ=42
 """Tests for grove.nestor_client — mocked stdio + real-binary probe."""
+
 from __future__ import annotations
 
 import io
 import json
 import shutil
-from unittest.mock import patch
 
 import pytest
 
@@ -46,20 +46,31 @@ class _FakeProc:
 
 def _install_fake(monkeypatch, responses):
     # Force the availability probe true, and hand back a fake Popen.
-    monkeypatch.setattr(nestor_client.shutil, "which", lambda _exe: "/usr/local/bin/nestor")
+    monkeypatch.setattr(
+        nestor_client.shutil, "which", lambda _exe: "/usr/local/bin/nestor"
+    )
 
     fake = _FakeProc(responses)
 
     class _StubStdin:
-        def __init__(self, parent): self.parent = parent; self.closed = False
+        def __init__(self, parent):
+            self.parent = parent
+            self.closed = False
+
         def write(self, s):
             # trigger next canned response
             self.parent._pending = self.parent._serve()
-        def flush(self): pass
-        def close(self): self.closed = True
+
+        def flush(self):
+            pass
+
+        def close(self):
+            self.closed = True
 
     class _StubStdout:
-        def __init__(self, parent): self.parent = parent
+        def __init__(self, parent):
+            self.parent = parent
+
         def readline(self):
             pending = getattr(self.parent, "_pending", "")
             self.parent._pending = ""
@@ -86,23 +97,38 @@ def test_decision_check_returns_response(monkeypatch):
     }
     # Fake stdio child so __enter__/_ensure_session do not mark the client
     # unavailable when CI has no nestor binary (decision_check probes PATH first).
-    _install_fake(monkeypatch, [
-        {"jsonrpc": "2.0", "id": 1, "result": {"protocolVersion": "2025-06-18", "capabilities": {}}},
-    ])
+    _install_fake(
+        monkeypatch,
+        [
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "result": {"protocolVersion": "2025-06-18", "capabilities": {}},
+            },
+        ],
+    )
     monkeypatch.setattr(NestorClient, "_tool", lambda self, name, args: sealed_payload)
     with NestorClient() as nc:
         out = nc.decision_check("may we merge?")
     assert out == {
         "verdict": "sealed",
-        "pair": {"pair_id": "p42", "source": "may we merge?", "target": "yes", "verifier": "rita"},
+        "pair": {
+            "pair_id": "p42",
+            "source": "may we merge?",
+            "target": "yes",
+            "verifier": "rita",
+        },
     }
 
 
 def test_evidence_and_warrant(monkeypatch):
-    _install_fake(monkeypatch, [
-        {"jsonrpc": "2.0", "id": 1, "result": {"evidence": ["ev1"]}},
-        {"jsonrpc": "2.0", "id": 2, "result": {"warrant": "citation"}},
-    ])
+    _install_fake(
+        monkeypatch,
+        [
+            {"jsonrpc": "2.0", "id": 1, "result": {"evidence": ["ev1"]}},
+            {"jsonrpc": "2.0", "id": 2, "result": {"warrant": "citation"}},
+        ],
+    )
     with NestorClient() as nc:
         e = nc.evidence_for("p42")
         w = nc.warrant_for("p42")
@@ -112,7 +138,9 @@ def test_evidence_and_warrant(monkeypatch):
 
 def test_refusal_is_returned_verbatim(monkeypatch):
     verbatim = "I will not do that. There is no sealed pair for this act."
-    _install_fake(monkeypatch, [{"jsonrpc": "2.0", "id": 1, "result": {"text": verbatim}}])
+    _install_fake(
+        monkeypatch, [{"jsonrpc": "2.0", "id": 1, "result": {"text": verbatim}}]
+    )
     with NestorClient() as nc:
         out = nc.refusal("merge", branch="main")
     assert out == verbatim, "V5: refusal must be VERBATIM, not paraphrased"
@@ -158,6 +186,7 @@ def test_transport_error_returns_none(monkeypatch):
         # override stdin to raise
         def _boom(_s):
             raise BrokenPipeError("closed")
+
         nc._proc.stdin.write = _boom
         assert nc.decision_check("q") is None
 
@@ -215,7 +244,9 @@ def test_default_store_path_prefers_willow_over_household(monkeypatch, tmp_path)
     assert nestor_client._default_store_path() == willow
 
 
-@pytest.mark.skipif(shutil.which("nestor") is None, reason="real nestor binary not installed")
+@pytest.mark.skipif(
+    shutil.which("nestor") is None, reason="real nestor binary not installed"
+)
 def test_real_nestor_available_probe():
     nc = NestorClient()
     assert nc.available() is True

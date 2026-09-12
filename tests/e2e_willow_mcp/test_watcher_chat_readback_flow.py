@@ -21,6 +21,7 @@ enqueues has ``id``, ``sender``, ``content``, ``channel_id``), so
 skipping the transport does not skip the classification / Nestor /
 journal-write pipeline being tested.
 """
+
 from __future__ import annotations
 
 from grove import journal_reader
@@ -45,7 +46,9 @@ def test_watcher_writes_and_chat_reads_back_the_same_atom(mock_mcp):
     (Q2 lock — a tag on the atom), and the original message bytes
     the watcher observed.
     """
-    watcher = ResidentWatcher(db_url=None, model_name="testmodel:1b", heartbeat_seconds=3600)
+    watcher = ResidentWatcher(
+        db_url=None, model_name="testmodel:1b", heartbeat_seconds=3600
+    )
     watcher._nestor = _NestorPermits()
 
     row = {"id": 1, "sender": "operator", "content": "please schedule my dentist"}
@@ -85,7 +88,9 @@ def test_unknown_domain_still_round_trips(mock_mcp):
 
     D7 posture: a classifier hiccup is not a reason to drop the message.
     """
-    watcher = ResidentWatcher(db_url=None, model_name="testmodel:1b", heartbeat_seconds=3600)
+    watcher = ResidentWatcher(
+        db_url=None, model_name="testmodel:1b", heartbeat_seconds=3600
+    )
     watcher._nestor = _NestorPermits()
 
     row = {"id": 42, "sender": "operator", "content": "this is a chat-y message"}

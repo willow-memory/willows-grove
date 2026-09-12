@@ -24,6 +24,7 @@ The browser-side behavior (what the slot actually says after /health
 answers, or does not) is pinned in
 `tests/e2e/standing-strip.spec.js`.
 """
+
 from __future__ import annotations
 
 import os

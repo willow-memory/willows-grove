@@ -25,6 +25,7 @@ It is *not* a full CommonMark implementation; it is enough to render
 the charter's chapter files legibly. Escaping is unconditional so a
 future non-local seed source cannot inject HTML through the route.
 """
+
 from __future__ import annotations
 
 import html
@@ -224,11 +225,7 @@ _CSS = """
 """
 
 
-_FOOTER = (
-    '<footer class="strip">'
-    'grove.seed · six movements · b17: WGRV1 ΔΣ=42'
-    '</footer>'
-)
+_FOOTER = '<footer class="strip">grove.seed · six movements · b17: WGRV1 ΔΣ=42</footer>'
 
 
 def _esc(text: str) -> str:
@@ -374,36 +371,46 @@ def _render_markdown(md: str) -> str:
         # Blockquote (may continue over multiple lines)
         if stripped.startswith(">"):
             # Flush non-quote buffers so the quote starts clean.
-            _flush_para(para_buf); para_buf.clear()
-            _flush_list(ul_items, False); ul_items.clear()
-            _flush_list(ol_items, True); ol_items.clear()
+            _flush_para(para_buf)
+            para_buf.clear()
+            _flush_list(ul_items, False)
+            ul_items.clear()
+            _flush_list(ol_items, True)
+            ol_items.clear()
             quote_buf.append(stripped.lstrip(">").strip())
             i += 1
             continue
         elif quote_buf:
-            _flush_quote(quote_buf); quote_buf.clear()
+            _flush_quote(quote_buf)
+            quote_buf.clear()
 
         # Unordered list item (-, *, +)
         m = re.match(r"^[-*+]\s+(.+)$", stripped)
         if m:
-            _flush_para(para_buf); para_buf.clear()
-            _flush_list(ol_items, True); ol_items.clear()
+            _flush_para(para_buf)
+            para_buf.clear()
+            _flush_list(ol_items, True)
+            ol_items.clear()
             ul_items.append(m.group(1))
             i += 1
             continue
         elif ul_items:
-            _flush_list(ul_items, False); ul_items.clear()
+            _flush_list(ul_items, False)
+            ul_items.clear()
 
         # Ordered list item
         m = re.match(r"^\d+[.)]\s+(.+)$", stripped)
         if m:
-            _flush_para(para_buf); para_buf.clear()
-            _flush_list(ul_items, False); ul_items.clear()
+            _flush_para(para_buf)
+            para_buf.clear()
+            _flush_list(ul_items, False)
+            ul_items.clear()
             ol_items.append(m.group(1))
             i += 1
             continue
         elif ol_items:
-            _flush_list(ol_items, True); ol_items.clear()
+            _flush_list(ol_items, True)
+            ol_items.clear()
 
         # Paragraph text
         para_buf.append(stripped)
@@ -424,11 +431,11 @@ def _top_strip(here: str, back_link: tuple[str, str] | None = None) -> str:
         '<header class="strip">'
         '<span class="dot"></span>'
         '<span class="name">ƒ willow</span>'
-        '<span>·</span>'
-        f'<span>{_esc(here)}</span>'
+        "<span>·</span>"
+        f"<span>{_esc(here)}</span>"
         '<span class="grow"></span>'
-        f'{back_html}'
-        '</header>'
+        f"{back_html}"
+        "</header>"
     )
 
 
@@ -436,7 +443,7 @@ def _page(title: str, body_inner: str) -> str:
     """Wrap a page body in the shared shell (doctype, head, footer)."""
     return (
         "<!doctype html>\n"
-        "<html lang=\"en\">\n"
+        '<html lang="en">\n'
         "<head>\n"
         '<meta charset="utf-8">\n'
         '<meta name="viewport" content="width=device-width,initial-scale=1">\n'
@@ -473,23 +480,22 @@ def render_seed_index(movements: Iterable[dict[str, Any]]) -> str:
                     blurb = s
                     break
         cards.append(
-            '  <li>'
+            "  <li>"
             f'<a class="card" href="/seed/{n}">'
             f'<span class="n">movement {n:02d}</span>'
             f'<span class="h">{_esc(title)}</span>'
             f'<span class="b">{_esc(blurb)}</span>'
-            '</a></li>'
+            "</a></li>"
         )
     main = (
         "<main>\n"
         '<h1 class="title">The six movements</h1>\n'
         '<p class="subtitle">'
-        'The onboarding walks the canon. One chapter per movement — '
-        'the story is the install.'
-        '</p>\n'
-        '<ul class="chapters">\n'
-        + "\n".join(cards) + "\n"
-        '</ul>\n'
+        "The onboarding walks the canon. One chapter per movement — "
+        "the story is the install."
+        "</p>\n"
+        '<ul class="chapters">\n' + "\n".join(cards) + "\n"
+        "</ul>\n"
         "</main>"
     )
     return _page("seed · the six movements", strip + "\n" + main)
@@ -517,27 +523,29 @@ def render_seed_movement(
 
     prev_link = (
         f'<a href="{_esc(prev_url)}">← previous movement</a>'
-        if prev_url else '<span class="spacer">·</span>'
+        if prev_url
+        else '<span class="spacer">·</span>'
     )
     next_link = (
         f'<a href="{_esc(next_url)}">next movement →</a>'
-        if next_url else '<span class="spacer">·</span>'
+        if next_url
+        else '<span class="spacer">·</span>'
     )
     nav = (
         '<nav class="movement-nav">'
-        f'{prev_link}'
+        f"{prev_link}"
         '<span class="spacer">'
         f'<a href="/seed/">seed index</a>'
-        '</span>'
-        f'{next_link}'
-        '</nav>'
+        "</span>"
+        f"{next_link}"
+        "</nav>"
     )
 
     main = (
         "<main>\n"
         '<article class="movement">\n'
-        f'<h1>{_esc(title)}</h1>\n'
-        f'{body_html}\n'
+        f"<h1>{_esc(title)}</h1>\n"
+        f"{body_html}\n"
         "</article>\n"
         f"{nav}\n"
         "</main>"

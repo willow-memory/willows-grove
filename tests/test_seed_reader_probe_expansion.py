@@ -22,6 +22,7 @@ absence case would no longer be reachable in tests.
 Stdlib only. Restores WILLOW_HOME / HOME / USERPROFILE in every case,
 and restores ``_IN_REPO_SEED_PATH`` via ``addCleanup``.
 """
+
 from __future__ import annotations
 
 import os
@@ -138,14 +139,16 @@ class SeedReaderProbeExpansionTests(unittest.TestCase):
             self._fallback_patch.start()
         self.assertEqual([m["n"] for m in movements], [1, 2, 3, 4, 5, 6])
         # Every body is the raw text of the corresponding canon file.
-        for idx, name in enumerate((
-            "00-the-covenant.md",
-            "01-be-the-other.md",
-            "02-the-discipline.md",
-            "03-the-person.md",
-            "04-the-language.md",
-            "05-the-world.md",
-        )):
+        for idx, name in enumerate(
+            (
+                "00-the-covenant.md",
+                "01-be-the-other.md",
+                "02-the-discipline.md",
+                "03-the-person.md",
+                "04-the-language.md",
+                "05-the-world.md",
+            )
+        ):
             expected = (REAL_CANON / name).read_text(encoding="utf-8")
             self.assertEqual(
                 movements[idx]["body"],
@@ -175,7 +178,7 @@ class SeedReaderProbeExpansionTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
             willow_home = root / "willow-home"  # never created
-            home = root / "home"                 # empty
+            home = root / "home"  # empty
             home.mkdir()
             with _EnvSandbox(willow_home=willow_home, home=home):
                 # No seed anywhere: locate_seed_dir returns None silently.

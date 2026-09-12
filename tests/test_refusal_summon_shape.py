@@ -26,6 +26,7 @@ Prior versions of this file slurped the JS as text and asserted static
 regexes against it — the JS was never executed and toothless. This
 rewrite is the Loki-audit regression (Grove v0.9 PR 12, finding M16).
 """
+
 from __future__ import annotations
 
 import json
@@ -164,9 +165,7 @@ def _run_harness(scenario: str) -> dict:
     try:
         return json.loads(lines[-1])
     except json.JSONDecodeError as exc:
-        raise AssertionError(
-            f"node harness stdout was not JSON: {lines[-1]!r} ({exc})"
-        )
+        raise AssertionError(f"node harness stdout was not JSON: {lines[-1]!r} ({exc})")
 
 
 class RefusalSummonBehaviorTests(unittest.TestCase):

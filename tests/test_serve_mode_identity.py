@@ -75,6 +75,12 @@ def test_public_tunnel_warning_silent_when_acknowledged(monkeypatch, capsys):
 
 def test_public_tunnel_warning_silent_on_loopback(monkeypatch, capsys):
     monkeypatch.delenv("WILLOW_MCP_TUNNEL_ACKNOWLEDGED", raising=False)
-    assert mcp_local._warn_public_tunnel_if_unacknowledged("http://127.0.0.1:8765") is False
-    assert mcp_local._warn_public_tunnel_if_unacknowledged("http://localhost:8765") is False
+    assert (
+        mcp_local._warn_public_tunnel_if_unacknowledged("http://127.0.0.1:8765")
+        is False
+    )
+    assert (
+        mcp_local._warn_public_tunnel_if_unacknowledged("http://localhost:8765")
+        is False
+    )
     assert capsys.readouterr().err == ""

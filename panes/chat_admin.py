@@ -1,13 +1,22 @@
 """panes/chat_admin.py — channel create/archive helpers (pure + thin DB).
 b17: WGRV1  ΔΣ=42
 """
+
 from __future__ import annotations
 
 import re
 
-PROTECTED_CHANNELS = frozenset({
-    "general", "dispatch", "architecture", "handoffs", "fleet", "alerts", "upstream",
-})
+PROTECTED_CHANNELS = frozenset(
+    {
+        "general",
+        "dispatch",
+        "architecture",
+        "handoffs",
+        "fleet",
+        "alerts",
+        "upstream",
+    }
+)
 
 _NAME_RE = re.compile(r"^[a-z0-9][a-z0-9_-]{0,47}$")
 

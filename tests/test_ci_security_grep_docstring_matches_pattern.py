@@ -20,11 +20,7 @@ what PATTERN matches.
 import re
 from pathlib import Path
 
-SCRIPT_PATH = (
-    Path(__file__).resolve().parent.parent
-    / "scripts"
-    / "ci-security-grep.sh"
-)
+SCRIPT_PATH = Path(__file__).resolve().parent.parent / "scripts" / "ci-security-grep.sh"
 
 
 def _read_script() -> str:
@@ -41,13 +37,11 @@ def _docstring_claimed_patterns(text: str) -> list[str]:
     """
     lines = text.splitlines()
     try:
-        start = next(i for i, l in enumerate(lines) if l.strip() == "# Patterns")
+        start = next(i for i, line in enumerate(lines) if line.strip() == "# Patterns")
     except StopIteration:
         raise AssertionError("script has no '# Patterns' docstring header")
     try:
-        end = next(
-            i for i, l in enumerate(lines) if l.strip() == "# Allowlist"
-        )
+        end = next(i for i, line in enumerate(lines) if line.strip() == "# Allowlist")
     except StopIteration:
         raise AssertionError("script has no '# Allowlist' docstring header")
 

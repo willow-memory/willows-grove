@@ -25,6 +25,7 @@ Must fail on the unfixed workflow — ``pull_request`` carries no
 Line-level parse, no PyYAML dependency, matching the house style of the
 other ``tests/test_ci_*`` workflow pins.
 """
+
 from __future__ import annotations
 
 import re

@@ -17,6 +17,7 @@ end. This module is deliberately empty of behavior — no cards, no chips, no
 sockets — so the very first stand-up is a real page over a real port, and
 subsequent Gate work fills the inside without re-negotiating the shell.
 """
+
 from __future__ import annotations
 
 import json
@@ -78,6 +79,7 @@ def _get_nestor_client() -> NestorClient:
             if _NESTOR_CLIENT is None:
                 _NESTOR_CLIENT = NestorClient()
     return _NESTOR_CLIENT
+
 
 # Optional Kart lens filter values (quiet tooling). C12's operator-facing
 # Governance/PM/PA gearshift is demoted (Jarvis addendum); these tokens remain
@@ -252,10 +254,14 @@ async def _journal(request: Request) -> JSONResponse:
     try:
         payload = await request.json()
     except Exception:  # noqa: BLE001 — malformed body is a 400, not a 500
-        return JSONResponse({"ok": False, "reason": "invalid json body"}, status_code=400)
+        return JSONResponse(
+            {"ok": False, "reason": "invalid json body"}, status_code=400
+        )
 
     text = payload.get("text") if isinstance(payload, dict) else None
-    sender = payload.get("sender", "operator") if isinstance(payload, dict) else "operator"
+    sender = (
+        payload.get("sender", "operator") if isinstance(payload, dict) else "operator"
+    )
     if not isinstance(text, str) or not text.strip():
         return JSONResponse({"ok": False, "reason": "text required"}, status_code=400)
     if not isinstance(sender, str) or not sender:
@@ -435,7 +441,11 @@ async def _nestor_decide(request: Request) -> JSONResponse:
         # no field rename, no truncation, no whitespace cleanup. The
         # bytes on the wire are Nestor's own.
         return JSONResponse(
-            {"state": "populated", "verdict": "refused", "refusal": result.get("refusal")},
+            {
+                "state": "populated",
+                "verdict": "refused",
+                "refusal": result.get("refusal"),
+            },
             status_code=200,
         )
 
@@ -468,7 +478,9 @@ def build_app() -> Starlette:
     # Mounted only when the directory exists so unit tests that import this
     # module from an unusual cwd don't fall over on a missing tree.
     if _WEB_ROOT.is_dir():
-        routes.append(Mount("/web", app=StaticFiles(directory=str(_WEB_ROOT)), name="web"))
+        routes.append(
+            Mount("/web", app=StaticFiles(directory=str(_WEB_ROOT)), name="web")
+        )
     return Starlette(routes=routes)
 
 

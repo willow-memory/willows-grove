@@ -43,6 +43,7 @@ cleanly and only shows up at query time, so this pin has to be
 structural to run everywhere. ``NestorBundleQueryableTests`` adds the
 end-to-end check when the binary happens to be installed.
 """
+
 from __future__ import annotations
 
 import json

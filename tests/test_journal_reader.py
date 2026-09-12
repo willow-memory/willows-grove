@@ -1,5 +1,6 @@
 # b17: WGRV1 ΔΣ=42
 """Tests for grove.journal_reader — degradation, MCP transport, since_id, limit cap."""
+
 from __future__ import annotations
 
 import os
@@ -154,7 +155,9 @@ class ReadRecentTests(unittest.TestCase):
         self.assertEqual(captured["arguments"]["limit"], 50)
 
     def test_limit_trims_returned_atoms(self) -> None:
-        raw = [{"id": f"A{i}", "content": str(i), "source": "watcher"} for i in range(5)]
+        raw = [
+            {"id": f"A{i}", "content": str(i), "source": "watcher"} for i in range(5)
+        ]
         with patch.object(willow_mcp_client, "call_tool", return_value=raw):
             result = journal_reader.read_recent(limit=2)
         self.assertEqual(len(result), 2)
@@ -167,9 +170,10 @@ class ReadRecentTests(unittest.TestCase):
         self.assertEqual(result[0]["text"], weird)
 
     def test_mcp_error_shape_raises_unreachable(self) -> None:
-        with patch.object(
-            willow_mcp_client, "call_tool", return_value={"error": "sim"}
-        ), self.assertRaises(Unreachable) as ctx:
+        with (
+            patch.object(willow_mcp_client, "call_tool", return_value={"error": "sim"}),
+            self.assertRaises(Unreachable) as ctx,
+        ):
             journal_reader.read_recent()
         self.assertIn("sim", ctx.exception.reason)
 

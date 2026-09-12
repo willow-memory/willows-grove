@@ -14,6 +14,7 @@ Asserts that ``grove_html.render_page()``:
 Also asserts the boot .js file exists on disk so ``/web/boot/…``
 resolves under ``grove_serve.py``'s recursive ``/web`` StaticFiles mount.
 """
+
 from __future__ import annotations
 
 import os
@@ -33,6 +34,7 @@ BOOT_SRC = "/web/boot/refusal-summon-boot.js"
 class RefusalBootWireTests(unittest.TestCase):
     def setUp(self) -> None:
         import grove_html
+
         self.html = grove_html.render_page()
 
     def test_refusal_chip_component_script_in_head(self) -> None:
@@ -59,7 +61,9 @@ class RefusalBootWireTests(unittest.TestCase):
         chip_idx = head.find(CHIP_SRC)
         boot_idx = head.find(BOOT_SRC)
         self.assertNotEqual(chip_idx, -1, "refusal-chip script must be in <head>")
-        self.assertNotEqual(boot_idx, -1, "refusal-summon-boot script must be in <head>")
+        self.assertNotEqual(
+            boot_idx, -1, "refusal-summon-boot script must be in <head>"
+        )
         self.assertLess(
             chip_idx,
             boot_idx,

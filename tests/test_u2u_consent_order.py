@@ -101,19 +101,31 @@ def feed(listener, packet):
 def build_knock(identity, from_addr=PEER, payload_key=None):
     key = payload_key if payload_key is not None else identity.public_key_hex
     return Packet.build(
-        PacketType.KNOCK, from_addr, ME, {"public_key": key}, identity,
+        PacketType.KNOCK,
+        from_addr,
+        ME,
+        {"public_key": key},
+        identity,
     )
 
 
 def build_note(identity, from_addr=PEER):
     return Packet.build(
-        PacketType.NOTE, from_addr, ME, {"body": "hi"}, identity,
+        PacketType.NOTE,
+        from_addr,
+        ME,
+        {"body": "hi"},
+        identity,
     )
 
 
 def build_reply(identity, thread_id, from_addr=PEER):
     return Packet.build(
-        PacketType.REPLY, from_addr, ME, {"body": "answer"}, identity,
+        PacketType.REPLY,
+        from_addr,
+        ME,
+        {"body": "answer"},
+        identity,
         thread_id=thread_id,
     )
 
@@ -201,9 +213,10 @@ def test_update_key_preserves_blocked(store, peer_id, other_id):
     store.add(PEER, other_id.public_key_hex)
     store.block(PEER)
 
-    assert store.update_key(
-        PEER, peer_id.public_key_hex, require_confirmation=False
-    ) is True
+    assert (
+        store.update_key(PEER, peer_id.public_key_hex, require_confirmation=False)
+        is True
+    )
 
     assert store.get(PEER).blocked is True
     assert store.get(PEER).public_key_hex == peer_id.public_key_hex
@@ -219,9 +232,10 @@ def test_update_key_preserves_all_consent_flags(store, peer_id, other_id):
         setattr(contact, f, True)
     store.save()
 
-    assert store.update_key(
-        PEER, peer_id.public_key_hex, require_confirmation=False
-    ) is True
+    assert (
+        store.update_key(PEER, peer_id.public_key_hex, require_confirmation=False)
+        is True
+    )
 
     after = store.get(PEER)
     for f in CONSENT_FIELDS:
@@ -240,9 +254,9 @@ def test_update_key_refuses_without_confirmation(store, peer_id, other_id, caplo
         assert store.update_key(PEER, peer_id.public_key_hex) is False
 
     assert store.get(PEER).public_key_hex == other_id.public_key_hex
-    assert any(
-        "REFUSED key rotation" in rec.message for rec in caplog.records
-    ), "the refusal was not logged clearly"
+    assert any("REFUSED key rotation" in rec.message for rec in caplog.records), (
+        "the refusal was not logged clearly"
+    )
 
 
 # ── 3. REPLY correlation (CODE_REVIEW P0: consent is advisory) ────────────────

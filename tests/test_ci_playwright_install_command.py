@@ -21,6 +21,7 @@ Line-level regex grep, no PyYAML dependency — the workflow yml is
 tracked-code and this pin is about a substring, not the structural
 shape of the file.
 """
+
 from __future__ import annotations
 
 import re
@@ -64,7 +65,9 @@ def test_playwright_install_step_uses_yes_flag():
     )
 
 
-def test_the_install_step_finder_fires_on_a_planted_workflow_without_yes(tmp_path, monkeypatch):
+def test_the_install_step_finder_fires_on_a_planted_workflow_without_yes(
+    tmp_path, monkeypatch
+):
     """Planted: a workflow whose install step is the pre-fix command, no
     `--yes`. The finder must return that command verbatim so the pin
     above would fail on it — and return None for a workflow with no

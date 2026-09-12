@@ -44,6 +44,7 @@ green no-op.
 
 Stdlib only. Reads one file, touches no network.
 """
+
 from __future__ import annotations
 
 import os
@@ -81,7 +82,8 @@ class ArchitectureLinksTests(unittest.TestCase):
         mode that turns this whole file into a green no-op."""
         targets = _relative_targets()
         self.assertGreaterEqual(
-            len(targets), 3,
+            len(targets),
+            3,
             "found almost no relative links in docs/ARCHITECTURE.md — the "
             "pattern has stopped matching and this file is no longer "
             f"auditing anything (found: {targets})",
@@ -90,11 +92,15 @@ class ArchitectureLinksTests(unittest.TestCase):
 
     def test_every_relative_link_resolves(self) -> None:
         missing = sorted(
-            {t for t in _relative_targets()
-             if not os.path.exists(os.path.join(DOC_DIR, t))}
+            {
+                t
+                for t in _relative_targets()
+                if not os.path.exists(os.path.join(DOC_DIR, t))
+            }
         )
         self.assertEqual(
-            missing, [],
+            missing,
+            [],
             "docs/ARCHITECTURE.md is the canonical architecture reference; a "
             "relative link that does not resolve sends a reader to nothing "
             f"with no other route to the same material: {missing}",
@@ -109,11 +115,14 @@ class ArchitectureLinksTests(unittest.TestCase):
         repository contains.
         """
         targets = _relative_targets()
-        for absent in ("CROSS_REPO_BRIDGE.md",
-                       "extractor/GROVE_DOCS_EXTRACTOR_SPEC.md"):
+        for absent in (
+            "CROSS_REPO_BRIDGE.md",
+            "extractor/GROVE_DOCS_EXTRACTOR_SPEC.md",
+        ):
             with self.subTest(absent=absent):
                 self.assertNotIn(
-                    absent, targets,
+                    absent,
+                    targets,
                     f"{absent} is recorded in docs/INDEX.md under 'Not in this "
                     "tree (by design)' and lives at the archived "
                     "rudi193-cmd/safe-app-willow-grove — name it, do not link it",

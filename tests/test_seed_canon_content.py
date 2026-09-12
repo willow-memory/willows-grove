@@ -17,6 +17,7 @@ assertion.
 Stdlib only. Restores every mutated env var in ``tearDown`` so the rest
 of the suite is unaffected.
 """
+
 from __future__ import annotations
 
 import contextlib
@@ -52,9 +53,7 @@ CANON_FILES = (
 
 
 def _free_port() -> int:
-    with contextlib.closing(
-        socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    ) as s:
+    with contextlib.closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
         s.bind(("127.0.0.1", 0))
         return s.getsockname()[1]
 
@@ -205,9 +204,7 @@ class SeedCanonContentIntegrationTests(unittest.TestCase):
         for n in range(1, 7):
             self.assertIn(f'href="/seed/{n}"', body)
 
-    def _assert_movement_matches_source(
-        self, n: int, canon_name: str
-    ) -> None:
+    def _assert_movement_matches_source(self, n: int, canon_name: str) -> None:
         canon_path = CANON_ROOT / canon_name
         expected_h1 = _h1_from_source(canon_path)  # e.g. "0 · The Covenant"
         # Also the "title half" — the piece after any leading "N · " —
@@ -222,9 +219,7 @@ class SeedCanonContentIntegrationTests(unittest.TestCase):
         with _ServerHarness(env=env) as srv:
             status, body = srv.get(f"/seed/{n}")
 
-        self.assertEqual(
-            status, 200, f"/seed/{n} did not return 200 for {canon_name}"
-        )
+        self.assertEqual(status, 200, f"/seed/{n} did not return 200 for {canon_name}")
         # The rendered body carries the source file's H1 verbatim (the
         # markdown renderer emits it as <h1>0 · The Covenant</h1> etc.).
         self.assertIn(
@@ -277,12 +272,12 @@ class SeedHtmlEscapingIntegrationTest(unittest.TestCase):
             # dangerous characters so we can pin escaping specifically.
             payload = "syn <marker> & test <script>alert(1)</script> end"
             files = [
-                ("00-the-covenant.md",   "# T0\n\nbody0"),
-                ("01-be-the-other.md",   "# T1\n\nbody1"),
+                ("00-the-covenant.md", "# T0\n\nbody0"),
+                ("01-be-the-other.md", "# T1\n\nbody1"),
                 ("02-the-discipline.md", f"# T2\n\n{payload}"),
-                ("03-the-person.md",     "# T3\n\nbody3"),
-                ("04-the-language.md",   "# T4\n\nbody4"),
-                ("05-the-world.md",      "# T5\n\nbody5"),
+                ("03-the-person.md", "# T3\n\nbody3"),
+                ("04-the-language.md", "# T4\n\nbody4"),
+                ("05-the-world.md", "# T5\n\nbody5"),
             ]
             for name, body in files:
                 (canon / name).write_text(body, encoding="utf-8")

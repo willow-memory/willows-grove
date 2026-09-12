@@ -16,6 +16,7 @@ unchanged.
 
 b17: WDASH  ΔΣ=42
 """
+
 import hashlib
 import json
 import logging
@@ -33,7 +34,9 @@ _HASH_PAIRS = [11, 12, 13, 14, 15, 16, 17]
 
 def color_for_sender(name: str) -> int:
     """Return a stable curses color_pair number for this sender name."""
-    return _HASH_PAIRS[int(hashlib.md5(name.encode()).hexdigest(), 16) % len(_HASH_PAIRS)]
+    return _HASH_PAIRS[
+        int(hashlib.md5(name.encode()).hexdigest(), 16) % len(_HASH_PAIRS)
+    ]
 
 
 def _conn_ctx(conn):
@@ -64,6 +67,7 @@ def _redact_db_error(exc: BaseException) -> str:
     try:
         import psycopg2
         from psycopg2 import errors as _pg_errors
+
         integrity = (
             _pg_errors.UniqueViolation,
             _pg_errors.ForeignKeyViolation,
@@ -265,14 +269,23 @@ def grove_inbox_bundle(
     inbox_name = who.strip().lower().replace(" ", "-")
     _conn, owned = _conn_ctx(conn)
     try:
-        mention_rows = grove_mentions_for_handles(handles, limit=mention_limit, conn=_conn)
-        bus_rows = grove_messages_bus_addressed_to(who, since_id=since_id, limit=bus_limit, conn=_conn)
-        own_rows = grove_own_channel_since(inbox_name, since_id=since_id, limit=mention_limit, conn=_conn)
+        mention_rows = grove_mentions_for_handles(
+            handles, limit=mention_limit, conn=_conn
+        )
+        bus_rows = grove_messages_bus_addressed_to(
+            who, since_id=since_id, limit=bus_limit, conn=_conn
+        )
+        own_rows = grove_own_channel_since(
+            inbox_name, since_id=since_id, limit=mention_limit, conn=_conn
+        )
     finally:
         _release(_conn, owned)
     filtered_mentions = [m for m in mention_rows if int(m["id"]) > since_id]
     return merge_attention_messages(
-        filtered_mentions, bus_rows, own_rows, limit=merge_limit,
+        filtered_mentions,
+        bus_rows,
+        own_rows,
+        limit=merge_limit,
     )
 
 
@@ -339,7 +352,9 @@ def grove_agents(conn=None) -> list[dict]:
                 LIMIT 20
             """)
         except Exception as e:
-            _log.debug("grove_reader.grove_agents: bus_type column absent, falling back: %s", e)
+            _log.debug(
+                "grove_reader.grove_agents: bus_type column absent, falling back: %s", e
+            )
             conn.rollback()
             cur.execute("""
                 SELECT sender, MAX(created_at) AS last_seen
@@ -355,7 +370,9 @@ def grove_agents(conn=None) -> list[dict]:
             if last_seen.tzinfo is None:
                 last_seen = last_seen.replace(tzinfo=timezone.utc)
             age_secs = int((now - last_seen).total_seconds())
-            rows.append({"sender": sender, "last_seen_at": last_seen, "age_secs": age_secs})
+            rows.append(
+                {"sender": sender, "last_seen_at": last_seen, "age_secs": age_secs}
+            )
         return rows
     except Unreachable:
         raise
@@ -491,16 +508,20 @@ def grove_agent_fleet_rows(limit: int = 50, conn=None) -> list[dict]:
             state = _ui_state(age_secs, hb_content)
             if needs_reply and state != "blocked":
                 state = "blocked"
-            rows.append({
-                "sender": sender,
-                "last_seen_at": last_seen,
-                "age_secs": age_secs,
-                "ui_state": state,
-                "peek": peek_data.get("peek", ""),
-                "blocked": needs_reply or state == "blocked",
-                "reply_to_message_id": peek_data.get("peek_id") if needs_reply else None,
-                "correlation_id": peek_data.get("correlation_id"),
-            })
+            rows.append(
+                {
+                    "sender": sender,
+                    "last_seen_at": last_seen,
+                    "age_secs": age_secs,
+                    "ui_state": state,
+                    "peek": peek_data.get("peek", ""),
+                    "blocked": needs_reply or state == "blocked",
+                    "reply_to_message_id": peek_data.get("peek_id")
+                    if needs_reply
+                    else None,
+                    "correlation_id": peek_data.get("correlation_id"),
+                }
+            )
         return rows
     except Unreachable:
         raise
@@ -805,7 +826,8 @@ def grove_rename_channel(old_name: str, raw_new_name: str) -> dict:
             # reporting a fake unqualified "ok" (Loki v0.9 finding #38).
             _log.warning(
                 "grove_reader.grove_rename_channel: SOIL cursor migration "
-                "failed after rename committed: %s", e,
+                "failed after rename committed: %s",
+                e,
             )
             return {
                 "ok": False,
@@ -830,7 +852,11 @@ def grove_list_archived_channels(conn=None) -> list[dict]:
     try:
         rows = grove_db.list_channels(conn, include_archived=True)
         return [
-            {"id": r["id"], "name": r["name"], "channel_type": r.get("channel_type", "group")}
+            {
+                "id": r["id"],
+                "name": r["name"],
+                "channel_type": r.get("channel_type", "group"),
+            }
             for r in rows
             if r.get("is_archived")
         ]
@@ -866,7 +892,10 @@ def grove_channels(conn=None, last_seen_ids: dict | None = None) -> list[dict]:
             )
             channels = [(r[0], r[1], r[2], r[3]) for r in cur.fetchall()]
         except Exception as e:
-            _log.debug("grove_reader.grove_channels: extended columns absent, falling back: %s", e)
+            _log.debug(
+                "grove_reader.grove_channels: extended columns absent, falling back: %s",
+                e,
+            )
             conn.rollback()
             cur = conn.cursor()
             cur.execute(
@@ -885,14 +914,16 @@ def grove_channels(conn=None, last_seen_ids: dict | None = None) -> list[dict]:
             row = cur.fetchone()
             unread = row[0] if row else 0
             max_id = row[1] if row else 0
-            result.append({
-                "id": ch_id,
-                "name": name,
-                "channel_type": channel_type,
-                "unread": unread,
-                "max_id": max_id,
-                "agent_name": agent_name,
-            })
+            result.append(
+                {
+                    "id": ch_id,
+                    "name": name,
+                    "channel_type": channel_type,
+                    "unread": unread,
+                    "max_id": max_id,
+                    "agent_name": agent_name,
+                }
+            )
         return result
     except Unreachable:
         raise
@@ -919,8 +950,9 @@ def _attach_message_flags(conn, msgs: list[dict]) -> None:
         m["flags"] = by_id.get(m.get("id"), set())
 
 
-def grove_messages(channel_name: str, conn=None, limit: int = 50,
-                   since_id: int = 0) -> list[dict]:
+def grove_messages(
+    channel_name: str, conn=None, limit: int = 50, since_id: int = 0
+) -> list[dict]:
     """Return messages for a channel, oldest first (with flags attached).
 
     §1: raises ``Unreachable`` when Postgres cannot be reached. An empty
@@ -949,13 +981,15 @@ def grove_messages(channel_name: str, conn=None, limit: int = 50,
         )
         msgs = []
         for mid, sender, content, created_at in cur.fetchall():
-            msgs.append({
-                "id": mid,
-                "sender": sender,
-                "content": content,
-                "created_at": created_at,
-                "flags": set(),
-            })
+            msgs.append(
+                {
+                    "id": mid,
+                    "sender": sender,
+                    "content": content,
+                    "created_at": created_at,
+                    "flags": set(),
+                }
+            )
         msgs = list(reversed(msgs))
         _attach_message_flags(conn, msgs)
         return msgs
@@ -1137,7 +1171,9 @@ def _ensure_mention_index(cur) -> None:
         _log.warning("grove_reader._ensure_mention_index: %s", e)
 
 
-def grove_mentions_for_handles(handles: list[str], limit: int = 20, conn=None) -> list[dict]:
+def grove_mentions_for_handles(
+    handles: list[str], limit: int = 20, conn=None
+) -> list[dict]:
     """Recent messages matching @<handle> for any handle (ILIKE substring, case-folded).
 
     Each entry: {id, channel, sender, content}
@@ -1251,21 +1287,32 @@ def _routing_decisions_willow(conn=None, limit: int = 8) -> list[dict]:
                 (limit,),
             )
         except Exception as e:
-            _log.debug("grove_reader.routing_decisions: table absent, auto-creating: %s", e)
+            _log.debug(
+                "grove_reader.routing_decisions: table absent, auto-creating: %s", e
+            )
             conn.rollback()
             cur.execute(_ROUTING_DDL)
             conn.commit()
             return []
         rows = []
-        for ts, snippet, routed_to, rule_matched, confidence, latency_ms in cur.fetchall():
-            rows.append({
-                "ts": ts,
-                "prompt_snippet": snippet,
-                "routed_to": routed_to,
-                "rule_matched": rule_matched,
-                "confidence": float(confidence) if confidence is not None else 1.0,
-                "latency_ms": latency_ms,
-            })
+        for (
+            ts,
+            snippet,
+            routed_to,
+            rule_matched,
+            confidence,
+            latency_ms,
+        ) in cur.fetchall():
+            rows.append(
+                {
+                    "ts": ts,
+                    "prompt_snippet": snippet,
+                    "routed_to": routed_to,
+                    "rule_matched": rule_matched,
+                    "confidence": float(confidence) if confidence is not None else 1.0,
+                    "latency_ms": latency_ms,
+                }
+            )
         return rows
     except Unreachable:
         raise
@@ -1305,14 +1352,16 @@ def _routing_decisions_public(conn=None, limit: int = 8) -> list[dict]:
             snippet = (dec.get("prompt_snippet") or "").strip()
             if not snippet and prompt_hash:
                 snippet = f"[hash:{str(prompt_hash)[:12]}]"
-            rows.append({
-                "ts": created_at,
-                "prompt_snippet": snippet,
-                "routed_to": dec.get("routed_to") or "?",
-                "rule_matched": dec.get("rule_matched") or "—",
-                "confidence": float(dec.get("confidence") or 0.0),
-                "latency_ms": dec.get("latency_ms"),
-            })
+            rows.append(
+                {
+                    "ts": created_at,
+                    "prompt_snippet": snippet,
+                    "routed_to": dec.get("routed_to") or "?",
+                    "rule_matched": dec.get("rule_matched") or "—",
+                    "confidence": float(dec.get("confidence") or 0.0),
+                    "latency_ms": dec.get("latency_ms"),
+                }
+            )
         return rows
     except Unreachable:
         raise
@@ -1323,7 +1372,9 @@ def _routing_decisions_public(conn=None, limit: int = 8) -> list[dict]:
         _release(conn, owned)
 
 
-def human_required_queue(conn=None, limit: int = 30, open_only: bool = True) -> list[dict]:
+def human_required_queue(
+    conn=None, limit: int = 30, open_only: bool = True
+) -> list[dict]:
     """Items from public.human_required_queue — work that pauses automation until a
     human acts (consent, attestation, review, onboarding). Priority-first, newest-first.
 

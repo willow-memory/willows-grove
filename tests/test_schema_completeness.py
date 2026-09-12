@@ -24,6 +24,7 @@ references from the reader/endpoint source, and assert each one has a
 allowlisted, with a reason, because it self-creates at runtime
 elsewhere and does not depend on schema.sql at all).
 """
+
 from __future__ import annotations
 
 import os
@@ -35,6 +36,7 @@ from unittest import mock
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SCHEMA_SQL = os.path.join(ROOT, "schema.sql")
+
 
 # The reader/endpoint surface this audit sweeps. grove_serve.py hosts the
 # /api/* handlers; grove_reader.py and grove_db.py are the two readers
@@ -65,10 +67,12 @@ _TABLE_REF_RE = re.compile(
 
 # Postgres system catalogs, not application tables schema.sql could ever
 # be expected to create.
-_SYSTEM_CATALOGS = frozenset({
-    "information_schema.columns",
-    "pg_catalog.pg_trigger",
-})
+_SYSTEM_CATALOGS = frozenset(
+    {
+        "information_schema.columns",
+        "pg_catalog.pg_trigger",
+    }
+)
 
 # Tables that self-create at runtime independent of schema.sql, so their
 # absence from schema.sql is not the PR-9 failure mode (a missing table
@@ -154,7 +158,9 @@ class SchemaCompletenessTests(unittest.TestCase):
         `grove.ghosts` and `public.tasks` on this tree."""
         with tempfile.TemporaryDirectory() as tmp:
             os.mkdir(os.path.join(tmp, "grove"))
-            with open(os.path.join(tmp, "grove_reader.py"), "w", encoding="utf-8") as fh:
+            with open(
+                os.path.join(tmp, "grove_reader.py"), "w", encoding="utf-8"
+            ) as fh:
                 fh.write(
                     'cur.execute("SELECT 1 FROM grove.ghosts g JOIN public.tasks t '
                     'ON t.id = g.task_id")\n'
@@ -164,8 +170,10 @@ class SchemaCompletenessTests(unittest.TestCase):
             with open(schema, "w", encoding="utf-8") as fh:
                 fh.write("CREATE TABLE IF NOT EXISTS messages (id bigint);\n")
             module = sys.modules[__name__]
-            with mock.patch.object(module, "ROOT", tmp), \
-                    mock.patch.object(module, "SCHEMA_SQL", schema):
+            with (
+                mock.patch.object(module, "ROOT", tmp),
+                mock.patch.object(module, "SCHEMA_SQL", schema),
+            ):
                 referenced = _referenced_tables()
                 created = _schema_sql_tables()
         self.assertEqual(

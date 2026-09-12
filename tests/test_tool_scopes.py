@@ -49,7 +49,9 @@ from mcp.server.mcpserver.exceptions import ToolError  # noqa: E402
 
 # ── Collection-time probe: what does serve mode actually build? ──────────
 _saved_argv = list(sys.argv)
-_saved_env = {k: os.environ.get(k) for k in ("GROVE_MCP_URL", "HOME", "GROVE_MCP_AUTO_APPROVE")}
+_saved_env = {
+    k: os.environ.get(k) for k in ("GROVE_MCP_URL", "HOME", "GROVE_MCP_AUTO_APPROVE")
+}
 
 sys.argv = ["mcp_local", "--serve"]
 os.environ["GROVE_MCP_URL"] = "https://grove-scopes.example.test"
@@ -123,7 +125,10 @@ def test_write_only_token_may_write_but_not_gated_reads():
             mcp_local._require_scope(mcp_local.SCOPE_READ)
 
 
-@pytest.mark.parametrize("scopes", [["grove"], ["grove", "grove:read"], ["grove:read", "grove:write", "grove"]])
+@pytest.mark.parametrize(
+    "scopes",
+    [["grove"], ["grove", "grove:read"], ["grove:read", "grove:write", "grove"]],
+)
 def test_grove_superscope_implies_both(scopes):
     """The back-compat superscope grants both — this is what keeps a pre-existing
     30-day `grove` token (and any client that still asks for plain `grove`)
@@ -157,7 +162,9 @@ def test_no_scopes_at_all_is_refused():
 
 @pytest.fixture
 def fake_db(monkeypatch):
-    channels = [{"id": 1, "name": "general", "channel_type": "group", "description": None}]
+    channels = [
+        {"id": 1, "name": "general", "channel_type": "group", "description": None}
+    ]
 
     class _Conn:
         pass
@@ -165,9 +172,12 @@ def fake_db(monkeypatch):
     monkeypatch.setattr(mcp_local.db, "get_connection", lambda: _Conn())
     monkeypatch.setattr(mcp_local.db, "release_connection", lambda conn: None)
     monkeypatch.setattr(mcp_local.db, "list_channels", lambda conn: channels)
-    monkeypatch.setattr(mcp_local.db, "find_channel_in", lambda chans, name: chans[0] if chans else None)
     monkeypatch.setattr(
-        mcp_local.db, "send_message",
+        mcp_local.db, "find_channel_in", lambda chans, name: chans[0] if chans else None
+    )
+    monkeypatch.setattr(
+        mcp_local.db,
+        "send_message",
         lambda conn, *, channel_id, sender, content, reply_to_id=None: {"id": 42},
     )
     return channels
@@ -217,8 +227,14 @@ def test_read_tool_unaffected_by_decorator_absence(fake_db):
 # ── All nine write tools are actually decorated ──────────────────────────
 
 _EXPECTED_WRITE_TOOLS = {
-    "grove_send_message", "grove_reply", "grove_flag", "grove_unflag",
-    "grove_bus_send", "grove_bus_delete", "grove_ack", "grove_heartbeat",
+    "grove_send_message",
+    "grove_reply",
+    "grove_flag",
+    "grove_unflag",
+    "grove_bus_send",
+    "grove_bus_delete",
+    "grove_ack",
+    "grove_heartbeat",
     "grove_create_channel",
 }
 
@@ -238,11 +254,20 @@ def test_read_tools_carry_no_write_gate():
     """Spot-check a handful of read tools: none is wrapped by `writes`, i.e.
     none has the `_scope_checked` wrapper's `__wrapped__` marker from it."""
     read_sample = [
-        "grove_list_channels", "grove_get_history", "grove_search",
-        "grove_get_identity", "grove_watch", "grove_watch_all",
-        "grove_get_thread", "grove_bus_receive", "grove_inbox",
-        "grove_flagged", "grove_agents", "grove_fleet_status",
-        "grove_mentions", "grove_human_required",
+        "grove_list_channels",
+        "grove_get_history",
+        "grove_search",
+        "grove_get_identity",
+        "grove_watch",
+        "grove_watch_all",
+        "grove_get_thread",
+        "grove_bus_receive",
+        "grove_inbox",
+        "grove_flagged",
+        "grove_agents",
+        "grove_fleet_status",
+        "grove_mentions",
+        "grove_human_required",
     ]
     for name in read_sample:
         fn = getattr(mcp_local, name)
@@ -294,13 +319,17 @@ def test_effective_scopes_prefers_explicit_request_then_client_then_fallback():
         scope="grove:read grove:write",
     )
     params_explicit = AuthorizationParams(
-        state="s", scopes=["grove:read"],
-        code_challenge="x", redirect_uri="https://example.test/cb",
+        state="s",
+        scopes=["grove:read"],
+        code_challenge="x",
+        redirect_uri="https://example.test/cb",
         redirect_uri_provided_explicitly=True,
     )
     params_implicit = AuthorizationParams(
-        state="s", scopes=None,
-        code_challenge="x", redirect_uri="https://example.test/cb",
+        state="s",
+        scopes=None,
+        code_challenge="x",
+        redirect_uri="https://example.test/cb",
         redirect_uri_provided_explicitly=True,
     )
 
@@ -308,7 +337,9 @@ def test_effective_scopes_prefers_explicit_request_then_client_then_fallback():
     assert effective_scopes(client, params_implicit) == ["grove:read", "grove:write"]
 
     bare_client = OAuthClientInformationFull(
-        client_id="c2", client_name="Old", redirect_uris=["https://example.test/cb"],
+        client_id="c2",
+        client_name="Old",
+        redirect_uris=["https://example.test/cb"],
         grant_types=["authorization_code"],
     )
     assert effective_scopes(bare_client, params_implicit) == ["grove"]
@@ -324,18 +355,26 @@ def test_load_access_token_widens_a_pre_existing_grove_token(tmp_path):
     from grove.mcp_auth import GroveOAuthProvider
 
     token_path = tmp_path / "grove_mcp_token"
-    token_path.write_text(json.dumps({
-        "clients": {},
-        "access_tokens": {
-            "old-tok": {
-                "token": "old-tok", "client_id": "c1",
-                "scopes": ["grove"], "expires_at": None,
-            },
-        },
-        "refresh_tokens": {},
-    }))
+    token_path.write_text(
+        json.dumps(
+            {
+                "clients": {},
+                "access_tokens": {
+                    "old-tok": {
+                        "token": "old-tok",
+                        "client_id": "c1",
+                        "scopes": ["grove"],
+                        "expires_at": None,
+                    },
+                },
+                "refresh_tokens": {},
+            }
+        )
+    )
 
-    provider = GroveOAuthProvider(token_path=token_path, base_url="https://grove.example.test")
+    provider = GroveOAuthProvider(
+        token_path=token_path, base_url="https://grove.example.test"
+    )
     loaded = asyncio.run(provider.load_access_token("old-tok"))
 
     assert loaded is not None

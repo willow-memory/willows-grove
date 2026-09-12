@@ -12,9 +12,9 @@ class MatrixClient:
     """Minimal Matrix Client-Server API wrapper for a bridge bot."""
 
     def __init__(self, homeserver: str, as_token: str, bot_user_id: str):
-        self._hs        = homeserver.rstrip("/")
-        self._token     = as_token
-        self._bot       = bot_user_id
+        self._hs = homeserver.rstrip("/")
+        self._token = as_token
+        self._bot = bot_user_id
         self._session: ClientSession | None = None
 
     async def start(self) -> None:
@@ -78,8 +78,8 @@ class ASServer:
     _SEEN_MAX = 2048
 
     def __init__(self, hs_token: str, on_event):
-        self._hs_token  = hs_token
-        self._on_event  = on_event
+        self._hs_token = hs_token
+        self._on_event = on_event
         self._seen: dict[str, None] = {}  # insertion-ordered dict as bounded LRU
 
     def build_app(self) -> web.Application:

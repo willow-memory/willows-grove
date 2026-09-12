@@ -18,13 +18,11 @@ call `psycopg2.connect(dsn)` / `psycopg2.connect(dbname=..., user=...)`
 with no `connect_timeout=` at all, so `captured["connect_timeout"]`
 is absent and every assertion below fails.
 """
+
 from __future__ import annotations
 
-import os
 import sys
 from pathlib import Path
-
-import pytest
 
 
 ROOT = Path(__file__).resolve().parents[1]

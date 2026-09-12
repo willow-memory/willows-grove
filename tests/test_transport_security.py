@@ -14,6 +14,7 @@ allowlisting both, which is what these pin.
 The property under test, in one line: **there is no configuration in which
 protection is off.**
 """
+
 from __future__ import annotations
 
 import importlib
@@ -39,14 +40,17 @@ def _settings(monkeypatch, url):
         importlib.reload(mcp_local)
 
 
-@pytest.mark.parametrize("url", [
-    None,
-    "http://127.0.0.1:8765",
-    "https://grove.example.ngrok.app",
-    "https://grove.example.com:8443",
-    "not a url",
-    "",
-])
+@pytest.mark.parametrize(
+    "url",
+    [
+        None,
+        "http://127.0.0.1:8765",
+        "https://grove.example.ngrok.app",
+        "https://grove.example.com:8443",
+        "not a url",
+        "",
+    ],
+)
 def test_dns_rebinding_protection_is_never_disabled(monkeypatch, url):
     """The regression this file exists for. Fails against the old code for
     every https:// case, which was the deployment that mattered."""
@@ -75,7 +79,9 @@ def test_loopback_survives_for_the_forwarded_host_case(monkeypatch):
         assert h in t.allowed_hosts
 
 
-@pytest.mark.parametrize("url", ["not a url", "", "ftp://elsewhere.example", "https://"])
+@pytest.mark.parametrize(
+    "url", ["not a url", "", "ftp://elsewhere.example", "https://"]
+)
 def test_an_unusable_base_url_grants_nothing(monkeypatch, url):
     """An address that cannot be parsed is not a grant. The failure direction
     matters: falling back to "allow everything" is how the original defect read
@@ -96,6 +102,7 @@ def test_a_plain_local_run_does_not_gain_a_public_host(monkeypatch):
 # The escape hatch for tunnels (Pangolin resource hosts, reverse-proxy upstream
 # names) that forward a Host that is neither loopback nor the GROVE_MCP_URL
 # netloc. It is additive and never turns protection off.
+
 
 def _settings_with_extras(monkeypatch, url, *, hosts=None, origins=None):
     """Reload the module under a GROVE_MCP_URL plus the extra-host env vars,

@@ -21,6 +21,7 @@ Once those two classes land the assertions pass.
 
 Stdlib only. No harness, no server — the pin is purely structural.
 """
+
 from __future__ import annotations
 
 import importlib

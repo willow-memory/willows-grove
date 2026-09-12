@@ -68,11 +68,19 @@ def main() -> None:
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     p.add_argument("--homeserver", required=True, help="Matrix homeserver URL")
-    p.add_argument("--hs-name",    required=True, help="Homeserver name (e.g. example.com)")
-    p.add_argument("--env-file",   default=None,  help="Path to KEY=VALUE env file for tokens")
-    p.add_argument("--grove-port", type=int, default=8551, help="u2u listen port (default 8551)")
-    p.add_argument("--as-port",    type=int, default=8560, help="AS HTTP server port (default 8560)")
-    p.add_argument("--data-dir",   default="~/.willow/bridge", help="State directory")
+    p.add_argument(
+        "--hs-name", required=True, help="Homeserver name (e.g. example.com)"
+    )
+    p.add_argument(
+        "--env-file", default=None, help="Path to KEY=VALUE env file for tokens"
+    )
+    p.add_argument(
+        "--grove-port", type=int, default=8551, help="u2u listen port (default 8551)"
+    )
+    p.add_argument(
+        "--as-port", type=int, default=8560, help="AS HTTP server port (default 8560)"
+    )
+    p.add_argument("--data-dir", default="~/.willow/bridge", help="State directory")
     args = p.parse_args()
 
     if args.env_file:
@@ -88,14 +96,14 @@ def main() -> None:
     data.mkdir(parents=True, exist_ok=True)
 
     bridge = GroveMatrixBridge(
-        homeserver    = args.homeserver,
-        hs_name       = args.hs_name,
-        as_token      = as_token,
-        hs_token      = hs_token,
-        grove_port    = args.grove_port,
-        as_port       = args.as_port,
-        identity_path = data / "identity.json",
-        store_path    = data / "bridge.db",
+        homeserver=args.homeserver,
+        hs_name=args.hs_name,
+        as_token=as_token,
+        hs_token=hs_token,
+        grove_port=args.grove_port,
+        as_port=args.as_port,
+        identity_path=data / "identity.json",
+        store_path=data / "bridge.db",
     )
 
     print("Grove ↔ Matrix bridge starting")

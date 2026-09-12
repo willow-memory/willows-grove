@@ -94,7 +94,9 @@ def public_http():
 @pytest.fixture
 def _reset_provider(monkeypatch):
     provider = mcp_local._auth_provider
-    monkeypatch.setattr(provider, "_state", {"clients": {}, "access_tokens": {}, "refresh_tokens": {}})
+    monkeypatch.setattr(
+        provider, "_state", {"clients": {}, "access_tokens": {}, "refresh_tokens": {}}
+    )
     monkeypatch.setattr(provider, "_pending", {})
     monkeypatch.setattr(provider, "_codes", {})
     return provider
@@ -134,7 +136,9 @@ def _authorize(client, client_id: str):
 # ── /authorize redirects to the approval page, never a code ──────────────────
 
 
-def test_authorize_redirects_to_approval_page_never_a_code(loopback_http, _reset_provider):
+def test_authorize_redirects_to_approval_page_never_a_code(
+    loopback_http, _reset_provider
+):
     """The regression guard for CODE_REVIEW.md's P0. INVARIANTS.md §7."""
     client_id = _register(loopback_http)
     r = _authorize(loopback_http, client_id)
@@ -156,15 +160,15 @@ def test_approval_page_renders_client_scope_redirect(loopback_http, _reset_provi
     scope + expiry to the operator."""
     client_id = _register(loopback_http)
     approve_url = _authorize(loopback_http, client_id).headers["location"]
-    path_and_query = approve_url[len(BASE_URL):]
+    path_and_query = approve_url[len(BASE_URL) :]
 
     page = loopback_http.get(path_and_query)
     assert page.status_code == 200
 
     body = page.text
-    assert "Test Connector" in body        # client name
-    assert "grove" in body                 # scope
-    assert CALLBACK in body                # redirect target the code goes to
+    assert "Test Connector" in body  # client name
+    assert "grove" in body  # scope
+    assert CALLBACK in body  # redirect target the code goes to
     assert "Allow" in body and "Deny" in body
 
 
@@ -174,9 +178,9 @@ def test_approval_page_renders_client_scope_redirect(loopback_http, _reset_provi
 def test_loopback_submit_allow_issues_the_code(loopback_http, _reset_provider):
     client_id = _register(loopback_http)
     approve_url = _authorize(loopback_http, client_id).headers["location"]
-    path_and_query = approve_url[len(BASE_URL):]
+    path_and_query = approve_url[len(BASE_URL) :]
 
-    loopback_http.get(path_and_query)                      # render
+    loopback_http.get(path_and_query)  # render
     posted = loopback_http.post(path_and_query, data={"action": "allow"})
 
     assert posted.status_code == 302
@@ -199,7 +203,7 @@ def test_non_loopback_submit_is_refused(public_http, loopback_http, _reset_provi
     # Register + park via the loopback client (so the pending key exists).
     client_id = _register(loopback_http)
     approve_url = _authorize(loopback_http, client_id).headers["location"]
-    path_and_query = approve_url[len(BASE_URL):]
+    path_and_query = approve_url[len(BASE_URL) :]
     loopback_http.get(path_and_query)  # re-stash pending
 
     # Now POST from a public-looking peer.
@@ -215,21 +219,26 @@ def test_non_loopback_submit_is_refused(public_http, loopback_http, _reset_provi
 # ── Timeout: pending requests expire after 5 min ────────────────────────────
 
 
-def test_pending_expires_after_5_min_no_code_issuable(loopback_http, _reset_provider, monkeypatch):
+def test_pending_expires_after_5_min_no_code_issuable(
+    loopback_http, _reset_provider, monkeypatch
+):
     """PR 6 dropped _PENDING_TTL to 5 minutes and _ACCESS_TTL to 24 hours
     (INVARIANTS.md §7). After the pending window closes, the parked entry is
     gone and no code can be issued for it — replaying the approval URL yields
     "Invalid or expired"."""
     import grove.mcp_auth as mcp_auth
+
     assert mcp_auth._PENDING_TTL == 300  # the boundary this test relies on
 
     client_id = _register(loopback_http)
     approve_url = _authorize(loopback_http, client_id).headers["location"]
-    path_and_query = approve_url[len(BASE_URL):]
+    path_and_query = approve_url[len(BASE_URL) :]
 
     # Jump the provider's clock past the pending TTL.
     real_time = mcp_auth.time.time
-    monkeypatch.setattr(mcp_auth.time, "time", lambda: real_time() + mcp_auth._PENDING_TTL + 1)
+    monkeypatch.setattr(
+        mcp_auth.time, "time", lambda: real_time() + mcp_auth._PENDING_TTL + 1
+    )
 
     # GET now falls through the "invalid or expired" branch.
     page = loopback_http.get(path_and_query)
@@ -291,7 +300,10 @@ def test_dynamic_registration_can_be_disabled(monkeypatch, tmp_path):
     # to be that same object. Restore it verbatim after this test.
     saved_module = sys.modules.get("grove.mcp_local")
     saved_argv = list(sys.argv)
-    saved_env = {k: os.environ.get(k) for k in ("GROVE_MCP_ALLOW_DYNAMIC_REGISTRATION", "HOME", "GROVE_MCP_URL")}
+    saved_env = {
+        k: os.environ.get(k)
+        for k in ("GROVE_MCP_ALLOW_DYNAMIC_REGISTRATION", "HOME", "GROVE_MCP_URL")
+    }
     try:
         sys.argv = ["mcp_local", "--serve"]
         os.environ.pop("GROVE_MCP_ALLOW_DYNAMIC_REGISTRATION", None)
@@ -299,6 +311,7 @@ def test_dynamic_registration_can_be_disabled(monkeypatch, tmp_path):
         os.environ["GROVE_MCP_URL"] = "http://127.0.0.1:8765"
         sys.modules.pop("grove.mcp_local", None)
         import grove.mcp_local as fresh
+
         assert fresh._ALLOW_DYNAMIC_REG is False
     finally:
         sys.argv = saved_argv

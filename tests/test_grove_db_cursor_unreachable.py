@@ -21,6 +21,7 @@ unreachable" psycopg2 signal). We assert:
 
 Stdlib only. No live database.
 """
+
 from __future__ import annotations
 
 import os

@@ -29,6 +29,7 @@ network waits).
 Must fail on the unfixed tree — the helper is absent and the fixture
 raises ``Skipped`` even on CI.
 """
+
 from __future__ import annotations
 
 import importlib.util
@@ -87,9 +88,7 @@ def test_missing_witness_helper_is_defined():
         "tests/e2e_ollama/conftest.py must expose a _missing_witness "
         "helper that dispatches on $GITHUB_ACTIONS (INVARIANTS.md §10)."
     )
-    assert callable(conftest._missing_witness), (
-        "_missing_witness must be callable."
-    )
+    assert callable(conftest._missing_witness), "_missing_witness must be callable."
 
 
 def test_missing_witness_fails_on_ci(monkeypatch):

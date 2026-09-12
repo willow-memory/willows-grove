@@ -138,7 +138,7 @@ def _unreleased_block(text: str) -> str | None:
     m = UNRELEASED_HEADING_RE.search(text)
     if not m:
         return None
-    rest = text[m.end():]
+    rest = text[m.end() :]
     nxt = NEXT_RELEASE_HEADING_RE.search(rest)
     return rest[: nxt.start()] if nxt else rest
 
@@ -157,7 +157,7 @@ def _newest_release_block(text: str) -> str | None:
     m = RELEASE_VERSION_HEADING_RE.search(text)
     if not m:
         return None
-    rest = text[m.end():]
+    rest = text[m.end() :]
     nxt = NEXT_RELEASE_HEADING_RE.search(rest)
     return rest[: nxt.start()] if nxt else rest
 
@@ -187,7 +187,8 @@ def _named_subsection_bullets(text: str) -> set[str]:
     for line in lines:
         stripped = line.strip()
         if SUBSECTION_RE.match(line) or (
-            stripped.startswith("### ") and stripped[4:].strip() in {"Changed", "Added", "Fixed", "Removed"}
+            stripped.startswith("### ")
+            and stripped[4:].strip() in {"Changed", "Added", "Fixed", "Removed"}
         ):
             in_named_subsection = True
             continue
@@ -251,7 +252,10 @@ def main() -> int:
         file=sys.stderr,
     )
     for f in code_files:
-        print(f"  {f}: tracked-code change with no matching CHANGELOG.md bullet", file=sys.stderr)
+        print(
+            f"  {f}: tracked-code change with no matching CHANGELOG.md bullet",
+            file=sys.stderr,
+        )
     return 1
 
 

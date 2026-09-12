@@ -38,7 +38,9 @@ CHANGELOG_SEED = """\
 """
 
 
-def _git(cwd: Path, *args: str, check: bool = True, env: dict | None = None) -> subprocess.CompletedProcess:
+def _git(
+    cwd: Path, *args: str, check: bool = True, env: dict | None = None
+) -> subprocess.CompletedProcess:
     return subprocess.run(
         ["git", *args],
         cwd=str(cwd),
@@ -129,14 +131,18 @@ def test_docs_only_change_without_bullet_passes(synthetic_repo: Path) -> None:
     assert "docs-only" in result.stdout
 
 
-def test_changelog_only_change_does_not_need_self_citation(synthetic_repo: Path) -> None:
+def test_changelog_only_change_does_not_need_self_citation(
+    synthetic_repo: Path,
+) -> None:
     """A PR that only edits CHANGELOG.md (e.g. freezing a release) must not
     be required to cite itself — it touches no tracked-code file at all.
     """
     _write(
         synthetic_repo,
         "CHANGELOG.md",
-        CHANGELOG_SEED.replace("- Nothing yet.", "- Nothing yet.\n- Housekeeping tidy."),
+        CHANGELOG_SEED.replace(
+            "- Nothing yet.", "- Nothing yet.\n- Housekeeping tidy."
+        ),
     )
     _commit(synthetic_repo, "chore: tidy changelog wording")
     result = _run_checker(synthetic_repo)
@@ -167,7 +173,9 @@ def test_no_base_branch_degrades_cleanly(tmp_path: Path) -> None:
     assert "no base branch found" in result.stdout
 
 
-def test_code_change_with_bullet_in_wrong_subsection_fails(synthetic_repo: Path) -> None:
+def test_code_change_with_bullet_in_wrong_subsection_fails(
+    synthetic_repo: Path,
+) -> None:
     """A bullet added outside Changed/Added/Fixed/Removed (e.g. under a
     grandfathered 'Previous work' heading) does not satisfy §3.
     """

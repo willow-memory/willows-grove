@@ -16,6 +16,7 @@ Line-level parse, no PyYAML dependency, in the house style of the other
 `tests/test_ci_*` workflow pins. A top-level key is a line that starts at
 column 0 with `permissions:`; an indented one is a job's or a step's.
 """
+
 from __future__ import annotations
 
 import re
@@ -37,7 +38,8 @@ def _declares_top_level_permissions(text: str) -> bool:
 def _workflows_without_permissions(workflows_dir: Path) -> list[str]:
     return sorted(
         path.name
-        for path in list(workflows_dir.glob("*.yml")) + list(workflows_dir.glob("*.yaml"))
+        for path in list(workflows_dir.glob("*.yml"))
+        + list(workflows_dir.glob("*.yaml"))
         if not _declares_top_level_permissions(path.read_text(encoding="utf-8"))
     )
 
@@ -45,7 +47,9 @@ def _workflows_without_permissions(workflows_dir: Path) -> list[str]:
 def test_the_sweep_finds_workflows() -> None:
     """The house self-check: a sweep that finds nothing is a green no-op."""
     found = list(WORKFLOWS.glob("*.yml")) + list(WORKFLOWS.glob("*.yaml"))
-    assert len(found) >= 3, f"expected at least three workflows under {WORKFLOWS}, found {found}"
+    assert len(found) >= 3, (
+        f"expected at least three workflows under {WORKFLOWS}, found {found}"
+    )
 
 
 def test_every_workflow_declares_a_top_level_permissions_block() -> None:

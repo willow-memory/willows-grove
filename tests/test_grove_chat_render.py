@@ -17,10 +17,7 @@ import pathlib
 import re
 
 COMPONENT = (
-    pathlib.Path(__file__).resolve().parents[1]
-    / "web"
-    / "components"
-    / "grove-chat.js"
+    pathlib.Path(__file__).resolve().parents[1] / "web" / "components" / "grove-chat.js"
 )
 
 
@@ -78,7 +75,7 @@ def test_unreachable_branch_clears_empty_state_div():
     poll = _method_body(src, "_pollReadback")
 
     assert '_setReadbackStatus("unreachable"' not in poll, (
-        "grove-chat._pollReadback calls _setReadbackStatus(\"unreachable\", "
+        'grove-chat._pollReadback calls _setReadbackStatus("unreachable", '
         "...) directly. That setter only touches the amber banner element "
         "and cannot clear the .readback-empty placeholder, so the "
         "unreachable banner ends up sharing a pixel with the empty state. "
@@ -119,13 +116,15 @@ def test_the_method_slicer_fires_on_a_planted_component():
         "    if (x) { this._pollReadback(); }\n"
         "  }\n"
         "  async _pollReadback() {\n"
-        "    this._setReadbackStatus(\"unreachable\", err);\n"
+        '    this._setReadbackStatus("unreachable", err);\n'
         "  }\n"
         "}\n"
     )
     render = _method_body(planted, "_render")
     assert "no messages yet" in render.lower()
-    assert "_setReadbackStatus" not in render, "the slice must close at _render's own brace"
+    assert "_setReadbackStatus" not in render, (
+        "the slice must close at _render's own brace"
+    )
     poll = _method_body(planted, "_pollReadback")
     assert '_setReadbackStatus("unreachable"' in poll
     assert "no messages yet" not in poll

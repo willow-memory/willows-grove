@@ -12,8 +12,8 @@ from u2u.identity import Identity
 
 class PacketType(str, Enum):
     KNOCK = "KNOCK"
-    NOTE  = "NOTE"
-    ASK   = "ASK"
+    NOTE = "NOTE"
+    ASK = "ASK"
     REPLY = "REPLY"
     ALERT = "ALERT"
     SHARE = "SHARE"
@@ -35,6 +35,7 @@ class PacketMalformed(PacketError):
     a broken peer is not indistinguishable from an attacker replaying a
     bad signature.
     """
+
     pass
 
 
@@ -115,6 +116,7 @@ class Packet:
 
         from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
         from cryptography.exceptions import InvalidSignature
+
         try:
             pub = Ed25519PublicKey.from_public_bytes(pub_bytes)
         except (ValueError, Exception) as e:

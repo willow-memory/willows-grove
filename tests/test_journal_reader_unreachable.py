@@ -4,6 +4,7 @@
 INVARIANTS.md §1 — reached-but-rejected over MCP must raise ``Unreachable``,
 not collapse into ``[]``.
 """
+
 from __future__ import annotations
 
 import os

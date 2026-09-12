@@ -22,6 +22,7 @@ Third case (no DB): ``WILLOW_DB_URL`` unset → ``[]`` + single info log.
 stdlib unittest only; the DB tests are skipped when Postgres is not
 reachable so a local ``python -m unittest`` still works.
 """
+
 from __future__ import annotations
 
 import os
@@ -44,6 +45,7 @@ def _has_dsn() -> bool:
 def _connect():
     """Open a management connection to the CI DB using WILLOW_DB_URL."""
     import psycopg2
+
     conn = psycopg2.connect(os.environ["WILLOW_DB_URL"])
     conn.autocommit = True
     return conn
@@ -67,12 +69,12 @@ def _clear_tasks() -> None:
 # setUp with ``ADD COLUMN IF NOT EXISTS`` so re-runs after a failed drop stay
 # green, and dropped at tearDown so the base shape survives.
 _EXTRA_COLS: tuple[tuple[str, str], ...] = (
-    ("origin",           "TEXT"),
-    ("kind",             "TEXT"),
-    ("urgency",          "TEXT"),
+    ("origin", "TEXT"),
+    ("kind", "TEXT"),
+    ("urgency", "TEXT"),
     ("authority_needed", "TEXT"),
-    ("context_refs",     "JSONB"),
-    ("proposed_action",  "TEXT"),
+    ("context_refs", "JSONB"),
+    ("proposed_action", "TEXT"),
 )
 
 
@@ -109,9 +111,15 @@ class MinimalShapeTests(unittest.TestCase):
             "INSERT INTO public.tasks (task, status, submitted_by) "
             "VALUES (%s, %s, %s), (%s, %s, %s), (%s, %s, %s)",
             [
-                "reply to Ada",      "queued", "operator",
-                "roll build",        "queued", "hanuman",
-                "already resolved",  "complete", "loki",
+                "reply to Ada",
+                "queued",
+                "operator",
+                "roll build",
+                "queued",
+                "hanuman",
+                "already resolved",
+                "complete",
+                "loki",
             ],
         )
 
@@ -138,7 +146,8 @@ class MinimalShapeTests(unittest.TestCase):
             if "authority_needed" in r.getMessage()
         ]
         self.assertEqual(
-            len(auth_msgs), 1,
+            len(auth_msgs),
+            1,
             f"authority_needed missing-log must fire once, saw {auth_msgs}",
         )
 
@@ -159,13 +168,13 @@ class FullShapeTests(unittest.TestCase):
     def _seed(self) -> None:
         rows = [
             # (task, origin, authority, urgency, status, action)
-            ("t1", "operator",   "L1", "operator-visible",  "queued", "reply to Ada"),
-            ("t2", "hanuman",    "L2", "background",        "queued", "roll build"),
-            ("t3", "skirnir",    "L3", "operator-visible",  "queued", "publish forecast"),
-            ("t4", "nestor",     "L4", "operator-blocking", "queued", "amend Article II"),
+            ("t1", "operator", "L1", "operator-visible", "queued", "reply to Ada"),
+            ("t2", "hanuman", "L2", "background", "queued", "roll build"),
+            ("t3", "skirnir", "L3", "operator-visible", "queued", "publish forecast"),
+            ("t4", "nestor", "L4", "operator-blocking", "queued", "amend Article II"),
             ("t5", "governance", "L4", "operator-blocking", "queued", "seat rotation"),
             # a done row must NEVER appear in any lens
-            ("t6", "loki",       "L1", "background",        "complete", "already resolved"),
+            ("t6", "loki", "L1", "background", "complete", "already resolved"),
         ]
         for task, origin, auth, urg, status, action in rows:
             _exec(
@@ -238,7 +247,8 @@ class UnsetDsnTests(unittest.TestCase):
         self.assertIn("WILLOW_DB_URL", ctx1.exception.reason)
         dsn_msgs = [r for r in caplog.records if "WILLOW_DB_URL" in r.getMessage()]
         self.assertEqual(
-            len(dsn_msgs), 1,
+            len(dsn_msgs),
+            1,
             f"missing-DSN log must fire exactly once, saw {len(dsn_msgs)}",
         )
 
