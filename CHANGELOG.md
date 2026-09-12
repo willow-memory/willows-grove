@@ -17,6 +17,10 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
   `CONTRIBUTING.md` (new) names the test command and the trailer convention.
   `tests/test_fleet_conventions.py` now points `PILE` at the pile, asserts
   the workflow is present, and the CONTRIBUTING rule's xfail is gone.
+  CodeQL found the new workflow (and `tests.yml`) declaring no
+  `permissions:` block; both now declare `contents: read`, and
+  `tests/test_ci_workflows_declare_permissions.py` holds every workflow to
+  it, planted.
 
 - **The meta-scan, and the tree held to the fleet's published conventions.**
   (PR 59) Fleet loop plan Wave 2, G2-meta-scans-grove and

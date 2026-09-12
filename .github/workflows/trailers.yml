@@ -23,6 +23,13 @@ on:
   pull_request:
     branches: [master]
 
+# Least privilege for the job's GITHUB_TOKEN: the gate reads the checkout
+# and `git log`, nothing else. Same stance as release.yml; found missing
+# by CodeQL on PR #60 and closed here, with tests/test_ci_workflows_declare_permissions.py
+# holding every workflow to it.
+permissions:
+  contents: read
+
 jobs:
   verify-trailers:
     runs-on: ubuntu-latest
