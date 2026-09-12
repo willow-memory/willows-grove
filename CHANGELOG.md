@@ -2,6 +2,54 @@
 
 All notable changes land here per INVARIANTS.md §3. Format follows Keep a Changelog v1.1.0.
 
+## [0.11.0](https://github.com/willow-memory/willows-grove/compare/v0.10.0...v0.11.0) (2026-09-12)
+
+
+### Added
+
+* **deploy:** track the Kart mount policy as a portable template ([481baa6](https://github.com/willow-memory/willows-grove/commit/481baa622434a56edd0393ab5d5f6f8e7631ce39))
+* **deploy:** track the Kart mount policy as a portable template ([#34](https://github.com/willow-memory/willows-grove/issues/34)) ([736a588](https://github.com/willow-memory/willows-grove/commit/736a588e45adca2bea2d84a939cacfe4ab4f4a29))
+* **envelopes:** relocate live registry into the grove charter repo ([#42](https://github.com/willow-memory/willows-grove/issues/42)) ([54802f4](https://github.com/willow-memory/willows-grove/commit/54802f4899a4c52294a4f5a311f7c44eed1854b0))
+* **envelopes:** relocate live registry into the grove charter repo. ([d1bc9bc](https://github.com/willow-memory/willows-grove/commit/d1bc9bcb7fbb0610e70e0404184fb1e3c09993e8))
+* **governance:** register ratatosk as a fleet persona ([5a31ce2](https://github.com/willow-memory/willows-grove/commit/5a31ce2779163e7b75826b8f3565e1267ba50aa9))
+* **governance:** register ratatosk as a fleet persona ([#56](https://github.com/willow-memory/willows-grove/issues/56)) ([2740fe5](https://github.com/willow-memory/willows-grove/commit/2740fe5d791cda97cfeadddc34e601418baa588c))
+* **hooks:** Grove's hook manifest, and §8 check 1 against it ([397cea5](https://github.com/willow-memory/willows-grove/commit/397cea52135ebce402081d2f0782b64b64492d7e))
+* **hooks:** Grove's hook manifest, and §8 check 1 against it ([#53](https://github.com/willow-memory/willows-grove/issues/53)) ([fb267d3](https://github.com/willow-memory/willows-grove/commit/fb267d320eda5174ec4839aaa9b610788cf69253))
+* **journal:** C11 seam speaks MCP to willow-mcp ([#30](https://github.com/willow-memory/willows-grove/issues/30)) ([38c5331](https://github.com/willow-memory/willows-grove/commit/38c53315286cdb0895fde41228f8155988504e75))
+* **journal:** speak MCP to willow-mcp instead of REST /tools/* ([ed5068a](https://github.com/willow-memory/willows-grove/commit/ed5068a5eba98920ea928b48eed83203d4bbdc3a))
+* **seat:** land the Jeles intake packets and make federation consents readable ([043b6ee](https://github.com/willow-memory/willows-grove/commit/043b6eec0f7c35767468f3456dbfe6a67731b7b5))
+* **seat:** polish Willow desk scripts and steward tooling ([a5d909d](https://github.com/willow-memory/willows-grove/commit/a5d909db9c8cd690004fa0a920d51d741c2db276))
+* **seat:** polish Willow desk scripts and steward tooling ([#61](https://github.com/willow-memory/willows-grove/issues/61)) ([0c84a42](https://github.com/willow-memory/willows-grove/commit/0c84a425b5fc871195171382fc521a5d720f03cc))
+* **seat:** prefer fleet venv willow-bot for pr-watch ([13de958](https://github.com/willow-memory/willows-grove/commit/13de958eba24bd1f5eec884b3436fdb04b979e65))
+* **seat:** prefer willow-bot-steward for pr-watch ([ea8e7aa](https://github.com/willow-memory/willows-grove/commit/ea8e7aa4c4752d1f9454c74f4330eb9f38167866))
+* **seat:** the Desk takes the head of the repo ([e199435](https://github.com/willow-memory/willows-grove/commit/e19943522b96b59e94dd4dc395e488a2e500ad54))
+* **seat:** Willow desk home and Grove persona partition ([#37](https://github.com/willow-memory/willows-grove/issues/37)) ([77cf265](https://github.com/willow-memory/willows-grove/commit/77cf2654fd64d94c37ced7fa2e1edc24eaaf7df2))
+* **seat:** Willow desk home; Jarvis is not a mode switch ([dd5ff4a](https://github.com/willow-memory/willows-grove/commit/dd5ff4a85d322ac1267aac14d7dbd63440d50e5e))
+* **seat:** wire the Desk so the seat is chosen by where you open ([2d67189](https://github.com/willow-memory/willows-grove/commit/2d67189441b26d8c2437a6b943fe70441f0570d5))
+* **seat:** wire the Desk so the seat is chosen by where you open ([#48](https://github.com/willow-memory/willows-grove/issues/48)) ([889a5d6](https://github.com/willow-memory/willows-grove/commit/889a5d69341c0d11f8065cd89c51e5168019dde7))
+* **vault:** consolidate the stranded grove branches onto the operator box ([#46](https://github.com/willow-memory/willows-grove/issues/46)) ([b0b7d26](https://github.com/willow-memory/willows-grove/commit/b0b7d26a00f95c9d8b7fcfbee48e187ce92a8e4c))
+* **vault:** follow the operator box for the store, the keyring and the trust root ([a00f5e3](https://github.com/willow-memory/willows-grove/commit/a00f5e31878851fec8fa5e25244dbf6820d5a266))
+
+
+### Fixed
+
+* **docs:** add PR 43 citation to CHANGELOG [Unreleased] bullet ([753a6a1](https://github.com/willow-memory/willows-grove/commit/753a6a12ce937a36199372635887b889b2cf2d95))
+* **governance:** let the coverage report see every clause ([f7f3ae1](https://github.com/willow-memory/willows-grove/commit/f7f3ae116a7f260e167ecdc2ee8de36942e24abe))
+* **governance:** let the coverage report see every clause ([#54](https://github.com/willow-memory/willows-grove/issues/54)) ([4e6576f](https://github.com/willow-memory/willows-grove/commit/4e6576f35353b926cc3ebd75842c666d3421bed3))
+* **governance:** read the fleet roster instead of copying it ([1b4ecfd](https://github.com/willow-memory/willows-grove/commit/1b4ecfdf541f357ee2a4162fb25e867aa7cf6fc1))
+* **governance:** read the fleet roster instead of copying it ([#55](https://github.com/willow-memory/willows-grove/issues/55)) ([b4e321d](https://github.com/willow-memory/willows-grove/commit/b4e321df2c585f37808ffa60faf8d3888a5a375b))
+* **governance:** repoint two dangling persona canonical_file entries ([dc1468e](https://github.com/willow-memory/willows-grove/commit/dc1468ee3634f3fc0d92ef5ab9a8923d1e2e65f7))
+* **governance:** repoint two dangling persona canonical_file entries ([#24](https://github.com/willow-memory/willows-grove/issues/24)) ([fdc64fe](https://github.com/willow-memory/willows-grove/commit/fdc64fe9035bfd60f45f9394bd2914a57282040a))
+* **grove-dispatch-rail:** guarantee 28-char legibility floor on .action ([3019883](https://github.com/willow-memory/willows-grove/commit/3019883b72aeb94e595f8604018a0a687afaafea))
+* **mcp:** move Grove MCP to 8767 to end the 8765 collision ([4cc7205](https://github.com/willow-memory/willows-grove/commit/4cc720579490eec9d9822808055456311ba15c87))
+* **mcp:** move Grove MCP to 8767 to end the 8765 collision ([#36](https://github.com/willow-memory/willows-grove/issues/36)) ([39876c6](https://github.com/willow-memory/willows-grove/commit/39876c68fc786db9732bc17a325eb45c0523ec51))
+* **seat:** bind a Grove sender in the probe instead of asserting on an unbound one ([b8059c5](https://github.com/willow-memory/willows-grove/commit/b8059c533644d2c919ee82af6f3a846ae4f51571))
+* **seat:** keep nestor-grove-session and pin its argv to the template ([c354749](https://github.com/willow-memory/willows-grove/commit/c354749c6a1812a4fafd02dfad6dee2d64e24d5e))
+* **stack:** the serve toggle installs 8767, and the unit gets a DSN ([983985c](https://github.com/willow-memory/willows-grove/commit/983985c9da07a09747794398b591b1be3e8e2e4b))
+* **stack:** the serve toggle installs 8767, and the unit gets a DSN ([#50](https://github.com/willow-memory/willows-grove/issues/50)) ([f0b7615](https://github.com/willow-memory/willows-grove/commit/f0b76150e3c378f27360139c5d9970b11934a04d))
+* **tests:** CI wrapper venv python and persona roster env isolation ([#28](https://github.com/willow-memory/willows-grove/issues/28)) ([98befdc](https://github.com/willow-memory/willows-grove/commit/98befdc9cdf20846b7126e0a706ead49ec4fa22c))
+* **tests:** resolve venv python in CI wrapper and isolate WILLOW_HOME ([2cbe5a9](https://github.com/willow-memory/willows-grove/commit/2cbe5a9253ab19386a9363de2cb356c138e01b06))
+
 ## [Unreleased]
 
 ### Added
