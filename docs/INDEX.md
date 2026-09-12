@@ -44,7 +44,8 @@ decisions that shaped what got built.
 | [`design/watcher-e2e-notes.md`](design/watcher-e2e-notes.md) | Resident watcher Ollama + Postgres LISTEN end-to-end notes |
 | [`design/autonomous-continuity.md`](design/autonomous-continuity.md) | Autonomous continuity — the sealing question for Nestor |
 | [`design/pr14-carryovers.md`](design/pr14-carryovers.md) | Punch list for v0.10 — what v0.9 punted and why |
-| [`KNOWN_GAPS.md`](KNOWN_GAPS.md) | Gaps in the shipped build (rolls up into pr14-carryovers) |
+| [`ideas.md`](ideas.md) | The idea pile — every open item this repo can land, numbered once, read by `reconciler run` |
+| [`KNOWN_GAPS.md`](KNOWN_GAPS.md) | The `GAP-00N` → pile-item map (the gaps themselves now live in `ideas.md`) |
 
 ## Audits (v0.9)
 

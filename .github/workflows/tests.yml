@@ -14,6 +14,14 @@ on:
     # check against the corrected body, which is the honest signal.
     types: [opened, synchronize, reopened, edited]
 
+# Least privilege for the job's GITHUB_TOKEN. Every step here reads the
+# checkout (fetching the base ref for the §11/§3 range walks is a read too)
+# and touches no GitHub API; nothing needs write. Found missing by CodeQL on
+# PR #60 alongside trailers.yml; tests/test_ci_workflows_declare_permissions.py
+# holds every workflow to it.
+permissions:
+  contents: read
+
 jobs:
   test-suite:
     runs-on: ubuntu-latest

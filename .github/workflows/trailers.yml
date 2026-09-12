@@ -1,0 +1,52 @@
+name: Trailers
+
+# Guards the join key the classifier trusts most. `reconciler verify` resolves
+# every Idea-Id trailer in this repo's history against docs/ideas.md and exits
+# non-zero on one that names an item the doc does not contain. A dangling
+# trailer is worse than a missing one: rule 2a asserts LANDED from it ahead of
+# every other inferred signal, and nothing else in the rule stack can tell a
+# real id from a plausible-looking dead one.
+#
+# A history with no trailers passes — the convention is prospective by design.
+#
+# Adapted from willow-reconciler's own trailers.yml: this repo's default
+# branch is `master`, the reconciler is installed from PyPI (it is not a
+# runtime dependency of the grove, so it is not in requirements.txt), and
+# `--repo ./` names the checkout as a path rather than by fleet-sibling
+# lookup, which a runner's layout cannot be relied on to satisfy. The
+# trailing slash is load-bearing on willow-reconciler 0.6.0: `_is_path_like`
+# reads a bare `.` as a NAME (no separator in it) and fails to resolve it.
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+# Least privilege for the job's GITHUB_TOKEN: the gate reads the checkout
+# and `git log`, nothing else. Same stance as release.yml; found missing
+# by CodeQL on PR #60 and closed here, with tests/test_ci_workflows_declare_permissions.py
+# holding every workflow to it.
+permissions:
+  contents: read
+
+jobs:
+  verify-trailers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # verify reads the whole history; the default shallow clone would
+          # hide every trailer written before the last commit and pass
+          # vacuously.
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install the reconciler
+        run: pip install "willow-reconciler>=0.6.0"
+
+      - name: Verify Idea-Id trailers resolve
+        run: reconciler verify --repo ./ --doc docs/ideas.md

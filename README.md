@@ -92,5 +92,8 @@ softening 1/41, authority-as-correctness 0/41. Reproducibility layer at
 
 ## What's known-not-yet-done
 
-`docs/design/pr14-carryovers.md` — the v0.10 punch list. Nothing here is
-implemented yet; it names what v0.9 punted and why.
+`docs/ideas.md` — the idea pile: every open item this repo can land, as
+one numbered list whose numbers are permanent join keys (`Idea-Id` commit
+trailers name them; `reconciler run --repo . --doc docs/ideas.md` reads
+them). It carries forward `docs/design/pr14-carryovers.md` — the v0.10 punch
+list, what v0.9 punted and why — and `docs/KNOWN_GAPS.md`.
