@@ -194,8 +194,12 @@ for g in json.load(sys.stdin):
   pr-watch)
     if command -v willow-bot-steward >/dev/null 2>&1; then
       exec willow-bot-steward tick "$@"
-    elif [[ -x "${WILLOW_BOT_VENV:-$HOME/github/workshop/willow-bot/.venv}/bin/willow-bot-steward" ]]; then
-      exec "${WILLOW_BOT_VENV:-$HOME/github/workshop/willow-bot/.venv}/bin/willow-bot-steward" tick "$@"
+    elif [[ -x "${WILLOW_BOT_VENV:-$HOME/sean-data-vault/willow-operator-box/venvs/willow-bot}/bin/willow-bot-steward" ]]; then
+      exec "${WILLOW_BOT_VENV:-$HOME/sean-data-vault/willow-operator-box/venvs/willow-bot}/bin/willow-bot-steward" tick "$@"
+    elif [[ -x "${HOME}/github/willow-memory/willow-bot/.venv/bin/willow-bot-steward" ]]; then
+      exec "${HOME}/github/willow-memory/willow-bot/.venv/bin/willow-bot-steward" tick "$@"
+    elif [[ -x "${HOME}/github/workshop/willow-bot/.venv/bin/willow-bot-steward" ]]; then
+      exec "${HOME}/github/workshop/willow-bot/.venv/bin/willow-bot-steward" tick "$@"
     else
       exec bash "$WMCP_REPO/scripts/loki_pr_watch.sh" "$@"
     fi
@@ -204,8 +208,12 @@ for g in json.load(sys.stdin):
   pr-watch-loop)
     if command -v willow-bot-steward >/dev/null 2>&1; then
       exec willow-bot-steward loop "$@"
-    elif [[ -x "${WILLOW_BOT_VENV:-$HOME/github/workshop/willow-bot/.venv}/bin/willow-bot-steward" ]]; then
-      exec "${WILLOW_BOT_VENV:-$HOME/github/workshop/willow-bot/.venv}/bin/willow-bot-steward" loop "$@"
+    elif [[ -x "${WILLOW_BOT_VENV:-$HOME/sean-data-vault/willow-operator-box/venvs/willow-bot}/bin/willow-bot-steward" ]]; then
+      exec "${WILLOW_BOT_VENV:-$HOME/sean-data-vault/willow-operator-box/venvs/willow-bot}/bin/willow-bot-steward" loop "$@"
+    elif [[ -x "${HOME}/github/willow-memory/willow-bot/.venv/bin/willow-bot-steward" ]]; then
+      exec "${HOME}/github/willow-memory/willow-bot/.venv/bin/willow-bot-steward" loop "$@"
+    elif [[ -x "${HOME}/github/workshop/willow-bot/.venv/bin/willow-bot-steward" ]]; then
+      exec "${HOME}/github/workshop/willow-bot/.venv/bin/willow-bot-steward" loop "$@"
     else
       exec bash "$WMCP_REPO/scripts/loki_pr_watch_loop.sh" "$@"
     fi
