@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "_b17": "GRVHK",
+  "_source": "ONE hook stack for every IDE/CLI on this Desk. Compiled into .cursor/hooks.json and .claude/settings.json by scripts/sync_desk_client_hooks.py. Dialect names may differ; the event set and actions must not (gap 651b4a1ccfab). Nestor-shaped per proposal 2026-09-02-grove-hooks-and-skills.md §2. PreToolUse is willow-mcp's guard (one gate); Grove adds none.",
+  "command": "hooks/grove-hook",
+  "env": {
+    "GROVE_SEAT_FILE": "{{PROJECT_ROOT}}/hooks/seat.md",
+    "WILLOW_HANDOFF_PROJECT": "willows-grove",
+    "WILLOW_HUMAN_ORCHESTRATOR": "1"
+  },
+  "hooks": [
+    {
+      "event": "session_start",
+      "action": "session_start",
+      "timeout": 120,
+      "fail_closed": false
+    },
+    {
+      "event": "prompt_submit",
+      "action": "reinject"
+    },
+    {
+      "event": "pre_compact",
+      "action": "reinject"
+    },
+    {
+      "event": "pre_tool_use",
+      "tool": "shell",
+      "action": "before_bash",
+      "timeout": 5,
+      "fail_closed": true
+    },
+    {
+      "event": "pre_tool_use",
+      "tool": "mcp",
+      "action": "before_mcp",
+      "timeout": 5,
+      "fail_closed": true
+    },
+    {
+      "event": "pre_tool_use",
+      "tool": "write",
+      "action": "before_write",
+      "timeout": 5,
+      "fail_closed": true
+    },
+    {
+      "event": "pre_tool_use",
+      "tool": "web",
+      "action": "before_web",
+      "timeout": 5,
+      "fail_closed": true
+    },
+    {
+      "event": "pre_tool_use",
+      "tool": "task",
+      "action": "before_task",
+      "timeout": 5,
+      "fail_closed": true
+    },
+    {
+      "event": "stop",
+      "action": "before_stop",
+      "timeout": 30,
+      "fail_closed": false
+    },
+    {
+      "event": "session_end",
+      "action": "session_end",
+      "timeout": 15,
+      "fail_closed": false
+    }
+  ]
+}

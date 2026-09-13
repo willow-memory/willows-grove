@@ -70,7 +70,6 @@ find_steward() {
   local cands=(
     "${WILLOW_BOT_VENV:-$HOME/sean-data-vault/willow-operator-box/venvs/willow-bot}/bin/willow-bot-steward"
     "${HOME}/github/willow-memory/willow-bot/.venv/bin/willow-bot-steward"
-    "${HOME}/github/workshop/willow-bot/.venv/bin/willow-bot-steward"
   )
   for c in "${cands[@]}"; do
     if [[ -x "$c" ]]; then

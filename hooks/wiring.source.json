@@ -33,5 +33,6 @@
       "_answers": "§3 question 3, per session — journal the decisions, propose the pairs, write the stack snapshot. Cannot block (Nestor's finding); warns and flushes."
     }
   ],
-  "_no_pre_tool_use": "Deliberate, per §7: willow-mcp's PreToolUse remains the one gate on tool calls. Grove adds no second gate on shell, write or MCP. One guard per event. Grove's stop gate gates TURNS, which is a different event."
+  "_no_pre_tool_use": "This Grove flowchart table stays free of PreToolUse (§7). The IDE stack that Cursor and Claude actually run is hooks/client-hooks.json — same willow PreToolUse gate, invoked through hooks/grove-hook before_* actions. One guard per event; sync via scripts/sync_desk_client_hooks.py (gap 651b4a1ccfab).",
+  "_ide_stack": "hooks/client-hooks.json"
 }

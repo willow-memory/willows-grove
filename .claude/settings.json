@@ -5,18 +5,91 @@
         "hooks": [
           {
             "type": "command",
-            "command": "WILLOW_APP_ID=willow WILLOW_HUMAN_ORCHESTRATOR=1 WILLOW_HANDOFF_PROJECT=willows-grove WILLOW_KEYRING=\"${WILLOW_HOME}/config/verifiers.json\" \"$CLAUDE_PROJECT_DIR/.venv/bin/python3\" -m willow_mcp.session_start_hook"
+            "command": "GROVE_SEAT_FILE=\"$CLAUDE_PROJECT_DIR/hooks/seat.md\" WILLOW_KEYRING=\"${WILLOW_HOME}/config/verifiers.json\" \"$CLAUDE_PROJECT_DIR/hooks/grove-hook\" claude session_start",
+            "timeout": 120
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "GROVE_SEAT_FILE=\"$CLAUDE_PROJECT_DIR/hooks/seat.md\" WILLOW_KEYRING=\"${WILLOW_HOME}/config/verifiers.json\" \"$CLAUDE_PROJECT_DIR/hooks/grove-hook\" claude reinject"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "GROVE_SEAT_FILE=\"$CLAUDE_PROJECT_DIR/hooks/seat.md\" WILLOW_KEYRING=\"${WILLOW_HOME}/config/verifiers.json\" \"$CLAUDE_PROJECT_DIR/hooks/grove-hook\" claude reinject"
           }
         ]
       }
     ],
     "PreToolUse": [
       {
-        "matcher": "Bash|task_submit|Write|Edit|MultiEdit|NotebookEdit|WebSearch|WebFetch",
         "hooks": [
           {
             "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR/.venv/bin/python3\" -m willow_mcp.pre_tool_hook"
+            "command": "GROVE_SEAT_FILE=\"$CLAUDE_PROJECT_DIR/hooks/seat.md\" WILLOW_KEYRING=\"${WILLOW_HOME}/config/verifiers.json\" \"$CLAUDE_PROJECT_DIR/hooks/grove-hook\" claude before_bash",
+            "timeout": 5
+          }
+        ],
+        "matcher": "Bash"
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "GROVE_SEAT_FILE=\"$CLAUDE_PROJECT_DIR/hooks/seat.md\" WILLOW_KEYRING=\"${WILLOW_HOME}/config/verifiers.json\" \"$CLAUDE_PROJECT_DIR/hooks/grove-hook\" claude before_mcp",
+            "timeout": 5
+          }
+        ],
+        "matcher": "mcp__"
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "GROVE_SEAT_FILE=\"$CLAUDE_PROJECT_DIR/hooks/seat.md\" WILLOW_KEYRING=\"${WILLOW_HOME}/config/verifiers.json\" \"$CLAUDE_PROJECT_DIR/hooks/grove-hook\" claude before_write",
+            "timeout": 5
+          }
+        ],
+        "matcher": "Write|Edit|MultiEdit|NotebookEdit"
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "GROVE_SEAT_FILE=\"$CLAUDE_PROJECT_DIR/hooks/seat.md\" WILLOW_KEYRING=\"${WILLOW_HOME}/config/verifiers.json\" \"$CLAUDE_PROJECT_DIR/hooks/grove-hook\" claude before_web",
+            "timeout": 5
+          }
+        ],
+        "matcher": "WebSearch|WebFetch"
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "GROVE_SEAT_FILE=\"$CLAUDE_PROJECT_DIR/hooks/seat.md\" WILLOW_KEYRING=\"${WILLOW_HOME}/config/verifiers.json\" \"$CLAUDE_PROJECT_DIR/hooks/grove-hook\" claude before_task",
+            "timeout": 5
+          }
+        ],
+        "matcher": "Task"
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "GROVE_SEAT_FILE=\"$CLAUDE_PROJECT_DIR/hooks/seat.md\" WILLOW_KEYRING=\"${WILLOW_HOME}/config/verifiers.json\" \"$CLAUDE_PROJECT_DIR/hooks/grove-hook\" claude before_stop",
+            "timeout": 30
           }
         ]
       }
@@ -26,10 +99,19 @@
         "hooks": [
           {
             "type": "command",
-            "command": "WILLOW_APP_ID=willow WILLOW_HUMAN_ORCHESTRATOR=1 WILLOW_HANDOFF_PROJECT=willows-grove WILLOW_KEYRING=\"${WILLOW_HOME}/config/verifiers.json\" \"$CLAUDE_PROJECT_DIR/.venv/bin/python3\" -m willow_mcp.session_stop_hook"
+            "command": "GROVE_SEAT_FILE=\"$CLAUDE_PROJECT_DIR/hooks/seat.md\" WILLOW_KEYRING=\"${WILLOW_HOME}/config/verifiers.json\" \"$CLAUDE_PROJECT_DIR/hooks/grove-hook\" claude session_end",
+            "timeout": 15
           }
         ]
       }
     ]
+  },
+  "env": {
+    "WILLOW_APP_ID": "willow",
+    "WILLOW_AGENT_NAME": "willow",
+    "AGENT_NAME": "willow",
+    "WILLOW_HUMAN_ORCHESTRATOR": "1",
+    "WILLOW_HANDOFF_PROJECT": "willows-grove",
+    "WILLOW_KEYRING": "${WILLOW_HOME}/config/verifiers.json"
   }
 }
