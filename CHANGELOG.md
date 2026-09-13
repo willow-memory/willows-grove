@@ -57,7 +57,7 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 ### Changed
 
 - **`scripts/sync_desk_client_hooks.py` delegates the tracked-file write to
-  `willow_mcp.install_project.apply_hooks`.** (PR 2c) The neutral compile
+  `willow_mcp.install_project.apply_hooks`.** (PR 68) The neutral compile
   pipeline through `willow_mcp.project_wiring._compile_hook_manifest` is
   unchanged; only the final write moved. A hand-added third-party PreToolUse
   entry in `.claude/settings.json` now SURVIVES a re-sync (was previously
