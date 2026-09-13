@@ -13,6 +13,7 @@ build/
 .worktrees/
 worktrees/
 .cursor/grove_followup_last_id
+.cursor/hooks.json
 data/
 
 # Playwright e2e (INVARIANTS §10) — installed deps and per-run output.
