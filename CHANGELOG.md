@@ -47,6 +47,11 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Changed
 
+- **Desk Claude SessionStart opens presence pinentry before auto-sign.** (PR 65)
+  Wire `WILLOW_KEYRING` and `WILLOW_OPERATOR_VERIFIER` into `.claude/settings.json`
+  SessionStart/End; document the host presence path as approval-broker §5c
+  (companion to willow-mcp SessionStart pinentry gate).
+
 - **Polish Willow desk and steward seat tooling.** (PR 61) Auto-resolve the
   Jeles Python runtime in `seat/willow/scripts/jeles-intake.py` across venvs;
   wire `heartbeat`, `scan`, `steward`, and `intake` subcommands into
