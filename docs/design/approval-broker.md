@@ -154,10 +154,25 @@ wrong, and the correction changes what stage 2 costs to build.
 A pinentry would unlock nothing. It would be a dialog whose only function is to
 assert that a human is present.
 
+### 5c. SessionStart presence pinentry (desk path, 2026-09-13)
+
+§5b still holds for Stage 2 / Kart / phone. What landed on the **desk** is the
+honest presence dialog §5b described: SessionStart (`session_start_hook`) opens
+desktop pinentry before PR8 auto-sign when `WILLOW_OPERATOR_VERIFIER` is set
+(ambient — the seat wiring does not hard-code a person handle; keyring path is
+`$WILLOW_HOME/config/verifiers.json`). Cancel → enter unattested. Completing the
+dialog does not unlock a key; it is the human act that was missing when PR8
+signed silently. Implementation: `willow_mcp.presence.challenge_presence` + the
+gate in `session_start_hook`. This does **not** widen
+`require_operator_terminal()` and does **not** put keys in Kart — Stage 2 /
+delegated approval remains the open question in `5f68ef97883c`.
+
 **So what is actually guarding the operator's signature?** Both keyring files
 are mode `0600`, which excludes other users — and this box has one user. The
 owned-tty check in `require_operator_terminal()` is therefore the *sole* barrier
-between any process running as the operator and the operator's signature. Kart
+between any process running as the operator and the operator's signature (aside
+from the SessionStart pinentry gate above, which only covers the auto-sign
+path). Kart
 is additionally blind to the keyring only because `config/verifiers.json` is not
 in the sandbox mount map (gap `4e1825878677`) — an accident of configuration,
 not a lock.
