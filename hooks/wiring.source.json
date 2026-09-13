@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "_b17": "GRVHK",
+  "_source": "Canonical Grove hook table. Edit THIS file (or replace from sealed Nestor rows); run scripts/generate_grove_hook_wiring.py to regenerate hooks/wiring.json. KB 20BACCD0 / proposal 2026-09-02-grove-hooks-and-skills.md §6 — never hand-edit wiring.json.",
+  "command": "hooks/grove-hook",
+  "env": {
+    "GROVE_SEAT_FILE": "{{PROJECT_ROOT}}/hooks/seat.md"
+  },
+  "hooks": [
+    {
+      "event": "session_start",
+      "action": "orient",
+      "_answers": "§2 questions 1 and 2 at boot — seat, seam reach, packet, envelope, attestation, corpus age, unit manifest, port ownership"
+    },
+    {
+      "event": "prompt_submit",
+      "action": "reinject",
+      "_answers": "§3 — keeps question 1 alive under compaction. Three lines, byte-stable. This is also the only mid-session surface: a lease or attestation that expires at hour three is caught here, not at session start."
+    },
+    {
+      "event": "pre_compact",
+      "action": "reinject",
+      "_answers": "§3 — same three lines; compaction is where the seat rule is most likely to be lost"
+    },
+    {
+      "event": "stop",
+      "action": "gate",
+      "_answers": "§3 question 3, per turn — refuse a turn claiming done with no evidence token; block once, then advisory"
+    },
+    {
+      "event": "session_end",
+      "action": "deposit",
+      "_answers": "§3 question 3, per session — journal the decisions, propose the pairs, write the stack snapshot. Cannot block (Nestor's finding); warns and flushes."
+    }
+  ],
+  "_no_pre_tool_use": "Deliberate, per §7: willow-mcp's PreToolUse remains the one gate on tool calls. Grove adds no second gate on shell, write or MCP. One guard per event. Grove's stop gate gates TURNS, which is a different event."
+}
