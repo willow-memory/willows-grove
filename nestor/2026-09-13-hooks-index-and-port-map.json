@@ -1,0 +1,135 @@
+{
+  "nestor_bundle": 4,
+  "created_at": "2026-09-13T23:55:00+00:00",
+  "domain": {
+    "source_lang": "decision",
+    "target_lang": "decision"
+  },
+  "matcher": "StringMatcher",
+  "signing": {
+    "enabled": false,
+    "algorithm": "hmac-sha256"
+  },
+  "partial_pairs": false,
+  "partial_rejections": false,
+  "counts": {
+    "pairs": 7,
+    "sealed": 0,
+    "servable": 7,
+    "rejections": 0,
+    "evidence": 0,
+    "warrants": 0
+  },
+  "pairs": [
+    {
+      "id": 1,
+      "source_text": "Where does an index the fleet depends on come from?",
+      "source_norm": "where does an index the fleet depends on come from?",
+      "source_lang": "decision",
+      "target_text": "Derived from the trees, never maintained by hand. A hand-kept index is wrong from the moment it is written and keeping it right is a job nobody has; that is why the 1.4 cross-repo index failed and why the code graph and the corpus work. Rows may be proposed by a session; the table is rebuilt from the repos at every PR.",
+      "target_lang": "decision",
+      "status": "draft",
+      "verifier": "willow",
+      "weight": 1.0,
+      "origin": "proposal:governance/proposals/2026-09-02-grove-hooks-and-skills.md#0",
+      "created_at": "2026-09-13T23:55:00+00:00",
+      "seal_sig": "",
+      "session_id": "session_01HT1B65V3p2zxj5M66wkwVW"
+    },
+    {
+      "id": 2,
+      "source_text": "Which fleet service owns TCP port 8765 on the operator box?",
+      "source_norm": "which fleet service owns tcp port 8765 on the operator box?",
+      "source_lang": "decision",
+      "target_text": "Nestor UI + keep store + keyring. The Nestor session-store console lives here.",
+      "target_lang": "decision",
+      "status": "draft",
+      "verifier": "willow",
+      "weight": 1.0,
+      "origin": "proposal:governance/proposals/2026-09-02-grove-hooks-and-skills.md#2-table-8",
+      "created_at": "2026-09-13T23:55:00+00:00",
+      "seal_sig": "",
+      "session_id": "session_01HT1B65V3p2zxj5M66wkwVW"
+    },
+    {
+      "id": 3,
+      "source_text": "Which fleet service owns TCP port 8766 on the operator box?",
+      "source_norm": "which fleet service owns tcp port 8766 on the operator box?",
+      "source_lang": "decision",
+      "target_text": "Grove desk page (loopback-only Starlette + uvicorn — willows-grove/grove_serve.py).",
+      "target_lang": "decision",
+      "status": "draft",
+      "verifier": "willow",
+      "weight": 1.0,
+      "origin": "proposal:governance/proposals/2026-09-02-grove-hooks-and-skills.md#2-table-8",
+      "created_at": "2026-09-13T23:55:00+00:00",
+      "seal_sig": "",
+      "session_id": "session_01HT1B65V3p2zxj5M66wkwVW"
+    },
+    {
+      "id": 4,
+      "source_text": "Which fleet service owns TCP port 8767 on the operator box?",
+      "source_norm": "which fleet service owns tcp port 8767 on the operator box?",
+      "source_lang": "decision",
+      "target_text": "Grove MCP server in --serve mode (HTTP + OAuth 2.0/PKCE; willows-grove/grove/mcp_local.py + grove/mcp_auth.py).",
+      "target_lang": "decision",
+      "status": "draft",
+      "verifier": "willow",
+      "weight": 1.0,
+      "origin": "proposal:governance/proposals/2026-09-02-grove-hooks-and-skills.md#2-table-8",
+      "created_at": "2026-09-13T23:55:00+00:00",
+      "seal_sig": "",
+      "session_id": "session_01HT1B65V3p2zxj5M66wkwVW"
+    },
+    {
+      "id": 5,
+      "source_text": "Which fleet service owns TCP port 8768 on the operator box?",
+      "source_norm": "which fleet service owns tcp port 8768 on the operator box?",
+      "source_lang": "decision",
+      "target_text": "willow-mcp in --serve mode. Moved off 8765 to keep the port distinct from the Nestor UI + keep store row; systemd port-8768.conf drop-in binds it.",
+      "target_lang": "decision",
+      "status": "draft",
+      "verifier": "willow",
+      "weight": 1.0,
+      "origin": "proposal:governance/proposals/2026-09-02-grove-hooks-and-skills.md#2-table-8",
+      "created_at": "2026-09-13T23:55:00+00:00",
+      "seal_sig": "",
+      "session_id": "session_01HT1B65V3p2zxj5M66wkwVW"
+    },
+    {
+      "id": 6,
+      "source_text": "Which fleet service owns TCP port 9000 on the operator box?",
+      "source_norm": "which fleet service owns tcp port 9000 on the operator box?",
+      "source_lang": "decision",
+      "target_text": "willow-bot (GitHub App webhook receiver). Added to the roster 2026-09-13 by operator direction.",
+      "target_lang": "decision",
+      "status": "draft",
+      "verifier": "willow",
+      "weight": 1.0,
+      "origin": "operator-statement:2026-09-13 (\"need to add 9000 for the bot here\")",
+      "created_at": "2026-09-13T23:55:00+00:00",
+      "seal_sig": "",
+      "session_id": "session_01HT1B65V3p2zxj5M66wkwVW"
+    },
+    {
+      "id": 7,
+      "source_text": "Which fleet service owns TCP port 11434 on the operator box?",
+      "source_norm": "which fleet service owns tcp port 11434 on the operator box?",
+      "source_lang": "decision",
+      "target_text": "Ollama (local inference; the willow-mcp local_inference seam and Grove's judgment prompts talk here).",
+      "target_lang": "decision",
+      "status": "draft",
+      "verifier": "willow",
+      "weight": 1.0,
+      "origin": "proposal:governance/proposals/2026-09-02-grove-hooks-and-skills.md#2-table-8",
+      "created_at": "2026-09-13T23:55:00+00:00",
+      "seal_sig": "",
+      "session_id": "session_01HT1B65V3p2zxj5M66wkwVW"
+    }
+  ],
+  "notes": [
+    "Willow (session_01HT1B65V3p2zxj5M66wkwVW) proposed this bundle. No pair is sealed. Operator seals in nestor UI against the local grove-session store per nestor/README.md.",
+    "The §2 table 8 row for 18789 (OpenClaw gateway) named in the 2026-09-02 proposal is DELETED per operator direction 2026-09-13 (\"we can remove the openclaw gateway. I don't use open claw.\") — the proposal doc will be updated in the same PR that seals these rows.",
+    "The four §3 grove-action rows (orient / reinject / gate / deposit) are deliberately not in this bundle — they are downstream of §0 sealing and get their own bundle once the operator has sealed the governing rule this bundle carries."
+  ]
+}
