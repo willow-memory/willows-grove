@@ -227,8 +227,8 @@ being blocked on egress.
 
 | stage | what | unblocks |
 |---|---|---|
-| **1 — request rows** | blocked task enqueues; `gates_panel` renders request rows; TUI/HTML can approve | `git push` from Kart, with the operator pressing one row instead of typing a command. No passphrase needed — `lease.grant` has none. |
-| **2 — delegated approval signature** (§5b) | an approval signed by an enrolled approver key satisfies presence for one bound act; signing still happens on the box | session attestation and per-task net envelopes without a terminal — **and this is the stage `git push` from Kart actually depends on**, because a task carrying `allow_net` needs the signed per-task envelope on top of the lease (`server.py:2395`), while a federated jeles call needs only the lease |
+| **1 — request rows** | blocked task enqueues; `gates_panel` renders request rows; TUI/HTML can approve | net leases (federated jeles call, task_net task), with the operator pressing one row instead of typing a command. No passphrase needed — `lease.grant` has none. **Push is *not* on this row**: `git push` is brokered separately via `git_push_execute` (willow-mcp holds the willows-bot installation token; Kart never sees a git credential — `docs/design/brokered-push.md`). What this stage unblocks for push is the SIGNED PUSH ENVELOPE the broker demands, not the push itself. |
+| **2 — delegated approval signature** (§5b) | an approval signed by an enrolled approver key satisfies presence for one bound act; signing still happens on the box | session attestation, per-task net envelopes, and the signed push envelope on top of `git_push_execute` — all without a terminal. A task carrying `allow_net` needs the signed per-task envelope on top of the lease (`server.py:2395`); a federated jeles call needs only the lease; a push needs its own `git.push` envelope handed to the broker. |
 | **3 — remote front end** | the phone drives the same `describe`/`apply` over tier 1 or tier 2 | approval when the operator is not at the box |
 
 Stage 1 touches no guard and no key. Stage 2 is where the security review
@@ -243,7 +243,8 @@ all, so `require_operator_terminal()` fails by construction and every
 operator-only act becomes unreachable — not inconvenient, unreachable. Stage 2
 is the load-bearing one, and stage 1's egress row alone does not get there: a
 lease unblocks federated jeles, while a Kart task carrying `allow_net` still
-needs the per-task signature.
+needs the per-task signature and a `git_push_execute` still needs its `git.push`
+envelope.
 
 Worth stating because it is the thing that makes this buildable at all: **Kart
 never runs these commands.** The sudo invariant (FRANK `90e52ab7`) refuses that

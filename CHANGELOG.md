@@ -56,6 +56,23 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Changed
 
+- **`before_web` covers the full willow_web_* family.** (PR 67) `.claude/settings.json`
+  (regenerated via `scripts/sync_desk_client_hooks.py` after the upstream
+  willow-mcp `project_wiring._TOOL_MATCHERS["web"]` extension) and
+  `seat/heimdallr/.claude/settings.json` (hand-edited — not on the sync
+  pipeline) now include `willow_web_search`, `willow_web_fetch`,
+  `willow_institutional_search`, and their `mcp__.*__` variants in the
+  PreToolUse matcher. A direct call to `willow_web_fetch` or
+  `willow_institutional_search` previously skipped the grove hook's
+  `before_web` entirely — defense in depth so the corpus-first delegation
+  to willow-mcp fires on every web-family verb, not only native
+  WebSearch/WebFetch. Also reframes `docs/design/approval-broker.md` §6
+  stage table: push is not a Kart-initiated egress act, it is brokered
+  via `git_push_execute` with the willows-bot installation token on the
+  broker (docs/design/brokered-push.md slice 3); what stage 1 unblocks
+  for push is the signed push envelope the broker demands, not the push
+  itself.
+
 - **Desk Claude SessionStart opens presence pinentry before auto-sign.** (PR 65)
   Wire `WILLOW_KEYRING` from `$WILLOW_HOME` into `.claude/settings.json`
   SessionStart/End (verifier comes from ambient `WILLOW_OPERATOR_VERIFIER`,
