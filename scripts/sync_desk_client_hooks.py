@@ -10,6 +10,7 @@ Usage:
   scripts/sync_desk_client_hooks.py          # write
   scripts/sync_desk_client_hooks.py --check  # exit 1 on drift
 """
+
 from __future__ import annotations
 
 import argparse
@@ -107,7 +108,9 @@ def _manifest_with_runtime(
     # feeding absolute WILLOW_APP_ID back through placeholder substitution.
     skip = {"WILLOW_APP_ID", "WILLOW_AGENT_NAME", "AGENT_NAME", "WILLOW_PROJECT_ROOT"}
     fake = copy.deepcopy(manifest)
-    fake["env"] = {k: v for k, v in full.items() if k not in skip and isinstance(v, str)}
+    fake["env"] = {
+        k: v for k, v in full.items() if k not in skip and isinstance(v, str)
+    }
     return fake
 
 
@@ -124,6 +127,7 @@ def _compile(pw: Any, entry: dict[str, Any], client: str) -> dict[str, Any]:
         return {"version": 1, "hooks": compiled}
     return compiled
 
+
 def _portable_claude_hooks(
     pw: Any, entry: dict[str, Any], compiled: dict[str, Any]
 ) -> dict[str, Any]:
@@ -133,7 +137,9 @@ def _portable_claude_hooks(
     Machine-absolute prefixes must not land in the tracked file (PR 65 shape).
     """
     root = str(ROOT)
-    home = (entry.get("env") or {}).get("WILLOW_HOME") or os.environ.get("WILLOW_HOME", "")
+    home = (entry.get("env") or {}).get("WILLOW_HOME") or os.environ.get(
+        "WILLOW_HOME", ""
+    )
     out: dict[str, Any] = {}
     for event, entries in compiled.items():
         new_entries = []
@@ -143,7 +149,9 @@ def _portable_claude_hooks(
                 continue
             nested = []
             for hook in entry_hook.get("hooks") or []:
-                if not isinstance(hook, dict) or not isinstance(hook.get("command"), str):
+                if not isinstance(hook, dict) or not isinstance(
+                    hook.get("command"), str
+                ):
                     nested.append(hook)
                     continue
                 cmd = hook["command"]
@@ -154,7 +162,11 @@ def _portable_claude_hooks(
                     parts = cmd.split()
                     # find grove-hook path
                     idx = next(
-                        (i for i, p in enumerate(parts) if p.endswith("hooks/grove-hook")),
+                        (
+                            i
+                            for i, p in enumerate(parts)
+                            if p.endswith("hooks/grove-hook")
+                        ),
                         None,
                     )
                     if idx is not None and idx + 2 < len(parts):

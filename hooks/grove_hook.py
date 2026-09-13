@@ -5,6 +5,7 @@
 Invoked only via the bash launcher (hooks/grove-hook), which resolves a
 willow-capable interpreter first. See module docstring on the launcher.
 """
+
 from __future__ import annotations
 
 import os
@@ -36,7 +37,9 @@ def _seat_drift() -> str | None:
     text = open(SEAT_FILE, encoding="utf-8").read()
     flat = " ".join(text.split())
     anchor = "derived from the trees, never maintained by hand"
-    return None if anchor in flat else "seat.md no longer carries the derived-index line"
+    return (
+        None if anchor in flat else "seat.md no longer carries the derived-index line"
+    )
 
 
 def _willow_python() -> str:
@@ -52,7 +55,9 @@ def orient() -> int:
     try:
         from willow_mcp import blockers
 
-        out = blockers.collect(APP_ID or "willow", os.environ.get("CLAUDE_SESSION_ID", ""))
+        out = blockers.collect(
+            APP_ID or "willow", os.environ.get("CLAUDE_SESSION_ID", "")
+        )
         if out["count"]:
             lines.append(f"blocked on {out['count']}:")
             for item in out["items"]:
