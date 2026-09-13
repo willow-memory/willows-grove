@@ -6,6 +6,11 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Added
 
+- **Grove hook wiring is generated, not hand-kept.** (PR 64) `hooks/wiring.source.json`
+  is the editable input; `scripts/generate_grove_hook_wiring.py` writes
+  `hooks/wiring.json`; `tests/test_grove_hook_wiring_generated.py` fails on
+  hand drift (KB 20BACCD0 / Grove hooks proposal §6).
+
 - **The fleet CI floor, and release-please.** (PR 62) Fleet plan Wave 4,
   decision 5: C4-tests-yml-grove and C4-grove-release. `tests.yml` now runs
   the suite on a Linux matrix derived from the `pyproject.toml` classifiers
