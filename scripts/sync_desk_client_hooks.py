@@ -77,6 +77,17 @@ def _load_pw():
     return pw
 
 
+def _load_install_project():
+    try:
+        from willow_mcp import install_project as ip
+    except ImportError as exc:
+        raise SystemExit(
+            "sync_desk_client_hooks: willow_mcp.install_project required "
+            f"(install willow-mcp / set WILLOW_MCP_PYTHON): {exc}"
+        ) from exc
+    return ip
+
+
 def _manifest_for_client(manifest: dict[str, Any], client: str) -> dict[str, Any]:
     """Dialect strip: Claude has no fail_closed; keep it for Cursor compile."""
     if client != "claude":
@@ -191,8 +202,17 @@ def _portable_claude_hooks(
 
 
 def _render_claude(pw: Any, entry: dict[str, Any]) -> dict[str, Any]:
+    """The freshly-rendered Grove-shaped settings block.
+
+    Only the fields Grove OWNS: `hooks` (per-event, will be merged by
+    `install_project.apply_hooks` so third-party entries survive) and `env`
+    (a top-level ambient block the pre-rendered path forwards verbatim). No
+    on-disk read here — that reader moved into `apply_hooks`, which is the
+    single writer of the tracked file and does its own third-party
+    preservation on the `hooks` half. See PR 2c: this is the delegation
+    that fixes the "third-party PreToolUse row lost on re-sync" gap.
+    """
     hooks = _portable_claude_hooks(pw, entry, _compile(pw, entry, "claude"))
-    # Portable ambient env only — no machine-absolute vault paths in git.
     env = {
         "WILLOW_APP_ID": "willow",
         "WILLOW_AGENT_NAME": "willow",
@@ -201,16 +221,7 @@ def _render_claude(pw: Any, entry: dict[str, Any]) -> dict[str, Any]:
         "WILLOW_HANDOFF_PROJECT": "willows-grove",
         "WILLOW_KEYRING": "${WILLOW_HOME}/config/verifiers.json",
     }
-    existing: dict[str, Any] = {}
-    if CLAUDE_OUT.is_file():
-        try:
-            existing = json.loads(CLAUDE_OUT.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
-            existing = {}
-    out = {k: v for k, v in existing.items() if k not in ("hooks", "env")}
-    out["hooks"] = hooks
-    out["env"] = env
-    return out
+    return {"hooks": hooks, "env": env}
 
 
 def render() -> tuple[dict[str, Any], dict[str, Any]]:
@@ -223,14 +234,37 @@ def _dump(data: dict[str, Any]) -> str:
     return json.dumps(data, indent=2, sort_keys=False) + "\n"
 
 
+def _rel(path: Path) -> str:
+    """Repo-relative display of ``path``; falls back to basename outside ROOT
+    (e.g. under pytest's tmp_path when tests monkeypatch the output paths)."""
+    try:
+        return str(path.relative_to(ROOT))
+    except ValueError:
+        return path.name
+
+
+def _claude_from_disk_after_apply(managed: dict[str, Any]) -> dict[str, Any]:
+    """Materialize the on-disk merge without writing: read existing, merge
+    the managed block the way `apply_hooks` would. Used only by `check()`.
+    """
+    ip = _load_install_project()
+    return ip.apply_hooks(CLAUDE_OUT, managed_hooks=managed, dry_run=True)
+
+
 def write() -> None:
     cursor, claude = render()
+    ip = _load_install_project()
     CURSOR_OUT.parent.mkdir(parents=True, exist_ok=True)
     CLAUDE_OUT.parent.mkdir(parents=True, exist_ok=True)
     CURSOR_OUT.write_text(_dump(cursor), encoding="utf-8")
-    CLAUDE_OUT.write_text(_dump(claude), encoding="utf-8")
-    print(f"wrote {CURSOR_OUT.relative_to(ROOT)}")
-    print(f"wrote {CLAUDE_OUT.relative_to(ROOT)}")
+    # Delegate the tracked-file write to willow-mcp's installer verb so a
+    # hand-added third-party hook in `.claude/settings.json` survives the
+    # sync. `apply_hooks` handles the atomic tmp+replace write and the
+    # per-event hooks merge; env and any other top-level keys we set here
+    # land verbatim.
+    ip.apply_hooks(CLAUDE_OUT, managed_hooks=claude)
+    print(f"wrote {_rel(CURSOR_OUT)}")
+    print(f"wrote {_rel(CLAUDE_OUT)}")
 
 
 def check() -> int:
@@ -240,22 +274,27 @@ def check() -> int:
         return rc
     if not CLAUDE_OUT.is_file():
         print(
-            "sync_desk_client_hooks --check: missing .claude/settings.json; run without --check",
+            "sync_desk_client_hooks --check: missing .claude/settings.json; "
+            "run without --check",
             file=sys.stderr,
         )
         return 1
     _, claude = render()
     got_l = json.loads(CLAUDE_OUT.read_text(encoding="utf-8"))
+    # Under the delegated write path (PR 2c) drift = "what would land if we
+    # ran the write now" ≠ "what's on disk". `apply_hooks(dry_run=True)`
+    # returns exactly the merged result the write would produce.
+    would_land = _claude_from_disk_after_apply(claude)
     drift = []
-    if got_l.get("hooks") != claude.get("hooks"):
-        drift.append(f"{CLAUDE_OUT.relative_to(ROOT)} (hooks)")
-    if (got_l.get("env") or {}) != (claude.get("env") or {}):
-        drift.append(f"{CLAUDE_OUT.relative_to(ROOT)} (env)")
+    if got_l.get("hooks") != would_land.get("hooks"):
+        drift.append(f"{_rel(CLAUDE_OUT)} (hooks)")
+    if (got_l.get("env") or {}) != (would_land.get("env") or {}):
+        drift.append(f"{_rel(CLAUDE_OUT)} (env)")
     if CURSOR_OUT.is_file():
         cursor, _ = render()
         got_c = json.loads(CURSOR_OUT.read_text(encoding="utf-8"))
         if got_c != cursor:
-            drift.append(f"{CURSOR_OUT.relative_to(ROOT)} (local)")
+            drift.append(f"{_rel(CURSOR_OUT)} (local)")
     if drift:
         print(
             "sync_desk_client_hooks --check: drift from hooks/client-hooks.json:\n  - "

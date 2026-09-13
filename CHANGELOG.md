@@ -56,6 +56,16 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Changed
 
+- **`scripts/sync_desk_client_hooks.py` delegates the tracked-file write to
+  `willow_mcp.install_project.apply_hooks`.** (PR 2c) The neutral compile
+  pipeline through `willow_mcp.project_wiring._compile_hook_manifest` is
+  unchanged; only the final write moved. A hand-added third-party PreToolUse
+  entry in `.claude/settings.json` now SURVIVES a re-sync (was previously
+  overwritten wholesale). `--check` compares against
+  `apply_hooks(dry_run=True)` output, so the drift gate still fires on real
+  drift but no longer trips on a preserved third-party row.
+  `tests/test_sync_delegates_to_install_project.py` pins the invariant.
+
 - **`before_web` covers the full willow_web_* family.** (PR 67) `.claude/settings.json`
   (regenerated via `scripts/sync_desk_client_hooks.py` after the upstream
   willow-mcp `project_wiring._TOOL_MATCHERS["web"]` extension) and
