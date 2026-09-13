@@ -6,6 +6,15 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Added
 
+- **One Desk hook stack for every IDE/CLI.** (PR 66) `hooks/client-hooks.json` is the
+  neutral table (Nestor-shaped); `scripts/sync_desk_client_hooks.py` compiles
+  it into `.cursor/hooks.json` (local) and `.claude/settings.json` (tracked,
+  portable `$CLAUDE_PROJECT_DIR` / `${WILLOW_HOME}`). `hooks/grove-hook`
+  launches the same actions on both dialects and reinjects a
+  codebase-memory-mcp session reminder (Cursor's `install` only wires global
+  MCP — Claude already got SessionStart hooks). Drift gate:
+  `tests/test_desk_client_hooks.py` + `--check` / `--parity` (gap 651b4a1ccfab).
+
 - **Grove hook wiring is generated, not hand-kept.** (PR 64) `hooks/wiring.source.json`
   is the editable input; `scripts/generate_grove_hook_wiring.py` writes
   `hooks/wiring.json`; `tests/test_grove_hook_wiring_generated.py` fails on
