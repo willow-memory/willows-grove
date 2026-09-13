@@ -158,13 +158,14 @@ assert that a human is present.
 
 §5b still holds for Stage 2 / Kart / phone. What landed on the **desk** is the
 honest presence dialog §5b described: SessionStart (`session_start_hook`) opens
-desktop pinentry before PR8 auto-sign when `WILLOW_OPERATOR_VERIFIER` is set.
-Cancel → enter unattested. Completing the dialog does not unlock a key; it is
-the human act that was missing when PR8 signed silently. Implementation:
-`willow_mcp.presence.challenge_presence` + the gate in `session_start_hook`.
-This does **not** widen `require_operator_terminal()` and does **not** put keys
-in Kart — Stage 2 / delegated approval remains the open question in
-`5f68ef97883c`.
+desktop pinentry before PR8 auto-sign when `WILLOW_OPERATOR_VERIFIER` is set
+(ambient — the seat wiring does not hard-code a person handle; keyring path is
+`$WILLOW_HOME/config/verifiers.json`). Cancel → enter unattested. Completing the
+dialog does not unlock a key; it is the human act that was missing when PR8
+signed silently. Implementation: `willow_mcp.presence.challenge_presence` + the
+gate in `session_start_hook`. This does **not** widen
+`require_operator_terminal()` and does **not** put keys in Kart — Stage 2 /
+delegated approval remains the open question in `5f68ef97883c`.
 
 **So what is actually guarding the operator's signature?** Both keyring files
 are mode `0600`, which excludes other users — and this box has one user. The
