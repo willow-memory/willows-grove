@@ -6,6 +6,25 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Added
 
+- **grove_hook Nestor-first probe + Jarvis close-out.** (PR 72) Two §3
+  addenda from the proposal, layered on top of #71's `gate`/`deposit`.
+  `_nestor_reach()` probes `127.0.0.1:8765` (PR 69's sealed port row) with a
+  250 ms timeout; on refuse it falls back to `shutil.which("nestor")` and
+  returns tri-state (`reachable` / `installed_not_answering` /
+  `not_installed`). `reinject` now prepends a Nestor-first line ahead of the
+  four seat lines: an attributed state (`Nestor: sealed`, etc.) when Nestor
+  answers, or the once-per-session boot line for the other two states —
+  guarded by `/tmp/willow-nestor-status-<sid>-<state>.flag` so subsequent
+  `prompt_submit` events don't repeat it. `orient` emits the same boot line
+  on session_start. `deposit` gains a Jarvis close-out: counts draft pairs
+  across `willows-grove/nestor/*.json`; if any exist and 8765 is not
+  serving, launches `nestor ui --loopback` fire-and-forget; either way,
+  prints `"The store is open if you'd like to sign them."` — one sentence,
+  no checklist. Zero unsealed pairs → silent. Seven new contract tests in
+  `tests/test_grove_hook_actions.py` cover the three probe branches, the
+  once-per-session sentinel, the reachable-but-ask-returns-none fallback,
+  and the three Jarvis close-out states.
+
 - **grove_hook implements `gate` and `deposit`.** (PR 71) Stop-event `gate`
   refuses a turn whose last assistant message reads "all tests pass" /
   "done" / "complete" without a `tool_use` in the same turn — a
