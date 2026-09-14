@@ -6,6 +6,18 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Added
 
+- **Willow proposes §0 hooks-and-index rule + §2 port map as a draft Nestor
+  bundle.** (PR 69) `nestor/2026-09-13-hooks-index-and-port-map.json`
+  carries 7 draft pairs — the governing "an index the fleet depends on is
+  derived from the trees, never maintained by hand" rule from the
+  2026-09-02 grove-hooks-and-skills proposal, plus port row assignments
+  for 8765 / 8766 / 8767 / 8768 / 9000 / 11434 with operator's 2026-09-13
+  corrections applied (added willow-bot on 9000; removed the OpenClaw
+  gateway row that had lived as a placeholder). Nothing is sealed; the
+  operator seals in `nestor ui` against the local grove-session store per
+  `nestor/README.md`. Downstream §3 grove-action rows are deliberately
+  deferred to a second bundle after §0 is sealed.
+
 - **One Desk hook stack for every IDE/CLI.** (PR 66) `hooks/client-hooks.json` is the
   neutral table (Nestor-shaped); `scripts/sync_desk_client_hooks.py` compiles
   it into `.cursor/hooks.json` (local) and `.claude/settings.json` (tracked,
