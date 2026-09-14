@@ -6,6 +6,19 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Added
 
+- **Willow proposes 5 grove-hook action rows as a draft Nestor bundle.**
+  (PR 70) `nestor/2026-09-14-grove-action-rows.json` carries 5 draft pairs
+  mirroring the entries in `hooks/wiring.source.json` one-for-one:
+  `session_start → orient`, `prompt_submit → reinject`,
+  `pre_compact → reinject`, `stop → gate`, `session_end → deposit`.
+  Bundle 2 of 2 for PR 3 (bundle 1 carried the §0 rule + port owners in
+  PR 69, sealed 2026-09-14). Nothing is sealed by merging this PR; the
+  operator seals in `nestor ui` against the local grove-session store.
+  Once sealed, PR 3 Phase B chunk 2 exports the sealed state to
+  `governance/decisions/grove-hook-rows-sealed.json` and retargets
+  `scripts/generate_grove_hook_wiring.py` to read from it, deleting
+  `hooks/wiring.source.json` as the 1.4 mistake §0 rules out.
+
 - **Willow proposes §0 hooks-and-index rule + §2 port map as a draft Nestor
   bundle.** (PR 69) `nestor/2026-09-13-hooks-index-and-port-map.json`
   carries 7 draft pairs — the governing "an index the fleet depends on is

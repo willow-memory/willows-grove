@@ -1,0 +1,105 @@
+{
+  "nestor_bundle": 4,
+  "created_at": "2026-09-14T00:20:00+00:00",
+  "domain": {
+    "source_lang": "decision",
+    "target_lang": "decision"
+  },
+  "matcher": "StringMatcher",
+  "signing": {
+    "enabled": false,
+    "algorithm": "hmac-sha256"
+  },
+  "partial_pairs": false,
+  "partial_rejections": false,
+  "counts": {
+    "pairs": 5,
+    "sealed": 0,
+    "servable": 5,
+    "rejections": 0,
+    "evidence": 0,
+    "warrants": 0
+  },
+  "pairs": [
+    {
+      "id": 1,
+      "source_text": "Which Grove hook action runs on the session_start event?",
+      "source_norm": "which grove hook action runs on the session_start event?",
+      "source_lang": "decision",
+      "target_text": "orient — evaluate the §2 readers at boot: seat, seam reach, packet, envelope, attestation, corpus age, unit manifest, port ownership. Each value produced by an existing reader; nothing hand-maintained. Three-state contract preserved (populated / empty / unreachable).",
+      "target_lang": "decision",
+      "status": "draft",
+      "verifier": "willow",
+      "weight": 1.0,
+      "origin": "proposal:governance/proposals/2026-09-02-grove-hooks-and-skills.md#3 · hooks/wiring.source.json:session_start",
+      "created_at": "2026-09-14T00:20:00+00:00",
+      "seal_sig": "",
+      "session_id": "session_01HT1B65V3p2zxj5M66wkwVW"
+    },
+    {
+      "id": 2,
+      "source_text": "Which Grove hook action runs on the prompt_submit event?",
+      "source_norm": "which grove hook action runs on the prompt_submit event?",
+      "source_lang": "decision",
+      "target_text": "reinject — emit three byte-stable lines from hooks/seat.md. Keeps §2 question 1 alive under compaction; also the only mid-session surface for a lease or attestation that expired since session_start. Nestor-first when installed: put the prompt to nestor_ask ahead of reinject when Nestor is reachable.",
+      "target_lang": "decision",
+      "status": "draft",
+      "verifier": "willow",
+      "weight": 1.0,
+      "origin": "proposal:governance/proposals/2026-09-02-grove-hooks-and-skills.md#3 · hooks/wiring.source.json:prompt_submit",
+      "created_at": "2026-09-14T00:20:00+00:00",
+      "seal_sig": "",
+      "session_id": "session_01HT1B65V3p2zxj5M66wkwVW"
+    },
+    {
+      "id": 3,
+      "source_text": "Which Grove hook action runs on the pre_compact event?",
+      "source_norm": "which grove hook action runs on the pre_compact event?",
+      "source_lang": "decision",
+      "target_text": "reinject — same three byte-stable lines from hooks/seat.md as prompt_submit. Compaction is where the seat rule is most likely to be lost; the reinject on pre_compact is what keeps it from silently going missing across a compress.",
+      "target_lang": "decision",
+      "status": "draft",
+      "verifier": "willow",
+      "weight": 1.0,
+      "origin": "proposal:governance/proposals/2026-09-02-grove-hooks-and-skills.md#3 · hooks/wiring.source.json:pre_compact",
+      "created_at": "2026-09-14T00:20:00+00:00",
+      "seal_sig": "",
+      "session_id": "session_01HT1B65V3p2zxj5M66wkwVW"
+    },
+    {
+      "id": 4,
+      "source_text": "Which Grove hook action runs on the stop event?",
+      "source_norm": "which grove hook action runs on the stop event?",
+      "source_lang": "decision",
+      "target_text": "gate — refuse a turn claiming done with no evidence token; block once, then advisory (per stop_hook_active). The gate acts per turn; it does not fight the pinentry flow the approval broker §5c is designing.",
+      "target_lang": "decision",
+      "status": "draft",
+      "verifier": "willow",
+      "weight": 1.0,
+      "origin": "proposal:governance/proposals/2026-09-02-grove-hooks-and-skills.md#3 · hooks/wiring.source.json:stop",
+      "created_at": "2026-09-14T00:20:00+00:00",
+      "seal_sig": "",
+      "session_id": "session_01HT1B65V3p2zxj5M66wkwVW"
+    },
+    {
+      "id": 5,
+      "source_text": "Which Grove hook action runs on the session_end event?",
+      "source_norm": "which grove hook action runs on the session_end event?",
+      "source_lang": "decision",
+      "target_text": "deposit — journal decisions and edges through kb_journal; propose unsealed pairs to the project Nestor; write the stack snapshot. Cannot block, per Nestor's SessionEnd finding; warns and flushes.",
+      "target_lang": "decision",
+      "status": "draft",
+      "verifier": "willow",
+      "weight": 1.0,
+      "origin": "proposal:governance/proposals/2026-09-02-grove-hooks-and-skills.md#3 · hooks/wiring.source.json:session_end",
+      "created_at": "2026-09-14T00:20:00+00:00",
+      "seal_sig": "",
+      "session_id": "session_01HT1B65V3p2zxj5M66wkwVW"
+    }
+  ],
+  "notes": [
+    "Willow (session_01HT1B65V3p2zxj5M66wkwVW) proposed this bundle. Every pair is draft; sessions may propose, may not seal.",
+    "These 5 rows mirror the current entries in hooks/wiring.source.json one-for-one. Once sealed, PR 3 Phase B chunk 2 exports the sealed state to governance/decisions/grove-hook-rows-sealed.json and retargets scripts/generate_grove_hook_wiring.py to read from that instead of the hand-kept source — deleting hooks/wiring.source.json as the 1.4 mistake proposal §0 rules out.",
+    "Bundle 2 of 2 for PR 3. Bundle 1 (nestor/2026-09-13-hooks-index-and-port-map.json) carried the §0 governing rule + §2 port owners; sealed by operator 2026-09-14."
+  ]
+}
