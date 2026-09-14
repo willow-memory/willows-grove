@@ -11,6 +11,8 @@ from __future__ import annotations
 import json
 import os
 import re
+import shutil
+import socket
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -19,6 +21,19 @@ from typing import Any
 
 SEAT_FILE = os.environ.get("GROVE_SEAT_FILE", "")
 APP_ID = os.environ.get("WILLOW_APP_ID", "")
+SESSION_ID = os.environ.get("CLAUDE_SESSION_ID", "")
+
+#: The Nestor UI + keep store + keyring per PR 69's sealed port row 2. The
+#: reachability probe uses this port as its truth source; if that seal moves
+#: in a future bundle, this constant moves with it.
+_NESTOR_PORT = 8765
+_NESTOR_PROBE_TIMEOUT = 0.25  # seconds; must not delay a Claude Code turn
+_NESTOR_ASK_TIMEOUT = 1.5  # seconds
+
+_NESTOR_STATUS_BOOT_LINE = {
+    "not_installed": "Nestor is not on this box.",
+    "installed_not_answering": "Nestor did not answer; unverified turn.",
+}
 
 #: Words that read as "I'm claiming the work is done." A turn that ends with
 #: one of these AND has no tool call this turn is what `gate` refuses on the
@@ -80,6 +95,13 @@ def orient() -> int:
     if drift:
         lines.append(f"seat drift: {drift}")
 
+    # Nestor-first boot line, once per session (per proposal §3):
+    # "the orient line says so once" for not-installed / not-answering.
+    reach = _nestor_reach()
+    boot_line = _emit_boot_line_once(reach)
+    if boot_line:
+        lines.append(boot_line)
+
     if lines:
         print("\n".join(lines), file=sys.stderr)
     return 0
@@ -92,11 +114,31 @@ def session_start() -> int:
 
 
 def reinject() -> int:
+    """UserPromptSubmit / PreCompact reinject. Layout (proposal §3):
+
+    1. Nestor-first row — one line ahead of the seat lines: either an
+       attributed Nestor state (`Nestor: sealed`, etc.) when reachable, or
+       the one-shot boot line for `not_installed` / `installed_not_answering`.
+    2. The four byte-stable REINJECT tuple entries.
+    3. Seat drift indicator, if `hooks/seat.md` no longer carries the anchor.
+
+    All go to stdout — Claude Code injects reinject stdout as context ahead
+    of the model's turn."""
+    hook_payload = _read_hook_stdin()
+    prompt = str(hook_payload.get("prompt", ""))
+    reach = _nestor_reach()
+
+    lines: list[str] = []
+    nestor_line = _nestor_context_line(prompt, reach)
+    if nestor_line:
+        lines.append(nestor_line)
+    lines.extend(REINJECT)
+
     drift = _seat_drift()
-    payload = list(REINJECT)
     if drift:
-        payload.append(f"(seat drift: {drift})")
-    print("\n".join(payload))
+        lines.append(f"(seat drift: {drift})")
+
+    print("\n".join(lines))
     return 0
 
 
@@ -108,6 +150,154 @@ def session_end() -> int:
     rc = _run_willow_module("willow_mcp.session_stop_hook")
     deposit()
     return rc
+
+
+def _nestor_reach() -> str:
+    """Probe Nestor's known port and CLI. Returns one of:
+    - "reachable" — 8765 accepts a TCP connection.
+    - "installed_not_answering" — 8765 refuses but the `nestor` CLI is on PATH.
+    - "not_installed" — 8765 refuses and there is no `nestor` CLI.
+
+    Bounded socket timeout (250ms) so a slow probe never delays a Claude Code
+    turn. Any exception on the socket side falls to the CLI check.
+    """
+    try:
+        with socket.create_connection(
+            ("127.0.0.1", _NESTOR_PORT), timeout=_NESTOR_PROBE_TIMEOUT
+        ):
+            return "reachable"
+    except (OSError, socket.timeout):
+        pass
+    return "installed_not_answering" if shutil.which("nestor") else "not_installed"
+
+
+def _nestor_ask(prompt: str) -> dict | None:
+    """Put `prompt` to Nestor. Returns a small dict {state, age, matches?} on
+    success, None on any error.
+
+    Discovery: at execute-time this expects a `nestor ask --json <prompt>` CLI
+    surface. On the operator's box `nestor-meaning` provides this. If the shape
+    is different in a future nestor-meaning release, the JSON parse fails and
+    the caller falls back to the "installed, not answering" path — which is
+    the right behavior: an unrecognized response is not an answer.
+    """
+    if not prompt.strip():
+        return None
+    try:
+        result = subprocess.run(
+            ["nestor", "ask", "--json"],
+            input=prompt.encode("utf-8"),
+            capture_output=True,
+            timeout=_NESTOR_ASK_TIMEOUT,
+        )
+    except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
+        return None
+    if result.returncode != 0:
+        return None
+    try:
+        parsed = json.loads(result.stdout.decode("utf-8"))
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        return None
+    return parsed if isinstance(parsed, dict) else None
+
+
+def _status_line_sentinel_path(reach: str) -> Path:
+    """Per-session flag so the boot line for `not_installed` /
+    `installed_not_answering` prints once at session_start / first reinject
+    and does not repeat on every prompt_submit."""
+    sid = SESSION_ID or "unknown"
+    return Path(f"/tmp/willow-nestor-status-{sid}-{reach}.flag")
+
+
+def _emit_boot_line_once(reach: str) -> str | None:
+    """Return the boot line for this state if it hasn't been emitted this
+    session yet; otherwise None. Uses a /tmp sentinel keyed on session id +
+    state so a transition (not_installed → installed_not_answering) still
+    prints once."""
+    if reach not in _NESTOR_STATUS_BOOT_LINE:
+        return None
+    sentinel = _status_line_sentinel_path(reach)
+    if sentinel.exists():
+        return None
+    try:
+        sentinel.touch()
+    except OSError:
+        # Best effort: if /tmp is unwritable, print each turn rather than
+        # crash the reinject.
+        pass
+    return _NESTOR_STATUS_BOOT_LINE[reach]
+
+
+def _nestor_context_line(prompt: str, reach: str) -> str | None:
+    """One-line attributed Nestor context ahead of a turn's reinject.
+
+    Reachable → call _nestor_ask; template a single line from its response.
+    Not installed / not answering → return the boot line ONCE per session
+    (subsequent calls return None so we don't repeat).
+    """
+    if reach == "reachable":
+        answer = _nestor_ask(prompt)
+        if not answer:
+            return None
+        state = answer.get("state", "unknown")
+        age = answer.get("age")
+        age_str = f" (age {age}s)" if isinstance(age, (int, float)) else ""
+        return f"Nestor: {state}{age_str}"
+    return _emit_boot_line_once(reach)
+
+
+def _count_unsealed_drafts() -> int:
+    """Count draft pairs across willows-grove/nestor/*.json bundles. These are
+    the pairs a session has proposed but the operator has not yet sealed —
+    the input to the Jarvis close-out's first table row."""
+    nestor_dir = Path(__file__).resolve().parent.parent / "nestor"
+    if not nestor_dir.is_dir():
+        return 0
+    total = 0
+    for bundle_path in nestor_dir.glob("*.json"):
+        try:
+            bundle = json.loads(bundle_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        for pair in bundle.get("pairs", []) or []:
+            if isinstance(pair, dict) and pair.get("status") == "draft":
+                total += 1
+    return total
+
+
+def _launch_nestor_ui() -> None:
+    """Fire-and-forget: start `nestor ui` on the loopback keep store. No wait,
+    no stdio hookup — if it succeeds, the next probe sees 8765 answering; if
+    it fails, the next Jarvis line still reads correctly (unsealed drafts
+    remain unsealed). Never raises."""
+    try:
+        subprocess.Popen(
+            ["nestor", "ui", "--loopback"],
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True,
+        )
+    except OSError:
+        pass
+
+
+def _jarvis_close_out() -> str | None:
+    """Compose the deposit's close-out line per proposal §3.
+
+    Reads: number of unsealed drafts across this repo's nestor/ bundles, and
+    whether Nestor UI is answering on 8765.
+
+    - unsealed > 0, UI not serving → launch it fire-and-forget; return the line.
+    - unsealed > 0, UI already serving → return the same line, no launch.
+    - unsealed == 0 → None (voice says nothing).
+    """
+    unsealed = _count_unsealed_drafts()
+    if unsealed == 0:
+        return None
+    if _nestor_reach() != "reachable":
+        _launch_nestor_ui()
+    return "The store is open if you'd like to sign them."
 
 
 def unimplemented(action: str) -> int:
@@ -278,6 +468,13 @@ def deposit() -> int:
     except OSError as exc:
         # SessionEnd cannot block; warn and continue.
         print(f"grove deposit: could not write under {outdir}: {exc}", file=sys.stderr)
+
+    # Jarvis close-out: one sentence, no checklist (proposal §3). Only prints
+    # a line when there are unsealed drafts on disk; on the "unsealed + UI
+    # not serving" state, also launches nestor ui fire-and-forget.
+    jarvis = _jarvis_close_out()
+    if jarvis:
+        print(jarvis, file=sys.stderr)
     return 0
 
 
