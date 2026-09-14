@@ -9,31 +9,31 @@
     {
       "event": "session_start",
       "action": "orient",
-      "_answers": "\u00a72 questions 1 and 2 at boot \u2014 seat, seam reach, packet, envelope, attestation, corpus age, unit manifest, port ownership"
+      "_answers": "orient \u2014 evaluate the \u00a72 readers at boot: seat, seam reach, packet, envelope, attestation, corpus age, unit manifest, port ownership. Each value produced by an existing reader; nothing hand-maintained. Three-state contract preserved (populated / empty / unreachable)."
     },
     {
       "event": "prompt_submit",
       "action": "reinject",
-      "_answers": "\u00a73 \u2014 keeps question 1 alive under compaction. Three lines, byte-stable. This is also the only mid-session surface: a lease or attestation that expires at hour three is caught here, not at session start."
+      "_answers": "reinject \u2014 emit three byte-stable lines from hooks/seat.md. Keeps \u00a72 question 1 alive under compaction; also the only mid-session surface for a lease or attestation that expired since session_start. Nestor-first when installed: put the prompt to nestor_ask ahead of reinject when Nestor is reachable."
     },
     {
       "event": "pre_compact",
       "action": "reinject",
-      "_answers": "\u00a73 \u2014 same three lines; compaction is where the seat rule is most likely to be lost"
+      "_answers": "reinject \u2014 same three byte-stable lines from hooks/seat.md as prompt_submit. Compaction is where the seat rule is most likely to be lost; the reinject on pre_compact is what keeps it from silently going missing across a compress."
     },
     {
       "event": "stop",
       "action": "gate",
-      "_answers": "\u00a73 question 3, per turn \u2014 refuse a turn claiming done with no evidence token; block once, then advisory"
+      "_answers": "gate \u2014 refuse a turn claiming done with no evidence token; block once, then advisory (per stop_hook_active). The gate acts per turn; it does not fight the pinentry flow the approval broker \u00a75c is designing."
     },
     {
       "event": "session_end",
       "action": "deposit",
-      "_answers": "\u00a73 question 3, per session \u2014 journal the decisions, propose the pairs, write the stack snapshot. Cannot block (Nestor's finding); warns and flushes."
+      "_answers": "deposit \u2014 journal decisions and edges through kb_journal; propose unsealed pairs to the project Nestor; write the stack snapshot. Cannot block, per Nestor's SessionEnd finding; warns and flushes."
     }
   ],
   "_no_pre_tool_use": "This Grove flowchart table stays free of PreToolUse (\u00a77). The IDE stack that Cursor and Claude actually run is hooks/client-hooks.json \u2014 same willow PreToolUse gate, invoked through hooks/grove-hook before_* actions. One guard per event; sync via scripts/sync_desk_client_hooks.py (gap 651b4a1ccfab).",
   "_ide_stack": "hooks/client-hooks.json",
   "_generated_by": "scripts/generate_grove_hook_wiring.py",
-  "_generated_from": "hooks/wiring.source.json"
+  "_generated_from": "governance/decisions/grove-hook-rows-sealed.json"
 }

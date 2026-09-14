@@ -117,6 +117,19 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Changed
 
+- **`hooks/wiring.json` derives from sealed Nestor rows, not the hand-kept
+  source.** (PR 73) `scripts/generate_grove_hook_wiring.py` now reads
+  `governance/decisions/grove-hook-rows-sealed.json` — a "sealed record"
+  file mirroring the 5 pairs the operator sealed via PR 70's Nestor bundle
+  on 2026-09-14. Ambient scaffolding (command, env, ide-stack pointer, the
+  `_no_pre_tool_use` note) moved from the source file into module
+  constants inside the generator; changing them is a code change, reviewed.
+  `hooks/wiring.source.json` is deleted — its row content lives in Nestor
+  now, per proposal §6. Chunk B2 of Phase B, delivering "an index the fleet
+  depends on is derived from the trees, never maintained by hand" (§0,
+  sealed via PR 69). `tests/test_grove_hook_wiring_generated.py` extended
+  with a hand-edit plant + input-validation cases.
+
 - **`scripts/sync_desk_client_hooks.py` delegates the tracked-file write to
   `willow_mcp.install_project.apply_hooks`.** (PR 68) The neutral compile
   pipeline through `willow_mcp.project_wiring._compile_hook_manifest` is
