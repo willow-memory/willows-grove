@@ -1,0 +1,35 @@
+{
+  "schema": "grove-hook-rows/v1",
+  "topic": "grove-hooks-truth-table",
+  "recorded_at": "2026-09-14T02:00:00Z",
+  "verifier": "sean",
+  "sealed_from": "nestor/2026-09-14-grove-action-rows.json (PR 70)",
+  "note": "Sealed pairs from the local grove-session Nestor DB. This file is the source `scripts/generate_grove_hook_wiring.py` reads to compose `hooks/wiring.json` — proposal 2026-09-02-grove-hooks-and-skills.md §6 (\"an index the fleet depends on is derived from the trees, never maintained by hand\", sealed 2026-09-14 as pair 1 of PR 69). `answers` text is verbatim from the bundle's `target_text` (the string the operator sealed); the previous hand-kept `hooks/wiring.source.json` is deleted alongside this file's introduction.",
+  "rows": [
+    {
+      "event": "session_start",
+      "action": "orient",
+      "answers": "orient — evaluate the §2 readers at boot: seat, seam reach, packet, envelope, attestation, corpus age, unit manifest, port ownership. Each value produced by an existing reader; nothing hand-maintained. Three-state contract preserved (populated / empty / unreachable)."
+    },
+    {
+      "event": "prompt_submit",
+      "action": "reinject",
+      "answers": "reinject — emit three byte-stable lines from hooks/seat.md. Keeps §2 question 1 alive under compaction; also the only mid-session surface for a lease or attestation that expired since session_start. Nestor-first when installed: put the prompt to nestor_ask ahead of reinject when Nestor is reachable."
+    },
+    {
+      "event": "pre_compact",
+      "action": "reinject",
+      "answers": "reinject — same three byte-stable lines from hooks/seat.md as prompt_submit. Compaction is where the seat rule is most likely to be lost; the reinject on pre_compact is what keeps it from silently going missing across a compress."
+    },
+    {
+      "event": "stop",
+      "action": "gate",
+      "answers": "gate — refuse a turn claiming done with no evidence token; block once, then advisory (per stop_hook_active). The gate acts per turn; it does not fight the pinentry flow the approval broker §5c is designing."
+    },
+    {
+      "event": "session_end",
+      "action": "deposit",
+      "answers": "deposit — journal decisions and edges through kb_journal; propose unsealed pairs to the project Nestor; write the stack snapshot. Cannot block, per Nestor's SessionEnd finding; warns and flushes."
+    }
+  ]
+}
