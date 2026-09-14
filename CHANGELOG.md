@@ -6,6 +6,23 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Added
 
+- **grove_hook implements `gate` and `deposit`.** (PR 71) Stop-event `gate`
+  refuses a turn whose last assistant message reads "all tests pass" /
+  "done" / "complete" without a `tool_use` in the same turn — a
+  structured `{"decision": "block", "reason": "..."}` response. Second Stop
+  in the same turn (`stop_hook_active`) is advisory: prints to stderr, exits
+  zero, does not fight the pinentry flow approval-broker §5c is designing.
+  SessionEnd `deposit` walks the transcript's `tool_use` blocks and writes
+  a JSON summary to `$WILLOW_HOME/deposits/<session_id>.json` (fallback
+  `~/.willow/deposits/<session_id>.json`); cannot block per Nestor's
+  SessionEnd finding, so any write failure warns to stderr and exits zero.
+  Nestor `kb_journal` writes + draft pair proposals from this action stay
+  deferred — MVP semantic per operator direction 2026-09-14. Contract tests
+  in `tests/test_grove_hook_actions.py` pin: block-on-done-claim,
+  allow-with-tool-call, advisory-on-stop_hook_active, fail-open on missing
+  transcript, deposit shape, deposit-cannot-block on unwritable dir,
+  missing-transcript still writes total=0.
+
 - **Willow proposes 5 grove-hook action rows as a draft Nestor bundle.**
   (PR 70) `nestor/2026-09-14-grove-action-rows.json` carries 5 draft pairs
   mirroring the entries in `hooks/wiring.source.json` one-for-one:
