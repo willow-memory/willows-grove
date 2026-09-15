@@ -6,6 +6,19 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Added
 
+- **`Gap-Id:` / `Idea-Id:` join-key trailers.** (PR 76) INVARIANTS §11 gains two
+  optional trailers: `Gap-Id: <12 hex>` names the backlog gap a commit
+  lands the fix for; `Idea-Id: <slug>` names a recorded idea. Neither is
+  required, but a present value must parse —
+  `scripts/check_persona_provenance.py` refuses a `Gap-Id` that is not
+  twelve lowercase hex characters, because the willow-bot steward resolves
+  the cited gap on the sweep that brings the merge home and a malformed id
+  would resolve nothing silently. Shape only; the checker does not consult
+  the backlog. Eight new cases in `tests/test_persona_provenance_check.py`.
+  Motivated by the 2026-09-12 market survey (Mechanism 1: "trailer + CI
+  refusal not yet implemented") read against gap e278ec952b9c (the backlog
+  cannot record its own closures) and reconciler slice 0 (no join key, 0.0
+  recovery).
 - **The operator's verifier stays out of tracked files.** (PR 74)
   `scripts/sync_desk_client_hooks.py` routes `WILLOW_OPERATOR_VERIFIER` —
   the name that opts the session_start hook into the boot pinentry — to the
