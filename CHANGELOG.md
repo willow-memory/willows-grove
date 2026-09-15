@@ -6,6 +6,16 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Added
 
+- **The operator's verifier stays out of tracked files.** (PR 74)
+  `scripts/sync_desk_client_hooks.py` routes `WILLOW_OPERATOR_VERIFIER` —
+  the name that opts the session_start hook into the boot pinentry — to the
+  gitignored `.claude/settings.local.json` (created if absent, nothing else
+  in it touched, idempotent), keeps it out of the rendered tracked block, and
+  `--check` refuses a tracked `.claude/settings.json` that carries it.
+  `nestor/README.md` gains the 2026-09-14 keyring-partition note (repo
+  staging lane, not fleet law) without naming the verifier or the key.
+  `tests/test_sync_keeps_the_operator_out_of_tracked_files.py` pins all of
+  it, including a planted tracked block the gate must refuse.
 - **grove_hook Nestor-first probe + Jarvis close-out.** (PR 72) Two §3
   addenda from the proposal, layered on top of #71's `gate`/`deposit`.
   `_nestor_reach()` probes `127.0.0.1:8765` (PR 69's sealed port row) with a

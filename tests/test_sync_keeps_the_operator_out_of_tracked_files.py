@@ -42,12 +42,20 @@ def test_the_rendered_tracked_block_never_carries_the_verifier():
     assert "a real person" not in json.dumps(claude)
 
 
-def test_the_verifier_goes_to_the_local_seat_file_and_nothing_else_moves(tmp_path, monkeypatch):
+def test_the_verifier_goes_to_the_local_seat_file_and_nothing_else_moves(
+    tmp_path, monkeypatch
+):
     local = tmp_path / "settings.local.json"
-    local.write_text(json.dumps({
-        "env": {"WILLOW_HOME": "/somewhere"},
-        "permissions": {"allow": ["Read(*)"]},
-    }) + "\n", encoding="utf-8")
+    local.write_text(
+        json.dumps(
+            {
+                "env": {"WILLOW_HOME": "/somewhere"},
+                "permissions": {"allow": ["Read(*)"]},
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     monkeypatch.setattr(sync, "CLAUDE_LOCAL", local)
 
     changed = sync._write_local_seat_env(sync._local_seat_env(_entry_with_verifier()))
@@ -57,27 +65,38 @@ def test_the_verifier_goes_to_the_local_seat_file_and_nothing_else_moves(tmp_pat
     assert data["env"]["WILLOW_HOME"] == "/somewhere"
     assert data["permissions"] == {"allow": ["Read(*)"]}
     # idempotent: a second write with the same value changes nothing
-    assert sync._write_local_seat_env({"WILLOW_OPERATOR_VERIFIER": "a real person"}) is False
+    assert (
+        sync._write_local_seat_env({"WILLOW_OPERATOR_VERIFIER": "a real person"})
+        is False
+    )
 
 
 def test_the_local_seat_file_is_created_when_absent(tmp_path, monkeypatch):
     local = tmp_path / "nested" / "settings.local.json"
     monkeypatch.setattr(sync, "CLAUDE_LOCAL", local)
     assert sync._write_local_seat_env({"WILLOW_OPERATOR_VERIFIER": "x"}) is True
-    assert json.loads(local.read_text(encoding="utf-8")) == {"env": {"WILLOW_OPERATOR_VERIFIER": "x"}}
+    assert json.loads(local.read_text(encoding="utf-8")) == {
+        "env": {"WILLOW_OPERATOR_VERIFIER": "x"}
+    }
 
 
 def test_nothing_is_written_when_no_verifier_is_configured(tmp_path, monkeypatch):
     local = tmp_path / "settings.local.json"
     monkeypatch.setattr(sync, "CLAUDE_LOCAL", local)
     entry = sync._entry()
-    entry["env"] = {k: v for k, v in (entry.get("env") or {}).items() if k != "WILLOW_OPERATOR_VERIFIER"}
+    entry["env"] = {
+        k: v
+        for k, v in (entry.get("env") or {}).items()
+        if k != "WILLOW_OPERATOR_VERIFIER"
+    }
     assert sync._local_seat_env(entry) == {}
     assert sync._write_local_seat_env({}) is False
     assert not local.exists()
 
 
-def test_check_refuses_a_tracked_block_that_carries_the_verifier(tmp_path, monkeypatch, capsys):
+def test_check_refuses_a_tracked_block_that_carries_the_verifier(
+    tmp_path, monkeypatch, capsys
+):
     """Planted: the tracked file with the name in its env. The drift gate must
     name it, whatever else matches."""
     _, claude = sync.render()
@@ -95,5 +114,7 @@ def test_check_refuses_a_tracked_block_that_carries_the_verifier(tmp_path, monke
 
 def test_the_tracked_settings_on_disk_carry_no_verifier():
     """The real file, as committed."""
-    tracked = json.loads((ROOT / ".claude" / "settings.json").read_text(encoding="utf-8"))
+    tracked = json.loads(
+        (ROOT / ".claude" / "settings.json").read_text(encoding="utf-8")
+    )
     assert "WILLOW_OPERATOR_VERIFIER" not in (tracked.get("env") or {})
