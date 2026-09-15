@@ -1,4 +1,12 @@
-# nestor/ — this session's findings, as a Nestor store
+# nestor/ — repo staging store (not fleet law)
+
+This directory is the **repo staging lane** under the 2026-09-14 partition:
+propose drafts here (bundles + optional local `grove-session.db`); seal into
+**fleet** (`$WILLOW_VAULT_BOX/nestor.db`) or **personal**
+(`$WILLOW_VAULT_BOX/nestor-personal/`) on purpose. Identity is the operator's
+one verifier under one key — named in `$WILLOW_VAULT_BOX/KEYRING-PARTITION.md`
+and `nestor-personal/README.md`, not here. Agents must not treat this live DB
+as the fleet corpus; bundles in git are what travel.
 
 `session-decisions.json` is a Nestor **bundle** (`nestor_bundle` v4): 15 draft
 decisions in the `grove→grove` domain, recorded 2026-08-30. Each carries an
