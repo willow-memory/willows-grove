@@ -25,6 +25,15 @@ ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_REL = "hooks/client-hooks.json"
 CURSOR_OUT = ROOT / ".cursor" / "hooks.json"
 CLAUDE_OUT = ROOT / ".claude" / "settings.json"
+# The untracked seat file (gitignored globally alongside .mcp.json). Anything
+# that names the operator or this box — the verifier, machine paths — lands
+# here, never in the tracked block: this is a public repo.
+CLAUDE_LOCAL = ROOT / ".claude" / "settings.local.json"
+
+# Seat env the tracked block must NEVER carry. WILLOW_OPERATOR_VERIFIER is a
+# person's name; it opts the session_start hook into the presence pinentry
+# and is exactly as identifying as a path. It rides in settings.local.json.
+_LOCAL_ONLY_ENV = ("WILLOW_OPERATOR_VERIFIER",)
 
 
 def _entry() -> dict[str, Any]:
@@ -221,7 +230,42 @@ def _render_claude(pw: Any, entry: dict[str, Any]) -> dict[str, Any]:
         "WILLOW_HANDOFF_PROJECT": "willows-grove",
         "WILLOW_KEYRING": "${WILLOW_HOME}/config/verifiers.json",
     }
+    # WILLOW_OPERATOR_VERIFIER is deliberately NOT here: the session_start
+    # presence pinentry is opt-in on it, and the Claude seat needs it (Cursor
+    # folds it onto every command line from .mcp.json), but it is the
+    # operator's name in a public repo's tracked file. It goes to
+    # settings.local.json via _local_seat_env(); the hook reads the merged
+    # env either way.
     return {"hooks": hooks, "env": env}
+
+
+def _local_seat_env(entry: dict[str, Any]) -> dict[str, str]:
+    """The seat env that belongs in the untracked settings.local.json: the
+    keys in _LOCAL_ONLY_ENV that the live .mcp.json / process env carry."""
+    src = entry.get("env") or {}
+    return {k: src[k].strip() for k in _LOCAL_ONLY_ENV if str(src.get(k, "")).strip()}
+
+
+def _write_local_seat_env(local_env: dict[str, str]) -> bool:
+    """Merge ``local_env`` into settings.local.json's ``env`` block, creating
+    the file if absent and touching nothing else in it. Returns True when
+    the file changed."""
+    if not local_env:
+        return False
+    data: dict[str, Any] = {}
+    if CLAUDE_LOCAL.is_file():
+        try:
+            data = json.loads(CLAUDE_LOCAL.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            data = {}
+    env = dict(data.get("env") or {})
+    if all(env.get(k) == v for k, v in local_env.items()):
+        return False
+    env.update(local_env)
+    data["env"] = env
+    CLAUDE_LOCAL.parent.mkdir(parents=True, exist_ok=True)
+    CLAUDE_LOCAL.write_text(_dump(data), encoding="utf-8")
+    return True
 
 
 def render() -> tuple[dict[str, Any], dict[str, Any]]:
@@ -265,6 +309,8 @@ def write() -> None:
     ip.apply_hooks(CLAUDE_OUT, managed_hooks=claude)
     print(f"wrote {_rel(CURSOR_OUT)}")
     print(f"wrote {_rel(CLAUDE_OUT)}")
+    if _write_local_seat_env(_local_seat_env(_entry())):
+        print(f"wrote {_rel(CLAUDE_LOCAL)} (local seat env)")
 
 
 def check() -> int:
@@ -290,6 +336,12 @@ def check() -> int:
         drift.append(f"{_rel(CLAUDE_OUT)} (hooks)")
     if (got_l.get("env") or {}) != (would_land.get("env") or {}):
         drift.append(f"{_rel(CLAUDE_OUT)} (env)")
+    leaked = [k for k in _LOCAL_ONLY_ENV if k in (got_l.get("env") or {})]
+    if leaked:
+        drift.append(
+            f"{_rel(CLAUDE_OUT)} carries local-only seat env {leaked} — "
+            f"that belongs in {_rel(CLAUDE_LOCAL)}"
+        )
     if CURSOR_OUT.is_file():
         cursor, _ = render()
         got_c = json.loads(CURSOR_OUT.read_text(encoding="utf-8"))
