@@ -18,6 +18,13 @@ justified by a sibling repo not always being present in CI, which the
 in-repo copy already solved — and the two drifted: `schmidt` reached the
 roster and never the literal.
 
+Join keys (§11, optional): a commit may also carry `Gap-Id: <12 hex>` —
+the backlog gap it lands the fix for — and `Idea-Id: <slug>`. Neither is
+required. When present the value must parse, because the willow-bot
+steward reads these trailers off merged commits and calls `gap_resolve`
+on the cited gap; a malformed id would resolve nothing and say nothing.
+Shape only — the checker does not ask the backlog whether the id exists.
+
 Exits 0 when every code-changing non-merge commit carries a valid
 trailer; non-zero and lists each drift on failure.
 """
@@ -78,6 +85,22 @@ TRAILER_RE = re.compile(
     r"^\s*Persona\s*:\s*([A-Za-z0-9_-]+)\s*$", re.MULTILINE | re.IGNORECASE
 )
 
+# Join-key trailers. Captured loosely (anything after the colon) so a
+# malformed value is reported as drift rather than silently unmatched;
+# the shape check is separate.
+JOIN_KEY_RE = re.compile(
+    r"^\s*(Gap-Id|Idea-Id)\s*:\s*(.*?)\s*$", re.MULTILINE | re.IGNORECASE
+)
+
+# A gap `_id` as gap_log mints it: twelve lowercase hex characters
+# (e.g. e278ec952b9c). An Idea-Id is the reconciler's derived slug,
+# `<corpus>-<docslug>-<localnum|rowhash>`; only the character class is
+# pinned here since the reconciler owns the scheme.
+JOIN_KEY_SHAPES = {
+    "gap-id": re.compile(r"^[0-9a-f]{12}$"),
+    "idea-id": re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$"),
+}
+
 
 def _git(*args: str) -> str:
     """Run a git command from REPO_ROOT and return stdout."""
@@ -135,6 +158,35 @@ def _personas_from_message(message: str) -> list[str]:
     return [m.group(1).lower() for m in TRAILER_RE.finditer(message)]
 
 
+def _join_keys_from_message(message: str) -> list[tuple[str, str]]:
+    """Every `Gap-Id:` / `Idea-Id:` trailer as (key-lowercased, raw value)."""
+    return [(m.group(1).lower(), m.group(2)) for m in JOIN_KEY_RE.finditer(message)]
+
+
+def check_join_keys(sha: str, message: str) -> list[str]:
+    """Drift strings for malformed join-key trailers; empty when absent or clean.
+
+    Absence is not drift — the trailer is optional. Presence with a value
+    that does not parse is, because the steward resolves gaps by this id and
+    a bad id would resolve nothing silently.
+    """
+    drifts: list[str] = []
+    for key, value in _join_keys_from_message(message):
+        shape = JOIN_KEY_SHAPES[key]
+        if not shape.match(value):
+            label = "Gap-Id" if key == "gap-id" else "Idea-Id"
+            expected = (
+                "twelve lowercase hex characters (a gap `_id`)"
+                if key == "gap-id"
+                else "a slug of [A-Za-z0-9._-]"
+            )
+            drifts.append(
+                f"{sha[:12]}: `{label}: {value or '<empty>'}` does not parse — "
+                f"expected {expected}"
+            )
+    return drifts
+
+
 def check_commit(sha: str, personas_allowed: frozenset[str]) -> list[str]:
     """Return a list of drift strings for this commit (empty if clean)."""
     if _is_merge(sha):
@@ -154,6 +206,7 @@ def check_commit(sha: str, personas_allowed: frozenset[str]) -> list[str]:
                 f"{sha[:12]}: `Persona: {persona}` names no fleet member — "
                 f"expected one of {sorted(personas_allowed)}"
             )
+    drifts.extend(check_join_keys(sha, message))
     return drifts
 
 

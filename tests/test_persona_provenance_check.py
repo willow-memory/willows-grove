@@ -238,6 +238,71 @@ def test_a_roster_with_no_personas_is_refused(synthetic_repo: Path) -> None:
     assert "no personas found" in result.stdout + result.stderr
 
 
+# ── join keys (§11): optional, but well-formed when present ──────────────────
+
+
+def test_well_formed_gap_id_passes(synthetic_repo: Path) -> None:
+    """A commit naming the gap it lands the fix for is clean."""
+    _commit(synthetic_repo, "fix: it\n\nPersona: hanuman\nGap-Id: e278ec952b9c")
+    result = _run_checker(synthetic_repo)
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_malformed_gap_id_is_drift(synthetic_repo: Path) -> None:
+    """The steward resolves gaps by this id; an id that cannot be a gap `_id`
+    would resolve nothing silently, so the checker refuses it here."""
+    _commit(synthetic_repo, "fix: it\n\nPersona: hanuman\nGap-Id: #74")
+    result = _run_checker(synthetic_repo)
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "`Gap-Id: #74` does not parse" in result.stderr
+
+
+def test_empty_gap_id_is_drift(synthetic_repo: Path) -> None:
+    _commit(synthetic_repo, "fix: it\n\nPersona: hanuman\nGap-Id:")
+    result = _run_checker(synthetic_repo)
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "`Gap-Id: <empty>` does not parse" in result.stderr
+
+
+def test_uppercase_gap_id_is_drift(synthetic_repo: Path) -> None:
+    """gap_log mints lowercase hex; the steward matches it verbatim."""
+    _commit(synthetic_repo, "fix: it\n\nPersona: hanuman\nGap-Id: E278EC952B9C")
+    result = _run_checker(synthetic_repo)
+    assert result.returncode == 1, result.stdout + result.stderr
+
+
+def test_no_join_key_is_not_drift(synthetic_repo: Path) -> None:
+    """Optional means optional: the Persona: trailer alone is clean."""
+    _commit(synthetic_repo, "feat: unrelated\n\nPersona: hanuman")
+    result = _run_checker(synthetic_repo)
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_multiple_gap_ids_each_validated(synthetic_repo: Path) -> None:
+    msg = "fix: two\n\nPersona: hanuman\nGap-Id: e278ec952b9c\nGap-Id: nope"
+    _commit(synthetic_repo, msg)
+    result = _run_checker(synthetic_repo)
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "`Gap-Id: nope` does not parse" in result.stderr
+    assert "e278ec952b9c" not in result.stderr
+
+
+def test_idea_id_slug_passes(synthetic_repo: Path) -> None:
+    _commit(
+        synthetic_repo,
+        "feat: idea\n\nPersona: hanuman\nIdea-Id: willow-mcp-ideas-6.127",
+    )
+    result = _run_checker(synthetic_repo)
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_idea_id_with_spaces_is_drift(synthetic_repo: Path) -> None:
+    _commit(synthetic_repo, "feat: idea\n\nPersona: hanuman\nIdea-Id: has a space")
+    result = _run_checker(synthetic_repo)
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "`Idea-Id: has a space` does not parse" in result.stderr
+
+
 def test_schmidt_is_accepted_by_the_real_roster() -> None:
     """The drift that motivated this: `schmidt` reached
     governance/fleet_personas.json and never the literal in the script, so a

@@ -407,6 +407,17 @@ persona-provenance is aesthetic; accountability with it is measurable.
   drift. Merge commits are exempt (they carry no work, only structure);
   commits that only touch untracked files (worktree scaffolding, etc.)
   are exempt by nature.
+- **Join keys, optional but well-formed.** A commit that lands the fix
+  for a backlog gap carries `Gap-Id: <12 hex>` (the gap's `_id`, one
+  trailer per gap); a commit that lands a recorded idea carries
+  `Idea-Id: <slug>`. Neither is required — the fleet has landed hundreds
+  of fixes without one, and that absence is exactly why no landing can
+  be joined back to what motivated it (reconciler slice 0 recovered 0.0;
+  gap e278ec952b9c). When present, the value must parse: a `Gap-Id:` that
+  is not twelve hex characters is drift, because the willow-bot steward
+  resolves the cited gap on the sweep that brings the merge home and a
+  malformed id would resolve nothing silently. The checker validates
+  shape only; it does not ask the backlog whether the id exists.
 
 Grandfather note: every commit landed before v0.9 (before this section
 sealed) carries no persona provenance. The build corpus is therefore
@@ -421,11 +432,14 @@ Pinning tests (§11):
   `git log $GITHUB_BASE_REF..HEAD` (or `master..HEAD` locally), reads
   each commit's message trailer block, and fails if any code-changing
   non-merge commit has no `Persona:` trailer or names a persona outside
-  the closed fleet set.
+  the closed fleet set, or carries a `Gap-Id:` / `Idea-Id:` trailer whose
+  value does not parse.
 - `tests/test_persona_provenance_check.py` — pins the checker
   property-by-property against synthetic commits (clean; missing trailer
   → fail; unknown-persona value → fail; merge commit exempt; docs-only
-  commit still requires the trailer since `.md` is tracked code under §3).
+  commit still requires the trailer since `.md` is tracked code under §3;
+  well-formed `Gap-Id:` passes; malformed `Gap-Id:` → fail; a commit with
+  no join key is not drift).
 
 ## §12 — Ratification
 
