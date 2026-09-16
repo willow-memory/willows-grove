@@ -4,13 +4,20 @@
 **Target repository:** `/home/sean-campbell/github/workshop/willow-bot`  
 **Broker repository:** `/home/sean-campbell/github/willow-memory/willow-mcp`
 
-**2026-09-16 reconciliation.** Read via codebase-memory after re-indexing
-both repos (willow-mcp at `0551ee9`, willow-bot at `e249cf4`; the seat cannot
-run git, so whether either checkout is merged upstream is unverified). Step 1
-and the template half of step 4 are built in willow-mcp source; gaps
-`bc9945dd47da`, `3f24d2d4a243`, `378c2e57c3d0` resolved with source citations.
-Steps 2, 3, 5 and 6 are not started. Gap `67282a6f6578` was closed 2026-09-15 as
-a misdiagnosis (a SIGTERM timeout in `test_seal_daemon`, not Postgres auth).
+**2026-09-16 reconciliation, second pass.** The first pass read a willow-bot
+clone that was 66 commits stale (`e249cf4`, last fetch 2026-09-14) and
+concluded steps 2, 3, 5, 6 were unstarted. That was the clone, not the repo:
+the desk had no advertised pull verb (gap `83af08a4deda`, fixed by willow-mcp
+#551), and once `git_pull_execute` brought the clone to `553ab06` (PR #26
+`feat/catch-up-in-tick`), codebase-memory showed most of the build order
+already landed. willow-mcp master `0551ee9` = `origin/master` (2.49.0). Each
+step below carries its verified state. Resolved from source today:
+`bc9945dd47da`, `3f24d2d4a243`, `378c2e57c3d0`, `1d737ffa2595`,
+`07651e0c46ba`, `1f6b033ffca7`. `67282a6f6578` closed 2026-09-15 as a
+misdiagnosis (SIGTERM timeout in `test_seal_daemon`, not Postgres auth).
+
+Lesson for the next reader: a stale clone reads exactly like unbuilt work.
+Pull before reconciling.
 
 ## Goal
 
@@ -71,7 +78,8 @@ the commit manually.
 These are separate failures:
 
 1. The steward did not demonstrably keep the local default branch current.
-   **Still open** (`1f6b033ffca7`).
+   **Fixed in source:** `tick.run_loop` runs `run_sweep` → `run_catchup` →
+   `run_install_receipts` each tick (willow-bot #25, #26).
 2. Push and PR-open perform no remote-base ancestry preflight.
    **Fixed in source:** `remote_base.preflight_local_ancestry` /
    `preflight_via_compare`, called before citation in both executors.
@@ -83,18 +91,16 @@ These are separate failures:
    remote rejection after action still lands as `EPUSH`, distinct in the
    receipt.
 
-## Open gaps: eight records (as of 2026-09-16)
+## Open gaps: six records (as of 2026-09-16, second pass)
 
-| Gap | Scope | Build consequence |
+| Gap | Scope | What is actually left |
 |---|---|---|
-| `acfd27ae3259` | willow-bot | Umbrella inventory: no PR voice/check/labels, reviewer path dark, weak delivery dedup and catch-up, incomplete event coverage, no self-deploy, cleanup, or sufficient observability. |
-| `a6c0926d7e83` | willow-bot | Prior-art freeze only partly landed: CI outcomes lack a hash chain, catch-up remains outside the tick, and the gidgethub decision is unresolved. |
-| `1d737ffa2595` | willow-bot | `check_run` events are deposited into the webhook inbox but `steward/inbox.ingest` skips non-`pull_request` items (verified at `inbox.py:80`, 2026-09-16). |
-| `1f6b033ffca7` | bot/runtime | Merged releases do not reliably update local checkouts and editable installs. `merge.sync_checkout` fires only when a PR leaves the open set; nothing calls willow-mcp `gitsync_sweep` on a tick. |
-| `158600e03598` | bot/operations | The Willow seat cannot read the bot unit's active state, running commit, or recent journal through a read-only tool. No such surface in willow-mcp `src/` (2026-09-16). |
-| `5ecb87cfdf56` | willow-mcp broker | Brokered push mostly landed, but the explicit-ask surface and orphan `gate_request` declaration remain unreconciled. |
-| `07651e0c46ba` | repository scaffolding | Organization-level PR/community templates are invisible to local agents when a repo has no local copy. `pr_template.preflight` resolves the in-repo template only. |
+| `acfd27ae3259` | willow-bot | Umbrella, now narrowed: labels land (`run_voice`), reds file (`run_ci`), catch-up runs in the tick. Still missing: status comment / check-run per head SHA (`voice.py` docstring: the tick's PR state carries no `head_sha` yet); dedup is on the bridge's `work_id`, not `X-GitHub-Delivery`; `WILLOW_OPERATOR_GITHUB_LOGIN` unset on the box so bot-opened PRs are not assigned. |
+| `a6c0926d7e83` | willow-bot | Hash chain landed (`deposits.compute_row_hash` / `verify_chain`); catch-up is in the tick. Remaining: the gidgethub decision — no reference in the tree, decision unrecorded. |
+| `158600e03598` | bot/operations | Bot side built: `status.report` (running commit, last receipt, journal excerpt, inbox depth by kind, cursors, last successful sync), exposed as `willow-bot-steward status`. Missing: a read-only willow-mcp verb so the seat can call it without a shell. |
+| `5ecb87cfdf56` | willow-mcp broker | Brokered push landed; the explicit-ask surface and orphan `gate_request` declaration remain unreconciled. |
 | `4ef96ee6a3b0` | knowledge | willow-bot, the PR-time deposit, and fleet-bridge design are missing from the corpus agents are instructed to query first. |
+| `83af08a4deda` | desk | Pull/sweep now advertised (willow-mcp #551). Residual: the willow-bot clone's `origin` remote still names the retired fork, and the pull left a local `main` beside the old `master`. |
 
 `1d737ffa2595` is a specific child of the `acfd27ae3259` umbrella, not a
 duplicate to delete.
@@ -109,7 +115,10 @@ duplicate to delete.
 | `3f24d2d4a243` | Workflow-path preflight: `push_executor._preflight_workflow_paths` refuses `EWORKFLOW` before the envelope is cited. Granting the App `workflows: write` is still an operator act. Resolved 2026-09-16 from source. |
 | `378c2e57c3d0` | In-repo template enforced: `pr_template.preflight` refuses `EBODY` before citation. Org-template fallback and title/body update remain open under `07651e0c46ba` and step 4. Resolved 2026-09-16 from source. |
 | `67282a6f6578` | Misdiagnosis: the red leg was a SIGTERM timeout in `test_seal_daemon`, not Postgres auth. Closed 2026-09-15. |
-| `8d1bcb2b7c02` | Red CI reaching no seat — resolution note cites willow-bot `5cb6b25` (merged). The `e249cf4` checkout indexed 2026-09-16 shows no `run_ci` step in `tick.run_once`; either the clone is behind or the note is wrong. Verify before building step 3. |
+| `8d1bcb2b7c02` | Red CI reaches the seat: `tick.run_ci` reads the deposits file from its own offset and files `human_required` items for red conclusions, idempotent on `(head_sha, check_run_id)`. Confirmed at `553ab06`; the earlier doubt was a stale clone. |
+| `1d737ffa2595` | `inbox.ingest` consumes `check_run` items with every terminal conclusion kept distinct. Resolved 2026-09-16 from source. |
+| `1f6b033ffca7` | Sweep, catch-up and install receipts run in the tick (willow-bot #25, #26); broker pull/sweep verbs advertised (willow-mcp #551). Resolved 2026-09-16. |
+| `07651e0c46ba` | Org template fallback is live: `pr_open_execute` on #551 resolved `org:willow-memory/.github:pull_request_template.md` and refused `EBODY` until the body matched. Resolved 2026-09-16. |
 
 ## Build order
 
@@ -137,9 +146,16 @@ not), and the operator has not granted that permission. Force-push remains
 `--force-with-lease` only on the host path; the App path takes `force` as a
 bound.
 
-### 2. Make steward synchronization convergent
+### 2. Make steward synchronization convergent — BUILT
 
-Implement in willow-bot:
+Verified at willow-bot `553ab06` (#25 `feat/sweep-install-receipt`, #26
+`feat/catch-up-in-tick`): `tick.run_loop` runs `run_sweep` → `run_resolve`
+→ `run_install_receipts` → `run_mirror` → `run_ci` → `run_catchup` →
+`run_audit` → `run_voice` per tick, each step wrapped so one failure does
+not kill the rest. The acceptance list below has not been walked item by
+item against the tests; treat it as the checklist for that pass.
+
+Original spec:
 
 - Keep webhook-first behavior, but run a periodic App-authenticated catch-up
   reconciliation inside the steward tick.
@@ -162,20 +178,27 @@ Acceptance:
 - Heartbeat/receipt names bot commit, checkout commit, installed commit, and
   last successful reconciliation.
 
-### 3. Give the bot a visible, idempotent PR voice
+### 3. Give the bot a visible, idempotent PR voice — HALF BUILT
 
-Implement in willow-bot:
+Verified at `553ab06`:
 
-- Post or update one bot-owned status comment per head SHA.
-- Publish a bot check or commit status for stewardship state.
-- Apply labels for states such as CI red, needs ratification, audit
-  dispatched, and bot opened.
-- Configure `WILLOW_OPERATOR_GITHUB_LOGIN` so bot-opened PRs reach the
-  operator's assignment/review queue.
-- Key webhook idempotency on `X-GitHub-Delivery` plus semantic event identity;
-  do not append duplicate outcomes for redelivery.
-- Consume `check_run` inbox rows and preserve success, failure, timed-out,
-  cancelled, skipped, stale, neutral, and action-required distinctly.
+- **Built:** labels — `steward/voice.run_voice` converges the `willow-bot/*`
+  owned set (`audit-dispatched`, `ci-red`) per tick and never touches
+  labels outside that prefix.
+- **Built:** `check_run` consumption — `inbox.ingest` keeps every terminal
+  conclusion distinct; `tick.run_ci` files reds as `human_required`
+  items, idempotent on `(head_sha, check_run_id)`.
+- **Not built:** one status comment / one bot check per head SHA. The
+  `voice.py` docstring says why: the tick's PR state carries no
+  `head_sha`; `fleet_bridge` must write it into `pull_request` items (or a
+  step must read `/pulls/{num}`) first. This is the next bite in the bot.
+- **Not built:** `X-GitHub-Delivery` keying — idempotency rests on the
+  bridge's `work_id` (check id for `check_run`, repo+PR for
+  `pull_request`), which holds for redelivery of the same event but is not
+  the delivery id.
+- **Not configured:** `WILLOW_OPERATOR_GITHUB_LOGIN` — the broker reads it
+  (`pr_executor.operator_login`) and #551's receipt reported
+  `assigned: false — none configured`. Operator's env, one line.
 
 Acceptance:
 
@@ -186,17 +209,17 @@ Acceptance:
 - The operator is assigned or the receipt says exactly why assignment was
   unreachable.
 
-### 4. Enforce review shape — HALF BUILT
+### 4. Enforce review shape — MOSTLY BUILT
 
-Built in willow-mcp (`pr_template.py`, verified 2026-09-16): the in-repo
-`pull_request_template.md` is resolved via the API and a body missing
-required sections refuses `EBODY` before citation; `enforce_template=True`
-is the default on `execute_pr_open`.
+Built in willow-mcp (`pr_template.py`): the repo template, or the
+organization template when the repo has none, is resolved via the API and a
+body missing required sections refuses `EBODY` before citation;
+`enforce_template=True` is the default on `execute_pr_open`. Measured live
+2026-09-16 on #551: `template_source = org:willow-memory/.github`, first
+attempt refused, second accepted.
 
-Remaining, across willow-mcp and willow-bot:
+Remaining:
 
-- Fall back to the organization template when the repo has no local copy
-  (`07651e0c46ba`).
 - Add governed PR title/body update support — no such verb exists in
   willow-mcp `src/`.
 - Decide whether community-health files should be vendored into every fleet
@@ -208,9 +231,18 @@ Acceptance:
 - A malformed body fails before GitHub mutation.
 - Updating title/body is auditable and cannot merge or approve.
 
-### 5. Expose operations without granting mutation
+### 5. Expose operations without granting mutation — BOT SIDE BUILT
 
-Implement a read-only status surface:
+`willow_bot/status.report` (verified at `553ab06`) reads running commit and
+version, last heartbeat and tick receipts, a bounded journal excerpt, inbox
+depth by kind, catch-up cursors and last successful sync, exposed as
+`willow-bot-steward status`. What is missing is the seat's half: a
+read-only willow-mcp verb that calls it, so the desk sees it without a
+shell (gap `158600e03598`). Whether `report` keeps unreachable distinct
+from empty for the journal and DBus cases has not been checked against its
+tests.
+
+Original spec — a read-only status surface:
 
 - Bot webhook/steward unit active state.
 - Running bot commit/version.
@@ -224,10 +256,11 @@ unreadable journal or missing DBus session to "unit absent."
 
 ### 6. Finish integrity and knowledge follow-ons
 
-- Hash-chain `ci_outcomes.jsonl` or replace it with an existing fleet ledger
-  primitive.
+- ~~Hash-chain `ci_outcomes.jsonl`~~ Built: `deposits.compute_row_hash`,
+  `_read_tip`/`_write_tip`, `verify_chain` (verified at `553ab06`).
 - Decide and record whether gidgethub remains required; implement it or remove
-  the stale commitment.
+  the stale commitment. No reference to gidgethub anywhere in the tree at
+  `553ab06`; the decision is still unrecorded — a Nestor pair, not code.
 - Ingest current willow-bot and PR-time-deposit design into the intended
   Jeles/Nestor corpus with provenance.
 - Resolve the orphan `gate_request` declaration against the actual
