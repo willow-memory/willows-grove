@@ -292,9 +292,31 @@ unreadable journal or missing DBus session to "unit absent."
 - Every PR body must end with:
   `Ratified-by: <id> — "<operator's verbatim words>"`.
 - Do not merge, grant GitHub App permissions, edit live systemd units, or
-  deploy without a separately recorded operator act.
+  deploy without a separately recorded operator act. "Recorded operator
+  act" means a sealed Nestor decision and an envelope — the seal is the
+  operator key (syscall-table verb 12: "operator key, FRANK-recorded, git
+  history"). It does not mean a keyboard. Operator rule 2026-09-16: an act
+  that cannot run through Kart or a broker verb when the product is bundled
+  into the APK is a gap, not a note to the operator.
 - Audit changes to credentials, webhook verification, envelope accounting,
   workflow mutation, or merge-adjacent behavior before push.
+- Lint is `ruff check` in both repos. Neither CI nor pre-commit runs
+  `ruff format --check`, and willow-mcp master does not pass it; a packet
+  that says otherwise costs a builder a revert (Hanuman, 1DDD6672). Do not
+  run `ruff format` on touched files until a deliberate repo-wide format PR
+  lands.
+- PR bodies go through `pr_open_execute`, which refuses `EBODY` before
+  citation unless the body carries the org template's sections: Bite /
+  What was done / Evidence / Out of scope / Next bite.
+
+## Decisions sealed or proposed 2026-09-16
+
+| Nestor pair | Decision | State |
+|---|---|---|
+| `06075e99` | Syscall-table row 15 `unit.reload`: a service restart after a pulled merge is a brokered act. Build: `unit_reload_execute` + seal-driven live-table sync (packet AA115574). | sealed |
+| `0031ab90` | gidgethub is not required; the prior-art commitment is retired. Closes `a6c0926d7e83`. | sealed |
+| `783bab4e` | Row 16 `pr.update`: title/body/labels on a bot-opened PR under an envelope; never merge/approve/close. Builds after row 15 lands. | sealed |
+| — | Seal-driven grants for the remaining terminal-only acts: egress lease (`ab65a9a1fdb3`), seat permission changes (Jeles' `f5d00bf2`/`21eaf829`), gap closure and the `DESK_CORE` cap (`b33e2e1720ab`), registry-row env (`e8b50531aab3`). | gaps, not yet proposed |
 
 ## Definition of usable
 
@@ -307,5 +329,7 @@ authorized branch with it, and the system can:
 4. track every CI terminal state without duplicate delivery effects;
 5. recover a missed webhook without a host `gh` command;
 6. bring an operator-approved merge home and report the installed commit;
-7. explain any refusal before consuming one-use authority; and
-8. never merge without a separate human-ratified act.
+7. explain any refusal before consuming one-use authority;
+8. never merge without a separate human-ratified act; and
+9. restart the unit onto the pulled code under an envelope, so the merge
+   loop closes from a phone (row 15, `unit_reload_execute`).
