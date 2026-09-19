@@ -4,6 +4,22 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ## [Unreleased]
 
+### Changed
+
+- **Nestor ledger is the per-db chain.** (PR 77) `mcp.template.json` and
+  `seat/heimdallr/mcp.template.json` pin `NESTOR_LEDGER` to
+  `@VAULT_BOX@/nestor.db.ledger.jsonl` instead of the retired
+  `@VAULT_BOX@/ledger.jsonl`. Ruling `db84faec` (2026-09-19, "retire
+  ledger.jsonl"): the chain for a Nestor store is `<db>.ledger.jsonl`
+  beside it, which is where the 8765 UI had been sealing since 2026-09-14
+  while both seats ledgered their `nestor_ask` passages into the archive
+  (gap 507a71433397). Pinned explicitly rather than dropped — an explicit
+  pin beats letting `home_paths.ledger_for` guess, the ambient-resolution
+  class the ruling closed. The live, globally-ignored `.mcp.json` files on
+  the operator box were rewritten the same way outside this diff. Also
+  carries the willow-bot usable build brief (`docs/design/`), reconciled
+  twice against source.
+
 ### Added
 
 - **`Gap-Id:` / `Idea-Id:` join-key trailers.** (PR 76) INVARIANTS §11 gains two
