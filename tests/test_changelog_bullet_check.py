@@ -12,6 +12,7 @@ pattern as `tests/test_persona_provenance_check.py`.
 
 from __future__ import annotations
 
+import json
 import os
 import subprocess
 import sys
@@ -221,3 +222,84 @@ def test_repo_tree_current_state() -> None:
         cwd=str(REPO_ROOT),
     )
     assert result.returncode in (0, 1), result.stdout + result.stderr
+
+
+# ── release-please bounded exemption (PR 78) ─────────────────────────────────
+#
+# release-please writes the CHANGELOG entry for the release it is
+# cutting under a fresh `## [X.Y.Z]` heading with `*`-bullets, not a
+# `-`-bullet under `[Unreleased]`, so §3's clause as this checker reads
+# it does not fit its shape by construction. The exemption is bounded on
+# TWO axes at once (author AND head-ref), just like the ratification and
+# persona-provenance checks.
+
+
+def _run_checker_with_event(cwd: Path, event: dict) -> subprocess.CompletedProcess:
+    """Like `_run_checker`, but also hands the child a synthetic
+    GITHUB_EVENT_PATH so the release-please branch is detectable.
+    """
+    body = SCRIPT.read_text(encoding="utf-8").replace(
+        "REPO_ROOT = Path(__file__).resolve().parent.parent",
+        f"REPO_ROOT = Path({str(cwd)!r})",
+    )
+    rerooted = cwd.parent / f"_check_event_{cwd.name}.py"
+    rerooted.write_text(body, encoding="utf-8")
+    event_path = cwd.parent / f"event_{cwd.name}.json"
+    event_path.write_text(json.dumps(event), encoding="utf-8")
+    env = {k: v for k, v in os.environ.items() if k != "GITHUB_BASE_REF"}
+    env["HOME"] = str(cwd.parent)
+    env["GITHUB_EVENT_PATH"] = str(event_path)
+    return subprocess.run(
+        [sys.executable, str(rerooted)],
+        capture_output=True,
+        text=True,
+        check=False,
+        env=env,
+    )
+
+
+def _release_please_event(
+    *,
+    user_login: str = "willow-ci[bot]",
+    head_ref: str = "release-please--branches--master--components--willows-grove",
+) -> dict:
+    return {
+        "pull_request": {
+            "user": {"login": user_login},
+            "head": {"ref": head_ref},
+        }
+    }
+
+
+def test_release_please_pr_is_exempt(synthetic_repo: Path) -> None:
+    """The failing case #75 reported: release-please cut a code-changing
+    branch (safe-app-manifest.json, pyproject.toml) whose CHANGELOG.md
+    change lives under a fresh `## [X.Y.Z]` with `*`-bullets rather than a
+    `- `-bullet under `[Unreleased]`. With the event marker, this passes."""
+    _write(synthetic_repo, "safe-app-manifest.json", '{"version": "0.11.0"}\n')
+    _commit(synthetic_repo, "chore(master): release 0.11.0")
+    r = _run_checker_with_event(synthetic_repo, _release_please_event())
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert "release-please PR exempt" in r.stdout
+
+
+def test_release_please_login_only_not_enough(synthetic_repo: Path) -> None:
+    """Login-only match: the bot might open a non-release PR someday, and
+    §3's bullet requirement still applies to that."""
+    _write(synthetic_repo, "feature.py", "# a feature, no changelog\n")
+    _commit(synthetic_repo, "feat: something else")
+    r = _run_checker_with_event(
+        synthetic_repo, _release_please_event(head_ref="feat/other")
+    )
+    assert r.returncode == 1, r.stdout + r.stderr
+
+
+def test_release_please_head_ref_only_not_enough(synthetic_repo: Path) -> None:
+    """Head-ref-only match: any human can push a `release-please--*`
+    branch. §3 still applies."""
+    _write(synthetic_repo, "feature.py", "# a feature, no changelog\n")
+    _commit(synthetic_repo, "feat: something")
+    r = _run_checker_with_event(
+        synthetic_repo, _release_please_event(user_login="rudi193-cmd")
+    )
+    assert r.returncode == 1, r.stdout + r.stderr

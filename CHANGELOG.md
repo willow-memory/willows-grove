@@ -6,6 +6,41 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Changed
 
+- **willow-bot usable build brief — third-pass reconciliation.** (PR 78)
+  `docs/design/willow-bot-usable-build-brief.md` moves to a 2026-09-20
+  snapshot against willow-bot `22e51f8` (main, 0.2.0) and willow-mcp
+  `89ae5e5` (master, 2.57.0). Four of the six second-pass "Open gaps"
+  land in "Resolved records" (`acfd27ae3259`, `a6c0926d7e83`,
+  `158600e03598`, `5ecb87cfdf56`); the two survivors (`4ef96ee6a3b0`,
+  `83af08a4deda`) live outside either repo (Jeles/Nestor corpus, the
+  operator's box). Build order steps 3–5 flip to BUILT with citations —
+  voice head_sha (voice.py + fleet_bridge.py:248, willow-bot #28),
+  `X-GitHub-Delivery` dedup (`delivery_dedup.py`, bot.py:74), the
+  seat's status verb (`bot_status.py`, server.py:4935), the PR-update
+  verb (`pr_update_executor.py`, Row 16), the explicit-ask surface
+  (`gate_request.py`). Row 15 `unit.reload` (`unit_reload_executor.py`)
+  and its seal-driven live-table sync (`seal_drain.py`, sealed
+  `72292afd`) both landed; the gidgethub decision (`0031ab90`) is
+  closed. Two non-gap-tracked residuals — `WILLOW_OPERATOR_GITHUB_LOGIN`
+  as an operator env act, community-health vendoring as a policy — now
+  sit under their own table rather than under Step 3/4.
+- **release-please bounded exemption for §11, §12, and §3.** (PR 78)
+  `scripts/check_persona_provenance.py`, `scripts/check_ratification.py`
+  and `scripts/check_changelog_bullet.py` gain a narrow, two-axis
+  exemption for release-please's own release commit and release PR:
+  author `willow-ci[bot]` AND
+  subject `chore(<branch>): release X.Y.Z` (commit) or `head.ref`
+  starting with `release-please--` (PR). Single-axis matches still fail
+  closed. INVARIANTS.md §11's `Persona:` rule, §12's `Ratified-by:`
+  rule, and §3's `[Unreleased]` bullet rule each grow one bounded
+  exemption clause; both scripts carry pinning tests for both
+  directions. Motivation: PR 75 (release-please's 0.11.0 cut) has been
+  red since 2026-09-15 because release-please cannot by construction
+  write the operator's verbatim words into a body it emits itself, nor
+  supply a `Persona:` for a commit it authors, nor `- ` bullets under
+  `[Unreleased]`; PR 62 flagged the collision and left it "proposed
+  rather than pushed, a governance change to an invariant." This PR
+  makes the amendment.
 - **Nestor ledger is the per-db chain.** (PR 77) `mcp.template.json` and
   `seat/heimdallr/mcp.template.json` pin `NESTOR_LEDGER` to
   `@VAULT_BOX@/nestor.db.ledger.jsonl` instead of the retired

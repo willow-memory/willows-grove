@@ -62,6 +62,7 @@ the offending code file(s), not just "missing bullet" — when not.
 
 from __future__ import annotations
 
+import json
 import os
 import re
 import subprocess
@@ -70,6 +71,34 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 CHANGELOG_NAME = "CHANGELOG.md"
+
+# The release-please release PR carries the §3 exemption ratified in
+# PR 78: release-please writes the CHANGELOG section for the version it
+# is cutting under a fresh `## [X.Y.Z]` heading with `* `-bullets, not a
+# `- `-bullet under `[Unreleased]`, so §3's clause as this checker reads
+# it does not fit its shape by construction. Both conditions must hold:
+#   1. `pull_request.user.login == "willow-ci[bot]"`.
+#   2. `pull_request.head.ref` starts with `release-please--`.
+# Single-axis matches still fail closed.
+RELEASE_PLEASE_PR_AUTHOR = "willow-ci[bot]"
+RELEASE_PLEASE_HEAD_REF_PREFIX = "release-please--"
+
+
+def _is_release_please_event() -> bool:
+    path = os.environ.get("GITHUB_EVENT_PATH")
+    if not path or not Path(path).exists():
+        return False
+    try:
+        event = json.loads(Path(path).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return False
+    pr = event.get("pull_request") or {}
+    user = (pr.get("user") or {}).get("login") or ""
+    head_ref = (pr.get("head") or {}).get("ref") or ""
+    return user == RELEASE_PLEASE_PR_AUTHOR and head_ref.startswith(
+        RELEASE_PLEASE_HEAD_REF_PREFIX
+    )
+
 
 # Same set `check_persona_provenance.py` uses for "tracked code" under §11,
 # minus Markdown — a docs-only (.md) change is not "code" for §3's purposes,
@@ -222,6 +251,10 @@ def _added_bullet_lines(merge_base: str) -> list[str]:
 
 
 def main() -> int:
+    if _is_release_please_event():
+        print("changelog-bullet: clean — release-please PR exempt")
+        return 0
+
     base = _resolve_base()
     if base is None:
         print("changelog-bullet: no base branch found — nothing to check")

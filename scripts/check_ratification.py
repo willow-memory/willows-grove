@@ -23,6 +23,21 @@ ratification line, so the position property this check exists for —
 that a `Ratified-by:` quoted in passing cannot pass for a sign-off —
 holds unchanged.
 
+The release-please release PR carries the second exemption, ratified
+in PR 78 (INVARIANTS.md §12, bounded exemption). release-please writes
+the PR body itself, so it cannot carry the operator's verbatim words
+by construction; ratification of the release ships one level up in
+the release loop — the operator's *merge click* on this PR, together
+with the tag push that `release.yml` publishes on. The exemption is
+bounded on TWO axes at once, so a PR that matches only one still fails
+closed:
+   1. `pull_request.user.login == "willow-ci[bot]"` (the App the release
+      workflow mints its token from).
+   2. `pull_request.head.ref` starts with `release-please--` (the branch
+      pattern release-please-action creates and reuses).
+Nothing else in this check changes — the local `--body`/`--body-file`
+paths and the merge-event path enforce §12 as written.
+
 Line format:
     Ratified-by: <identifier> — "<verbatim quote>"
 
@@ -125,20 +140,40 @@ def check_body(body: str) -> tuple[bool, str]:
     return True, f'ratified by {identifier}: "{quote}"'
 
 
-def _load_github_event() -> tuple[str, str]:
-    """Return (kind, body) from GITHUB_EVENT_PATH; ('', '') on absence."""
+RELEASE_PLEASE_PR_AUTHOR = "willow-ci[bot]"
+RELEASE_PLEASE_HEAD_REF_PREFIX = "release-please--"
+
+
+def _is_release_please_pr(event: dict) -> bool:
+    """The bounded §12 exemption for release-please's own release PR.
+
+    Both conditions must hold — see the module docstring for the
+    rationale and the exact envelope."""
+    pr = event.get("pull_request") or {}
+    user = (pr.get("user") or {}).get("login") or ""
+    head_ref = (pr.get("head") or {}).get("ref") or ""
+    return user == RELEASE_PLEASE_PR_AUTHOR and head_ref.startswith(
+        RELEASE_PLEASE_HEAD_REF_PREFIX
+    )
+
+
+def _load_github_event() -> tuple[str, str, bool]:
+    """Return (kind, body, release_please_exempt) from GITHUB_EVENT_PATH.
+
+    ('', '', False) on absence."""
     path = os.environ.get("GITHUB_EVENT_PATH")
     if not path or not Path(path).exists():
-        return "", ""
+        return "", "", False
     try:
         event = json.loads(Path(path).read_text(encoding="utf-8"))
     except (OSError, ValueError):
-        return "", ""
+        return "", "", False
     if event.get("pull_request"):
-        return "pull_request", event["pull_request"].get("body") or ""
+        exempt = _is_release_please_pr(event)
+        return "pull_request", event["pull_request"].get("body") or "", exempt
     if event.get("head_commit"):
-        return "push", event["head_commit"].get("message") or ""
-    return "", ""
+        return "push", event["head_commit"].get("message") or "", False
+    return "", "", False
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -154,7 +189,7 @@ def main(argv: list[str] | None = None) -> int:
         body = args.body_file.read_text(encoding="utf-8")
         source = str(args.body_file)
     else:
-        kind, body = _load_github_event()
+        kind, body, exempt = _load_github_event()
         if not kind:
             if not sys.stdin.isatty():
                 body = sys.stdin.read()
@@ -168,6 +203,11 @@ def main(argv: list[str] | None = None) -> int:
                 return 2
         else:
             source = f"github-event({kind})"
+            if exempt:
+                print(
+                    f"ratification: clean — release-please PR exempt (source: {source})"
+                )
+                return 0
 
     ok, msg = check_body(body)
     if ok:
