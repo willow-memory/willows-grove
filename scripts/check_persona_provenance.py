@@ -5,7 +5,12 @@
 Enforces INVARIANTS.md §11: every commit on the current branch that
 changes tracked code carries a `Persona:` trailer naming a valid fleet
 persona. Merge commits are exempt (they carry no work). Commits that
-only touch untracked files are exempt by nature.
+only touch untracked files are exempt by nature. release-please's own
+release commit — author `willow-ci[bot]`, subject
+`chore(<branch>): release X.Y.Z` — is the one further exemption, added
+in PR 78 and pinned below by the RELEASE_PLEASE_* constants; both
+axes must match, so nothing else in `willow-ci`'s future job set can
+ride the exemption in.
 
 Base branch:
 - CI: `$GITHUB_BASE_REF` (set by GitHub Actions on pull_request events).
@@ -85,6 +90,27 @@ TRAILER_RE = re.compile(
     r"^\s*Persona\s*:\s*([A-Za-z0-9_-]+)\s*$", re.MULTILINE | re.IGNORECASE
 )
 
+# The release-please release commit is the ONE exemption from §11's
+# "every non-merge tracked-code commit carries a Persona: trailer" rule,
+# ratified for this repo in PR 78 (INVARIANTS.md §11, bounded exemption).
+# The exemption is deliberately bounded on TWO axes at once — author AND
+# subject shape — so a commit that matches only one still fails closed:
+#   1. Author is the willow-ci GitHub App (login `willow-ci[bot]`, whose
+#      commits carry `name = willow-ci[bot]` and an email of the form
+#      `<app-id>+willow-ci[bot]@users.noreply.github.com`).
+#   2. Subject is release-please's exact pattern `chore(<branch>): release
+#      X.Y.Z` (release-please templates the default branch into the scope).
+# The narrowness matters. `willow-ci` may run other jobs in the future;
+# an author-only exemption would silently bypass §11 for any of them. A
+# subject-only exemption would let any author push a commit with the
+# release-please subject and pass. Both together name exactly the release
+# PR release-please cuts, and nothing else.
+RELEASE_PLEASE_AUTHOR_NAME = "willow-ci[bot]"
+RELEASE_PLEASE_AUTHOR_EMAIL_RE = re.compile(
+    r"^\d+\+willow-ci\[bot\]@users\.noreply\.github\.com$", re.IGNORECASE
+)
+RELEASE_PLEASE_SUBJECT_RE = re.compile(r"^chore(?:\([^)]+\))?: release \d+\.\d+\.\d+$")
+
 # Join-key trailers. Captured loosely (anything after the colon) so a
 # malformed value is reported as drift rather than silently unmatched;
 # the shape check is separate.
@@ -147,6 +173,32 @@ def _touched_files(sha: str) -> list[str]:
     return [line.strip() for line in out.splitlines() if line.strip()]
 
 
+def _author(sha: str) -> tuple[str, str]:
+    """Return (name, email) of the commit author."""
+    out = _git("log", "-1", "--format=%an%n%ae", sha)
+    lines = out.splitlines()
+    name = lines[0] if lines else ""
+    email = lines[1] if len(lines) > 1 else ""
+    return name, email
+
+
+def _subject(sha: str) -> str:
+    return _git("log", "-1", "--format=%s", sha).strip()
+
+
+def _is_release_please_commit(sha: str) -> bool:
+    """The bounded §11 exemption for release-please's own release commit.
+
+    Both conditions must hold — see the RELEASE_PLEASE_* constants above.
+    """
+    name, email = _author(sha)
+    author_ok = name == RELEASE_PLEASE_AUTHOR_NAME or bool(
+        RELEASE_PLEASE_AUTHOR_EMAIL_RE.match(email)
+    )
+    subject_ok = bool(RELEASE_PLEASE_SUBJECT_RE.match(_subject(sha)))
+    return author_ok and subject_ok
+
+
 def _touches_tracked_code(files: list[str]) -> bool:
     for path in files:
         if Path(path).suffix.lower() in TRACKED_EXTS:
@@ -193,6 +245,8 @@ def check_commit(sha: str, personas_allowed: frozenset[str]) -> list[str]:
         return []
     files = _touched_files(sha)
     if not _touches_tracked_code(files):
+        return []
+    if _is_release_please_commit(sha):
         return []
     message = _commit_message(sha)
     personas = _personas_from_message(message)

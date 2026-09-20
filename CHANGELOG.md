@@ -6,6 +6,23 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Changed
 
+- **release-please bounded exemption for §11, §12, and §3.** (PR 78)
+  `scripts/check_persona_provenance.py`, `scripts/check_ratification.py`
+  and `scripts/check_changelog_bullet.py` gain a narrow, two-axis
+  exemption for release-please's own release commit and release PR:
+  author `willow-ci[bot]` AND
+  subject `chore(<branch>): release X.Y.Z` (commit) or `head.ref`
+  starting with `release-please--` (PR). Single-axis matches still fail
+  closed. INVARIANTS.md §11's `Persona:` rule, §12's `Ratified-by:`
+  rule, and §3's `[Unreleased]` bullet rule each grow one bounded
+  exemption clause; both scripts carry pinning tests for both
+  directions. Motivation: PR 75 (release-please's 0.11.0 cut) has been
+  red since 2026-09-15 because release-please cannot by construction
+  write the operator's verbatim words into a body it emits itself, nor
+  supply a `Persona:` for a commit it authors, nor `- ` bullets under
+  `[Unreleased]`; PR 62 flagged the collision and left it "proposed
+  rather than pushed, a governance change to an invariant." This PR
+  makes the amendment.
 - **Nestor ledger is the per-db chain.** (PR 77) `mcp.template.json` and
   `seat/heimdallr/mcp.template.json` pin `NESTOR_LEDGER` to
   `@VAULT_BOX@/nestor.db.ledger.jsonl` instead of the retired

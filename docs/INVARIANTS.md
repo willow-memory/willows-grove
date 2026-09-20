@@ -407,6 +407,23 @@ persona-provenance is aesthetic; accountability with it is measurable.
   drift. Merge commits are exempt (they carry no work, only structure);
   commits that only touch untracked files (worktree scaffolding, etc.)
   are exempt by nature.
+- **Release-please release commit — bounded exemption (PR 78).** The
+  release commit release-please's action emits (author `willow-ci[bot]`,
+  subject `chore(<branch>): release X.Y.Z`) carries no `Persona:` trailer
+  and is exempt from this rule. The exemption is bounded on TWO axes at
+  once — author AND subject shape — so a commit that matches only one
+  still fails closed. Motivation: release-please writes this commit
+  itself, so no fleet persona is available to name; provenance of what
+  it packages lives on the constituent PRs that landed it, each of which
+  carried its own `Persona:` trailer. Rationale for narrowness: an
+  author-only exemption would silently pass any other future
+  `willow-ci` job's commits; a subject-only exemption would let any
+  author push a commit with the release-please subject and pass. The
+  constants that define the exemption live in
+  `scripts/check_persona_provenance.py` (`RELEASE_PLEASE_AUTHOR_NAME`,
+  `RELEASE_PLEASE_AUTHOR_EMAIL_RE`, `RELEASE_PLEASE_SUBJECT_RE`) and are
+  pinned in `tests/test_persona_provenance_check.py` on both
+  directions.
 - **Join keys, optional but well-formed.** A commit that lands the fix
   for a backlog gap carries `Gap-Id: <12 hex>` (the gap's `_id`, one
   trailer per gap); a commit that lands a recorded idea carries
@@ -439,7 +456,9 @@ Pinning tests (§11):
   → fail; unknown-persona value → fail; merge commit exempt; docs-only
   commit still requires the trailer since `.md` is tracked code under §3;
   well-formed `Gap-Id:` passes; malformed `Gap-Id:` → fail; a commit with
-  no join key is not drift).
+  no join key is not drift; the release-please bounded exemption clears
+  the release commit on both-axis match and fails closed on either axis
+  alone).
 
 ## §12 — Ratification
 
@@ -492,6 +511,28 @@ without recorded `Ratified-by:` metadata. Same gap-class as pre-v0.9
 persona provenance: real, logged, not backfillable. See
 `docs/design/pr14-carryovers.md`. §12 is hard from the commit that
 seals it forward.
+
+### Release-please release PR — bounded exemption (PR 78)
+
+release-please writes the release PR's body itself, so it cannot carry
+the operator's verbatim words by construction. The exemption:
+`check_ratification.py` treats a `pull_request` event as pre-cleared
+when the PR's author is `willow-ci[bot]` AND its `head.ref` starts with
+`release-please--`. Both axes must match; a PR meeting only one still
+owes §12 its signature.
+
+Ratification of the release does not disappear — it moves one level up
+in the release loop. The operator authorizes the cut by clicking merge
+on the release PR, and again by pushing the tag that `release.yml`
+publishes on (both are recorded acts under §12's spirit even though the
+PR body itself is bot-written).
+
+The same author+head-ref pair also exempts release-please's release PR
+from §3's `[Unreleased]` bullet requirement (`check_changelog_bullet.py`),
+since release-please writes the CHANGELOG entry under a fresh
+`## [X.Y.Z]` heading with `*`-bullets rather than a `- ` under
+`[Unreleased]`. See `scripts/check_ratification.py`,
+`scripts/check_changelog_bullet.py`, and their pinning tests.
 
 ### Pinning tests (§12)
 

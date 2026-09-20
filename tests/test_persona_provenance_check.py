@@ -303,6 +303,115 @@ def test_idea_id_with_spaces_is_drift(synthetic_repo: Path) -> None:
     assert "`Idea-Id: has a space` does not parse" in result.stderr
 
 
+# ── release-please bounded exemption (PR 78) ─────────────────────────────────
+#
+# release-please's release commit — author `willow-ci[bot]` AND subject
+# `chore(<branch>): release X.Y.Z` — carries no `Persona:` trailer by
+# construction. The exemption is bounded on both axes at once, so a
+# commit matching only one still fails closed; the plants below prove
+# both directions.
+
+
+def _commit_as(
+    repo: Path,
+    message: str,
+    *,
+    author_name: str,
+    author_email: str,
+    filename: str = "notes.py",
+    content: str = "# noted\n",
+) -> str:
+    (repo / filename).write_text(content, encoding="utf-8")
+    _git(repo, "add", filename)
+    env = os.environ.copy()
+    env["GIT_AUTHOR_NAME"] = author_name
+    env["GIT_AUTHOR_EMAIL"] = author_email
+    env["GIT_COMMITTER_NAME"] = author_name
+    env["GIT_COMMITTER_EMAIL"] = author_email
+    _git(repo, "commit", "-q", "-m", message, env=env)
+    return _git(repo, "rev-parse", "HEAD").stdout.strip()
+
+
+def test_release_please_release_commit_is_exempt(synthetic_repo: Path) -> None:
+    """Author `willow-ci[bot]` AND subject `chore(<branch>): release X.Y.Z`
+    — no `Persona:` trailer needed. This is the shape release-please
+    actually cuts (verified against the live commit that motivated PR 78).
+    """
+    _commit_as(
+        synthetic_repo,
+        "chore(master): release 0.11.0",
+        author_name="willow-ci[bot]",
+        author_email="322095877+willow-ci[bot]@users.noreply.github.com",
+    )
+    result = _run_checker(synthetic_repo)
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_release_please_release_commit_email_only_form_is_exempt(
+    synthetic_repo: Path,
+) -> None:
+    """The bot's app-id in the email is site-specific and may vary; the
+    email pattern alone is enough to identify the author when the name
+    happens to be set otherwise (some clients rewrite `[bot]` names on
+    replay). Any digits+willow-ci[bot]@users.noreply.github.com passes
+    the author gate."""
+    _commit_as(
+        synthetic_repo,
+        "chore(main): release 1.2.3",
+        author_name="Willow CI",  # not the exact `[bot]` name
+        author_email="9999+willow-ci[bot]@users.noreply.github.com",
+    )
+    result = _run_checker(synthetic_repo)
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_release_please_matching_author_wrong_subject_still_drift(
+    synthetic_repo: Path,
+) -> None:
+    """Author-only match: the bot could in theory make other commits, and
+    §11 must still refuse a bare Persona-less commit from it."""
+    _commit_as(
+        synthetic_repo,
+        "chore: sneak an unrelated change in",
+        author_name="willow-ci[bot]",
+        author_email="322095877+willow-ci[bot]@users.noreply.github.com",
+    )
+    result = _run_checker(synthetic_repo)
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "no `Persona:` trailer" in result.stderr
+
+
+def test_release_please_matching_subject_wrong_author_still_drift(
+    synthetic_repo: Path,
+) -> None:
+    """Subject-only match: a human commit that happens to look like
+    release-please's must not bypass §11."""
+    _commit_as(
+        synthetic_repo,
+        "chore(master): release 0.11.0",
+        author_name="Heimdallr",
+        author_email="heimdallr@fleet.willow",
+    )
+    result = _run_checker(synthetic_repo)
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "no `Persona:` trailer" in result.stderr
+
+
+def test_release_please_subject_with_no_version_is_not_the_shape(
+    synthetic_repo: Path,
+) -> None:
+    """`chore(master): release something` without a semver is not what
+    release-please emits and must not pass."""
+    _commit_as(
+        synthetic_repo,
+        "chore(master): release the docs update",
+        author_name="willow-ci[bot]",
+        author_email="322095877+willow-ci[bot]@users.noreply.github.com",
+    )
+    result = _run_checker(synthetic_repo)
+    assert result.returncode == 1, result.stdout + result.stderr
+
+
 def test_schmidt_is_accepted_by_the_real_roster() -> None:
     """The drift that motivated this: `schmidt` reached
     governance/fleet_personas.json and never the literal in the script, so a

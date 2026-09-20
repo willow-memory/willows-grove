@@ -96,9 +96,16 @@ These bind whoever is sitting here, in either lens.
    Every commit that changes tracked code — including `.md`, which is tracked
    code under §3 — carries a `Persona:` trailer whose value is a key from
    `governance/fleet_personas.json`, verbatim and lowercase. Merge commits are
-   exempt; nothing else is, and there is no grace period. Every PR body ends
-   with `Ratified-by: <id> — "<the operator's verbatim words>"`.
-   INVARIANTS.md §11 and §12; `scripts/check_persona_provenance.py` in CI.
+   exempt; release-please's own release commit is exempt on a bounded pair
+   (author `willow-ci[bot]` AND subject `chore(<branch>): release X.Y.Z`,
+   both must hold — PR 78, INVARIANTS.md §11); nothing else is, and there is
+   no grace period. Every PR body ends with
+   `Ratified-by: <id> — "<the operator's verbatim words>"`. release-please's
+   own release PR is exempt on the same shape (author `willow-ci[bot]` AND
+   `head.ref` starts with `release-please--`, both must hold — PR 78,
+   INVARIANTS.md §12). INVARIANTS.md §11 and §12;
+   `scripts/check_persona_provenance.py`, `scripts/check_ratification.py`,
+   `scripts/check_changelog_bullet.py` in CI.
 
 ---
 

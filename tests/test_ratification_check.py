@@ -6,6 +6,8 @@ INVARIANTS.md §12 (ratification) and §10 (CI proves the invariants).
 
 from __future__ import annotations
 
+import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -20,6 +22,32 @@ def _run(body: str) -> subprocess.CompletedProcess:
         capture_output=True,
         text=True,
         check=False,
+    )
+
+
+def _run_event(event: dict, tmp_path: Path) -> subprocess.CompletedProcess:
+    """Run the checker driven by a synthetic GITHUB_EVENT_PATH payload.
+
+    Everything about how CI exercises this script routes through the
+    event file; the local `--body` path is a testing convenience. The
+    release-please exemption reads `pull_request.user.login` and
+    `pull_request.head.ref`, which are only carried in the event JSON,
+    so it can only be pinned this way.
+    """
+    event_path = tmp_path / "event.json"
+    event_path.write_text(json.dumps(event), encoding="utf-8")
+    env = os.environ.copy()
+    env["GITHUB_EVENT_PATH"] = str(event_path)
+    # stdin as a fallback body source would eclipse the event; force
+    # the checker's isatty branch by opening a pty-less pipe with no data
+    # via /dev/null on the parent's stdin.
+    return subprocess.run(
+        [sys.executable, str(SCRIPT)],
+        capture_output=True,
+        text=True,
+        check=False,
+        env=env,
+        stdin=subprocess.DEVNULL,
     )
 
 
@@ -179,4 +207,93 @@ def test_no_quote_flagged() -> None:
 def test_empty_identifier_flagged() -> None:
     body = 'Ratified-by:  — "go"\n'
     r = _run(body)
+    assert r.returncode == 1, r.stdout + r.stderr
+
+
+# ── release-please bounded exemption (PR 78) ─────────────────────────────────
+#
+# release-please writes its release PR's body itself, so it cannot carry
+# the operator's verbatim words by construction. Ratification of the
+# release ships one level up: the operator's merge click and the tag
+# push that `release.yml` publishes on. The exemption is bounded on TWO
+# axes at once (author login AND head-ref prefix). The plants below
+# prove both directions.
+
+
+def _release_please_event(
+    *,
+    body: str = "",
+    user_login: str = "willow-ci[bot]",
+    head_ref: str = "release-please--branches--master--components--willows-grove",
+) -> dict:
+    return {
+        "pull_request": {
+            "body": body,
+            "user": {"login": user_login},
+            "head": {"ref": head_ref},
+        }
+    }
+
+
+def test_release_please_pr_exempt_even_with_no_ratification(tmp_path: Path) -> None:
+    """The exact shape release-please cuts: no `Ratified-by:` line
+    anywhere in the body (release-please writes the body itself), and
+    the check clears it. This is the failing case #75 reported."""
+    body = (
+        ":robot: I have created a release *beep* *boop*\n"
+        "---\n\n\n"
+        "## [0.11.0](https://github.com/... /compare/v0.10.0...v0.11.0) (2026-09-19)\n"
+        "\n"
+        "### Added\n"
+        "\n"
+        "* **deploy:** track the Kart mount policy...\n"
+        "\n---\n"
+        "This PR was generated with [Release Please](...).\n"
+    )
+    event = _release_please_event(body=body)
+    r = _run_event(event, tmp_path)
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert "release-please PR exempt" in r.stdout
+
+
+def test_release_please_matching_login_wrong_head_ref_still_fails(
+    tmp_path: Path,
+) -> None:
+    """Login-only match: a human might in theory push a `willow-ci[bot]`
+    author, or the App might open a non-release PR in the future. Either
+    way, a PR not on a `release-please--` branch still owes §12 its
+    signature."""
+    event = _release_please_event(
+        body="A PR the bot opened for some other reason.\n",
+        head_ref="feat/something-else",
+    )
+    r = _run_event(event, tmp_path)
+    assert r.returncode == 1, r.stdout + r.stderr
+
+
+def test_release_please_matching_head_ref_wrong_login_still_fails(
+    tmp_path: Path,
+) -> None:
+    """Head-ref-only match: the branch name isn't reserved by GitHub;
+    anyone could push a `release-please--*` branch. A PR from a non-bot
+    author on such a branch is still an ordinary PR and must ratify."""
+    event = _release_please_event(
+        body="A human pretending to be release-please.\n",
+        user_login="rudi193-cmd",
+    )
+    r = _run_event(event, tmp_path)
+    assert r.returncode == 1, r.stdout + r.stderr
+
+
+def test_release_please_head_ref_prefix_close_but_not_matching_still_fails(
+    tmp_path: Path,
+) -> None:
+    """`release-please-manual` is not release-please's own pattern (it
+    creates `release-please--*` with two dashes). A single-dash lookalike
+    must not ride the exemption in."""
+    event = _release_please_event(
+        body="A branch pretending to be a release cut.\n",
+        head_ref="release-please-manual-cut",
+    )
+    r = _run_event(event, tmp_path)
     assert r.returncode == 1, r.stdout + r.stderr
