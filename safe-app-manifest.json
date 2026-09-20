@@ -1,7 +1,7 @@
 {
   "name": "Willow's Grove",
   "slug": "willows-grove",
-  "version": "0.9.0",
+  "version": "0.11.0",
   "summary": "The operator's seat for the Willow AI fleet. Loopback-only served page + Web Components + Grove MCP.",
   "author": "willow-memory",
   "license": "See LICENSE file (TBD)",
@@ -10,7 +10,11 @@
       "transport": "LAN (UDP/TCP)",
       "authentication": "Ed25519 signatures",
       "confidentiality": "none — signed plaintext; see docs/design/u2u-security-limits.md; encryption planned for Gate 6",
-      "message_kinds": ["knock", "consent", "note"]
+      "message_kinds": [
+        "knock",
+        "consent",
+        "note"
+      ]
     },
     "mcp_serve": {
       "auth": "OAuth 2.0 with PKCE (S256)",
