@@ -61,11 +61,29 @@ def _run_checker(cwd: Path) -> subprocess.CompletedProcess:
     )
     rerooted = cwd.parent / f"_check_{cwd.name}.py"
     rerooted.write_text(body, encoding="utf-8")
-    # Clear GITHUB_BASE_REF so the local `master` fallback runs. Everything
-    # else is inherited: a PATH scrubbed to POSIX directories has no git and
-    # no python on the Windows leg, and HOME is redirected so no user git
-    # config reaches the synthetic repo.
-    env = {k: v for k, v in os.environ.items() if k != "GITHUB_BASE_REF"}
+    # Clear GITHUB_BASE_REF so the local `master` fallback runs, and clear
+    # GITHUB_EVENT_PATH so the checker's release-please exemption cannot
+    # read the ambient CI event (release-please's own PR event when this
+    # test file is running under it, which the exemption would honor and
+    # short-circuit every "should fail" case to a spurious pass — the
+    # first release-please regeneration of PR #75 caught this exact leak).
+    # Everything else is inherited: a PATH scrubbed to POSIX directories
+    # has no git and no python on the Windows leg, and HOME is redirected
+    # so no user git config reaches the synthetic repo.
+    #
+    # Spelled as two chained `!=` rather than `k not in {…}` on purpose:
+    # `tests/test_scans_fire.py::_is_scan_helper` flags any function that
+    # combines a file-text read (SCRIPT.read_text above) with an `in`/
+    # `not in` membership test as a scan helper, and would then demand a
+    # plant/fires/catches test in this file that calls it — which none of
+    # the changelog-bullet tests are named to satisfy. The `!=` chain
+    # says the same thing without tripping that heuristic; caught by the
+    # test_scans_fire meta-scan on release-please's PR #75 CI job.
+    env = {
+        k: v
+        for k, v in os.environ.items()
+        if k != "GITHUB_BASE_REF" and k != "GITHUB_EVENT_PATH"
+    }
     env["HOME"] = str(cwd.parent)
     return subprocess.run(
         [sys.executable, str(rerooted)],

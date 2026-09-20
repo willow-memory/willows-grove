@@ -52,6 +52,22 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ## [Unreleased]
 
+### Fixed
+
+- **`check_changelog_bullet.py` test isolation from ambient
+  `GITHUB_EVENT_PATH`.** (PR 79)
+  `tests/test_changelog_bullet_check.py::_run_checker` now strips
+  `GITHUB_EVENT_PATH` from the child environment (as it already stripped
+  `GITHUB_BASE_REF`), so the release-please exemption added in PR 78
+  cannot leak into synthetic-repo test cases whose whole point is to
+  drive the checker's "no bullet, tracked-code change" refusal path.
+  Caught by release-please's own regenerated PR #75 run on head
+  `41d5ea4`: the workflow steps all reported `release-please PR exempt`
+  correctly, then pytest failed `test_code_change_without_bullet_fails`
+  because the checker read the CI's release-please event and returned
+  exempt inside the pytest child. Same class of leak the persona test
+  file already handled by stripping `GITHUB_BASE_REF`.
+
 ### Changed
 
 - **willow-bot usable build brief — third-pass reconciliation.** (PR 78)
