@@ -1,8 +1,24 @@
 # willow-bot usable build brief
 
-**Snapshot:** 2026-09-15; reconciled against source 2026-09-16  
+**Snapshot:** 2026-09-15; reconciled 2026-09-16 (2nd pass); reconciled
+2026-09-20 (3rd pass) against `willow-bot@22e51f8` (main, 0.2.0) and
+`willow-mcp@89ae5e5` (master, 2.57.0).  
 **Target repository:** `/home/sean-campbell/github/workshop/willow-bot`  
 **Broker repository:** `/home/sean-campbell/github/willow-memory/willow-mcp`
+
+**2026-09-20 reconciliation, third pass.** Every gap the second pass left
+open has since landed in code and shipped in a release; four of the six
+gaps in the table below move to Resolved records, and the two that stay
+carry residuals that live outside either repo (the operator's box, the
+Jeles/Nestor corpus). The three decisions sealed 2026-09-16 (Row 15
+`unit.reload`, Row 16 `pr.update`, gidgethub retired) are all built and
+in the syscall table. Landed via willow-bot #28 (voice head_sha,
+`X-GitHub-Delivery` dedup), #31 (seal-drain-on-tick under sealed
+`72292afd`), #32 (0.2.0 cut); willow-mcp #572–#575 (seal-watch ledger
+resolution, Nest escalation, and the release trains carrying
+`bot_status.py`, `unit_reload_executor.py`, `pr_update_executor.py`,
+`gate_request.py`). See "Landed since the second pass" below for the
+per-item citations.
 
 **2026-09-16 reconciliation, second pass.** The first pass read a willow-bot
 clone that was 66 commits stale (`e249cf4`, last fetch 2026-09-14) and
@@ -11,13 +27,15 @@ the desk had no advertised pull verb (gap `83af08a4deda`, fixed by willow-mcp
 #551), and once `git_pull_execute` brought the clone to `553ab06` (PR #26
 `feat/catch-up-in-tick`), codebase-memory showed most of the build order
 already landed. willow-mcp master `0551ee9` = `origin/master` (2.49.0). Each
-step below carries its verified state. Resolved from source today:
+step below carries its verified state. Resolved from source that day:
 `bc9945dd47da`, `3f24d2d4a243`, `378c2e57c3d0`, `1d737ffa2595`,
 `07651e0c46ba`, `1f6b033ffca7`. `67282a6f6578` closed 2026-09-15 as a
 misdiagnosis (SIGTERM timeout in `test_seal_daemon`, not Postgres auth).
 
 Lesson for the next reader: a stale clone reads exactly like unbuilt work.
-Pull before reconciling.
+Pull before reconciling. And: read the tree at head before writing that
+a residual is still open — the brief's own residuals had all landed by
+the third pass, four days after the second.
 
 ## Goal
 
@@ -91,19 +109,29 @@ These are separate failures:
    remote rejection after action still lands as `EPUSH`, distinct in the
    receipt.
 
-## Open gaps: six records (as of 2026-09-16, second pass)
+## Open gaps: two records survive the third pass (2026-09-20)
+
+Every gap the second pass left open at the code level has landed. The two
+records that remain sit outside either repo — neither is a git-visible
+gap.
 
 | Gap | Scope | What is actually left |
 |---|---|---|
-| `acfd27ae3259` | willow-bot | Umbrella, now narrowed: labels land (`run_voice`), reds file (`run_ci`), catch-up runs in the tick. Still missing: status comment / check-run per head SHA (`voice.py` docstring: the tick's PR state carries no `head_sha` yet); dedup is on the bridge's `work_id`, not `X-GitHub-Delivery`; `WILLOW_OPERATOR_GITHUB_LOGIN` unset on the box so bot-opened PRs are not assigned. |
-| `a6c0926d7e83` | willow-bot | Hash chain landed (`deposits.compute_row_hash` / `verify_chain`); catch-up is in the tick. Remaining: the gidgethub decision — no reference in the tree, decision unrecorded. |
-| `158600e03598` | bot/operations | Bot side built: `status.report` (running commit, last receipt, journal excerpt, inbox depth by kind, cursors, last successful sync), exposed as `willow-bot-steward status`. Missing: a read-only willow-mcp verb so the seat can call it without a shell. |
-| `5ecb87cfdf56` | willow-mcp broker | Brokered push landed; the explicit-ask surface and orphan `gate_request` declaration remain unreconciled. |
-| `4ef96ee6a3b0` | knowledge | willow-bot, the PR-time deposit, and fleet-bridge design are missing from the corpus agents are instructed to query first. |
-| `83af08a4deda` | desk | Pull/sweep now advertised (willow-mcp #551). Residual: the willow-bot clone's `origin` remote still names the retired fork, and the pull left a local `main` beside the old `master`. |
+| `4ef96ee6a3b0` | knowledge | willow-bot, the PR-time deposit, and fleet-bridge design are still missing from the Jeles/Nestor corpus agents are instructed to query first. Not visible from a git checkout; verify against the corpus itself. |
+| `83af08a4deda` | desk | Pull/sweep advertised since willow-mcp #551 (2nd-pass close). Residual on the operator's box, not this repo: the willow-bot clone's `origin` remote still names the retired fork, and the pull left a local `main` beside the old `master`. |
 
 `1d737ffa2595` is a specific child of the `acfd27ae3259` umbrella, not a
-duplicate to delete.
+duplicate to delete — closed by the second pass, kept here for reference.
+
+## Residuals that are not gap-tracked
+
+Two things stay open that never had a gap number: they are an operator
+env act and a governance question, respectively.
+
+| Residual | Shape | What is actually left |
+|---|---|---|
+| `WILLOW_OPERATOR_GITHUB_LOGIN` | operator env | Set the variable on the box so bot-opened PRs are assigned. `pr_executor.operator_login` reads it; #551's receipt reported `assigned: false — none configured`. One line in the unit's EnvironmentFile. |
+| Community-health vendoring | governance | Whether the fleet's `.github/PULL_REQUEST_TEMPLATE.md` and friends should be vendored into every fleet repo, or resolved via the org-template fallback that `pr_template.preflight` already does. Live decision (`07651e0c46ba` resolves org fallback); the vendor-or-not question is separate and ratifiable, not a bug. |
 
 ## Resolved records that must not be rebuilt
 
@@ -119,6 +147,15 @@ duplicate to delete.
 | `1d737ffa2595` | `inbox.ingest` consumes `check_run` items with every terminal conclusion kept distinct. Resolved 2026-09-16 from source. |
 | `1f6b033ffca7` | Sweep, catch-up and install receipts run in the tick (willow-bot #25, #26); broker pull/sweep verbs advertised (willow-mcp #551). Resolved 2026-09-16. |
 | `07651e0c46ba` | Org template fallback is live: `pr_open_execute` on #551 resolved `org:willow-memory/.github:pull_request_template.md` and refused `EBODY` until the body matched. Resolved 2026-09-16. |
+
+### Landed since the second pass (resolved 2026-09-20 from source)
+
+| Gap | Resolution |
+|---|---|
+| `acfd27ae3259` | Both code residuals landed. (a) Status comment / bot-check per head SHA: `willow_bot/steward/voice.py` implements `_latest_head_sha_by_pr`, `_status_comment_body`, `_check_conclusion`; `integrations/fleet_bridge.py:248,313` writes `head_sha` onto `pull_request` and `check_run` inbox items — willow-bot #28 `feat/voice-check-run-and-residues`, pinned in `tests/test_pr_voice.py`. (b) `X-GitHub-Delivery` dedup at the boundary: `bot.py:74` reads the header, `willow_bot/delivery_dedup.py::mark_seen` short-circuits a redelivery before dispatch, pinned in `tests/test_delivery_dedup.py`. The one non-code residual (`WILLOW_OPERATOR_GITHUB_LOGIN`) moves to the residuals table above. |
+| `a6c0926d7e83` | Closed by sealed decision `0031ab90` (2026-09-16): gidgethub is not required; the prior-art commitment is retired. Verified: no `gidgethub`/`gidget` references remain in willow-bot at `22e51f8`. |
+| `158600e03598` | Seat's half of the read-only status surface landed. `src/willow_mcp/bot_status.py::read_status()` runs `willow-bot-steward status` (bounded, ≤5s), and translates every failure mode into the §1 three-state contract — `binary_missing` / `nonzero_exit` / `timeout` / `unparseable` distinct on the unreachable side; passes through to the bot's own populated/empty otherwise. Exposed as MCP verb `bot_status(app_id)` at `src/willow_mcp/server.py:4935`, pinned in `tests/test_bot_status.py`. |
+| `5ecb87cfdf56` | Explicit-ask surface built: `src/willow_mcp/gate_request.py` writes the request row at the DENIAL site (not from the agent), closing the gap the module's own docstring names verbatim ("the seam was built from the operator's end inward and stopped one step short of the agent"). The orphan `gate_request` declaration is the module that got that name. |
 
 ## Build order
 
@@ -178,9 +215,10 @@ Acceptance:
 - Heartbeat/receipt names bot commit, checkout commit, installed commit, and
   last successful reconciliation.
 
-### 3. Give the bot a visible, idempotent PR voice — HALF BUILT
+### 3. Give the bot a visible, idempotent PR voice — BUILT
 
-Verified at `553ab06`:
+Verified at willow-bot `22e51f8` (main, 0.2.0) and willow-mcp `89ae5e5`
+(master, 2.57.0):
 
 - **Built:** labels — `steward/voice.run_voice` converges the `willow-bot/*`
   owned set (`audit-dispatched`, `ci-red`) per tick and never touches
@@ -188,17 +226,24 @@ Verified at `553ab06`:
 - **Built:** `check_run` consumption — `inbox.ingest` keeps every terminal
   conclusion distinct; `tick.run_ci` files reds as `human_required`
   items, idempotent on `(head_sha, check_run_id)`.
-- **Not built:** one status comment / one bot check per head SHA. The
-  `voice.py` docstring says why: the tick's PR state carries no
-  `head_sha`; `fleet_bridge` must write it into `pull_request` items (or a
-  step must read `/pulls/{num}`) first. This is the next bite in the bot.
-- **Not built:** `X-GitHub-Delivery` keying — idempotency rests on the
-  bridge's `work_id` (check id for `check_run`, repo+PR for
-  `pull_request`), which holds for redelivery of the same event but is not
-  the delivery id.
-- **Not configured:** `WILLOW_OPERATOR_GITHUB_LOGIN` — the broker reads it
-  (`pr_executor.operator_login`) and #551's receipt reported
-  `assigned: false — none configured`. Operator's env, one line.
+- **Built (third pass):** one status comment / one bot check per head SHA.
+  `willow_bot/steward/voice.py` at `22e51f8` implements
+  `_latest_head_sha_by_pr` (`webhook_signals` → `{repo#pr: head_sha}`),
+  `_status_comment_body(key, head_sha, state, at)`, and
+  `_check_conclusion(key, head_sha, state)`; `integrations/fleet_bridge.py:248`
+  writes `head_sha` onto `pull_request` inbox items and `:313` onto
+  `check_run` items. Landed via willow-bot #28
+  `feat/voice-check-run-and-residues`; pinned in `tests/test_pr_voice.py`.
+- **Built (third pass):** `X-GitHub-Delivery` keying. `bot.py:74` reads the
+  header; `willow_bot/delivery_dedup.py::mark_seen(delivery_id)` is a
+  boundary guard whose LRU (`$WILLOW_HOME/willow-bot/delivery-seen.json`)
+  survives restart; a redelivery short-circuits to
+  `{"ok": True, "dedup": "delivery_seen"}` before `router.route` runs.
+  Pinned in `tests/test_delivery_dedup.py`.
+- **Not configured (unchanged):** `WILLOW_OPERATOR_GITHUB_LOGIN` — the
+  broker reads it (`pr_executor.operator_login`) and #551's receipt
+  reported `assigned: false — none configured`. Operator's env, one line;
+  now tracked in the residuals table above rather than under this step.
 
 Acceptance:
 
@@ -209,7 +254,7 @@ Acceptance:
 - The operator is assigned or the receipt says exactly why assignment was
   unreachable.
 
-### 4. Enforce review shape — MOSTLY BUILT
+### 4. Enforce review shape — BUILT
 
 Built in willow-mcp (`pr_template.py`): the repo template, or the
 organization template when the repo has none, is resolved via the API and a
@@ -218,12 +263,20 @@ body missing required sections refuses `EBODY` before citation;
 2026-09-16 on #551: `template_source = org:willow-memory/.github`, first
 attempt refused, second accepted.
 
-Remaining:
+**Built (third pass):** governed PR title/body/labels update support.
+`src/willow_mcp/pr_update_executor.py` implements Row 16 `pr.update`,
+sealed `783bab4e` (2026-09-16). Deliberately narrow: title/body/labels
+only, never merge/approve/close; labels are refused unless every requested
+label sits under the `willow-bot/` prefix (`ELABEL`); the call goes
+through `EnvelopeAuthority.authorize_and_cite` with a field-diff
+near-miss reported as `EAMBIG`; a miss files an operator ask ("X wants
+to update PR Y").
 
-- Add governed PR title/body update support — no such verb exists in
-  willow-mcp `src/`.
+Remaining, unchanged from the second pass:
+
 - Decide whether community-health files should be vendored into every fleet
-  repo; do not silently copy them until that policy is ratified.
+  repo; do not silently copy them until that policy is ratified. Now
+  tracked in the residuals table above.
 
 Acceptance:
 
@@ -231,16 +284,24 @@ Acceptance:
 - A malformed body fails before GitHub mutation.
 - Updating title/body is auditable and cannot merge or approve.
 
-### 5. Expose operations without granting mutation — BOT SIDE BUILT
+### 5. Expose operations without granting mutation — BUILT
 
-`willow_bot/status.report` (verified at `553ab06`) reads running commit and
+`willow_bot/status.report` (verified at `22e51f8`) reads running commit and
 version, last heartbeat and tick receipts, a bounded journal excerpt, inbox
 depth by kind, catch-up cursors and last successful sync, exposed as
-`willow-bot-steward status`. What is missing is the seat's half: a
-read-only willow-mcp verb that calls it, so the desk sees it without a
-shell (gap `158600e03598`). Whether `report` keeps unreachable distinct
-from empty for the journal and DBus cases has not been checked against its
-tests.
+`willow-bot-steward status`.
+
+**Built (third pass):** the seat's half. `src/willow_mcp/bot_status.py`
+resolves the steward binary (env override
+`WILLOW_BOT_STEWARD_BIN`, else the venv entrypoint under `$WILLOW_HOME`),
+runs it under a bounded timeout (default 5 s), and translates every
+failure mode into the §1 three-state contract without collapsing them:
+`binary_missing`, `nonzero_exit`, `timeout`, and `unparseable` are all
+distinct causes on the unreachable side; a reachable outcome falls
+through to the bot's own report (populated if any field is populated,
+else empty). Exposed as MCP verb `bot_status(app_id)` at
+`src/willow_mcp/server.py:4935`; pinned in `tests/test_bot_status.py`.
+No writes, no envelope, no FRANK citation — a read, gated like one.
 
 Original spec — a read-only status surface:
 
@@ -258,13 +319,18 @@ unreadable journal or missing DBus session to "unit absent."
 
 - ~~Hash-chain `ci_outcomes.jsonl`~~ Built: `deposits.compute_row_hash`,
   `_read_tip`/`_write_tip`, `verify_chain` (verified at `553ab06`).
-- Decide and record whether gidgethub remains required; implement it or remove
-  the stale commitment. No reference to gidgethub anywhere in the tree at
-  `553ab06`; the decision is still unrecorded — a Nestor pair, not code.
+- ~~Decide and record whether gidgethub remains required; implement it or
+  remove the stale commitment.~~ Closed by sealed Nestor pair `0031ab90`
+  (2026-09-16, "gidgethub retired"); no `gidgethub` references remain in
+  willow-bot at `22e51f8`.
 - Ingest current willow-bot and PR-time-deposit design into the intended
-  Jeles/Nestor corpus with provenance.
-- Resolve the orphan `gate_request` declaration against the actual
-  human-required request path.
+  Jeles/Nestor corpus with provenance. **Still open** — tracked as gap
+  `4ef96ee6a3b0` in the surviving table above. Not verifiable from a git
+  checkout.
+- ~~Resolve the orphan `gate_request` declaration against the actual
+  human-required request path.~~ Built: `src/willow_mcp/gate_request.py`
+  produces the ask at the denial site; the "orphan declaration" is the
+  module that got the name.
 - ~~Fix the independent Postgres CI authentication flake.~~ Closed
   2026-09-15 as a misdiagnosis (`67282a6f6578`).
 
@@ -311,11 +377,11 @@ unreadable journal or missing DBus session to "unit absent."
 
 ## Decisions sealed or proposed 2026-09-16
 
-| Nestor pair | Decision | State |
+| Nestor pair | Decision | State (third pass 2026-09-20) |
 |---|---|---|
-| `06075e99` | Syscall-table row 15 `unit.reload`: a service restart after a pulled merge is a brokered act. Build: `unit_reload_execute` + seal-driven live-table sync (packet AA115574). | sealed |
-| `0031ab90` | gidgethub is not required; the prior-art commitment is retired. Closes `a6c0926d7e83`. | sealed |
-| `783bab4e` | Row 16 `pr.update`: title/body/labels on a bot-opened PR under an envelope; never merge/approve/close. Builds after row 15 lands. | sealed |
+| `06075e99` | Syscall-table row 15 `unit.reload`: a service restart after a pulled merge is a brokered act. Build: `unit_reload_execute` + seal-driven live-table sync (packet AA115574). | **BUILT.** `src/willow_mcp/unit_reload_executor.py` (docstring cites `06075e99` directly); syscall-table verb 15 present in `src/willow_mcp/bundle/constitutional/syscall-table.json`. Seal-driven live-table sync landed via `src/willow_mcp/seal_drain.py` + willow-bot #31 `feat/seal-drain-tick` under a later Nestor pair `72292afd` (2026-09-18): the seal watcher runs on the steward tick rather than as its own unit. |
+| `0031ab90` | gidgethub is not required; the prior-art commitment is retired. Closes `a6c0926d7e83`. | **CLOSED.** No `gidgethub` references remain in willow-bot at `22e51f8`. |
+| `783bab4e` | Row 16 `pr.update`: title/body/labels on a bot-opened PR under an envelope; never merge/approve/close. Builds after row 15 lands. | **BUILT.** `src/willow_mcp/pr_update_executor.py` (docstring cites `783bab4e` directly); syscall-table verb 16 present. |
 | — | Seal-driven grants for the remaining terminal-only acts: egress lease (`ab65a9a1fdb3`), seat permission changes (Jeles' `f5d00bf2`/`21eaf829`), gap closure and the `DESK_CORE` cap (`b33e2e1720ab`), registry-row env (`e8b50531aab3`). | gaps, not yet proposed |
 
 ## Definition of usable

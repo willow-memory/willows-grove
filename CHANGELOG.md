@@ -6,6 +6,24 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Changed
 
+- **willow-bot usable build brief — third-pass reconciliation.** (PR 78)
+  `docs/design/willow-bot-usable-build-brief.md` moves to a 2026-09-20
+  snapshot against willow-bot `22e51f8` (main, 0.2.0) and willow-mcp
+  `89ae5e5` (master, 2.57.0). Four of the six second-pass "Open gaps"
+  land in "Resolved records" (`acfd27ae3259`, `a6c0926d7e83`,
+  `158600e03598`, `5ecb87cfdf56`); the two survivors (`4ef96ee6a3b0`,
+  `83af08a4deda`) live outside either repo (Jeles/Nestor corpus, the
+  operator's box). Build order steps 3–5 flip to BUILT with citations —
+  voice head_sha (voice.py + fleet_bridge.py:248, willow-bot #28),
+  `X-GitHub-Delivery` dedup (`delivery_dedup.py`, bot.py:74), the
+  seat's status verb (`bot_status.py`, server.py:4935), the PR-update
+  verb (`pr_update_executor.py`, Row 16), the explicit-ask surface
+  (`gate_request.py`). Row 15 `unit.reload` (`unit_reload_executor.py`)
+  and its seal-driven live-table sync (`seal_drain.py`, sealed
+  `72292afd`) both landed; the gidgethub decision (`0031ab90`) is
+  closed. Two non-gap-tracked residuals — `WILLOW_OPERATOR_GITHUB_LOGIN`
+  as an operator env act, community-health vendoring as a policy — now
+  sit under their own table rather than under Step 3/4.
 - **release-please bounded exemption for §11, §12, and §3.** (PR 78)
   `scripts/check_persona_provenance.py`, `scripts/check_ratification.py`
   and `scripts/check_changelog_bullet.py` gain a narrow, two-axis
