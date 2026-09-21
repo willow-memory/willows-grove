@@ -59,8 +59,10 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
   fourth, conditional section under sealed pair `11ccb0f7`
   (seat-inbound-channel-2026-09-21): one line per unread item on the
   seat's Grove inbox since the session's anchor —
-  `[grove #<channel> <sender> <hh:mm>Z] <first 140 chars>`, newest last,
-  at most five plus an `… and N more — grove_inbox` tail — or one
+  `[grove #<channel> <sender>] <first 140 chars>`, oldest first, five per
+  prompt plus an `… and N more — next prompt, or grove_inbox(since_id=…)`
+  tail; the anchor moves only past what was shown, so a backlog pages
+  across prompts rather than being consumed — or one
   `[grove unreachable: <reason>]` line when Postgres / willow-mcp cannot
   be reached within a 3 s budget. A quiet inbox emits nothing, so the
   hook stays byte-stable in the common case. Read-only: the hook never

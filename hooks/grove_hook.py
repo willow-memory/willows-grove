@@ -123,8 +123,12 @@ def reinject() -> int:
     2. The four byte-stable REINJECT tuple entries.
     3. Seat drift indicator, if `hooks/seat.md` no longer carries the anchor.
     4. The seat's unread Grove inbox since the session's anchor (sealed pair
-       11ccb0f7): one line per item, at most five plus a tail, or one
-       `[grove unreachable: …]` line; nothing when quiet.
+       11ccb0f7): oldest five unread as one line each plus a tail naming
+       the rest, or one `[grove unreachable: …]` line; nothing when quiet.
+       The anchor moves only past what was shown. Two desks on one app_id
+       share the seat anchor (first reader wins — "surfaces once" is per
+       seat, not per desk); a run with no session id shares the
+       `unknown` session anchor.
 
     All go to stdout — Claude Code injects reinject stdout as context ahead
     of the model's turn."""
@@ -298,8 +302,10 @@ def _is_own_post(row: dict, who: str, app_id: str) -> bool:
 
 
 def _grove_inbox_format(row: dict) -> str | None:
-    """`[grove #<channel> <sender> <hh:mm>Z] <first 140 chars>` — None for a
-    row that lacks the fields a line needs (counted, not crashed on)."""
+    """`[grove #<channel> <sender>] <first 140 chars>` — None for a row that
+    lacks the fields a line needs (counted, not crashed on). No timestamp:
+    `inbox_bundle` rows are {id, channel, sender, content} and nothing else
+    reaches the hook (Loki 15D211C7); the message id orders them."""
     if not isinstance(row, dict):
         return None
     channel = str(row.get("channel") or row.get("channel_name") or "").strip()
@@ -307,15 +313,11 @@ def _grove_inbox_format(row: dict) -> str | None:
     content = str(row.get("content") or "").strip()
     if not (sender and content):
         return None
-    stamp = ""
-    created = row.get("created_at")
-    if isinstance(created, str) and len(created) >= 16:
-        stamp = f" {created[11:16]}Z"
     snippet = " ".join(content.split())
     if len(snippet) > _GROVE_INBOX_SNIPPET:
         snippet = snippet[: _GROVE_INBOX_SNIPPET - 1] + "…"
     where = f" #{channel.lstrip('#')}" if channel else ""
-    return f"[grove{where} {sender}{stamp}] {snippet}"
+    return f"[grove{where} {sender}] {snippet}"
 
 
 def _grove_inbox_lines(app_id: str, session_id: str) -> list[str]:
@@ -372,26 +374,40 @@ def _grove_inbox_lines(app_id: str, session_id: str) -> list[str]:
         except (TypeError, ValueError):
             return 0
 
-    ordered = sorted(rows, key=_row_id)  # oldest first, newest last
-    lines: list[str] = []
+    # Oldest first: the seat reads its backlog in the order it arrived, five
+    # per prompt, and the anchor moves only past what was SHOWN — the rest
+    # surfaces on the next prompt rather than being consumed by the tail
+    # line (Loki 15D211C7). Known cost: the reader returns the newest 80
+    # unread; a backlog deeper than that loses its oldest rows from the
+    # hook (not from grove_inbox with since_id), and the tail line names
+    # the anchor so the seat can pull them itself.
+    ordered = sorted(rows, key=_row_id)
+    out: list[str] = []
     skipped = 0
+    shown = 0
+    last_shown = floor
     for row in ordered:
+        if shown >= _GROVE_INBOX_MAX_LINES:
+            break
         line = _grove_inbox_format(row)
+        rid = _row_id(row)
         if line is None:
             skipped += 1
+            last_shown = max(last_shown, rid)  # unreadable is consumed, not re-shown
             continue
-        lines.append(line)
-    shown = lines[-_GROVE_INBOX_MAX_LINES:]
-    more = len(lines) - len(shown)
-    out = list(shown)
-    if more > 0:
-        out.append(f"… and {more} more — grove_inbox")
+        out.append(line)
+        shown += 1
+        last_shown = max(last_shown, rid)
+    remaining = sum(1 for r in ordered if _row_id(r) > last_shown)
+    if remaining > 0:
+        out.append(
+            f"… and {remaining} more — next prompt, or grove_inbox(since_id={last_shown})"
+        )
     if skipped:
         out.append(f"[grove: {skipped} unreadable message(s) skipped]")
 
-    high = max((_row_id(r) for r in ordered), default=max_id)
-    _write_anchor(session_anchor, max(high, floor))
-    _write_anchor(seat_anchor, max(high, floor))
+    _write_anchor(session_anchor, last_shown)
+    _write_anchor(seat_anchor, last_shown)
     return out
 
 

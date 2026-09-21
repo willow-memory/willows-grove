@@ -467,14 +467,10 @@ def test_deposit_jarvis_silent_when_no_drafts(tmp_path, monkeypatch, capsys):
 
 
 def _inbox_rows(*specs: tuple[int, str, str, str]) -> list[dict]:
+    """Exactly the shape willow_mcp.grove.inbox_bundle returns: {id, channel,
+    sender, content} — no timestamp reaches the hook (Loki 15D211C7)."""
     return [
-        {
-            "id": i,
-            "channel": ch,
-            "sender": who,
-            "content": text,
-            "created_at": "2026-09-21T02:05:00+00:00",
-        }
+        {"id": i, "channel": ch, "sender": who, "content": text}
         for i, ch, who, text in specs
     ]
 
@@ -553,8 +549,8 @@ def test_inbox_unread_items_emit_lines_and_advance_the_anchor(monkeypatch, capsy
     lines = _reinject_lines(monkeypatch, capsys)
     inbox = [ln for ln in lines if ln.startswith("[grove")]
     assert inbox == [
-        "[grove #willow willows-bot 02:05Z] CI red: willow-memory/ratatosk#48 @ 632225c — lint — https://x/job/1",
-        "[grove #willow loki 02:05Z] audit 4177ABB8 written",
+        "[grove #willow willows-bot] CI red: willow-memory/ratatosk#48 @ 632225c — lint — https://x/job/1",
+        "[grove #willow loki] audit 4177ABB8 written",
     ]
     assert all(seat_line in lines for seat_line in grove_hook.REINJECT)
     assert (
@@ -621,17 +617,46 @@ def test_inbox_timeout_reads_as_unreachable(monkeypatch, capsys):
     )
 
 
-def test_inbox_more_than_five_shows_newest_five_and_a_tail(monkeypatch, capsys):
+def test_inbox_backlog_is_paged_oldest_first_and_nothing_is_consumed(
+    monkeypatch, capsys
+):
+    """Eight unread: the first prompt shows the oldest five and a tail naming
+    the anchor; the anchor moves only past what was shown, so the second
+    prompt shows the remaining three and the third prompt is quiet (Loki
+    15D211C7: a backlog beyond the bound must not be consumed by the tail)."""
     _quiet_nestor(monkeypatch)
     _seed_anchor("sid_test", 0)
     rows = _inbox_rows(*[(i, "willow", "bot", f"item {i}") for i in range(1, 9)])
     _stub_inbox(monkeypatch, rows)
-    lines = _reinject_lines(monkeypatch, capsys)
-    inbox = [ln for ln in lines if ln.startswith("[grove") or ln.startswith("…")]
-    assert len(inbox) == 6
-    assert inbox[0].endswith("item 4")
-    assert inbox[4].endswith("item 8")
-    assert inbox[5] == "… and 3 more — grove_inbox"
+
+    first = [
+        ln
+        for ln in _reinject_lines(monkeypatch, capsys)
+        if ln.startswith("[grove") or ln.startswith("…")
+    ]
+    assert len(first) == 6
+    assert first[0].endswith("item 1") and first[4].endswith("item 5")
+    assert first[5] == "… and 3 more — next prompt, or grove_inbox(since_id=5)"
+    assert (
+        grove_hook._read_anchor(grove_hook._grove_anchor_path("session", "sid_test"))
+        == 5
+    )
+
+    second = [
+        ln
+        for ln in _reinject_lines(monkeypatch, capsys)
+        if ln.startswith("[grove") or ln.startswith("…")
+    ]
+    assert [ln[-6:] for ln in second] == ["item 6", "item 7", "item 8"]
+    assert (
+        grove_hook._read_anchor(grove_hook._grove_anchor_path("session", "sid_test"))
+        == 8
+    )
+
+    third = [
+        ln for ln in _reinject_lines(monkeypatch, capsys) if ln.startswith("[grove")
+    ]
+    assert third == []
 
 
 def test_inbox_malformed_message_is_counted_not_crashed(monkeypatch, capsys):
@@ -645,9 +670,14 @@ def test_inbox_malformed_message_is_counted_not_crashed(monkeypatch, capsys):
     lines = _reinject_lines(monkeypatch, capsys)
     inbox = [ln for ln in lines if ln.startswith("[grove")]
     assert inbox == [
-        "[grove #willow bot 02:05Z] fine",
+        "[grove #willow bot] fine",
         "[grove: 2 unreadable message(s) skipped]",
     ]
+    # An unreadable row is consumed (never re-shown), so the anchor covers it.
+    assert (
+        grove_hook._read_anchor(grove_hook._grove_anchor_path("session", "sid_test"))
+        == 2
+    )
 
 
 def test_inbox_first_run_seeds_the_anchor_at_now_and_says_nothing(monkeypatch, capsys):
@@ -678,7 +708,7 @@ def test_inbox_new_session_inherits_the_seat_anchor(monkeypatch, capsys):
     )
     lines = _reinject_lines(monkeypatch, capsys, session_id="sid_next")
     inbox = [ln for ln in lines if ln.startswith("[grove")]
-    assert inbox == ["[grove #willow willows-bot 02:05Z] CI red: overnight"]
+    assert inbox == ["[grove #willow willows-bot] CI red: overnight"]
     assert (
         grove_hook._read_anchor(grove_hook._grove_anchor_path("session", "sid_next"))
         == 11
