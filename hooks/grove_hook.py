@@ -15,6 +15,7 @@ import shutil
 import socket
 import subprocess
 import sys
+import threading
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -121,6 +122,9 @@ def reinject() -> int:
        the one-shot boot line for `not_installed` / `installed_not_answering`.
     2. The four byte-stable REINJECT tuple entries.
     3. Seat drift indicator, if `hooks/seat.md` no longer carries the anchor.
+    4. The seat's unread Grove inbox since the session's anchor (sealed pair
+       11ccb0f7): one line per item, at most five plus a tail, or one
+       `[grove unreachable: …]` line; nothing when quiet.
 
     All go to stdout — Claude Code injects reinject stdout as context ahead
     of the model's turn."""
@@ -138,8 +142,257 @@ def reinject() -> int:
     if drift:
         lines.append(f"(seat drift: {drift})")
 
+    # 4. The seat's Grove inbox (sealed pair 11ccb0f7, 2026-09-21): one line
+    #    per unread item since the session's anchor, or one `unreachable`
+    #    line; nothing at all when the inbox is quiet, so the reinject stays
+    #    byte-stable in the common case.
+    sid = str(hook_payload.get("session_id", "") or SESSION_ID)
+    lines.extend(_grove_inbox_lines(APP_ID, sid))
+
     print("\n".join(lines))
     return 0
+
+
+# ── Grove inbox at reinject (sealed pair 11ccb0f7) ─────────────────────────
+#
+# Grove is the seat's inbound channel; the reinject is the organ that reads
+# it. A steward filing (CI red on a PR this seat opened), an auditor's
+# report-back, a wake — all land on the seat's own channel / @mention /
+# bus address, and this section surfaces whatever arrived since the last
+# prompt. Read-only: it never posts, acks, flags or mutates Grove. It only
+# advances a local anchor (last-read message id) after the lines are
+# emitted. Guardrail, not control (95aebeeb classification).
+
+_GROVE_INBOX_TIMEOUT_S = 3.0  # hook budget; PreToolUse-style, never delays a turn
+_GROVE_INBOX_MAX_LINES = 5
+_GROVE_INBOX_SNIPPET = 140
+
+
+def _hook_state_dir() -> Path:
+    """Per-hook state beside the deposits: `<root>/deposits/hook-state/`."""
+    return _deposit_dir() / "hook-state"
+
+
+def _grove_anchor_path(kind: str, key: str) -> Path:
+    safe = re.sub(r"[^A-Za-z0-9_.-]", "_", key or "unknown")[:80]
+    return _hook_state_dir() / f"grove-anchor-{kind}-{safe}.json"
+
+
+def _read_anchor(path: Path) -> int | None:
+    """The stored last-read id, or None when there is no anchor yet /
+    the file is unreadable (treated as absent, never as zero)."""
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    last = data.get("last_id") if isinstance(data, dict) else None
+    return int(last) if isinstance(last, int) and last >= 0 else None
+
+
+def _write_anchor(path: Path, last_id: int) -> None:
+    """Best effort; an unwritable state dir must never fail the reinject —
+    the cost is a repeated line next turn, not a lost one."""
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            json.dumps(
+                {"last_id": int(last_id), "at": datetime.now(timezone.utc).isoformat()}
+            ),
+            encoding="utf-8",
+        )
+    except OSError:
+        pass
+
+
+def _grove_inbox_read(app_id: str, since_id: int) -> dict[str, Any]:
+    """Read the seat's inbox bundle through willow-mcp's Grove reader.
+
+    Returns a three-state dict: {"state": "populated"|"empty"|"unreachable",
+    "rows": [...], "max_id": int, "reason": str}. Imports are local so a box
+    without willow-mcp on this interpreter reads as `unreachable` with the
+    reason, never as an empty inbox.
+    """
+    try:
+        from willow_mcp import grove as _grove
+        from willow_mcp.db import get_pg, last_pg_error
+    except Exception as exc:  # ImportError, or a broken install
+        return {
+            "state": "unreachable",
+            "reason": f"willow_mcp import: {exc}",
+            "rows": [],
+            "max_id": since_id,
+        }
+    try:
+        pg = get_pg()
+    except Exception as exc:
+        return {
+            "state": "unreachable",
+            "reason": f"postgres: {exc}",
+            "rows": [],
+            "max_id": since_id,
+        }
+    if not pg:
+        detail = ""
+        try:
+            detail = str(last_pg_error() or "")
+        except Exception:
+            pass
+        return {
+            "state": "unreachable",
+            "reason": f"postgres unavailable {detail}".strip(),
+            "rows": [],
+            "max_id": since_id,
+        }
+    try:
+        from willow_mcp.grove_tools import resolve_grove_sender
+
+        who = resolve_grove_sender(app_id) if app_id else app_id
+    except Exception:
+        who = app_id
+    if not who:
+        return {
+            "state": "unreachable",
+            "reason": "WILLOW_APP_ID unset",
+            "rows": [],
+            "max_id": since_id,
+        }
+    try:
+        rows = _grove.inbox_bundle(pg, who, since_id=since_id, merge_limit=80)
+        max_id = _grove_max_message_id(pg, since_id)
+    except Exception as exc:
+        return {
+            "state": "unreachable",
+            "reason": f"grove: {exc}",
+            "rows": [],
+            "max_id": since_id,
+        }
+    rows = list(_grove.jsonify(rows))
+    # The seat's own posts are not inbound: a message the seat wrote to its
+    # own channel would otherwise echo back on the next prompt.
+    rows = [r for r in rows if not _is_own_post(r, who, app_id)]
+    return {
+        "state": "populated" if rows else "empty",
+        "reason": "",
+        "rows": rows,
+        "max_id": max_id,
+    }
+
+
+def _grove_max_message_id(pg, floor: int) -> int:
+    """Current high-water mark of grove.messages, so a first-ever anchor is
+    seeded at "now" rather than at zero (which would replay every message
+    the seat ever received on the first prompt of a fresh box)."""
+    cur = pg.cursor()
+    try:
+        cur.execute("SELECT COALESCE(MAX(id), 0) FROM grove.messages")
+        row = cur.fetchone()
+    finally:
+        cur.close()
+    top = int(row[0]) if row and row[0] is not None else 0
+    return max(top, int(floor))
+
+
+def _is_own_post(row: dict, who: str, app_id: str) -> bool:
+    sender = str(row.get("sender") or "").strip().lower()
+    return bool(sender) and sender in {who.lower(), (app_id or "").lower()}
+
+
+def _grove_inbox_format(row: dict) -> str | None:
+    """`[grove #<channel> <sender> <hh:mm>Z] <first 140 chars>` — None for a
+    row that lacks the fields a line needs (counted, not crashed on)."""
+    if not isinstance(row, dict):
+        return None
+    channel = str(row.get("channel") or row.get("channel_name") or "").strip()
+    sender = str(row.get("sender") or "").strip()
+    content = str(row.get("content") or "").strip()
+    if not (sender and content):
+        return None
+    stamp = ""
+    created = row.get("created_at")
+    if isinstance(created, str) and len(created) >= 16:
+        stamp = f" {created[11:16]}Z"
+    snippet = " ".join(content.split())
+    if len(snippet) > _GROVE_INBOX_SNIPPET:
+        snippet = snippet[: _GROVE_INBOX_SNIPPET - 1] + "…"
+    where = f" #{channel.lstrip('#')}" if channel else ""
+    return f"[grove{where} {sender}{stamp}] {snippet}"
+
+
+def _grove_inbox_lines(app_id: str, session_id: str) -> list[str]:
+    """Compose the inbox section. Anchor resolution, in order: this session's
+    anchor; else the seat-level anchor (so a red that landed between two
+    sessions still surfaces once, in the next one); else seed at the current
+    high-water mark and emit nothing (first run on a box never replays
+    history). Both anchors advance only after the lines are emitted; an
+    `unreachable` read leaves them untouched."""
+    if not app_id:
+        return []
+    session_anchor = _grove_anchor_path("session", session_id)
+    seat_anchor = _grove_anchor_path("seat", app_id)
+    since = _read_anchor(session_anchor)
+    if since is None:
+        since = _read_anchor(seat_anchor)
+    seeding = since is None
+    floor = since or 0
+
+    holder: list[dict[str, Any]] = []
+
+    def _work() -> None:
+        holder.append(_grove_inbox_read(app_id, floor))
+
+    worker = threading.Thread(target=_work, name="grove-inbox-reinject", daemon=True)
+    worker.start()
+    worker.join(_GROVE_INBOX_TIMEOUT_S)
+    if worker.is_alive() or not holder:
+        return [f"[grove unreachable: timeout after {_GROVE_INBOX_TIMEOUT_S:.0f}s]"]
+    result = holder[0]
+
+    if result["state"] == "unreachable":
+        # One line, bounded: psycopg2's full diagnosis is useful in a log,
+        # not as a per-prompt banner.
+        reason = " ".join(str(result.get("reason") or "unknown").split())
+        if len(reason) > 160:
+            reason = reason[:159] + "…"
+        return [f"[grove unreachable: {reason}]"]
+
+    max_id = int(result.get("max_id") or 0)
+    if seeding:
+        # First anchor for this seat on this box: start from now, say nothing.
+        _write_anchor(session_anchor, max_id)
+        _write_anchor(seat_anchor, max_id)
+        return []
+
+    rows = result["rows"]
+    if not rows:
+        return []
+
+    def _row_id(r: Any) -> int:
+        try:
+            return int(r.get("id") or 0) if isinstance(r, dict) else 0
+        except (TypeError, ValueError):
+            return 0
+
+    ordered = sorted(rows, key=_row_id)  # oldest first, newest last
+    lines: list[str] = []
+    skipped = 0
+    for row in ordered:
+        line = _grove_inbox_format(row)
+        if line is None:
+            skipped += 1
+            continue
+        lines.append(line)
+    shown = lines[-_GROVE_INBOX_MAX_LINES:]
+    more = len(lines) - len(shown)
+    out = list(shown)
+    if more > 0:
+        out.append(f"… and {more} more — grove_inbox")
+    if skipped:
+        out.append(f"[grove: {skipped} unreadable message(s) skipped]")
+
+    high = max((_row_id(r) for r in ordered), default=max_id)
+    _write_anchor(session_anchor, max(high, floor))
+    _write_anchor(seat_anchor, max(high, floor))
+    return out
 
 
 def before_stop() -> int:
