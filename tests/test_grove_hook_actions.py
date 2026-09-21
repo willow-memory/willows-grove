@@ -715,6 +715,50 @@ def test_inbox_new_session_inherits_the_seat_anchor(monkeypatch, capsys):
     )
 
 
+def test_inbox_unreadable_seat_anchor_is_said_not_seeded_over(monkeypatch, capsys):
+    """Loki 7AA9F436: a corrupt seat anchor with no session anchor used to
+    read as absent, get seeded at the high-water mark, and drop the backlog.
+    Now: one line naming the file, nothing read, nothing written."""
+    _quiet_nestor(monkeypatch)
+    seat = grove_hook._grove_anchor_path("seat", "willow")
+    seat.parent.mkdir(parents=True, exist_ok=True)
+    seat.write_text("{not json", encoding="utf-8")
+    calls = _stub_inbox(monkeypatch, _inbox_rows((5, "willow", "bot", "backlog")))
+    lines = _reinject_lines(monkeypatch, capsys)
+    inbox = [ln for ln in lines if ln.startswith("[grove")]
+    assert inbox == [f"[grove anchor unreadable: {seat}]"]
+    assert calls == [], "nothing is read while the anchor is unreadable"
+    assert seat.read_text(encoding="utf-8") == "{not json", "never rewritten"
+    assert not grove_hook._grove_anchor_path("session", "sid_test").exists()
+
+
+def test_inbox_unreadable_session_anchor_falls_back_to_the_seat_anchor(
+    monkeypatch, capsys
+):
+    _quiet_nestor(monkeypatch)
+    sess = grove_hook._grove_anchor_path("session", "sid_test")
+    sess.parent.mkdir(parents=True, exist_ok=True)
+    sess.write_text('{"last_id": -3}', encoding="utf-8")  # malformed value
+    grove_hook._write_anchor(grove_hook._grove_anchor_path("seat", "willow"), 10)
+    _stub_inbox(monkeypatch, _inbox_rows((11, "willow", "bot", "after ten")))
+    lines = _reinject_lines(monkeypatch, capsys)
+    assert [ln for ln in lines if ln.startswith("[grove")] == [
+        "[grove #willow bot] after ten"
+    ]
+    assert grove_hook._read_anchor(sess) == 11
+
+
+def test_read_anchor_three_states(tmp_path):
+    p = tmp_path / "a.json"
+    assert grove_hook._read_anchor(p) is None
+    p.write_text("garbage", encoding="utf-8")
+    assert grove_hook._read_anchor(p) == grove_hook._ANCHOR_UNREADABLE
+    p.write_text('{"last_id": true}', encoding="utf-8")
+    assert grove_hook._read_anchor(p) == grove_hook._ANCHOR_UNREADABLE
+    grove_hook._write_anchor(p, 7)
+    assert grove_hook._read_anchor(p) == 7
+
+
 def test_inbox_read_helper_treats_missing_willow_mcp_as_unreachable(monkeypatch):
     """The real reader, with the import made to fail: `unreachable` with the
     reason — never an empty inbox."""

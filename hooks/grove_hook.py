@@ -182,15 +182,25 @@ def _grove_anchor_path(kind: str, key: str) -> Path:
     return _hook_state_dir() / f"grove-anchor-{kind}-{safe}.json"
 
 
-def _read_anchor(path: Path) -> int | None:
-    """The stored last-read id, or None when there is no anchor yet /
-    the file is unreadable (treated as absent, never as zero)."""
+_ANCHOR_UNREADABLE = "unreadable"
+
+
+def _read_anchor(path: Path) -> int | None | str:
+    """Three states (Loki 7AA9F436): the stored last-read id; ``None`` when
+    there is no anchor file (absent — the seed case); the string
+    ``"unreadable"`` when a file exists but cannot be read or parsed. An
+    unreadable anchor must never be mistaken for absent, or the seed would
+    overwrite it at the high-water mark and drop the whole unread backlog."""
+    if not path.exists():
+        return None
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, ValueError):
-        return None
+        return _ANCHOR_UNREADABLE
     last = data.get("last_id") if isinstance(data, dict) else None
-    return int(last) if isinstance(last, int) and last >= 0 else None
+    if isinstance(last, bool) or not isinstance(last, int) or last < 0:
+        return _ANCHOR_UNREADABLE
+    return int(last)
 
 
 def _write_anchor(path: Path, last_id: int) -> None:
@@ -332,10 +342,15 @@ def _grove_inbox_lines(app_id: str, session_id: str) -> list[str]:
     session_anchor = _grove_anchor_path("session", session_id)
     seat_anchor = _grove_anchor_path("seat", app_id)
     since = _read_anchor(session_anchor)
-    if since is None:
+    if since is None or since == _ANCHOR_UNREADABLE:
+        # A corrupt session anchor falls back to the seat's; a corrupt seat
+        # anchor is said, not seeded over — nothing is read, nothing is
+        # written, and the backlog stays where it is until a human looks.
         since = _read_anchor(seat_anchor)
+        if since == _ANCHOR_UNREADABLE:
+            return [f"[grove anchor unreadable: {seat_anchor}]"]
     seeding = since is None
-    floor = since or 0
+    floor = int(since or 0)
 
     holder: list[dict[str, Any]] = []
 
