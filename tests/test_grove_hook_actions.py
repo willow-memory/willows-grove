@@ -65,6 +65,30 @@ def _stub_stdin(monkeypatch, payload: dict) -> None:
     monkeypatch.setattr(sys, "stdin", io.StringIO(json.dumps(payload)))
 
 
+@pytest.fixture(autouse=True)
+def quiet_grove_inbox(tmp_path, monkeypatch):
+    """Every test in this module runs against a quiet, hermetic Grove inbox:
+    the reader is stubbed to `empty` and hook state lands under a tmp
+    WILLOW_HOME, so no test touches Postgres or the box's anchors. The
+    inbox tests below override the stub per case."""
+    monkeypatch.setenv("WILLOW_HOME", str(tmp_path / "willow_home"))
+    monkeypatch.setattr(grove_hook, "APP_ID", "willow")
+    monkeypatch.setattr(grove_hook, "SESSION_ID", "sid_test")
+    monkeypatch.setattr(
+        grove_hook,
+        "_grove_inbox_read",
+        lambda app_id, since_id: {
+            "state": "empty",
+            "reason": "",
+            "rows": [],
+            "max_id": since_id,
+        },
+    )
+    # The real read runs on a worker thread; tests keep it, so timeouts are
+    # exercised where a test asks for them.
+    yield
+
+
 # ── reinject ───────────────────────────────────────────────────────────────
 
 
@@ -437,3 +461,333 @@ def test_deposit_jarvis_silent_when_no_drafts(tmp_path, monkeypatch, capsys):
     assert "sign them" not in err
     # Deposit summary still landed.
     assert (willow_home / "deposits" / "sid_j3.json").is_file()
+
+
+# ── Grove inbox at reinject (sealed pair 11ccb0f7) ─────────────────────────
+
+
+def _inbox_rows(*specs: tuple[int, str, str, str]) -> list[dict]:
+    """Exactly the shape willow_mcp.grove.inbox_bundle returns: {id, channel,
+    sender, content} — no timestamp reaches the hook (Loki 15D211C7)."""
+    return [
+        {"id": i, "channel": ch, "sender": who, "content": text}
+        for i, ch, who, text in specs
+    ]
+
+
+def _stub_inbox(
+    monkeypatch,
+    rows: list[dict],
+    *,
+    state: str | None = None,
+    max_id: int | None = None,
+):
+    calls: list[int] = []
+
+    def _read(app_id: str, since_id: int) -> dict:
+        calls.append(since_id)
+        # Malformed rows (no id, not a dict) ride along unfiltered — the
+        # formatter under test is what must cope with them.
+        unread = [
+            r
+            for r in rows
+            if not isinstance(r, dict) or int(r.get("id") or 0) > since_id
+        ]
+        ids = [int(r["id"]) for r in rows if isinstance(r, dict) and r.get("id")]
+        top = max_id if max_id is not None else max(ids + [since_id])
+        return {
+            "state": state or ("populated" if unread else "empty"),
+            "reason": "" if state != "unreachable" else "postgres unavailable",
+            "rows": unread,
+            "max_id": top,
+        }
+
+    monkeypatch.setattr(grove_hook, "_grove_inbox_read", _read)
+    return calls
+
+
+def _seed_anchor(session_id: str, last_id: int) -> None:
+    grove_hook._write_anchor(
+        grove_hook._grove_anchor_path("session", session_id), last_id
+    )
+
+
+def _quiet_nestor(monkeypatch):
+    """No Nestor line, no seat-drift line: the real hooks/seat.md carries the
+    anchor, so the only lines left are REINJECT plus whatever the inbox adds."""
+    monkeypatch.setattr(grove_hook, "_nestor_reach", lambda: "reachable")
+    monkeypatch.setattr(grove_hook, "_nestor_ask", lambda prompt: None)
+    seat = str(HOOKS / "seat.md")
+    monkeypatch.setenv("GROVE_SEAT_FILE", seat)
+    monkeypatch.setattr(grove_hook, "SEAT_FILE", seat)
+
+
+def _reinject_lines(monkeypatch, capsys, session_id: str = "sid_test") -> list[str]:
+    _stub_stdin(monkeypatch, {"prompt": "hi", "session_id": session_id})
+    assert grove_hook.reinject() == 0
+    return [ln for ln in capsys.readouterr().out.split("\n") if ln.strip()]
+
+
+def test_inbox_unread_items_emit_lines_and_advance_the_anchor(monkeypatch, capsys):
+    """The sealed clause: a red on a PR this seat opened is in front of the
+    seat on its next prompt. One line per unread item, newest last; the
+    anchor moves past them so the next prompt is quiet."""
+    _quiet_nestor(monkeypatch)
+    _seed_anchor("sid_test", 100)
+    _stub_inbox(
+        monkeypatch,
+        _inbox_rows(
+            (
+                101,
+                "willow",
+                "willows-bot",
+                "CI red: willow-memory/ratatosk#48 @ 632225c — lint — https://x/job/1",
+            ),
+            (102, "willow", "loki", "audit 4177ABB8 written"),
+        ),
+    )
+    lines = _reinject_lines(monkeypatch, capsys)
+    inbox = [ln for ln in lines if ln.startswith("[grove")]
+    assert inbox == [
+        "[grove #willow willows-bot] CI red: willow-memory/ratatosk#48 @ 632225c — lint — https://x/job/1",
+        "[grove #willow loki] audit 4177ABB8 written",
+    ]
+    assert all(seat_line in lines for seat_line in grove_hook.REINJECT)
+    assert (
+        grove_hook._read_anchor(grove_hook._grove_anchor_path("session", "sid_test"))
+        == 102
+    )
+    assert (
+        grove_hook._read_anchor(grove_hook._grove_anchor_path("seat", "willow")) == 102
+    )
+    # Next prompt: nothing new → no inbox line at all.
+    again = _reinject_lines(monkeypatch, capsys)
+    assert not [ln for ln in again if ln.startswith("[grove")]
+
+
+def test_inbox_quiet_emits_exactly_the_seat_lines(monkeypatch, capsys):
+    """Silence is the populated-empty case: no inbox line, the byte-stable
+    seat lines and nothing else."""
+    _quiet_nestor(monkeypatch)
+    _seed_anchor("sid_test", 7)
+    _stub_inbox(monkeypatch, [])
+    lines = _reinject_lines(monkeypatch, capsys)
+    assert lines == list(grove_hook.REINJECT)
+
+
+def test_inbox_unreachable_emits_one_line_and_leaves_the_anchor(monkeypatch, capsys):
+    """Grove down is said once and plainly; the anchor does not move, so
+    whatever landed while it was down surfaces when it is back."""
+    _quiet_nestor(monkeypatch)
+    _seed_anchor("sid_test", 50)
+    _stub_inbox(
+        monkeypatch,
+        _inbox_rows((51, "willow", "willows-bot", "CI red")),
+        state="unreachable",
+    )
+    lines = _reinject_lines(monkeypatch, capsys)
+    inbox = [ln for ln in lines if ln.startswith("[grove")]
+    assert inbox == ["[grove unreachable: postgres unavailable]"]
+    assert (
+        grove_hook._read_anchor(grove_hook._grove_anchor_path("session", "sid_test"))
+        == 50
+    )
+
+
+def test_inbox_timeout_reads_as_unreachable(monkeypatch, capsys):
+    """A hung read is bounded: the worker is abandoned at the budget and the
+    reinject says `unreachable: timeout`, never blocks the turn."""
+    import time
+
+    _quiet_nestor(monkeypatch)
+    _seed_anchor("sid_test", 1)
+    monkeypatch.setattr(grove_hook, "_GROVE_INBOX_TIMEOUT_S", 0.05)
+
+    def _hang(app_id, since_id):
+        time.sleep(0.5)
+        return {"state": "empty", "reason": "", "rows": [], "max_id": since_id}
+
+    monkeypatch.setattr(grove_hook, "_grove_inbox_read", _hang)
+    lines = _reinject_lines(monkeypatch, capsys)
+    inbox = [ln for ln in lines if ln.startswith("[grove")]
+    assert inbox == ["[grove unreachable: timeout after 0s]"]
+    assert (
+        grove_hook._read_anchor(grove_hook._grove_anchor_path("session", "sid_test"))
+        == 1
+    )
+
+
+def test_inbox_backlog_is_paged_oldest_first_and_nothing_is_consumed(
+    monkeypatch, capsys
+):
+    """Eight unread: the first prompt shows the oldest five and a tail naming
+    the anchor; the anchor moves only past what was shown, so the second
+    prompt shows the remaining three and the third prompt is quiet (Loki
+    15D211C7: a backlog beyond the bound must not be consumed by the tail)."""
+    _quiet_nestor(monkeypatch)
+    _seed_anchor("sid_test", 0)
+    rows = _inbox_rows(*[(i, "willow", "bot", f"item {i}") for i in range(1, 9)])
+    _stub_inbox(monkeypatch, rows)
+
+    first = [
+        ln
+        for ln in _reinject_lines(monkeypatch, capsys)
+        if ln.startswith("[grove") or ln.startswith("…")
+    ]
+    assert len(first) == 6
+    assert first[0].endswith("item 1") and first[4].endswith("item 5")
+    assert first[5] == "… and 3 more — next prompt, or grove_inbox(since_id=5)"
+    assert (
+        grove_hook._read_anchor(grove_hook._grove_anchor_path("session", "sid_test"))
+        == 5
+    )
+
+    second = [
+        ln
+        for ln in _reinject_lines(monkeypatch, capsys)
+        if ln.startswith("[grove") or ln.startswith("…")
+    ]
+    assert [ln[-6:] for ln in second] == ["item 6", "item 7", "item 8"]
+    assert (
+        grove_hook._read_anchor(grove_hook._grove_anchor_path("session", "sid_test"))
+        == 8
+    )
+
+    third = [
+        ln for ln in _reinject_lines(monkeypatch, capsys) if ln.startswith("[grove")
+    ]
+    assert third == []
+
+
+def test_inbox_malformed_message_is_counted_not_crashed(monkeypatch, capsys):
+    _quiet_nestor(monkeypatch)
+    _seed_anchor("sid_test", 0)
+    rows = _inbox_rows((1, "willow", "bot", "fine")) + [
+        {"id": 2, "channel": "willow"},
+        "not a dict",
+    ]
+    _stub_inbox(monkeypatch, rows, max_id=2)
+    lines = _reinject_lines(monkeypatch, capsys)
+    inbox = [ln for ln in lines if ln.startswith("[grove")]
+    assert inbox == [
+        "[grove #willow bot] fine",
+        "[grove: 2 unreadable message(s) skipped]",
+    ]
+    # An unreadable row is consumed (never re-shown), so the anchor covers it.
+    assert (
+        grove_hook._read_anchor(grove_hook._grove_anchor_path("session", "sid_test"))
+        == 2
+    )
+
+
+def test_inbox_first_run_seeds_the_anchor_at_now_and_says_nothing(monkeypatch, capsys):
+    """No anchor for the session or the seat: the seat starts from the
+    current high-water mark rather than replaying history."""
+    _quiet_nestor(monkeypatch)
+    _stub_inbox(
+        monkeypatch, _inbox_rows((300, "willow", "bot", "old news")), max_id=300
+    )
+    lines = _reinject_lines(monkeypatch, capsys)
+    assert not [ln for ln in lines if ln.startswith("[grove")]
+    assert (
+        grove_hook._read_anchor(grove_hook._grove_anchor_path("session", "sid_test"))
+        == 300
+    )
+    assert (
+        grove_hook._read_anchor(grove_hook._grove_anchor_path("seat", "willow")) == 300
+    )
+
+
+def test_inbox_new_session_inherits_the_seat_anchor(monkeypatch, capsys):
+    """A red that landed between two sessions surfaces once, in the next
+    session: the new session's anchor is seeded from the seat's."""
+    _quiet_nestor(monkeypatch)
+    grove_hook._write_anchor(grove_hook._grove_anchor_path("seat", "willow"), 10)
+    _stub_inbox(
+        monkeypatch, _inbox_rows((11, "willow", "willows-bot", "CI red: overnight"))
+    )
+    lines = _reinject_lines(monkeypatch, capsys, session_id="sid_next")
+    inbox = [ln for ln in lines if ln.startswith("[grove")]
+    assert inbox == ["[grove #willow willows-bot] CI red: overnight"]
+    assert (
+        grove_hook._read_anchor(grove_hook._grove_anchor_path("session", "sid_next"))
+        == 11
+    )
+
+
+def test_inbox_unreadable_seat_anchor_is_said_not_seeded_over(monkeypatch, capsys):
+    """Loki 7AA9F436: a corrupt seat anchor with no session anchor used to
+    read as absent, get seeded at the high-water mark, and drop the backlog.
+    Now: one line naming the file, nothing read, nothing written."""
+    _quiet_nestor(monkeypatch)
+    seat = grove_hook._grove_anchor_path("seat", "willow")
+    seat.parent.mkdir(parents=True, exist_ok=True)
+    seat.write_text("{not json", encoding="utf-8")
+    calls = _stub_inbox(monkeypatch, _inbox_rows((5, "willow", "bot", "backlog")))
+    lines = _reinject_lines(monkeypatch, capsys)
+    inbox = [ln for ln in lines if ln.startswith("[grove")]
+    assert inbox == [f"[grove anchor unreadable: {seat}]"]
+    assert calls == [], "nothing is read while the anchor is unreadable"
+    assert seat.read_text(encoding="utf-8") == "{not json", "never rewritten"
+    assert not grove_hook._grove_anchor_path("session", "sid_test").exists()
+
+
+def test_inbox_unreadable_session_anchor_falls_back_to_the_seat_anchor(
+    monkeypatch, capsys
+):
+    _quiet_nestor(monkeypatch)
+    sess = grove_hook._grove_anchor_path("session", "sid_test")
+    sess.parent.mkdir(parents=True, exist_ok=True)
+    sess.write_text('{"last_id": -3}', encoding="utf-8")  # malformed value
+    grove_hook._write_anchor(grove_hook._grove_anchor_path("seat", "willow"), 10)
+    _stub_inbox(monkeypatch, _inbox_rows((11, "willow", "bot", "after ten")))
+    lines = _reinject_lines(monkeypatch, capsys)
+    assert [ln for ln in lines if ln.startswith("[grove")] == [
+        "[grove #willow bot] after ten"
+    ]
+    assert grove_hook._read_anchor(sess) == 11
+
+
+def test_read_anchor_three_states(tmp_path):
+    p = tmp_path / "a.json"
+    assert grove_hook._read_anchor(p) is None
+    p.write_text("garbage", encoding="utf-8")
+    assert grove_hook._read_anchor(p) == grove_hook._ANCHOR_UNREADABLE
+    p.write_text('{"last_id": true}', encoding="utf-8")
+    assert grove_hook._read_anchor(p) == grove_hook._ANCHOR_UNREADABLE
+    grove_hook._write_anchor(p, 7)
+    assert grove_hook._read_anchor(p) == 7
+
+
+def test_inbox_read_helper_treats_missing_willow_mcp_as_unreachable(monkeypatch):
+    """The real reader, with the import made to fail: `unreachable` with the
+    reason — never an empty inbox."""
+    import builtins
+
+    real_import = builtins.__import__
+
+    def _no_willow(name, *args, **kwargs):
+        if name.startswith("willow_mcp"):
+            raise ImportError("no willow_mcp here")
+        return real_import(name, *args, **kwargs)
+
+    original = _original_inbox_read()
+    monkeypatch.setattr(builtins, "__import__", _no_willow)
+    out = original("willow", 0)
+    assert out["state"] == "unreachable"
+    assert "willow_mcp import" in out["reason"]
+
+
+def _original_inbox_read():
+    """The un-stubbed reader: the autouse fixture replaces the module
+    attribute, so load a fresh copy of the hook module and take the function
+    it defines."""
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "grove_hook_fresh", HOOKS / "grove_hook.py"
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module._grove_inbox_read

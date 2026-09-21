@@ -52,6 +52,32 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ## [Unreleased]
 
+### Added
+
+- **Reinject surfaces the seat's unread Grove inbox.** (PR 80)
+  `hooks/grove_hook.py::reinject` (UserPromptSubmit + PreCompact) gains a
+  fourth, conditional section under sealed pair `11ccb0f7`
+  (seat-inbound-channel-2026-09-21): one line per unread item on the
+  seat's Grove inbox since the session's anchor —
+  `[grove #<channel> <sender>] <first 140 chars>`, oldest first, five per
+  prompt plus an `… and N more — next prompt, or grove_inbox(since_id=…)`
+  tail; the anchor moves only past what was shown, so a backlog pages
+  across prompts rather than being consumed — or one
+  `[grove unreachable: <reason>]` line when Postgres / willow-mcp cannot
+  be reached within a 3 s budget. A quiet inbox emits nothing, so the
+  hook stays byte-stable in the common case. Read-only: the hook never
+  posts, acks or flags; it advances a local anchor
+  (`$WILLOW_HOME/deposits/hook-state/grove-anchor-{session,seat}-*.json`)
+  only after the lines are emitted, and leaves it untouched on
+  `unreachable`. A new session inherits the seat anchor so a CI red that
+  landed between sessions surfaces once; a first-ever run seeds at the
+  current high-water mark and replays nothing. The seat's own posts are
+  filtered out. `hooks/wiring.json` is untouched: its rows are the sealed
+  record `governance/decisions/grove-hook-rows-sealed.json`, and the
+  `reinject` row's `answers` text is the operator's to re-seal — this
+  change is within that row's stated purpose ("the only mid-session
+  surface for … what changed since session_start").
+
 ### Fixed
 
 - **`check_changelog_bullet.py` test isolation from ambient
