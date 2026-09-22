@@ -24,6 +24,7 @@ operator) installs it into the served page's own venv.
 from __future__ import annotations
 
 import os
+import shutil
 import sys
 import unittest
 from pathlib import Path
@@ -129,6 +130,12 @@ class GroveServeRunScriptTests(unittest.TestCase):
         self.assertIn("websockets", script)
 
 
+@unittest.skipIf(
+    sys.platform == "win32" or shutil.which("bash") is None,
+    "scripts/grove-serve-run is a POSIX launcher for a systemd unit — "
+    "not covered on a platform with no bash (gap a4f519ce5075; CI's "
+    "Windows runner hit this the same way ratatosk #54 did).",
+)
 class GroveServeRunOfflineBehaviorTests(unittest.TestCase):
     """Loki 1BA3415E F1: scripts/grove-serve-run must never exit before exec
     just because its own self-install failed. Under the unit's
@@ -171,7 +178,6 @@ sys.exit(0)
 """
 
     def _run_script(self, *, ws_ok: bool, pip_ok: bool):
-        import shutil
         import stat
         import subprocess
         import tempfile
