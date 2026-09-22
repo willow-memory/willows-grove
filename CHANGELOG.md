@@ -67,6 +67,34 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Added
 
+- **The served page declares a WebSocket library.** (PR TBD — dispatch
+  452ED95B) Measured 2026-09-22T06:29Z: `grove-serve.service` reloaded
+  onto #81's master and a harness Monitor's WS upgrade against a live
+  `/events/{seat}` got `HTTP 404`, then close 1006. Nothing in this repo
+  declared `websockets` or `wsproto` — uvicorn ships no WebSocket
+  implementation of its own, so it refused every upgrade before
+  Starlette's route ever ran; Starlette's `TestClient` serves WebSockets
+  in-process and never needed either library, which is why the route's
+  own 70-test suite was green while the live socket 404'd.
+  `requirements.txt` and `pyproject.toml` now declare `websockets>=13.0,<17`
+  (uvicorn's own default pick and floor — its `standard` extra pins
+  `websockets>=13.0` — and the narrower choice over `uvicorn[standard]`,
+  which would also add httptools/uvloop/watchfiles/python-dotenv/pyyaml).
+  `scripts/grove-serve-run` now installs it on start if missing, so a
+  re-render or restart self-heals a venv that predates this dependency.
+  `grove_serve.py` gains `_ws_library_available()` — uvicorn's OWN
+  resolution (`uvicorn.protocols.websockets.auto.AutoWebSocketsProtocol`),
+  not a hand-rolled guess — and `/health` gains an `events` field:
+  `{"state": "populated"}` or `{"state": "unreachable", "reason": "no
+  websocket library"}`, three-state, never a silent 404; `run()` prints a
+  matching warning at serve start when the library is missing.
+  `tests/test_grove_serve_ws_dependency.py::EventsWsLibraryImportableTests`
+  is a test that cannot pass without the fix reaching the interpreter
+  under test: it asserts a WS library is actually importable via uvicorn's
+  own lookup, so it stays red in any venv — including this Kart sandbox,
+  network-isolated with no egress lease held for this dispatch — until
+  something actually installs `websockets` or `wsproto` into it.
+
 - **Grove serves a per-seat event stream.** (PR 81) Sealed pair
   `13330d1c` (2026-09-22): `grove_serve.py` gains a read-only Starlette
   `WebSocketRoute` at `/events/{seat}` on the existing loopback

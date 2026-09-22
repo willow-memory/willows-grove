@@ -49,6 +49,16 @@ dependencies = [
     "mcp>=2.0.0,<3.0.0",
     "starlette>=0.37.0,<2",
     "uvicorn>=0.30.0,<1",
+    # uvicorn ships no WebSocket implementation of its own — without one,
+    # every /events/{seat} upgrade answers a bare HTTP 404 (measured
+    # 2026-09-22T06:29Z, dispatch 452ED95B, on a venv this dependency list
+    # had never named). `websockets` is uvicorn's own default pick (its
+    # `standard` extra pins `websockets>=13.0`) and the narrower choice:
+    # `uvicorn[standard]` would also add httptools, uvloop, watchfiles,
+    # python-dotenv and pyyaml, none of which this fix needs. Floor matches
+    # uvicorn's own; ceiling is the next major above the newest version
+    # this box has cached (16.x).
+    "websockets>=13.0,<17",
 ]
 
 [project.optional-dependencies]

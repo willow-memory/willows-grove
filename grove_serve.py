@@ -91,6 +91,45 @@ def _get_nestor_client() -> NestorClient:
 _DISPATCH_LENSES = {"governance", "pm", "pa"}
 
 
+def _ws_library_available() -> bool:
+    """True when uvicorn has a WebSocket implementation to hand `/events/{seat}`
+    its upgrade handshake to.
+
+    Uses uvicorn's OWN resolution (``uvicorn.protocols.websockets.auto``) —
+    the same ``try: import websockets / except: try: import wsproto``
+    fallback uvicorn's ``AutoWebSocketsProtocol`` runs — rather than a
+    hand-rolled ``find_spec`` guess, so this can never drift from what
+    uvicorn will actually pick at connection time.
+
+    Measured 2026-09-22T06:29Z (dispatch 452ED95B): neither `websockets`
+    nor `wsproto` was declared anywhere in this repo, so a fresh venv from
+    `requirements.txt` had ``AutoWebSocketsProtocol is None`` and uvicorn
+    answered every `/events/{seat}` upgrade with a bare HTTP 404 — no
+    Starlette route code runs at all in that case; the ASGI server refuses
+    the handshake before Starlette ever sees it. Starlette's `TestClient`
+    serves WebSockets in-process and never needed either library, which is
+    why the route's own test suite was green while the live socket 404'd.
+    """
+    from uvicorn.protocols.websockets.auto import AutoWebSocketsProtocol
+
+    return AutoWebSocketsProtocol is not None
+
+
+def _events_health_field() -> dict:
+    """The `/health` `events` field — three-state, never a silent 404.
+
+    `{"state": "populated"}` when a WS library is importable (the
+    `/events/{seat}` route can actually upgrade a connection); otherwise
+    `{"state": "unreachable", "reason": "no websocket library"}`. There is
+    no distinct `empty` case here — a route either has an upgrade path or
+    it does not (matching this file's `/api/nestor/decide` precedent for a
+    binary capability check under the three-state contract).
+    """
+    if _ws_library_available():
+        return {"state": "populated"}
+    return {"state": "unreachable", "reason": "no websocket library"}
+
+
 def _resolve_commit() -> str:
     """Best-effort short SHA of the current git HEAD.
 
@@ -117,7 +156,13 @@ async def _index(_request: Request) -> HTMLResponse:
 
 
 async def _health(_request: Request) -> JSONResponse:
-    return JSONResponse({"ok": True, "commit": _resolve_commit()})
+    return JSONResponse(
+        {
+            "ok": True,
+            "commit": _resolve_commit(),
+            "events": _events_health_field(),
+        }
+    )
 
 
 def _serialize_row(row: dict) -> dict:
@@ -708,6 +753,20 @@ def build_app() -> Starlette:
 def run(host: str = DEFAULT_HOST, port: int = DEFAULT_PORT) -> None:
     """Serve until interrupted (Ctrl-C). Loopback-only by default."""
     import uvicorn
+
+    if not _ws_library_available():
+        # Startup honesty (dispatch 452ED95B): name the gap out loud instead
+        # of letting every /events/{seat} upgrade fail as a bare HTTP 404
+        # with nothing in the log explaining why. scripts/grove-serve-run
+        # installs `websockets` before exec'ing this module; this line is
+        # the fallback for any other launcher (a bare `python -m grove_serve`,
+        # a stale venv a restart didn't re-run the installer against).
+        print(
+            "WARNING: no WebSocket library (websockets or wsproto) is "
+            "importable — /events/{seat} will refuse every upgrade with a "
+            "bare HTTP 404. pip install websockets (see requirements.txt) "
+            "and restart; /health's events field reports this until then."
+        )
 
     if host not in ("127.0.0.1", "localhost", "::1"):
         # Grove's served page is a desk-surface, not an internet-facing app.
