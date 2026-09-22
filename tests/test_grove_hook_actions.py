@@ -793,19 +793,21 @@ def _original_inbox_read():
     return module._grove_inbox_read
 
 
-# ── events boot line (sealed 13330d1c) ──────────────────────────────────────
+# ── events boot line (sealed 13330d1c; probe reworked per Loki 1BA3415E Q2) ─
 #
 # `orient` (session_start) gains one line naming the seat's own event
 # stream — the hook cannot arm a Monitor itself, it only says the line.
-# Every test below patches `_events_page_reachable` explicitly (Loki
-# FA0EFB5F low) rather than relying on Kart's own box having nothing on
-# 127.0.0.1:8766 — a probe result is a fact this suite asserts, not an
-# environment accident it happens to benefit from.
+# Every test below patches `_events_health_probe` explicitly (Loki FA0EFB5F
+# low, extended by 1BA3415E Q2) rather than relying on Kart's own box
+# having nothing on 127.0.0.1:8766 — a probe result is a fact this suite
+# asserts, not an environment accident it happens to benefit from.
 
 
 def test_orient_prints_events_boot_line_with_seat_id(capsys, monkeypatch):
     monkeypatch.delenv("GROVE_SERVE_PORT", raising=False)
-    monkeypatch.setattr(grove_hook, "_events_page_reachable", lambda: True)
+    monkeypatch.setattr(
+        grove_hook, "_events_health_probe", lambda: {"state": "populated"}
+    )
     rc = grove_hook.orient()
     assert rc == 0
     err = capsys.readouterr().err
@@ -814,11 +816,27 @@ def test_orient_prints_events_boot_line_with_seat_id(capsys, monkeypatch):
 
 
 def test_orient_prints_page_down_line_when_events_port_unreachable(capsys, monkeypatch):
-    monkeypatch.setattr(grove_hook, "_events_page_reachable", lambda: False)
+    monkeypatch.setattr(grove_hook, "_events_health_probe", lambda: None)
     rc = grove_hook.orient()
     assert rc == 0
     err = capsys.readouterr().err
     assert "served page down; reinject inbox is the path" in err
+    assert "arm a Monitor" not in err
+
+
+def test_orient_prints_stream_dark_line_when_events_not_populated(capsys, monkeypatch):
+    """Loki 1BA3415E F1/Q2: the page can be up with the stream dark (a WS
+    library that failed to install offline) — the boot line must say so,
+    not promise a Monitor against a route that will 404 every upgrade."""
+    monkeypatch.setattr(
+        grove_hook,
+        "_events_health_probe",
+        lambda: {"state": "unreachable", "reason": "no websocket library"},
+    )
+    rc = grove_hook.orient()
+    assert rc == 0
+    err = capsys.readouterr().err
+    assert "stream dark: no websocket library; reinject inbox is the path" in err
     assert "arm a Monitor" not in err
 
 
@@ -827,7 +845,9 @@ def test_events_boot_line_honors_grove_serve_port_override(monkeypatch):
     import importlib
 
     reloaded = importlib.reload(grove_hook)
-    monkeypatch.setattr(reloaded, "_events_page_reachable", lambda: True)
+    monkeypatch.setattr(
+        reloaded, "_events_health_probe", lambda: {"state": "populated"}
+    )
     try:
         line = reloaded._events_boot_line("willow")
         assert line is not None
@@ -838,14 +858,18 @@ def test_events_boot_line_honors_grove_serve_port_override(monkeypatch):
 
 
 def test_events_boot_line_none_without_app_id(monkeypatch):
-    monkeypatch.setattr(grove_hook, "_events_page_reachable", lambda: True)
+    monkeypatch.setattr(
+        grove_hook, "_events_health_probe", lambda: {"state": "populated"}
+    )
     assert grove_hook._events_boot_line("") is None
 
 
 def test_events_boot_line_since_id_resumes_from_seat_anchor(tmp_path, monkeypatch):
     monkeypatch.setenv("WILLOW_HOME", str(tmp_path / "willow_home"))
     monkeypatch.setattr(grove_hook, "APP_ID", "hanuman")
-    monkeypatch.setattr(grove_hook, "_events_page_reachable", lambda: True)
+    monkeypatch.setattr(
+        grove_hook, "_events_health_probe", lambda: {"state": "populated"}
+    )
     grove_hook._write_anchor(grove_hook._grove_anchor_path("seat", "hanuman"), 42)
     line = grove_hook._events_boot_line("hanuman")
     assert line is not None
@@ -854,37 +878,79 @@ def test_events_boot_line_since_id_resumes_from_seat_anchor(tmp_path, monkeypatc
 
 def test_events_boot_line_defaults_since_id_zero_with_no_anchor(tmp_path, monkeypatch):
     monkeypatch.setenv("WILLOW_HOME", str(tmp_path / "willow_home_fresh"))
-    monkeypatch.setattr(grove_hook, "_events_page_reachable", lambda: True)
+    monkeypatch.setattr(
+        grove_hook, "_events_health_probe", lambda: {"state": "populated"}
+    )
     line = grove_hook._events_boot_line("hanuman")
     assert line is not None
     assert "since_id=0" in line
 
 
 def test_events_boot_line_says_page_down_when_unreachable(monkeypatch):
-    monkeypatch.setattr(grove_hook, "_events_page_reachable", lambda: False)
+    monkeypatch.setattr(grove_hook, "_events_health_probe", lambda: None)
     line = grove_hook._events_boot_line("hanuman")
     assert line == "served page down; reinject inbox is the path"
 
 
-def test_events_page_reachable_true_when_something_listens(monkeypatch):
-    """A real (loopback-bound) listening socket reads as reachable — the
-    probe is a real TCP connect, not a stub."""
-    import contextlib
-    import socket as _socket
+def test_events_boot_line_says_stream_dark_with_reason(monkeypatch):
+    monkeypatch.setattr(
+        grove_hook,
+        "_events_health_probe",
+        lambda: {"state": "unreachable", "reason": "no websocket library"},
+    )
+    line = grove_hook._events_boot_line("hanuman")
+    assert line == "stream dark: no websocket library; reinject inbox is the path"
 
-    srv = _socket.socket(_socket.AF_INET, _socket.SOCK_STREAM)
-    srv.bind(("127.0.0.1", 0))
-    srv.listen(1)
-    port = srv.getsockname()[1]
+
+def test_events_boot_line_says_stream_dark_unknown_when_reason_missing(monkeypatch):
+    monkeypatch.setattr(
+        grove_hook, "_events_health_probe", lambda: {"state": "unreachable"}
+    )
+    line = grove_hook._events_boot_line("hanuman")
+    assert line == "stream dark: unknown; reinject inbox is the path"
+
+
+def _serve_health_once(events_body: dict):
+    """A minimal real HTTP server answering exactly one GET /health with
+    {"ok": true, "commit": "test", "events": events_body}, on a free
+    loopback port. Returns (server, thread, port); caller shuts it down."""
+    import http.server
+    import threading as _threading
+
+    payload = json.dumps({"ok": True, "commit": "test", "events": events_body}).encode(
+        "utf-8"
+    )
+
+    class _Handler(http.server.BaseHTTPRequestHandler):
+        def do_GET(self):  # noqa: N802 — stdlib method name
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(payload)
+
+        def log_message(self, *_a):  # silence stderr access logs
+            pass
+
+    server = http.server.HTTPServer(("127.0.0.1", 0), _Handler)
+    thread = _threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    return server, thread, server.server_address[1]
+
+
+def test_events_health_probe_reads_events_field_from_a_real_server(monkeypatch):
+    """The probe is a real HTTP GET, not a stub — proven against an actual
+    loopback HTTP server answering /health."""
+    server, thread, port = _serve_health_once({"state": "populated"})
     monkeypatch.setattr(grove_hook, "_EVENTS_PORT", str(port))
     try:
-        assert grove_hook._events_page_reachable() is True
+        assert grove_hook._events_health_probe() == {"state": "populated"}
     finally:
-        with contextlib.suppress(OSError):
-            srv.close()
+        server.shutdown()
+        thread.join(timeout=2.0)
+        server.server_close()
 
 
-def test_events_page_reachable_false_when_nothing_listens(monkeypatch):
+def test_events_health_probe_none_when_nothing_listens(monkeypatch):
     import socket as _socket
 
     probe = _socket.socket(_socket.AF_INET, _socket.SOCK_STREAM)
@@ -892,4 +958,4 @@ def test_events_page_reachable_false_when_nothing_listens(monkeypatch):
     free_port = probe.getsockname()[1]
     probe.close()
     monkeypatch.setattr(grove_hook, "_EVENTS_PORT", str(free_port))
-    assert grove_hook._events_page_reachable() is False
+    assert grove_hook._events_health_probe() is None

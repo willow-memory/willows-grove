@@ -23,6 +23,16 @@ mcp>=2.0.0,<3.0.0
 
 starlette>=0.37.0,<2
 uvicorn>=0.30.0,<1
+
+# uvicorn has no bundled WebSocket implementation; without one it answers
+# every WS upgrade with a bare HTTP 404 rather than an error (measured
+# 2026-09-22T06:29Z, dispatch 452ED95B: #81's live deploy 404'd on
+# /events/{seat} for exactly this reason, on a venv this file had never
+# named). `websockets` is uvicorn's own default (its `standard` extra pins
+# `websockets>=13.0`) and the narrower choice over `uvicorn[standard]`,
+# which would also add httptools/uvloop/watchfiles/python-dotenv/pyyaml.
+websockets>=13.0,<17
+
 pytest>=8.0.0,<10
 
 # The `nestor` CLI, which grove/nestor_client.py spawns as `nestor serve`
