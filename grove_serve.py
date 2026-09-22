@@ -20,6 +20,8 @@ subsequent Gate work fills the inside without re-negotiating the shell.
 
 from __future__ import annotations
 
+import asyncio
+import contextlib
 import json
 import os
 import subprocess
@@ -30,9 +32,11 @@ from pathlib import Path
 from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette.responses import HTMLResponse, JSONResponse
-from starlette.routing import Mount, Route
+from starlette.routing import Mount, Route, WebSocketRoute
 from starlette.staticfiles import StaticFiles
+from starlette.websockets import WebSocket, WebSocketDisconnect
 
+import grove_reader
 from grove import envelope_reader
 from grove import journal_reader
 from grove import kart_reader
@@ -461,6 +465,135 @@ async def _nestor_decide(request: Request) -> JSONResponse:
     )
 
 
+# ── /events/{seat} — per-seat event stream (sealed 13330d1c, 2026-09-22) ────
+#
+# Read-only WebSocket on the same loopback host, no new port. Feeds the
+# seat's unread tail on connect (the same rows grove_inbox_bundle returns:
+# @mentions, bus-addressed to the seat, and the seat's own #<seat> channel),
+# then pushes each new row as one frame as it lands. This is the reader half
+# only — the writer half (the seal watcher posting to a seat's channel) is a
+# separate willow-mcp packet.
+
+_EVENTS_LOOPBACK_HOSTS = frozenset({"127.0.0.1", "::1", "localhost"})
+# Slice 1 polls grove_reader on an interval rather than LISTEN/NOTIFY
+# (follow-on). Bounded at <= 2s per the assignment.
+_EVENTS_POLL_INTERVAL_S = 2.0
+
+
+def _events_client_refused(websocket: WebSocket) -> bool:
+    """True when the connecting client is not loopback.
+
+    The served page — and this stream — is loopback-only (CLAUDE.md rule
+    1: no web ports for the dashboard). ``websocket.client`` is the ASGI
+    server's own view of the peer address; a missing client (some test
+    transports) is treated as refused rather than trusted.
+    """
+    client = websocket.client
+    return client is None or client.host not in _EVENTS_LOOPBACK_HOSTS
+
+
+def _events_frame(row: dict) -> dict:
+    """One JSON frame for a Grove row: ``{id, channel, sender, content, at}``.
+
+    ``content`` is the message text as stored — verbatim, no paraphrase, no
+    secrets added. ``at`` is best-effort (rows from grove_reader carry no
+    timestamp field today; None round-trips as JSON ``null``).
+    """
+    at = row.get("created_at") if isinstance(row, dict) else None
+    if hasattr(at, "isoformat"):
+        at = at.isoformat()
+    return {
+        "id": row.get("id") if isinstance(row, dict) else None,
+        "channel": row.get("channel") if isinstance(row, dict) else None,
+        "sender": row.get("sender") if isinstance(row, dict) else None,
+        "content": row.get("content") if isinstance(row, dict) else None,
+        "at": at,
+    }
+
+
+async def _events_drain_inbound(websocket: WebSocket) -> None:
+    """Read-only socket: an inbound frame does nothing. It is received (so
+    the connection doesn't back up), counted, and otherwise ignored — this
+    stream never accepts a command."""
+    inbound_ignored = 0
+    try:
+        while True:
+            await websocket.receive_text()
+            inbound_ignored += 1
+    except WebSocketDisconnect:
+        pass
+    except Exception:  # noqa: BLE001 — a drain-side error must not crash the send loop
+        pass
+
+
+async def _events(websocket: WebSocket) -> None:
+    """WS /events/{seat}?since_id=<n> — read-only per-seat event stream.
+
+    Loopback only (see ``_events_client_refused``): a non-loopback client is
+    refused before accept (close code 4403), matching the served page's own
+    loopback boundary — no auth beyond that.
+
+    Three-state on the wire (INVARIANTS.md §1): the first frame is
+    ``{"state": "populated"|"empty"|"unreachable", "reason": "..."}``. A
+    reader failure mid-stream sends another ``unreachable`` frame — the
+    socket stays open and re-probes on the poll interval rather than
+    closing, so the seat's Monitor sees the outage as a state, not silence.
+
+    ``since_id`` (query param) resumes past what a re-armed Monitor already
+    saw; frame ids are the underlying message ids, so the seat can hand the
+    last one it observed back on reconnect.
+    """
+    if _events_client_refused(websocket):
+        await websocket.close(code=4403)
+        return
+
+    seat = websocket.path_params.get("seat", "") or ""
+    try:
+        since_id = int(websocket.query_params.get("since_id", "0") or "0")
+    except (TypeError, ValueError):
+        since_id = 0
+
+    await websocket.accept()
+
+    # Read-only: any inbound frame is drained (and counted) on its own task
+    # so it can never block the send loop, and never does anything.
+    drain_task = asyncio.ensure_future(_events_drain_inbound(websocket))
+
+    sent_state = False
+    try:
+        while True:
+            try:
+                rows = await asyncio.to_thread(
+                    grove_reader.grove_inbox_bundle, seat, since_id=since_id
+                )
+            except Unreachable as e:
+                await websocket.send_json({"state": "unreachable", "reason": e.reason})
+                sent_state = True
+                await asyncio.sleep(_EVENTS_POLL_INTERVAL_S)
+                continue
+
+            new_rows = sorted(
+                (r for r in rows if int(r.get("id") or 0) > since_id),
+                key=lambda r: int(r.get("id") or 0),
+            )
+            if not sent_state:
+                state = "populated" if new_rows else "empty"
+                await websocket.send_json({"state": state, "reason": ""})
+                sent_state = True
+
+            for row in new_rows:
+                await websocket.send_json(_events_frame(row))
+                since_id = max(since_id, int(row.get("id") or 0))
+
+            await asyncio.sleep(_EVENTS_POLL_INTERVAL_S)
+    except WebSocketDisconnect:
+        pass
+    finally:
+        drain_task.cancel()
+        with contextlib.suppress(asyncio.CancelledError, Exception):
+            await drain_task
+
+
 def build_app() -> Starlette:
     routes = [
         Route("/", _index),
@@ -473,6 +606,7 @@ def build_app() -> Starlette:
         Route("/api/nestor/decide", _nestor_decide, methods=["POST"]),
         Route("/seed/", _seed_index),
         Route("/seed/{n}", _seed_movement),
+        WebSocketRoute("/events/{seat}", _events),
     ]
     # `/web` serves the vanilla-JS Web Components + libs (D9 — no build step).
     # Mounted only when the directory exists so unit tests that import this

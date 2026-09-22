@@ -791,3 +791,52 @@ def _original_inbox_read():
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module._grove_inbox_read
+
+
+# ── events boot line (sealed 13330d1c) ──────────────────────────────────────
+#
+# `orient` (session_start) gains one line naming the seat's own event
+# stream — the hook cannot arm a Monitor itself, it only says the line.
+
+
+def test_orient_prints_events_boot_line_with_seat_id(capsys, monkeypatch):
+    monkeypatch.delenv("GROVE_SERVE_PORT", raising=False)
+    rc = grove_hook.orient()
+    assert rc == 0
+    err = capsys.readouterr().err
+    assert "arm a Monitor on ws://127.0.0.1:8766/events/willow?since_id=" in err
+    assert "30-minute timeout, re-arm on expiry" in err
+
+
+def test_events_boot_line_honors_grove_serve_port_override(monkeypatch):
+    monkeypatch.setenv("GROVE_SERVE_PORT", "9999")
+    import importlib
+
+    reloaded = importlib.reload(grove_hook)
+    try:
+        line = reloaded._events_boot_line("willow")
+        assert line is not None
+        assert "ws://127.0.0.1:9999/events/willow" in line
+    finally:
+        monkeypatch.delenv("GROVE_SERVE_PORT", raising=False)
+        importlib.reload(grove_hook)
+
+
+def test_events_boot_line_none_without_app_id():
+    assert grove_hook._events_boot_line("") is None
+
+
+def test_events_boot_line_since_id_resumes_from_seat_anchor(tmp_path, monkeypatch):
+    monkeypatch.setenv("WILLOW_HOME", str(tmp_path / "willow_home"))
+    monkeypatch.setattr(grove_hook, "APP_ID", "hanuman")
+    grove_hook._write_anchor(grove_hook._grove_anchor_path("seat", "hanuman"), 42)
+    line = grove_hook._events_boot_line("hanuman")
+    assert line is not None
+    assert "since_id=42" in line
+
+
+def test_events_boot_line_defaults_since_id_zero_with_no_anchor(tmp_path, monkeypatch):
+    monkeypatch.setenv("WILLOW_HOME", str(tmp_path / "willow_home_fresh"))
+    line = grove_hook._events_boot_line("hanuman")
+    assert line is not None
+    assert "since_id=0" in line

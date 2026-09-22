@@ -54,6 +54,28 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Added
 
+- **Grove serves a per-seat event stream.** Sealed pair `13330d1c`
+  (2026-09-22): `grove_serve.py` gains a read-only Starlette
+  `WebSocketRoute` at `/events/{seat}` on the existing loopback
+  127.0.0.1:8766 host — no new port. A non-loopback client is refused
+  before accept; an inbound frame is drained and ignored, never acted
+  on. The first frame is a three-state frame
+  (`{"state": "populated"|"empty"|"unreachable", "reason": ...}`);
+  the seat's unread tail (via `grove_reader.grove_inbox_bundle` —
+  @mentions, bus-addressed, and the seat's own `#<seat>` channel) then
+  streams as one `{id, channel, sender, content, at}` frame per row,
+  oldest first, polled at a 2 s interval (LISTEN/NOTIFY is a follow-on).
+  A `since_id` query param resumes past what a re-armed Monitor already
+  saw; a reader failure mid-stream sends another `unreachable` frame
+  and the socket stays open and re-probes rather than closing.
+  `hooks/grove_hook.py::orient` (session_start) gains one boot line —
+  `arm a Monitor on ws://127.0.0.1:8766/events/<seat>?since_id=<n>
+  (30-minute timeout, re-arm on expiry)` — naming `since_id` from the
+  seat's existing Grove inbox anchor; the hook cannot arm a Monitor
+  itself, and the reinject inbox line stays the fallback, not
+  superseded. The writer half (the seal watcher posting to a seat's
+  channel) is a separate willow-mcp packet.
+
 - **Reinject surfaces the seat's unread Grove inbox.** (PR 80)
   `hooks/grove_hook.py::reinject` (UserPromptSubmit + PreCompact) gains a
   fourth, conditional section under sealed pair `11ccb0f7`
