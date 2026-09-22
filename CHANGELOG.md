@@ -2,6 +2,19 @@
 
 All notable changes land here per INVARIANTS.md §3. Format follows Keep a Changelog v1.1.0.
 
+## [0.12.0](https://github.com/willow-memory/willows-grove/compare/v0.11.0...v0.12.0) (2026-09-22)
+
+
+### Added
+
+* **grove:** serve the seat's per-seat event stream over WebSocket ([0378c47](https://github.com/willow-memory/willows-grove/commit/0378c47a3dd86530112a0154a4b247d0b137cacb))
+* **serve:** a per-seat event stream on the served page — the seat subscribes instead of polling ([#81](https://github.com/willow-memory/willows-grove/issues/81)) ([4b81fb2](https://github.com/willow-memory/willows-grove/commit/4b81fb2b22cb676246f471a95f6611e057732254))
+
+
+### Fixed
+
+* **grove:** events stream survives a Postgres outage and delivers a full backlog ([1e70c98](https://github.com/willow-memory/willows-grove/commit/1e70c98dc4ca6a25fcd80c6f8ae9c9be704b546a))
+
 ## [0.11.0](https://github.com/willow-memory/willows-grove/compare/v0.10.0...v0.11.0) (2026-09-20)
 
 
