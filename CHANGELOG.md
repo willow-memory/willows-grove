@@ -67,8 +67,8 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Added
 
-- **The served page declares a WebSocket library.** (PR TBD — dispatch
-  452ED95B) Measured 2026-09-22T06:29Z: `grove-serve.service` reloaded
+- **The served page declares a WebSocket library.** (PR 83) Measured
+  2026-09-22T06:29Z: `grove-serve.service` reloaded
   onto #81's master and a harness Monitor's WS upgrade against a live
   `/events/{seat}` got `HTTP 404`, then close 1006. Nothing in this repo
   declared `websockets` or `wsproto` — uvicorn ships no WebSocket
