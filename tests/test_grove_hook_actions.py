@@ -791,3 +791,105 @@ def _original_inbox_read():
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module._grove_inbox_read
+
+
+# ── events boot line (sealed 13330d1c) ──────────────────────────────────────
+#
+# `orient` (session_start) gains one line naming the seat's own event
+# stream — the hook cannot arm a Monitor itself, it only says the line.
+# Every test below patches `_events_page_reachable` explicitly (Loki
+# FA0EFB5F low) rather than relying on Kart's own box having nothing on
+# 127.0.0.1:8766 — a probe result is a fact this suite asserts, not an
+# environment accident it happens to benefit from.
+
+
+def test_orient_prints_events_boot_line_with_seat_id(capsys, monkeypatch):
+    monkeypatch.delenv("GROVE_SERVE_PORT", raising=False)
+    monkeypatch.setattr(grove_hook, "_events_page_reachable", lambda: True)
+    rc = grove_hook.orient()
+    assert rc == 0
+    err = capsys.readouterr().err
+    assert "arm a Monitor on ws://127.0.0.1:8766/events/willow?since_id=" in err
+    assert "30-minute timeout, re-arm on expiry" in err
+
+
+def test_orient_prints_page_down_line_when_events_port_unreachable(capsys, monkeypatch):
+    monkeypatch.setattr(grove_hook, "_events_page_reachable", lambda: False)
+    rc = grove_hook.orient()
+    assert rc == 0
+    err = capsys.readouterr().err
+    assert "served page down; reinject inbox is the path" in err
+    assert "arm a Monitor" not in err
+
+
+def test_events_boot_line_honors_grove_serve_port_override(monkeypatch):
+    monkeypatch.setenv("GROVE_SERVE_PORT", "9999")
+    import importlib
+
+    reloaded = importlib.reload(grove_hook)
+    monkeypatch.setattr(reloaded, "_events_page_reachable", lambda: True)
+    try:
+        line = reloaded._events_boot_line("willow")
+        assert line is not None
+        assert "ws://127.0.0.1:9999/events/willow" in line
+    finally:
+        monkeypatch.delenv("GROVE_SERVE_PORT", raising=False)
+        importlib.reload(grove_hook)
+
+
+def test_events_boot_line_none_without_app_id(monkeypatch):
+    monkeypatch.setattr(grove_hook, "_events_page_reachable", lambda: True)
+    assert grove_hook._events_boot_line("") is None
+
+
+def test_events_boot_line_since_id_resumes_from_seat_anchor(tmp_path, monkeypatch):
+    monkeypatch.setenv("WILLOW_HOME", str(tmp_path / "willow_home"))
+    monkeypatch.setattr(grove_hook, "APP_ID", "hanuman")
+    monkeypatch.setattr(grove_hook, "_events_page_reachable", lambda: True)
+    grove_hook._write_anchor(grove_hook._grove_anchor_path("seat", "hanuman"), 42)
+    line = grove_hook._events_boot_line("hanuman")
+    assert line is not None
+    assert "since_id=42" in line
+
+
+def test_events_boot_line_defaults_since_id_zero_with_no_anchor(tmp_path, monkeypatch):
+    monkeypatch.setenv("WILLOW_HOME", str(tmp_path / "willow_home_fresh"))
+    monkeypatch.setattr(grove_hook, "_events_page_reachable", lambda: True)
+    line = grove_hook._events_boot_line("hanuman")
+    assert line is not None
+    assert "since_id=0" in line
+
+
+def test_events_boot_line_says_page_down_when_unreachable(monkeypatch):
+    monkeypatch.setattr(grove_hook, "_events_page_reachable", lambda: False)
+    line = grove_hook._events_boot_line("hanuman")
+    assert line == "served page down; reinject inbox is the path"
+
+
+def test_events_page_reachable_true_when_something_listens(monkeypatch):
+    """A real (loopback-bound) listening socket reads as reachable — the
+    probe is a real TCP connect, not a stub."""
+    import contextlib
+    import socket as _socket
+
+    srv = _socket.socket(_socket.AF_INET, _socket.SOCK_STREAM)
+    srv.bind(("127.0.0.1", 0))
+    srv.listen(1)
+    port = srv.getsockname()[1]
+    monkeypatch.setattr(grove_hook, "_EVENTS_PORT", str(port))
+    try:
+        assert grove_hook._events_page_reachable() is True
+    finally:
+        with contextlib.suppress(OSError):
+            srv.close()
+
+
+def test_events_page_reachable_false_when_nothing_listens(monkeypatch):
+    import socket as _socket
+
+    probe = _socket.socket(_socket.AF_INET, _socket.SOCK_STREAM)
+    probe.bind(("127.0.0.1", 0))
+    free_port = probe.getsockname()[1]
+    probe.close()
+    monkeypatch.setattr(grove_hook, "_EVENTS_PORT", str(free_port))
+    assert grove_hook._events_page_reachable() is False

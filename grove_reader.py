@@ -86,6 +86,15 @@ def _redact_db_error(exc: BaseException) -> str:
     return "database error"
 
 
+def redact_db_error(exc: BaseException) -> str:
+    """Public wrapper over ``_redact_db_error`` — a caller-safe, type-based
+    (never message-based) generic string for a DB exception. Exposed so
+    callers outside this module (e.g. ``grove_serve``'s WS routes) can
+    redact a connection/query failure before it reaches a client, without
+    reaching into a private name."""
+    return _redact_db_error(exc)
+
+
 def dashboard_grove_sender() -> str:
     """Sender name for dashboard chat + DeskPane (fleet identity).
 
@@ -287,6 +296,99 @@ def grove_inbox_bundle(
         own_rows,
         limit=merge_limit,
     )
+
+
+def grove_events_since(
+    seat: str,
+    *,
+    since_id: int = 0,
+    limit: int = 200,
+    conn=None,
+) -> list[dict]:
+    """One ascending, ``since_id``-bounded page for the seat's event stream
+    (`grove_serve.py`'s ``/events/{seat}``) — the same three sources
+    ``grove_inbox_bundle`` merges (@mentions, bus ``to_agent``, and the
+    seat's own ``#<seat>`` channel), but as a single ``ORDER BY m.id ASC
+    LIMIT %s`` query instead of three "newest N" reads merged and capped.
+
+    ``grove_inbox_bundle`` keeps only the newest ``merge_limit`` (default
+    35) rows of the merge — correct for a desk inbox pane, wrong for a
+    stream a caller must page to zero loss: a seat with 60 unread would
+    see rows 26-60 and never learn 1-25 existed. This function instead
+    returns up to ``limit`` rows immediately after ``since_id``, oldest
+    first, so a caller pages by re-calling with ``since_id`` set to the
+    last row's id — an empty return means caught up — and never skips a
+    row between pages, whether the pages are read from a single connect or
+    split across a disconnect/reconnect at the last id actually delivered.
+
+    Loki FA0EFB5F (F1): the pooled connection is acquired INSIDE this
+    function's own ``try`` — unlike the bug this function replaces the
+    exposure of (``_conn_ctx`` called ahead of ``grove_inbox_bundle``'s
+    ``try``), a Postgres connect failure here is caught and converted to
+    ``Unreachable`` like every other read in this file, never a raw
+    ``psycopg2`` exception left to propagate through the caller's ASGI
+    app as a silent close.
+
+    §1: raises ``Unreachable`` when Postgres cannot be reached.
+    """
+    who = (seat or "").strip()
+    if not who:
+        return []
+    handles = desk_mention_handles(who)
+    inbox_name = who.lower().replace(" ", "-")
+    conn, owned = None, False
+    try:
+        conn, owned = _conn_ctx(conn)
+        cur = conn.cursor()
+        _ensure_mention_index(cur)
+        mention_clauses = " OR ".join(["m.content ILIKE %s"] * len(handles))
+        params: list = [since_id]
+        params.extend(f"%@{h}%" for h in handles)
+        params.append(who)
+        params.append(inbox_name)
+        params.append(limit)
+        cur.execute(
+            f"""
+            SELECT m.id, c.name, m.sender, m.content, m.created_at
+            FROM grove.messages m
+            JOIN grove.channels c ON c.id = m.channel_id
+            WHERE m.is_deleted = 0
+              AND c.is_archived = FALSE
+              AND m.id > %s
+              AND (
+                ({mention_clauses})
+                OR (
+                  LOWER(TRIM(COALESCE(m.to_agent, ''))) = LOWER(TRIM(%s))
+                  AND LOWER(TRIM(COALESCE(m.to_agent, ''))) <> '__all__'
+                  AND COALESCE(m.bus_type, '') NOT IN ('HEARTBEAT', 'ACK')
+                )
+                OR (
+                  LOWER(TRIM(c.name)) = LOWER(TRIM(%s))
+                  AND COALESCE(m.bus_type, '') NOT IN ('HEARTBEAT', 'ACK')
+                )
+              )
+            ORDER BY m.id ASC
+            LIMIT %s
+            """,
+            params,
+        )
+        return [
+            {
+                "id": r[0],
+                "channel": r[1],
+                "sender": r[2],
+                "content": r[3],
+                "created_at": r[4],
+            }
+            for r in cur.fetchall()
+        ]
+    except Unreachable:
+        raise
+    except Exception as e:
+        _log.warning("grove_reader.grove_events_since: %s", e)
+        raise Unreachable(f"grove_reader.grove_events_since: {e}") from e
+    finally:
+        _release(conn, owned)
 
 
 def grove_member_roster(limit: int = 30, conn=None) -> list[dict]:

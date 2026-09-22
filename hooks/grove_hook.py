@@ -31,6 +31,14 @@ _NESTOR_PORT = 8765
 _NESTOR_PROBE_TIMEOUT = 0.25  # seconds; must not delay a Claude Code turn
 _NESTOR_ASK_TIMEOUT = 1.5  # seconds
 
+#: grove_serve.py's loopback host:port for the per-seat event stream
+#: (sealed 13330d1c). GROVE_SERVE_PORT overrides, matching grove_serve's
+#: own env var, so a boot line still points at a non-default port.
+_EVENTS_HOST = "127.0.0.1"
+_EVENTS_PORT = os.environ.get("GROVE_SERVE_PORT", "8766").strip() or "8766"
+_EVENTS_ARM_MINUTES = 30
+_EVENTS_PROBE_TIMEOUT = 0.25  # seconds; same bound as the Nestor probe below
+
 _NESTOR_STATUS_BOOT_LINE = {
     "not_installed": "Nestor is not on this box.",
     "installed_not_answering": "Nestor did not answer; unverified turn.",
@@ -102,6 +110,15 @@ def orient() -> int:
     boot_line = _emit_boot_line_once(reach)
     if boot_line:
         lines.append(boot_line)
+
+    # Sealed pair 13330d1c (2026-09-22): the seat's own event stream. The
+    # hook cannot arm a Monitor itself — it only says the line; the seat
+    # reads it and arms one against its own /events/<seat> stream. The
+    # reinject inbox line stays as the fallback (sealed: "not the primary
+    # path"), not superseded by this line.
+    events_line = _events_boot_line(APP_ID)
+    if events_line:
+        lines.append(events_line)
 
     if lines:
         print("\n".join(lines), file=sys.stderr)
@@ -216,6 +233,55 @@ def _write_anchor(path: Path, last_id: int) -> None:
         )
     except OSError:
         pass
+
+
+def _events_since_id(app_id: str) -> int:
+    """Best-effort ``since_id`` for the boot line: the seat-level Grove
+    anchor the reinject inbox already maintains (the same last-read id), or
+    0 when no anchor exists yet or it is unreadable — a fresh Monitor then
+    starts from the seat's current unread tail rather than refusing to
+    arm."""
+    anchor = _read_anchor(_grove_anchor_path("seat", app_id))
+    return anchor if isinstance(anchor, int) else 0
+
+
+def _events_page_reachable() -> bool:
+    """Bounded TCP probe of grove_serve's own loopback host:port — the same
+    250 ms socket-probe pattern ``_nestor_reach`` already uses below, aimed
+    at the served page instead of Nestor. A page that is down cannot serve
+    ``/events/<seat>``, so a boot line telling the seat to arm a Monitor
+    against it would be a promise the hook has no way to keep (Loki
+    FA0EFB5F low: the prior shape said "arm a Monitor" identically whether
+    or not anything was listening)."""
+    try:
+        with socket.create_connection(
+            (_EVENTS_HOST, int(_EVENTS_PORT)), timeout=_EVENTS_PROBE_TIMEOUT
+        ):
+            return True
+    except (OSError, socket.timeout, ValueError):
+        return False
+
+
+def _events_boot_line(app_id: str) -> str | None:
+    """One boot line naming the seat's own event stream (sealed 13330d1c):
+    `arm a Monitor on ws://127.0.0.1:8766/events/<seat>?since_id=<n>` with a
+    30-minute timeout, re-armed at expiry — only when the served page is
+    actually reachable (``_events_page_reachable``); otherwise the line
+    says the page is down and names the reinject inbox as the path that
+    still works, rather than telling the seat to arm a Monitor against
+    nothing. The hook only says the line — it cannot arm a Monitor itself;
+    the seat reading this boot line does. Returns None with no app_id
+    (nothing to seat the stream to)."""
+    if not app_id:
+        return None
+    if not _events_page_reachable():
+        return "served page down; reinject inbox is the path"
+    since_id = _events_since_id(app_id)
+    url = f"ws://{_EVENTS_HOST}:{_EVENTS_PORT}/events/{app_id}?since_id={since_id}"
+    return (
+        f"arm a Monitor on {url} "
+        f"({_EVENTS_ARM_MINUTES}-minute timeout, re-arm on expiry)"
+    )
 
 
 def _grove_inbox_read(app_id: str, since_id: int) -> dict[str, Any]:

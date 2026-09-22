@@ -54,6 +54,50 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Added
 
+- **Grove serves a per-seat event stream.** (PR 81) Sealed pair
+  `13330d1c` (2026-09-22): `grove_serve.py` gains a read-only Starlette
+  `WebSocketRoute` at `/events/{seat}` on the existing loopback
+  127.0.0.1:8766 host — no new port. A non-loopback client is refused
+  before accept; an inbound frame is drained and ignored, never acted
+  on. No identity on the socket: any loopback client can subscribe to
+  any seat's stream by naming it in the URL — per-seat isolation was
+  not asked for by this pair and is not achievable without one, so it
+  is not claimed. The first frame is a three-state frame
+  (`{"state": "populated"|"empty"|"unreachable", "reason": ...}`);
+  the seat's unread tail (via a new `grove_reader.grove_events_since` —
+  the same three sources `grove_inbox` reads: @mentions, bus-addressed,
+  and the seat's own `#<seat>` channel, but as one ascending,
+  `since_id`-bounded, `limit`-bounded query, re-paged until a page
+  comes back short — i.e. caught up — rather than the "newest N"
+  merge-and-cap `grove_inbox_bundle` uses for the desk pane) then
+  streams as one `{id, channel, sender, content, at}` frame per row,
+  oldest first, polled at a 2 s interval (LISTEN/NOTIFY is a follow-on).
+  `since_id` resumes past what a re-armed Monitor already saw, and is
+  bounded to a non-negative, in-range Postgres bigint — a malformed or
+  oversized value is refused with a state frame naming the field, never
+  forwarded to SQL. A reader failure mid-stream — including a Postgres
+  connect failure, caught the same as a query failure — sends another
+  `unreachable` frame with a type-redacted reason (never DSN/psycopg2
+  text on the wire) and the socket stays open and re-probes rather than
+  closing. `hooks/grove_hook.py::orient` (session_start) gains one boot
+  line, only when a 250 ms probe finds the served page's own port
+  answering — `arm a Monitor on ws://127.0.0.1:8766/events/<seat>?since_id=<n>
+  (30-minute timeout, re-arm on expiry)` — naming `since_id` from the
+  seat's existing Grove inbox anchor; when the page is down the line
+  says so and names the reinject inbox as the path that still works,
+  rather than telling the seat to arm a Monitor against nothing. The
+  hook cannot arm a Monitor itself, and the reinject inbox line stays
+  the fallback, not superseded. The writer half (the seal watcher
+  posting to a seat's channel) is a separate willow-mcp packet.
+  Reworked per Loki FA0EFB5F: F1 (a Postgres connect failure bypassed
+  the route's `except Unreachable` entirely and closed the socket in
+  silence — connection acquisition now happens inside
+  `grove_events_since`'s own `try`, and the route also catches any
+  non-`Unreachable` reader exception), F2 (the prior `grove_inbox_bundle`
+  read kept only the newest 35 rows by id, so 60 unread on connect sent
+  rows 26-60 and dropped 1-25 under `state: populated` — the new
+  `grove_events_since` pages ascending with no such cap).
+
 - **Reinject surfaces the seat's unread Grove inbox.** (PR 80)
   `hooks/grove_hook.py::reinject` (UserPromptSubmit + PreCompact) gains a
   fourth, conditional section under sealed pair `11ccb0f7`
