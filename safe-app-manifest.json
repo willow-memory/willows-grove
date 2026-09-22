@@ -1,7 +1,7 @@
 {
   "name": "Willow's Grove",
   "slug": "willows-grove",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "summary": "The operator's seat for the Willow AI fleet. Loopback-only served page + Web Components + Grove MCP.",
   "author": "willow-memory",
   "license": "See LICENSE file (TBD)",
