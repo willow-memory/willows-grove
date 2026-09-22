@@ -16,6 +16,7 @@ import socket
 import subprocess
 import sys
 import threading
+import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -245,37 +246,53 @@ def _events_since_id(app_id: str) -> int:
     return anchor if isinstance(anchor, int) else 0
 
 
-def _events_page_reachable() -> bool:
-    """Bounded TCP probe of grove_serve's own loopback host:port — the same
-    250 ms socket-probe pattern ``_nestor_reach`` already uses below, aimed
-    at the served page instead of Nestor. A page that is down cannot serve
-    ``/events/<seat>``, so a boot line telling the seat to arm a Monitor
-    against it would be a promise the hook has no way to keep (Loki
-    FA0EFB5F low: the prior shape said "arm a Monitor" identically whether
-    or not anything was listening)."""
+def _events_health_probe() -> dict | None:
+    """Bounded GET of grove_serve's own ``/health`` (250 ms — the same
+    budget ``_nestor_reach`` uses below), returning its ``events`` field, or
+    ``None`` on any failure (connection refused, timeout, malformed JSON,
+    a body with no ``events`` field).
+
+    Replaces a bare TCP probe (Loki FA0EFB5F low) with one that also reads
+    the state HTTP already carries: a page can be up with the WS library
+    still missing (Loki 1BA3415E F1 — ``grove-serve-run`` now execs the
+    server either way when its self-install fails), and a bare "can I
+    connect" probe cannot tell that apart from "page up, stream live". One
+    round-trip answers both questions the boot line needs.
+    """
     try:
-        with socket.create_connection(
-            (_EVENTS_HOST, int(_EVENTS_PORT)), timeout=_EVENTS_PROBE_TIMEOUT
-        ):
-            return True
-    except (OSError, socket.timeout, ValueError):
-        return False
+        with urllib.request.urlopen(
+            f"http://{_EVENTS_HOST}:{_EVENTS_PORT}/health",
+            timeout=_EVENTS_PROBE_TIMEOUT,
+        ) as resp:
+            body = json.loads(resp.read().decode("utf-8"))
+    except (OSError, ValueError):
+        return None
+    events = body.get("events") if isinstance(body, dict) else None
+    return events if isinstance(events, dict) else None
 
 
 def _events_boot_line(app_id: str) -> str | None:
     """One boot line naming the seat's own event stream (sealed 13330d1c):
     `arm a Monitor on ws://127.0.0.1:8766/events/<seat>?since_id=<n>` with a
-    30-minute timeout, re-armed at expiry — only when the served page is
-    actually reachable (``_events_page_reachable``); otherwise the line
-    says the page is down and names the reinject inbox as the path that
-    still works, rather than telling the seat to arm a Monitor against
-    nothing. The hook only says the line — it cannot arm a Monitor itself;
-    the seat reading this boot line does. Returns None with no app_id
-    (nothing to seat the stream to)."""
+    30-minute timeout, re-armed at expiry — only when `/health` answers AND
+    its `events` field reads `populated` (`_events_health_probe`).
+
+    Two ways the promise would otherwise be broken, both said plainly
+    instead: the page itself is unreachable — "served page down; reinject
+    inbox is the path" — or the page is up but the stream is dark (Loki
+    1BA3415E F1: a WS library that failed to install, or any other
+    non-`populated` `events` state) — "stream dark: <reason>; reinject
+    inbox is the path". The hook only says the line — it cannot arm a
+    Monitor itself; the seat reading this boot line does. Returns None
+    with no app_id (nothing to seat the stream to)."""
     if not app_id:
         return None
-    if not _events_page_reachable():
+    events = _events_health_probe()
+    if events is None:
         return "served page down; reinject inbox is the path"
+    if events.get("state") != "populated":
+        reason = events.get("reason") or "unknown"
+        return f"stream dark: {reason}; reinject inbox is the path"
     since_id = _events_since_id(app_id)
     url = f"ws://{_EVENTS_HOST}:{_EVENTS_PORT}/events/{app_id}?since_id={since_id}"
     return (

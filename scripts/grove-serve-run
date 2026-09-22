@@ -46,18 +46,26 @@ fi
 # /events/{seat} upgrade answers a bare HTTP 404 instead of an error
 # (measured 2026-09-22T06:29Z, dispatch 452ED95B — #81's live deploy did
 # exactly this on a venv requirements.txt had never named websockets in).
-# Install it here so a re-render or a restart self-heals a venv that
+# Attempt it here so a re-render or a restart self-heals a venv that
 # predates this dependency, rather than serving 404s silently until
 # someone re-runs `pip install -r requirements.txt` by hand.
+#
+# Loki 1BA3415E F1: an OFFLINE box must still get the page. This is the
+# only place in the repo that installs code at runtime from a systemd
+# unit, and the unit's Restart=on-failure/RestartSec=2 makes an `exit 1`
+# here worse than the 404 stream it replaces — a box with no network and a
+# stale venv would serve NOTHING (HTTP included) and retry pip every 2 s
+# forever, instead of the page-up/stream-dark state it served before this
+# branch. So: attempt the install, warn on failure, and exec the server
+# EITHER way — `run()`'s own startup warning and `/health`'s `events`
+# field then carry the "page up, stream dark" state, same as any other
+# missing dependency this launcher doesn't try to fix for you.
 if ! "$PY" -c "import websockets" >/dev/null 2>&1 && ! "$PY" -c "import wsproto" >/dev/null 2>&1; then
   echo "grove-serve-run: no WebSocket library (websockets/wsproto) importable — installing websockets..." >&2
   if "$PY" -m pip install --quiet "websockets>=13.0,<17"; then
     echo "grove-serve-run: websockets installed." >&2
   else
-    echo "error: could not install websockets automatically." >&2
-    echo "       /events/{seat} will answer every upgrade with a bare HTTP 404 until it is." >&2
-    echo "       install manually: $PY -m pip install -r requirements.txt" >&2
-    exit 1
+    echo "grove-serve-run: could not install websockets (attempted: $PY -m pip install websockets>=13.0,<17) — serving the page anyway with /events/{seat} dark; see /health's events field, or install manually: $PY -m pip install -r requirements.txt" >&2
   fi
 fi
 

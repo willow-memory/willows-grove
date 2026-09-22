@@ -94,6 +94,21 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
   own lookup, so it stays red in any venv — including this Kart sandbox,
   network-isolated with no egress lease held for this dispatch — until
   something actually installs `websockets` or `wsproto` into it.
+  Ride-along per Loki 1BA3415E: `scripts/grove-serve-run` no longer
+  `exit 1`s when its self-install fails — this is the only place in the
+  repo that installs code at runtime from a systemd unit, and under the
+  unit's `Restart=on-failure`/`RestartSec=2` an `exit 1` here meant an
+  offline box with a stale venv served NOTHING (HTTP included) and
+  retried pip every 2 s, worse than the 404 stream it replaced; it now
+  attempts the install, prints one line naming the attempt and why it
+  failed, and `exec`s the server either way, so `run()`'s startup
+  warning and `/health`'s `events` field carry the "page up, stream
+  dark" state instead. `hooks/grove_hook.py::orient`'s boot-line probe
+  now does a bounded `GET /health` (same 250 ms budget) instead of a
+  bare TCP connect, and reads its `events` field: page unreachable still
+  says "served page down"; page up but `events.state != "populated"`
+  now says "stream dark: `<reason>`; reinject inbox is the path" instead
+  of promising a Monitor against a route that will 404 every upgrade.
 
 - **Grove serves a per-seat event stream.** (PR 81) Sealed pair
   `13330d1c` (2026-09-22): `grove_serve.py` gains a read-only Starlette

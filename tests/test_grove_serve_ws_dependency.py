@@ -129,5 +129,98 @@ class GroveServeRunScriptTests(unittest.TestCase):
         self.assertIn("websockets", script)
 
 
+class GroveServeRunOfflineBehaviorTests(unittest.TestCase):
+    """Loki 1BA3415E F1: scripts/grove-serve-run must never exit before exec
+    just because its own self-install failed. Under the unit's
+    Restart=on-failure/RestartSec=2, an `exit 1` here means an offline box
+    with a stale venv serves NOTHING (HTTP included) and retries pip every
+    2 s — worse than the 404 stream it replaces. These tests run the REAL
+    script (via `bash`, so the git executable bit is irrelevant) against a
+    fake `python3` under $GROVE_VENV that lets each of grove-serve-run's
+    checks succeed or fail independently and marks whether the final
+    `exec "$PY" -m grove_serve` was actually reached.
+    """
+
+    _FAKE_PY = """\
+#!/usr/bin/env python3
+import sys
+
+argv = sys.argv[1:]
+
+if "-c" in argv:
+    code = argv[argv.index("-c") + 1]
+    if "import grove_serve" in code:
+        sys.exit(0)
+    if "import websockets" in code:
+        sys.exit(0 if {ws_ok} else 1)
+    if "import wsproto" in code:
+        sys.exit(1)
+    sys.exit(0)
+
+if argv[:1] == ["-m"] and len(argv) > 1 and argv[1] == "pip":
+    if {pip_ok}:
+        sys.exit(0)
+    sys.stderr.write("simulated: could not resolve pypi.org (offline)\\n")
+    sys.exit(1)
+
+if argv[:2] == ["-m", "grove_serve"]:
+    print("EXEC_REACHED")
+    sys.exit(0)
+
+sys.exit(0)
+"""
+
+    def _run_script(self, *, ws_ok: bool, pip_ok: bool):
+        import shutil
+        import stat
+        import subprocess
+        import tempfile
+
+        tmp_path = Path(tempfile.mkdtemp(prefix="grove-serve-run-test-"))
+        try:
+            venv_bin = tmp_path / "venv" / "bin"
+            venv_bin.mkdir(parents=True)
+            fake_py = venv_bin / "python3"
+            fake_py.write_text(
+                self._FAKE_PY.format(ws_ok=ws_ok, pip_ok=pip_ok), encoding="utf-8"
+            )
+            fake_py.chmod(fake_py.stat().st_mode | stat.S_IEXEC)
+
+            script = Path(ROOT) / "scripts" / "grove-serve-run"
+            env = dict(os.environ)
+            env["GROVE_VENV"] = str(tmp_path / "venv")
+            return subprocess.run(
+                ["bash", str(script)],
+                env=env,
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
+        finally:
+            shutil.rmtree(tmp_path, ignore_errors=True)
+
+    def test_offline_install_failure_still_execs_the_server(self) -> None:
+        result = self._run_script(ws_ok=False, pip_ok=False)
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        # Reached exactly once — the script does not retry pip in-process;
+        # a single EXEC_REACHED is the proof there is no in-script loop.
+        self.assertEqual(result.stdout.count("EXEC_REACHED"), 1)
+        self.assertIn("could not install websockets", result.stderr)
+
+    def test_successful_install_execs_without_a_failure_warning(self) -> None:
+        result = self._run_script(ws_ok=False, pip_ok=True)
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        self.assertIn("EXEC_REACHED", result.stdout)
+        self.assertIn("websockets installed", result.stderr)
+        self.assertNotIn("could not install", result.stderr)
+
+    def test_library_already_present_skips_install_entirely(self) -> None:
+        result = self._run_script(ws_ok=True, pip_ok=False)
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        self.assertIn("EXEC_REACHED", result.stdout)
+        self.assertNotIn("installing websockets", result.stderr)
+        self.assertNotIn("could not install", result.stderr)
+
+
 if __name__ == "__main__":
     unittest.main()
