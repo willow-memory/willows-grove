@@ -2,6 +2,15 @@
 
 All notable changes land here per INVARIANTS.md §3. Format follows Keep a Changelog v1.1.0.
 
+## [0.12.1](https://github.com/willow-memory/willows-grove/compare/v0.12.0...v0.12.1) (2026-09-22)
+
+
+### Fixed
+
+* **serve:** declare a WebSocket library so /events/{seat} can upgrade at all ([e95b702](https://github.com/willow-memory/willows-grove/commit/e95b70293884f988b11876128009f7af00db7491))
+* **serve:** grove-serve-run execs anyway when its self-install fails offline ([78defab](https://github.com/willow-memory/willows-grove/commit/78defab90486aa135a6a45641d52c57840fb3b62))
+* **serve:** the served page can upgrade a WebSocket — declare websockets, self-heal the venv, say when the stream is dark ([#83](https://github.com/willow-memory/willows-grove/issues/83)) ([5e8d54b](https://github.com/willow-memory/willows-grove/commit/5e8d54b85caf64c9d653665b7a52b778620aaea5))
+
 ## [0.12.0](https://github.com/willow-memory/willows-grove/compare/v0.11.0...v0.12.0) (2026-09-22)
 
 
