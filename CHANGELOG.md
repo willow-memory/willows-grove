@@ -2,6 +2,12 @@
 
 All notable changes land here per INVARIANTS.md §3. Format follows Keep a Changelog v1.1.0.
 
+## [Unreleased]
+
+### Changed
+
+- **deploy:** retire `allow_localhost` from the Kart sandbox template — `deploy/kart-sandbox.template.json`'s `localhost_tier` note described it as a working local-only mode; it is retired (governance record `retire-allow-localhost-2026-09-23`, amends sealed 9fe5e179) and refused by name in both willow-mcp and kartikeya. (PR 86)
+
 ## [0.12.1](https://github.com/willow-memory/willows-grove/compare/v0.12.0...v0.12.1) (2026-09-22)
 
 
