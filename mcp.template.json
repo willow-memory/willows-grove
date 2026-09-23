@@ -1,5 +1,5 @@
 {
-  "_template": "The Desk. Copy to .mcp.json at the repo root and replace @HOME@ and @VAULT_BOX@. That file is NOT tracked — **/.mcp.json is globally ignored on an operator box because it carries absolute paths and a seat identity, the same rule deploy/kart-sandbox.template.json follows: the template travels, the wiring does not.",
+  "_template": "The Desk. Copy to .mcp.json at the repo root and replace @HOME@, @VAULT_BOX@, and @OPERATOR_PGP_FINGERPRINT@ (must match the operator key that signs $WILLOW_HOME/mcp_apps/* and willow-mcp-serve pgp.conf, or boot refuses when enforcement is on). That file is NOT tracked — **/.mcp.json is globally ignored on an operator box because it carries absolute paths and a seat identity, the same rule deploy/kart-sandbox.template.json follows: the template travels, the wiring does not.",
   "_why_here": "This repo is Willow's Grove. Opening it at the root seats you as willow — the Desk is the default, not a subdirectory you have to know about. Heimdallr's Watch is a seat you deliberately open at seat/heimdallr/. Ratified 2026-09-09.",
   "mcpServers": {
     "willow-mcp": {
@@ -16,7 +16,8 @@
         "WILLOW_HANDOFF_PROJECT": "willows-grove",
         "WILLOW_PROJECT_ROOT": "@HOME@/github/willow-memory/willows-grove",
         "WILLOW_FLEET_ROSTER": "@VAULT_BOX@/fleet.json",
-        "WILLOW_KEYRING": "@VAULT_BOX@/config/verifiers.json"
+        "WILLOW_KEYRING": "@VAULT_BOX@/config/verifiers.json",
+        "WILLOW_PGP_FINGERPRINT": "@OPERATOR_PGP_FINGERPRINT@"
       }
     },
     "nestor": {

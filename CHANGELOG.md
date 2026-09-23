@@ -2,6 +2,12 @@
 
 All notable changes land here per INVARIANTS.md §3. Format follows Keep a Changelog v1.1.0.
 
+## [Unreleased]
+
+### Fixed
+
+* **desk:** `mcp.template.json` pins `WILLOW_PGP_FINGERPRINT` so Cursor stdio boot matches fleet manifest PGP enforcement.
+
 ## [0.12.1](https://github.com/willow-memory/willows-grove/compare/v0.12.0...v0.12.1) (2026-09-22)
 
 
