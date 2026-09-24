@@ -87,7 +87,11 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
   flowering); pre-registered
   `docs/design/forge-convergence-flowering-experiment.md` (hypotheses T0–T6,
   chain-depth secondary, AI-Gamemaster theory bookmark). Step **0** blocks §6
-  build PRs until the flowering-threshold test is run and signed.
+  build PRs until the flowering-threshold test is run and signed. **§8
+  pre-run sign-off** filled (T=70%, C=0.3, N=12, R0+R1, P-cloud, tier
+  ladder, K=2); fixture home `seat/willow/experiments/flowering-2026-09/`.
+  Jeles loopback probe gaps logged on the operator box (`a6d8ae37f8be`,
+  `621488f2d6da`).
 
 - **The served page declares a WebSocket library.** (PR 83) Measured
   2026-09-22T06:29Z: `grove-serve.service` reloaded

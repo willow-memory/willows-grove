@@ -224,14 +224,14 @@ Written **before** T1. Mark **confirm / refute / inconclusive** in §9.
 
 | Field | Value |
 |---|---|
-| Hypothesis thresholds *T* % , *C* cloud/act | |
-| Scenario count *N* , ids committed at | |
-| Fixture directory hash | |
-| Retrieval arms included | R0 ☐ R1 ☐ |
-| P-cloud control included | ☐ |
-| Chain tiers (ordered tags) | |
-| Handoff minimum *K* extra joins | |
-| Ratified-by (verbatim) | |
+| Hypothesis thresholds *T* % , *C* cloud/act | **70%** acts fully grown without cloud escalation; **0.3** cloud invocations per desk act (average) under P-growth |
+| Scenario count *N* , ids committed at | **12** — `S-growth-01` … `S-growth-12` under `seat/willow/experiments/flowering-2026-09/` (committed before T1; hash recorded at **T0**) |
+| Fixture directory hash | *pending T0* — record `git rev-parse` or directory digest when fixtures land |
+| Retrieval arms included | **R0 ☑** (excerpts only, main path) · **R1 ☑** (Nestor default match on 10-scenario confound, T2) |
+| P-cloud control included | **☑ yes** — same battery, cloud-first policy; run after growth path per §6 order |
+| Chain tiers (ordered tags) | `llama3.2:3b` → `willow-lane4-3b` → `qwen3:4b` → `gemma3:4b` → `llama3.1:8b` (box ladder) |
+| Handoff minimum *K* extra joins | **2** — next tier must add ≥2 valid joins from `{excerpts, joins[]}` bundle alone |
+| Ratified-by (verbatim) | "write the Jeles bits in the gaps table, use the drafted numbers, and lets commit what left, keeping things in this box that need to stay in this bob gitignored, push, but not PR, all the chunks from this session that need to land remote." |
 
 ---
 
