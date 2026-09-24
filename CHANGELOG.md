@@ -82,6 +82,13 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Added
 
+- **Forge convergence design — tree, experiment protocol, step 0 gate.**
+  `docs/design/forge-convergence.md` §1.5 (one tree / one soil; growth vs
+  flowering); pre-registered
+  `docs/design/forge-convergence-flowering-experiment.md` (hypotheses T0–T6,
+  chain-depth secondary, AI-Gamemaster theory bookmark). Step **0** blocks §6
+  build PRs until the flowering-threshold test is run and signed.
+
 - **The served page declares a WebSocket library.** (PR 83) Measured
   2026-09-22T06:29Z: `grove-serve.service` reloaded
   onto #81's master and a harness Monitor's WS upgrade against a live
