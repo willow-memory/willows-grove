@@ -289,6 +289,20 @@ or delete it.
 
 ---
 
+## 12. Far horizon — willow-bot in the deterministic chain (operator note)
+
+**Status:** not designed · out of scope for this chunk · captured 2026-09-24.
+
+Operator shape-in-progress: **willow-bot** as a link in the same **deterministic
+chain** as corpus-lens and willow-reconciler — not only CI glue, but a steward
+for **shared venv layout, test entrypoints, and fleet-wide deterministic runs**
+so Kart tasks and bot jobs read one policy instead of ad-hoc paths. Box already
+binds `willow-bot` checkout (RW) and `$WILLOW_HOME/willow-bot` + `venvs/willow-bot`
+(RO). When this gets a design doc, tie it to reconciler/trailers CI and the
+operator desk `kart-sandbox.json` instance pattern; do not block step **0**.
+
+---
+
 ## Provenance
 
 Protocol drafted 2026-09-24 for operator box flowering gate. Desk probes and

@@ -121,3 +121,21 @@ intended and never says so.
 So the policy is only as good as the last time somebody checked it **from
 inside a task** rather than by reading it. That check is three lines of
 `test -w` and it has caught something every time it has been run.
+
+## Fleet deterministic tools (operator desk pattern)
+
+Read-only analyzers that join ideas to commits (`willow-reconciler`) or
+sessions to claims (`corpus-lens`) belong in **`bind_try_read_only`** when a
+task only runs their CLI against git history or logs. The checkout path must
+still be listed; an unlisted path does not exist inside the sandbox.
+
+On the operator desk instance, append (with your `HOME` token):
+
+- `{{HOME}}/github/willow-memory/willow-reconciler` → `bind_try_read_only`
+- Install the console script into the fleet venv the task uses (same venv as
+  `corpus-lens` / CI): `pip install "willow-reconciler>=0.6.0"` or editable
+  `-e` on the checkout after the mount is live.
+
+`corpus-lens` may remain on `bind_try` read-write on a desk that edits the
+analyzer in-task; prefer read-only when policy allows. Restart Kart workers
+after changing `$WILLOW_HOME/kart-sandbox.json`.
