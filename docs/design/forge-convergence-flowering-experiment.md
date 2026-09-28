@@ -161,6 +161,67 @@ Layer A runs **only** host loopback runner + F-micro (not Kart isolated sandbox)
 
 ---
 
+## 4.5 Amendment 2026-09-27 — code-first tier (D0)
+
+**Amendment, added by addition only** — this document is pre-registered
+(§2 "Post-hoc section ... does **not** edit hypotheses retroactively");
+nothing above this section is edited or removed.
+
+**D0 placement:** D0 sits **before** `nestor_draft` on the P-growth path.
+A deterministic, per-scenario-class resolver reads the pool record
+(excerpts, structured fields) directly and returns an answer or
+`ESCALATE`. A model — local or cloud — is invoked **only** on
+`ESCALATE`. Implementation: `willow-bot`
+`willow_bot/deterministic/resolvers.py` (stdlib only, no network, no
+Ollama), `willow-bot-deterministic resolve` CLI.
+
+**New primary metric for the D0 arm:** **resolver coverage**
+(`resolved / n` — the share of acts a code-first resolver closes without
+touching a model) and **resolver precision** (must equal **1.0** — a
+resolved answer that is wrong is a defect, not a score; `ESCALATE` is
+never scored as a failure). `cloud_invocations / act` (§1, layer B
+primary metric) is unchanged and still decides B-null/B-alt for
+P-growth vs P-cloud; the D0 metrics are additional, not a replacement.
+
+**2026-09-25 rubric run — findings recorded here as environment/fixture
+defects, not model failure (per §2 "Confounds named upfront"):**
+
+- **G1** brief text said "seat" while the pool's structured field is
+  `to_app` — a brief/schema mismatch, not a model reasoning failure.
+- **S-growth-03** carries no structured target field at all (prose
+  only, "Ada gather — dispatch B2E3BBF4 · Wave 0a...") — no `to_app` to
+  extract; a G1 fixture with nothing to resolve deterministically or
+  otherwise without inferring a seat from prose.
+- **G3** excerpts are truncated at roughly 200 characters upstream
+  (`S-growth-07/08/09` all cut mid-sentence, no terminal punctuation) —
+  the source material itself is incomplete, independent of how it is
+  answered.
+- **G4** was run on local models even though §5 states implementation
+  is "**never** local-only — flowering required (Hanuman)"; in
+  addition, `expected.builder_seat` for the G4 fixture was not named in
+  the brief given to the local models, so there was no way for the run
+  to check itself against it.
+- No `ESCALATE` token was offered to the models, and no **F-negative**
+  fixtures (§3.4: "correct answer is `ESCALATE` or operator-only") were
+  included in the 2026-09-25 battery, so false-confidence went
+  unmeasured — a model could not distinguish "I should say I don't
+  know" from "I should answer" because the former was never a scored
+  option.
+- The `cloud_needed` column in `scores/rubric-2026-09-25.csv` equalled
+  `score <= 2` on all 60 rows — i.e. the column carried no information
+  independent of the score itself; it did not separately flag
+  scenarios that genuinely required cloud escalation for the reasons
+  above (missing field, truncated source, wrong-tier run).
+
+**Ratified-by (verbatim), 2026-09-27:** "Lets do it" — in reply to the
+desk's proposal to amend this document with a code-first resolver tier
+and resolver coverage as the primary metric, and to build G1/G2/G5
+resolvers (extended to G3/G4, since fixtures already carry
+machine-checkable `expected` blocks for them) as a small willow-bot
+deterministic module.
+
+---
+
 ## 5. Scenario classes and flowering checklist
 
 Each scenario id maps to one class. **Flowering allowed** only when every
