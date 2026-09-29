@@ -192,7 +192,10 @@ def test_transport_error_returns_none(monkeypatch):
 
 
 def _clear_store_env(monkeypatch):
-    for env in nestor_client._DEFAULT_STORE_ENVS + ("WILLOW_HOME",):
+    for env in nestor_client._DEFAULT_STORE_ENVS + (
+        "WILLOW_HOME",
+        "WILLOW_VAULT_BOX",
+    ):
         monkeypatch.delenv(env, raising=False)
 
 
