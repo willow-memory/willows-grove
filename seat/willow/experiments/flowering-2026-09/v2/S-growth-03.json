@@ -1,0 +1,19 @@
+{
+  "id": "S-growth-03",
+  "class": "G1",
+  "excluded_from_T": false,
+  "brief": "Name the to_app this dispatch is addressed to. Answer with one app id. Cite the excerpt id.",
+  "excerpts": [
+    {
+      "id": "ex-B2E3BBF4",
+      "source": "dispatch_read B2E3BBF4 meta (2026-09-29)",
+      "text": "dispatch_id B2E3BBF4; to_app ada; summary: Wave 0a: local-models bibliography — GitHub fleet + KB"
+    }
+  ],
+  "expected": {
+    "to_app": "ada",
+    "must_cite": ["ex-B2E3BBF4"]
+  },
+  "flowering_allowed_when": "bullets cite excerpt ids AND (operator rubric >= 4 OR explicit ESCALATE)",
+  "v2_change": "excerpt re-sourced from the dispatch packet's meta (structured to_app) instead of the handoff prose, which carried no field; brief names to_app instead of 'seat'"
+}

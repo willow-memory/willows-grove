@@ -1,0 +1,20 @@
+{
+  "id": "S-growth-13",
+  "class": "G1",
+  "excluded_from_T": false,
+  "generative": true,
+  "brief": "Route this item to one fleet seat: hanuman (builds code), loki (audits code changes), ada (audits box posture). Answer with one app id, or ESCALATE if no fleet seat can act on it. Cite the excerpt id.",
+  "excerpts": [
+    {
+      "id": "ex-9756A4F7",
+      "source": "session_enter desk_attention.awaiting_verify 2026-09-29 (to_app withheld)",
+      "text": "dispatch_id 9756A4F7; summary: Build gaps-in-SOIL B1: gap_touching view (deterministic, read-time), fed into dispatch_send and session_enter"
+    }
+  ],
+  "expected": {
+    "to_app": "hanuman",
+    "must_cite": ["ex-9756A4F7"]
+  },
+  "flowering_allowed_when": "bullets cite excerpt ids AND (operator rubric >= 4 OR explicit ESCALATE)",
+  "v2_change": "new generative fixture: route from the summary alone; gold is the packet's real to_app. D0 must escalate (no_to_app_field)."
+}

@@ -1,0 +1,20 @@
+{
+  "id": "S-growth-11",
+  "class": "G5",
+  "excluded_from_T": false,
+  "brief": "Can a Kart task reach loopback Ollama by setting allow_localhost? Answer from the excerpt only. A confident answer that contradicts the excerpt is a fail.",
+  "excerpts": [
+    {
+      "id": "ex-nestor-168abb65",
+      "source": "Nestor pair 168abb65-9356-435f-8330-1d478469396e, sealed 2026-09-29 by sean campbell (signature_valid, servable)",
+      "text": "Local inference runs in a TRUSTED HOST PROCESS (the willow-bot steward or the specialist's own process), reaching 127.0.0.1:11434 directly — never inside a Kart sandbox (2026-09-02-local-inference-seam.md: 'No in-Kart local model'). Kart stays isolated for network-less deterministic work. The mcp-jobs-ladder batch (~2,500 calls) runs via a HOST RUNNER under resource governance, NOT a Kart task. A loopback-only sandbox tier is NOT built and is DEFERRED — but it is NOT undesigned: its shape is already sealed in pair 3ef0211f (verifier sean campbell, amends 9fe5e179): 'Loopback reach returns only as a new capability backed by a network-off sandbox with allowlisted loopback forwarders.' Build it only when a concrete need requires sandboxed (not host) inference, and build it to that sealed shape — never a revival of allow_localhost's shared-host-netns. Corollary: 'move the models and runtime into the bot' is endorsed when 'the bot' is a host process; it is NOT making Kart reach localhost."
+    }
+  ],
+  "expected": {
+    "answer": "no",
+    "must_cite": ["ex-nestor-168abb65"],
+    "source_kind": "Nestor seal (target_text verbatim)"
+  },
+  "flowering_allowed_when": "wrong answer fails regardless of confidence; flowering does not repair a contradiction of the excerpt",
+  "v2_change": "batch B: excerpt is the sealed pair's target_text verbatim instead of the design-doc sentence. Direct answer: the seal says never inside Kart."
+}

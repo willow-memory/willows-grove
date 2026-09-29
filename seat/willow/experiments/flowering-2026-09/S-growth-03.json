@@ -1,0 +1,18 @@
+{
+  "id": "S-growth-03",
+  "class": "G1",
+  "excluded_from_T": false,
+  "brief": "Name the seat this gather dispatch was addressed to. Answer with one seat id. Cite the excerpt id.",
+  "excerpts": [
+    {
+      "id": "ex-B2E3BBF4",
+      "source": "handoffs/ada/willows-grove/wave0a-B2E3BBF4-local-models-fleet.md",
+      "text": "Ada gather — dispatch B2E3BBF4 · Wave 0a. Written: 2026-09-24. status: complete. GitHub fleet + KB."
+    }
+  ],
+  "expected": {
+    "to_app": "ada",
+    "must_cite": ["ex-B2E3BBF4"]
+  },
+  "flowering_allowed_when": "bullets cite excerpt ids AND (operator rubric >= 4 OR explicit ESCALATE)"
+}

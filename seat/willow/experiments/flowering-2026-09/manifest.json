@@ -1,0 +1,208 @@
+{
+  "_superseded_framing": {
+    "note": "The model-tier machine-pass framing in this file is SUPERSEDED. On 2026-09-27 the 09-25 ladder was found flawed: it asked 1-8B models to read back fields the pool already holds as structured data (G1=to_app, G2=title, G5=sealed lookup, G3=gap id+template) — none needs a model — and every fixture came from that week's build, so it measured fleet vocabulary as much as capability. The growth path is CODE-FIRST: a deterministic per-class resolver (D0) reads the pool record and answers or returns ESCALATE; a model runs only on ESCALATE (D0 precision must be 1.0).",
+    "authority": "governance record flowering-step0-code-first-2026-09-27; Nestor pair d19643da (sealed per operator 2026-09-29, verifier sean campbell)",
+    "d0_build": "willow-bot feat/deterministic-resolvers 12704eb+5705519; Loki audit 7EA73431 clear; doc §4.5 in willows-grove docs/flowering-code-first-tier @50d27f3 (unpushed). Real run n=12: 4/4 resolved correct, 2 verbatim (G5), 1 flowering->hanuman (G4), 5 escalate with named reasons.",
+    "do_not": "Do not rank model tiers on G1/G2/G3/G5 machine-pass — those are code jobs. The tier rows below are retained ONLY as the record of the flawed run, not as capability signal."
+  },
+  "step": "T0",
+  "status": "SUPERSEDED framing — see _superseded_framing; growth path is code-first (D0), model only on ESCALATE. Original status was ladder_complete_scoring_pending.",
+  "frozen_at": "2026-09-24T04:40Z",
+  "session_id": "e012788f-ec32-46cd-8a43-65e052d7c45e",
+  "attestation": {
+    "state": "populated",
+    "path": "sessions/willow-e012788f-ec32-46cd-8a43-65e052d7c45e.attest.json",
+    "format": "orchestrator_session_attestation_v2",
+    "verifier": "sean campbell",
+    "attested_at": "2026-09-24T04:36:53Z"
+  },
+  "thresholds_from_section_8": {
+    "T_percent": 70,
+    "C_cloud_per_act": 0.3,
+    "N": 12,
+    "K_handoff_joins": 2,
+    "chain_tiers": [
+      "llama3.2:3b",
+      "willow-lane4-3b",
+      "qwen3:4b",
+      "gemma3:4b",
+      "llama3.1:8b"
+    ]
+  },
+  "scenarios": [
+    {"id": "S-growth-01", "class": "G1", "excluded_from_T": false},
+    {"id": "S-growth-02", "class": "G1", "excluded_from_T": false},
+    {"id": "S-growth-03", "class": "G1", "excluded_from_T": false},
+    {"id": "S-growth-04", "class": "G2", "excluded_from_T": false},
+    {"id": "S-growth-05", "class": "G2", "excluded_from_T": false},
+    {"id": "S-growth-06", "class": "G2", "excluded_from_T": false},
+    {"id": "S-growth-07", "class": "G3", "excluded_from_T": false},
+    {"id": "S-growth-08", "class": "G3", "excluded_from_T": false},
+    {"id": "S-growth-09", "class": "G3", "excluded_from_T": false},
+    {"id": "S-growth-10", "class": "G4", "excluded_from_T": true},
+    {"id": "S-growth-11", "class": "G5", "excluded_from_T": false},
+    {"id": "S-growth-12", "class": "G5", "excluded_from_T": false}
+  ],
+  "T_numerator": "11 (G4 S-growth-10 excluded)",
+  "directory_digest": {
+    "state": "populated",
+    "sha256": "b38e885136a1a420b77b6649343b0a5df674b3bf6d4f42b67335d8ad7e0f0f5b",
+    "method": "find+sha256sum aggregate over fixture dir (Kart M0G98TQ8)",
+    "computed_at": "2026-09-24T05:42:29Z",
+    "note": "recompute after commit; digest includes manifest + S-growth-* on disk at freeze"
+  },
+  "git_rev": {
+    "state": "populated",
+    "rev": "2a33639e2ee906612d33ec3ee0dea86136d17748",
+    "branch": "docs/forge-convergence",
+    "kart_task": "M0G98TQ8"
+  },
+  "wiring_hash": {
+    "state": "unreachable",
+    "reason": "hooks/wiring.json hash not computed this session"
+  },
+  "ollama_tags_observed": {
+    "state": "partial",
+    "model_used_in_runs": "llama3.2:3b",
+    "reason": "Kart cannot curl loopback; tag list not snapshotted at T0"
+  },
+  "host_runner": {
+    "state": "populated",
+    "repo": "willow-memory/willow-bot",
+    "entrypoint": "willow-bot-deterministic",
+    "spec": "governance/proposals/2026-09-02-mcp-jobs-ladder-test-plan.md \u00a7 Runner (stdlib urllib, temp 0, one JSONL row per call)",
+    "kart_path": "client subcommand via Unix socket (deterministic.sock); host serve required",
+    "policy_template": "willow-bot/deploy/deterministic-policy.template.json",
+    "serve_pid_observed": 1125559,
+    "kart_willow_home_probe": {
+      "task_id": "DUM8A507",
+      "willow_home": "/home/sean-campbell/sean-data-vault/willow-operator-box",
+      "returncode": 0,
+      "at": "2026-09-24T05:41:14Z"
+    },
+    "layer_b_growth_tier0": {
+      "task_id": "SWFPHQNB",
+      "model": "llama3.2:3b",
+      "count": 12,
+      "errors": 0,
+      "out_path": "/home/sean-campbell/sean-data-vault/willow-operator-box/willow-bot/runs/layer-b-growth-20260924T054153Z.jsonl",
+      "elapsed_s": 22.24,
+      "at": "2026-09-24T05:42:15Z",
+      "scoring": "not applied — operator rubric / per-class checks pending",
+      "superseded_by": "layer_b_chain_serial_CTR0WBSE.llama3.2:3b"
+    },
+    "layer_b_chain_serial_CTR0WBSE": {
+      "task_id": "CTR0WBSE",
+      "at": "2026-09-24T07:59Z",
+      "overnight_subagent": "bec7ef17-c87c-40e2-8c09-c16757c358e7",
+      "note": "Serial §8 chain in one Kart batch; exit 0 even when client reports errors. Five qwen-only retries did not clear qwen3:4b.",
+      "tiers": {
+        "llama3.2:3b": {
+          "count": 12,
+          "errors": 0,
+          "out_path": "/home/sean-campbell/sean-data-vault/willow-operator-box/willow-bot/runs/layer-b-growth-20260924T075953Z.jsonl"
+        },
+        "willow-lane4-3b": {
+          "count": 12,
+          "errors": 0,
+          "out_path": "/home/sean-campbell/sean-data-vault/willow-operator-box/willow-bot/runs/layer-b-growth-20260924T080019Z.jsonl"
+        },
+        "qwen3:4b": {
+          "count": 12,
+          "errors": 11,
+          "out_path": "/home/sean-campbell/sean-data-vault/willow-operator-box/willow-bot/runs/layer-b-growth-20260924T101059Z.jsonl",
+          "superseded_by": "qwen3_post_restart_133444Z"
+        },
+        "gemma3:4b": {
+          "count": 12,
+          "errors": 0,
+          "out_path": "/home/sean-campbell/sean-data-vault/willow-operator-box/willow-bot/runs/layer-b-growth-20260924T082329Z.jsonl"
+        },
+        "llama3.1:8b": {
+          "count": 12,
+          "errors": 0,
+          "out_path": "/home/sean-campbell/sean-data-vault/willow-operator-box/willow-bot/runs/layer-b-growth-20260924T082425Z.jsonl"
+        }
+      },
+      "scoring": "not applied — per-class rubric pending; manifest stays partial until qwen3:4b errors=0"
+    },
+    "qwen3_post_restart_133444Z": {
+      "task_id": "Q3LBXDHH",
+      "kart_status": "failed",
+      "kart_note": "Kart 300s wall per attempt (3 attempts); host serve still wrote full JSONL after client disconnect",
+      "model": "qwen3:4b",
+      "count": 12,
+      "errors": 11,
+      "out_path": "/home/sean-campbell/sean-data-vault/willow-operator-box/willow-bot/runs/layer-b-growth-20260924T133444Z.jsonl",
+      "at": "2026-09-24T13:36Z",
+      "blocker": "11 rows timed out at latency_ms~120100; S-growth-11 OK (~116s). Not an operator restart gap: venv introspect HWFP7Z7H shows chat timeout_s default 300.0 from editable willow-bot tree.",
+      "desk_fix": "willow-bot ollama.chat: think=false for qwen3 models; pip install -e + unit restart to load; rerun qwen tier (host client or Kart with raised task timeout)"
+    },
+    "qwen3_step0_think_false_C963U3U6": {
+      "task_id": "C963U3U6",
+      "kart_status": "completed",
+      "kart_returncode": 0,
+      "elapsed_s": 1462.83,
+      "model": "qwen3:4b",
+      "count": 12,
+      "errors": 11,
+      "out_path": "/home/sean-campbell/sean-data-vault/willow-operator-box/willow-bot/runs/layer-b-growth-20260924T174449Z.jsonl",
+      "at": "2026-09-24T18:07Z",
+      "probe_model": {
+        "ok": false,
+        "error": "timed out",
+        "latency_ms": 90070
+      },
+      "note": "Post think:false rerun on Kart batch lane. Ladder qwen tier not clean — latency_ms still ~120100 (client-side ceiling, not Kart batch wall). Next: policy ollama_chat_timeout_s=600 + serve restart; willow-bot-deterministic status → runner.ollama_chat_timeout_s must read 600 before another qwen Kart batch.",
+      "lane": "batch",
+      "superseded_by": "qwen3_step0_unit_CP0QFV7C"
+    },
+    "qwen3_step0_unit_CP0QFV7C": {
+      "task_id": "CP0QFV7C",
+      "session_id": "f43d3cde-f622-48a8-98ed-d41f951ebf05",
+      "serve": "willow-bot-deterministic.service (systemd --user) from willow-bot fb6a8d2 (#51 + #53); socket 2026-09-25T15:41:07Z; status.runner.ollama_chat_timeout_s=600.0; probe-model qwen3:4b ok 9087 ms",
+      "model": "qwen3:4b",
+      "count": 12,
+      "errors": 0,
+      "latency_ms_range": [139537, 383538],
+      "out_path": "/home/sean-campbell/sean-data-vault/willow-operator-box/willow-bot/runs/layer-b-growth-20260925T154133Z.jsonl",
+      "at": "2026-09-25T16:35:51Z",
+      "kart_status": "failed (3/3 attempts at the 1800s batch wall, final 2026-09-25T17:11:49Z). Attempt 1's serve run finished and wrote this file; retries 2 and 3 left empty files (161138Z, 164149Z) with a BrokenPipe in the serve log and Ollama idle from 16:46Z. This file is the canonical tier row; the empties are not results.",
+      "lane": "batch"
+    }
+  },
+  "rubric_T5": {
+    "deviation": "§2 requires the rubric before runs; the 1-5 anchors were written 2026-09-25 after T3 rows existed, before any operator scoring.",
+    "question": "Given only the brief and the excerpts on the row, is this answer desk-ready? No outside knowledge; model hidden.",
+    "anchors": {
+      "5": "Correct, grounded in the excerpts, usable as-is",
+      "4": "Correct and grounded; trivial edit (wording, format)",
+      "3": "Right substance; real edit needed (missing cite or detail, loose wording)",
+      "2": "Partly wrong or ungrounded; you would rewrite most of it",
+      "1": "Wrong, invents facts, or confidently contradicts the excerpt"
+    },
+    "escalate": "Score whether handing up was the right call; a justified ESCALATE on G1 passes regardless of score (§5).",
+    "cloud_needed": "Y when the act would have to go to cloud or another seat to be usable.",
+    "sheet": "scores/rubric-2026-09-25.csv (60 rows = 5 tiers x 12 fixtures, shuffled, seed flowering-2026-09-25); key scores/rubric-2026-09-25.key.json",
+    "raters": {
+      "operator": "scores/rubric-2026-09-25.csv — the T5 score of record",
+      "claude": {
+        "path": "scores/rubric-2026-09-25.claude.csv",
+        "role": "second rater at the operator's request; not the T5 score of record",
+        "blinding": "key not opened; before scoring, a checklist spot-check had shown failing answers with model names for willow-lane4-3b and llama3.2:3b, so blinding is partial for those rows",
+        "cloud_needed_rule": "Y iff score <= 2"
+      }
+    }
+  },
+  "qwen3_thinking_template": {
+    "finding": "qwen3:4b's Ollama template prefills '<think>' on every assistant turn regardless of the request's think flag (template blob sha256:2d54db2b…, lines 49-50; Ollama 0.24.0). think:false cannot disable reasoning on this tag; it only stops Ollama splitting it out, so raw_reply carries the full reasoning trace ending in '</think>' before the answer. Latency (140-384 s) is the reasoning, not a timeout.",
+    "operator_ruling": {
+      "words": "keep it",
+      "at": "2026-09-25",
+      "session_id": "f43d3cde-f622-48a8-98ed-d41f951ebf05",
+      "meaning": "qwen3:4b stays the chain tier as a reasoning model; no swap to a non-thinking build."
+    },
+    "scoring_rule": "For every tier, score the text after the last '</think>' in raw_reply (the whole reply when the tag is absent). raw_reply stays stored verbatim; the stripped answer is derived at scoring time, never written back."
+  },
+  "g5_source_limit": "S-growth-11 and S-growth-12 excerpts are a design-doc sentence and a blocker effect string. Neither is a Nestor seal."
+}

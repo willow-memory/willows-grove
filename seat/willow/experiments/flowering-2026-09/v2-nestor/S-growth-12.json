@@ -1,0 +1,20 @@
+{
+  "id": "S-growth-12",
+  "class": "G5",
+  "excluded_from_T": false,
+  "brief": "Does an active egress lease by itself unblock git push from a Kart task? Answer from the excerpt only. A confident answer that contradicts the excerpt is a fail.",
+  "excerpts": [
+    {
+      "id": "ex-nestor-dbb0c91e",
+      "source": "Nestor pair dbb0c91e-b462-47c4-818a-e00fcd269c3f, sealed 2026-09-28 by sean campbell (signature_valid, servable)",
+      "text": "The operator's ratify, given on the desk or the APK, is a SIGNATURE by the operator's key over that exact request's bounds (task id, agent, normalized task hash, scope, expiry, or for a lease: app_id, ttl, scope). It is produced by the operator's own client (the Nestor UI's origin-bound browser key today, a device key on the APK later), never by the desk process. The uid-994 net signer keeps its trust root: it mints only against a per-ask ed25519 signature it can verify standalone, never a register-wide GPG signature or a keyring-membership claim. Refines sealed 8c28d4a0, whose 'the signer mints from the ratification' is superseded by this per-ask signature."
+    }
+  ],
+  "expected": {
+    "answer": "no",
+    "must_cite": ["ex-nestor-dbb0c91e"],
+    "source_kind": "Nestor seal (target_text verbatim)"
+  },
+  "flowering_allowed_when": "wrong answer fails regardless of confidence; flowering does not repair a contradiction of the excerpt",
+  "v2_change": "batch B: excerpt is a sealed pair's target_text verbatim. INDIRECT answer: the seal says a per-task ask needs its own per-ask operator signature, so a lease alone is not enough — it never says 'git push' or 'lease alone'. The direct seal (push is brokered, 4ff05265 on 2026-09-10) was not found in this Nestor store under string matching. This fixture tests whether a model infers correctly from a seal that doesn't name the question."
+}

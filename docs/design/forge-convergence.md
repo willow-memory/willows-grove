@@ -471,7 +471,7 @@ open lines are still build or operator.
    **Runtime facts:** drafts used **`llama3.2:3b`**, not SOIL `active_model`
    (`willow-lane4-3b:latest`). Kart **cannot** reach loopback Ollama
    (`allow_localhost` retired; sandbox `network_mode: isolated`) — the
-   [`2026-09-02-mcp-jobs-ladder-test-plan.md`](../governance/proposals/2026-09-02-mcp-jobs-ladder-test-plan.md)
+   [`2026-09-02-mcp-jobs-ladder-test-plan.md`](../../governance/proposals/2026-09-02-mcp-jobs-ladder-test-plan.md)
    batch still needs a host runner or `task_localhost`, not a cloud Kart task.
 
    **Growth-shaped coverage (for the test, not cloud replacement):** pre-dispatch

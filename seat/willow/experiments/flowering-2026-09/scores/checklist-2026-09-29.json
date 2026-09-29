@@ -1,0 +1,837 @@
+{
+  "date": "2026-09-29",
+  "tiers": {
+    "llama3.2:3b": {
+      "run_file": "layer-b-growth-20260924T075953Z.jsonl",
+      "fixtures": {
+        "S-growth-01": {
+          "class": "G1",
+          "excluded_from_T": false,
+          "items": {
+            "names_target": false,
+            "cites_excerpts": true
+          },
+          "machine_pass": false,
+          "escalated": false,
+          "needs_operator_rubric": true,
+          "rubric_min": 4,
+          "latency_ms": 4051
+        },
+        "S-growth-02": {
+          "class": "G1",
+          "excluded_from_T": false,
+          "items": {
+            "names_target": false,
+            "cites_excerpts": false
+          },
+          "machine_pass": false,
+          "escalated": false,
+          "needs_operator_rubric": true,
+          "rubric_min": 4,
+          "latency_ms": 590
+        },
+        "S-growth-03": {
+          "class": "G1",
+          "excluded_from_T": false,
+          "items": {
+            "names_target": false,
+            "cites_excerpts": false
+          },
+          "machine_pass": false,
+          "escalated": false,
+          "needs_operator_rubric": true,
+          "rubric_min": 4,
+          "latency_ms": 1461
+        },
+        "S-growth-04": {
+          "class": "G2",
+          "excluded_from_T": false,
+          "items": {
+            "within_max_chars": false,
+            "names_repo_and_leg": true
+          },
+          "machine_pass": false,
+          "escalated": false,
+          "needs_operator_rubric": false,
+          "rubric_min": null,
+          "latency_ms": 1915
+        },
+        "S-growth-05": {
+          "class": "G2",
+          "excluded_from_T": false,
+          "items": {
+            "within_max_chars": true,
+            "names_repo_and_leg": true
+          },
+          "machine_pass": true,
+          "escalated": false,
+          "needs_operator_rubric": false,
+          "rubric_min": null,
+          "latency_ms": 1650
+        },
+        "S-growth-06": {
+          "class": "G2",
+          "excluded_from_T": false,
+          "items": {
+            "within_max_chars": false,
+            "names_repo_and_leg": true
+          },
+          "machine_pass": false,
+          "escalated": false,
+          "needs_operator_rubric": false,
+          "rubric_min": null,
+          "latency_ms": 3028
+        },
+        "S-growth-07": {
+          "class": "G3",
+          "excluded_from_T": false,
+          "items": {
+            "cites_gap": true,
+            "no_unrelated_ids": true
+          },
+          "machine_pass": true,
+          "escalated": false,
+          "needs_operator_rubric": true,
+          "rubric_min": 3,
+          "latency_ms": 2612
+        },
+        "S-growth-08": {
+          "class": "G3",
+          "excluded_from_T": false,
+          "items": {
+            "cites_gap": false,
+            "no_unrelated_ids": true
+          },
+          "machine_pass": false,
+          "escalated": false,
+          "needs_operator_rubric": true,
+          "rubric_min": 3,
+          "latency_ms": 2577
+        },
+        "S-growth-09": {
+          "class": "G3",
+          "excluded_from_T": false,
+          "items": {
+            "cites_gap": true,
+            "no_unrelated_ids": true
+          },
+          "machine_pass": true,
+          "escalated": false,
+          "needs_operator_rubric": true,
+          "rubric_min": 3,
+          "latency_ms": 2172
+        },
+        "S-growth-10": {
+          "class": "G4",
+          "excluded_from_T": true,
+          "items": {
+            "names_builder_seat": false
+          },
+          "machine_pass": false,
+          "escalated": false,
+          "needs_operator_rubric": false,
+          "rubric_min": null,
+          "latency_ms": 2018
+        },
+        "S-growth-11": {
+          "class": "G5",
+          "excluded_from_T": false,
+          "items": {
+            "answer_matches": true,
+            "cites_excerpt": false
+          },
+          "machine_pass": false,
+          "escalated": false,
+          "needs_operator_rubric": false,
+          "rubric_min": null,
+          "latency_ms": 1877
+        },
+        "S-growth-12": {
+          "class": "G5",
+          "excluded_from_T": false,
+          "items": {
+            "answer_matches": true,
+            "cites_excerpt": true
+          },
+          "machine_pass": true,
+          "escalated": false,
+          "needs_operator_rubric": false,
+          "rubric_min": null,
+          "latency_ms": 1411
+        }
+      }
+    },
+    "willow-lane4-3b": {
+      "run_file": "layer-b-growth-20260924T080019Z.jsonl",
+      "fixtures": {
+        "S-growth-01": {
+          "class": "G1",
+          "excluded_from_T": false,
+          "items": {
+            "names_target": false,
+            "cites_excerpts": false
+          },
+          "machine_pass": false,
+          "escalated": false,
+          "needs_operator_rubric": true,
+          "rubric_min": 4,
+          "latency_ms": 4426
+        },
+        "S-growth-02": {
+          "class": "G1",
+          "excluded_from_T": false,
+          "items": {
+            "names_target": false,
+            "cites_excerpts": false
+          },
+          "machine_pass": false,
+          "escalated": false,
+          "needs_operator_rubric": true,
+          "rubric_min": 4,
+          "latency_ms": 625
+        },
+        "S-growth-03": {
+          "class": "G1",
+          "excluded_from_T": false,
+          "items": {
+            "names_target": false,
+            "cites_excerpts": false
+          },
+          "machine_pass": false,
+          "escalated": false,
+          "needs_operator_rubric": true,
+          "rubric_min": 4,
+          "latency_ms": 626
+        },
+        "S-growth-04": {
+          "class": "G2",
+          "excluded_from_T": false,
+          "items": {
+            "within_max_chars": false,
+            "names_repo_and_leg": true
+          },
+          "machine_pass": false,
+          "escalated": false,
+          "needs_operator_rubric": false,
+          "rubric_min": null,
+          "latency_ms": 1899
+        },
+        "S-growth-05": {
+          "class": "G2",
+          "excluded_from_T": false,
+          "items": {
+            "within_max_chars": false,
+            "names_repo_and_leg": false
+          },
+          "machine_pass": false,
+          "escalated": false,
+          "needs_operator_rubric": false,
+          "rubric_min": null,
+          "latency_ms": 2122
+        },
+        "S-growth-06": {
+          "class": "G2",
+          "excluded_from_T": false,
+          "items": {
+            "within_max_chars": true,
+            "names_repo_and_leg": true
+          },
+          "machine_pass": true,
+          "escalated": false,
+          "needs_operator_rubric": false,
+          "rubric_min": null,
+          "latency_ms": 1947
+        },
+        "S-growth-07": {
+          "class": "G3",
+          "excluded_from_T": false,
+          "items": {
+            "cites_gap": false,
+            "no_unrelated_ids": true
+          },
+          "machine_pass": false,
+          "escalated": false,
+          "needs_operator_rubric": true,
+          "rubric_min": 3,
+          "latency_ms": 2208
+        },
+        "S-growth-08": {
+          "class": "G3",
+          "excluded_from_T": false,
+          "items": {
+            "cites_gap": false,
+            "no_unrelated_ids": true
+          },
+          "machine_pass": false,
+          "escalated": false,
+          "needs_operator_rubric": true,
+          "rubric_min": 3,
+          "latency_ms": 2578
+        },
+        "S-growth-09": {
+          "class": "G3",
+          "excluded_from_T": false,
+          "items": {
+            "cites_gap": false,
+            "no_unrelated_ids": true
+          },
+          "machine_pass": false,
+          "escalated": false,
+          "needs_operator_rubric": true,
+          "rubric_min": 3,
+          "latency_ms": 1946
+        },
+        "S-growth-10": {
+          "class": "G4",
+          "excluded_from_T": true,
+          "items": {
+            "names_builder_seat": false
+          },
+          "machine_pass": false,
+          "escalated": false,
+          "needs_operator_rubric": false,
+          "rubric_min": null,
+          "latency_ms": 3118
+        },
+        "S-growth-11": {
+          "class": "G5",
+          "excluded_from_T": false,
+          "items": {
+            "answer_matches": true,
+            "cites_excerpt": false
+          },
+          "machine_pass": false,
+          "escalated": false,
+          "needs_operator_rubric": false,
+          "rubric_min": null,
+          "latency_ms": 1545
+        },
+        "S-growth-12": {
+          "class": "G5",
+          "excluded_from_T": false,
+          "items": {
+            "answer_matches": true,
+            "cites_excerpt": false
+          },
+          "machine_pass": false,
+          "escalated": false,
+          "needs_operator_rubric": false,
+          "rubric_min": null,
+          "latency_ms": 1948
+        }
+      }
+    },
+    "qwen3:4b": {
+      "run_file": "layer-b-growth-20260925T154133Z.jsonl",
+      "fixtures": {
+        "S-growth-01": {
+          "class": "G1",
+          "excluded_from_T": false,
+          "items": {
+            "names_target": true,
+            "cites_excerpts": true
+          },
+          "machine_pass": true,
+          "escalated": false,
+          "needs_operator_rubric": true,
+          "rubric_min": 4,
+          "latency_ms": 139537
+        },
+        "S-growth-02": {
+          "class": "G1",
+          "excluded_from_T": false,
+          "items": {
+            "names_target": true,
+            "cites_excerpts": true
+          },
+          "machine_pass": true,
+          "escalated": false,
+          "needs_operator_rubric": true,
+          "rubric_min": 4,
+          "latency_ms": 202381
+        },
+        "S-growth-03": {
+          "class": "G1",
+          "excluded_from_T": false,
+          "items": {
+            "names_target": true,
+            "cites_excerpts": true
+          },
+          "machine_pass": true,
+          "escalated": false,
+          "needs_operator_rubric": true,
+          "rubric_min": 4,
+          "latency_ms": 221656
+        },
+        "S-growth-04": {
+          "class": "G2",
+          "excluded_from_T": false,
+          "items": {
+            "within_max_chars": true,
+            "names_repo_and_leg": true
+          },
+          "machine_pass": true,
+          "escalated": false,
+          "needs_operator_rubric": false,
+          "rubric_min": null,
+          "latency_ms": 277823
+        },
+        "S-growth-05": {
+          "class": "G2",
+          "excluded_from_T": false,
+          "items": {
+            "within_max_chars": true,
+            "names_repo_and_leg": false
+          },
+          "machine_pass": false,
+          "escalated": false,
+          "needs_operator_rubric": false,
+          "rubric_min": null,
+          "latency_ms": 383538
+        },
+        "S-growth-06": {
+          "class": "G2",
+          "excluded_from_T": false,
+          "items": {
+            "within_max_chars": true,
+            "names_repo_and_leg": true
+          },
+          "machine_pass": true,
+          "escalated": false,
+          "needs_operator_rubric": false,
+          "rubric_min": null,
+          "latency_ms": 351168
+        },
+        "S-growth-07": {
+          "class": "G3",
+          "excluded_from_T": false,
+          "items": {
+            "cites_gap": true,
+            "no_unrelated_ids": true
+          },
+          "machine_pass": true,
+          "escalated": false,
+          "needs_operator_rubric": true,
+          "rubric_min": 3,
+          "latency_ms": 165883
+        },
+        "S-growth-08": {
+          "class": "G3",
+          "excluded_from_T": false,
+          "items": {
+            "cites_gap": true,
+            "no_unrelated_ids": true
+          },
+          "machine_pass": true,
+          "escalated": false,
+          "needs_operator_rubric": true,
+          "rubric_min": 3,
+          "latency_ms": 174845
+        },
+        "S-growth-09": {
+          "class": "G3",
+          "excluded_from_T": false,
+          "items": {
+            "cites_gap": true,
+            "no_unrelated_ids": true
+          },
+          "machine_pass": true,
+          "escalated": false,
+          "needs_operator_rubric": true,
+          "rubric_min": 3,
+          "latency_ms": 365500
+        },
+        "S-growth-10": {
+          "class": "G4",
+          "excluded_from_T": true,
+          "items": {
+            "names_builder_seat": false
+          },
+          "machine_pass": false,
+          "escalated": false,
+          "needs_operator_rubric": false,
+          "rubric_min": null,
+          "latency_ms": 304839
+        },
+        "S-growth-11": {
+          "class": "G5",
+          "excluded_from_T": false,
+          "items": {
+            "answer_matches": true,
+            "cites_excerpt": false
+          },
+          "machine_pass": false,
+          "escalated": false,
+          "needs_operator_rubric": false,
+          "rubric_min": null,
+          "latency_ms": 302175
+        },
+        "S-growth-12": {
+          "class": "G5",
+          "excluded_from_T": false,
+          "items": {
+            "answer_matches": true,
+            "cites_excerpt": true
+          },
+          "machine_pass": true,
+          "escalated": false,
+          "needs_operator_rubric": false,
+          "rubric_min": null,
+          "latency_ms": 368648
+        }
+      }
+    },
+    "gemma3:4b": {
+      "run_file": "layer-b-growth-20260924T082329Z.jsonl",
+      "fixtures": {
+        "S-growth-01": {
+          "class": "G1",
+          "excluded_from_T": false,
+          "items": {
+            "names_target": false,
+            "cites_excerpts": true
+          },
+          "machine_pass": false,
+          "escalated": false,
+          "needs_operator_rubric": true,
+          "rubric_min": 4,
+          "latency_ms": 7508
+        },
+        "S-growth-02": {
+          "class": "G1",
+          "excluded_from_T": false,
+          "items": {
+            "names_target": false,
+            "cites_excerpts": true
+          },
+          "machine_pass": false,
+          "escalated": false,
+          "needs_operator_rubric": true,
+          "rubric_min": 4,
+          "latency_ms": 2871
+        },
+        "S-growth-03": {
+          "class": "G1",
+          "excluded_from_T": false,
+          "items": {
+            "names_target": false,
+            "cites_excerpts": true
+          },
+          "machine_pass": false,
+          "escalated": false,
+          "needs_operator_rubric": true,
+          "rubric_min": 4,
+          "latency_ms": 1687
+        },
+        "S-growth-04": {
+          "class": "G2",
+          "excluded_from_T": false,
+          "items": {
+            "within_max_chars": true,
+            "names_repo_and_leg": true
+          },
+          "machine_pass": true,
+          "escalated": false,
+          "needs_operator_rubric": false,
+          "rubric_min": null,
+          "latency_ms": 3693
+        },
+        "S-growth-05": {
+          "class": "G2",
+          "excluded_from_T": false,
+          "items": {
+            "within_max_chars": true,
+            "names_repo_and_leg": true
+          },
+          "machine_pass": true,
+          "escalated": false,
+          "needs_operator_rubric": false,
+          "rubric_min": null,
+          "latency_ms": 4677
+        },
+        "S-growth-06": {
+          "class": "G2",
+          "excluded_from_T": false,
+          "items": {
+            "within_max_chars": true,
+            "names_repo_and_leg": true
+          },
+          "machine_pass": true,
+          "escalated": false,
+          "needs_operator_rubric": false,
+          "rubric_min": null,
+          "latency_ms": 4270
+        },
+        "S-growth-07": {
+          "class": "G3",
+          "excluded_from_T": false,
+          "items": {
+            "cites_gap": true,
+            "no_unrelated_ids": true
+          },
+          "machine_pass": true,
+          "escalated": false,
+          "needs_operator_rubric": true,
+          "rubric_min": 3,
+          "latency_ms": 5805
+        },
+        "S-growth-08": {
+          "class": "G3",
+          "excluded_from_T": false,
+          "items": {
+            "cites_gap": true,
+            "no_unrelated_ids": true
+          },
+          "machine_pass": true,
+          "escalated": false,
+          "needs_operator_rubric": true,
+          "rubric_min": 3,
+          "latency_ms": 6937
+        },
+        "S-growth-09": {
+          "class": "G3",
+          "excluded_from_T": false,
+          "items": {
+            "cites_gap": true,
+            "no_unrelated_ids": true
+          },
+          "machine_pass": true,
+          "escalated": false,
+          "needs_operator_rubric": true,
+          "rubric_min": 3,
+          "latency_ms": 4924
+        },
+        "S-growth-10": {
+          "class": "G4",
+          "excluded_from_T": true,
+          "items": {
+            "names_builder_seat": false
+          },
+          "machine_pass": false,
+          "escalated": false,
+          "needs_operator_rubric": false,
+          "rubric_min": null,
+          "latency_ms": 7824
+        },
+        "S-growth-11": {
+          "class": "G5",
+          "excluded_from_T": false,
+          "items": {
+            "answer_matches": true,
+            "cites_excerpt": true
+          },
+          "machine_pass": true,
+          "escalated": false,
+          "needs_operator_rubric": false,
+          "rubric_min": null,
+          "latency_ms": 2883
+        },
+        "S-growth-12": {
+          "class": "G5",
+          "excluded_from_T": false,
+          "items": {
+            "answer_matches": true,
+            "cites_excerpt": true
+          },
+          "machine_pass": true,
+          "escalated": false,
+          "needs_operator_rubric": false,
+          "rubric_min": null,
+          "latency_ms": 2831
+        }
+      }
+    },
+    "llama3.1:8b": {
+      "run_file": "layer-b-growth-20260924T082425Z.jsonl",
+      "fixtures": {
+        "S-growth-01": {
+          "class": "G1",
+          "excluded_from_T": false,
+          "items": {
+            "names_target": true,
+            "cites_excerpts": false
+          },
+          "machine_pass": false,
+          "escalated": false,
+          "needs_operator_rubric": true,
+          "rubric_min": 4,
+          "latency_ms": 11715
+        },
+        "S-growth-02": {
+          "class": "G1",
+          "excluded_from_T": false,
+          "items": {
+            "names_target": true,
+            "cites_excerpts": false
+          },
+          "machine_pass": false,
+          "escalated": false,
+          "needs_operator_rubric": true,
+          "rubric_min": 4,
+          "latency_ms": 2664
+        },
+        "S-growth-03": {
+          "class": "G1",
+          "excluded_from_T": false,
+          "items": {
+            "names_target": true,
+            "cites_excerpts": false
+          },
+          "machine_pass": false,
+          "escalated": false,
+          "needs_operator_rubric": true,
+          "rubric_min": 4,
+          "latency_ms": 13982
+        },
+        "S-growth-04": {
+          "class": "G2",
+          "excluded_from_T": false,
+          "items": {
+            "within_max_chars": true,
+            "names_repo_and_leg": true
+          },
+          "machine_pass": true,
+          "escalated": false,
+          "needs_operator_rubric": false,
+          "rubric_min": null,
+          "latency_ms": 8350
+        },
+        "S-growth-05": {
+          "class": "G2",
+          "excluded_from_T": false,
+          "items": {
+            "within_max_chars": false,
+            "names_repo_and_leg": true
+          },
+          "machine_pass": false,
+          "escalated": false,
+          "needs_operator_rubric": false,
+          "rubric_min": null,
+          "latency_ms": 13875
+        },
+        "S-growth-06": {
+          "class": "G2",
+          "excluded_from_T": false,
+          "items": {
+            "within_max_chars": true,
+            "names_repo_and_leg": true
+          },
+          "machine_pass": true,
+          "escalated": false,
+          "needs_operator_rubric": false,
+          "rubric_min": null,
+          "latency_ms": 6802
+        },
+        "S-growth-07": {
+          "class": "G3",
+          "excluded_from_T": false,
+          "items": {
+            "cites_gap": true,
+            "no_unrelated_ids": true
+          },
+          "machine_pass": true,
+          "escalated": false,
+          "needs_operator_rubric": true,
+          "rubric_min": 3,
+          "latency_ms": 13208
+        },
+        "S-growth-08": {
+          "class": "G3",
+          "excluded_from_T": false,
+          "items": {
+            "cites_gap": true,
+            "no_unrelated_ids": true
+          },
+          "machine_pass": true,
+          "escalated": false,
+          "needs_operator_rubric": true,
+          "rubric_min": 3,
+          "latency_ms": 12495
+        },
+        "S-growth-09": {
+          "class": "G3",
+          "excluded_from_T": false,
+          "items": {
+            "cites_gap": true,
+            "no_unrelated_ids": true
+          },
+          "machine_pass": true,
+          "escalated": false,
+          "needs_operator_rubric": true,
+          "rubric_min": 3,
+          "latency_ms": 13546
+        },
+        "S-growth-10": {
+          "class": "G4",
+          "excluded_from_T": true,
+          "items": {
+            "names_builder_seat": false
+          },
+          "machine_pass": false,
+          "escalated": false,
+          "needs_operator_rubric": false,
+          "rubric_min": null,
+          "latency_ms": 56751
+        },
+        "S-growth-11": {
+          "class": "G5",
+          "excluded_from_T": false,
+          "items": {
+            "answer_matches": true,
+            "cites_excerpt": true
+          },
+          "machine_pass": true,
+          "escalated": false,
+          "needs_operator_rubric": false,
+          "rubric_min": null,
+          "latency_ms": 6953
+        },
+        "S-growth-12": {
+          "class": "G5",
+          "excluded_from_T": false,
+          "items": {
+            "answer_matches": true,
+            "cites_excerpt": true
+          },
+          "machine_pass": true,
+          "escalated": false,
+          "needs_operator_rubric": false,
+          "rubric_min": null,
+          "latency_ms": 7209
+        }
+      }
+    }
+  },
+  "summary": {
+    "llama3.2:3b": {
+      "rows": 12,
+      "counted_for_T": 11,
+      "machine_pass_counted": 4,
+      "pending_operator_rubric": 2
+    },
+    "willow-lane4-3b": {
+      "rows": 12,
+      "counted_for_T": 11,
+      "machine_pass_counted": 1,
+      "pending_operator_rubric": 0
+    },
+    "qwen3:4b": {
+      "rows": 12,
+      "counted_for_T": 11,
+      "machine_pass_counted": 9,
+      "pending_operator_rubric": 6
+    },
+    "gemma3:4b": {
+      "rows": 12,
+      "counted_for_T": 11,
+      "machine_pass_counted": 8,
+      "pending_operator_rubric": 3
+    },
+    "llama3.1:8b": {
+      "rows": 12,
+      "counted_for_T": 11,
+      "machine_pass_counted": 7,
+      "pending_operator_rubric": 3
+    }
+  }
+}

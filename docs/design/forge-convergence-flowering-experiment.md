@@ -3,7 +3,7 @@
 **Status:** pre-registered protocol · **not run** · operator ratifies before execution  
 **Parent:** [`forge-convergence.md`](forge-convergence.md) §1.5, §6 step **0**  
 **Method lineage:** MCP jobs ladder
-([`2026-09-02-mcp-jobs-ladder-test-plan.md`](../governance/proposals/2026-09-02-mcp-jobs-ladder-test-plan.md))
+([`2026-09-02-mcp-jobs-ladder-test-plan.md`](../../governance/proposals/2026-09-02-mcp-jobs-ladder-test-plan.md))
 — fixtures frozen before calls, temperature zero, one JSON line per call,
 aggregate recomputed from rows, KB atom after independent check.
 
@@ -298,18 +298,20 @@ Written **before** T1. Mark **confirm / refute / inconclusive** in §9.
 
 ## 9. Post-run notes (fill after T6 — step 0 strike gate)
 
-**Run dates:**  
-**Executor seat / session ids:**  
-**Environment defects observed:**  
-**Layer A summary:**  
-**Layer B — cloud/act P-growth:** ___ **P-cloud:** ___  
-**Chain depth (secondary):** median depth by tier; handoff success rate ___  
-**Rubric summary:**  
-**E1–E8:** confirm / refute / inconclusive  
-**B-null rejected?** ☐ yes ☐ no ☐ inconclusive (small *N*)  
-**Operator verdict on step 0:** ☐ strike §6 **0** ☐ extend protocol ☐ reject tree policy for desk  
-**Next engineering bite (if any):**  
-**Gap ids logged:**  
+**Run dates:** v1 2026-09-24/25 (superseded framing, pair d19643da); **v2 2026-09-29**  
+**Executor seat / session ids:** willow desk, 5d2d6330-b563-4b66-aa6d-fc91f052fd75; Kart NTL0ZNZF (D0), 8STA6RU5 (local tier)  
+**Fixture set:** `seat/willow/experiments/flowering-2026-09/v2/` (16; v1 defects and additions are listed in its README), plus batch B `v2-nestor/` (G5 11–12 re-sourced from sealed pairs 168abb65 and dbb0c91e). v1 is kept unedited.  
+**Growth path as run:** code first (D0 resolver, willow-bot `deterministic/resolvers.py`). Only rows D0 escalated go to the local tier (willow-lane4-3b, host runner).  
+**Environment defects observed:** (1) the runner passes no format schema and appends a cite suffix to every prompt (recorded before the run); (2) G4 row timed out at 600 s (not scored; G4 never counts locally); (3) `nestor_draft` injects sealed pairs with retrieval disabled, so it was not used; (4) the Nestor MCP's `nestor_ask` refuses on a jeles-corpus manifest signature under the tombstoned `~/.willow` (provenance/match still work).  
+**Layer A summary:** not run as its own pass. The capability rows in batch A stand in for it (see scores). willow-lane4-3b answers "willow" on every routing row. On the escalated routes (13, 14) that is correct: everything goes through Willow (operator 2026-09-29, draft pair be0b6a1e). On the field reads 01–02 it is wrong: the brief asked for the excerpt's to_app value.  
+**Layer B — cloud/act P-growth:** **0.07** (1/15; S-growth-16 scored 3/uncertain, below the G1 bar). Grown **14/15 = 93%** (10 by code, 4 local: 06, 13, 14, 15), on the operator's sheet `scores/rubric-v2-2026-09-29.csv`. The desk's pre-sheet read (73% / 0.27) is superseded. **P-cloud:** run 2026-09-29 on the 5 generative rows (06, 13–16). One seat-default cloud call per act, the same prompt, no tools (`runs/layer-b-cloud-v2-20260929.jsonl`). Operator scored all 5 as **5**, cloud_needed n (`scores/rubric-v2-cloud-2026-09-29.csv`; note: "The large models answered more clearly, as everyone knew they would."). Cloud-first sends every act to cloud: **1.0 cloud/act**, vs P-growth **0.07** over the 15 counted acts (0.20 on the 5 generative rows).  
+**Chain depth (secondary):** not run (T1b).  
+**Rubric summary (operator, 5 = a match):** D0 precision 1.0 (11/11 scored correct). Local tier on the 5 escalations: 15 → 4, 06 → 4, 13 → 5, 14 → 5 (escalating to willow is a match), 16 → 3/uncertain (F-negative: named Ada). G5 batch A 5/5, batch B 5/5: design-doc vs seal source made no difference. D0 cannot tell the batches apart either. Detail: `scores/score-v2-20260929.json`.  
+**E1–E8:** E1 mixed: on the escalated G1 rows, routing to willow scored a match; on the field-read capability rows 01–02 (not counted) the tier still answered "willow" where the excerpt's to_app said loki/hanuman. G5 held with an excerpt. E2 not run (R0/R1). E3 **confirm**: cloud/act 0.07 vs 1.0 (93% fewer), and 0.20 vs 1.0 on the generative rows alone. E4 **confirm**: on the model rows, local median ~10.6 s vs cloud ~4.7 s. E5 **confirm, at the edge**: the local score is within 1 point of cloud on 4 of 5 generative rows (80%). The miss is S-growth-16 (3 vs 5), the negative case, where the local model named a seat. E6 confirm: v1 escalations were fixture defects, and v2 cleared them by re-sourcing. E7, E8 not run.  
+**B-null rejected?** ☐** yes ☐ no ☐ inconclusive (small *N*). On the operator's sheet the §8 thresholds are met with room (93% ≥ 70%, 0.07 ≤ 0.3). Code carries 10 of 15 acts; the local tier carries 4 of the 5 generative ones. P-cloud is now measured on the generative rows: growth-first cuts cloud use by 93% at a quality cost of 1 point or less on 4 of 5 generative acts (mean 4.2 vs 5.0). The one real loss is a negative case (a false route where ESCALATE was correct). N = 15, with 5 generative acts.  
+**Operator verdict on step 0:** ☐ **Yes: strike §6 **0** ☐ **Yes: extend protocol ☐ **No: reject tree policy for desk. Keep the tree (operator 2026-09-29, after the P-cloud arm: "Lets keep the tree"; draft pair bfe001f7)  
+**Next engineering bite (if any):** Discuss the tree policy, and discuss ways to to extend the protocol as well as any other gaps that should be covered at 0.  
+**Gap ids logged:** 02babedd5620 (tree policy: P-cloud on generative rows) · 51ecb327a258 (thin generative set; routing gold = willow) · 25c12d9c15fb (D0 G5 direct vs indirect seal) · 82897b2f507e (D0 routing rule → willow) · 81451b988833 (runner schema + universal ESCALATE) · 0871bb83d7d5 (aggregate G1 check passes F-negative) · 187b6bd17e4e (nestor_draft injection blocks R0/T2) · 84f5513ea462 (T1b, E4, G4 timeout) · 02a4de282956 (nestor MCP on tombstoned ~/.willow — fixed and verified 2026-09-29, resolved)  
 
 ---
 
@@ -353,6 +355,7 @@ or delete it.
 ## 12. Far horizon — willow-bot in the deterministic chain (operator note)
 
 **Status:** not designed · out of scope for this chunk · captured 2026-09-24.
+**Operator note 2026-09-29 Some of this plan has been landed in the documents: (Link to docs here)
 
 Operator shape-in-progress: **willow-bot** as a link in the same **deterministic
 chain** as corpus-lens and willow-reconciler — not only CI glue, but a steward

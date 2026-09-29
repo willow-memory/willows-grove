@@ -1,0 +1,69 @@
+{
+  "scored_at": "2026-09-29",
+  "scorer": "willow desk (session 5d2d6330-b563-4b66-aa6d-fc91f052fd75); machine checks per v2 expected blocks; G3 rubric is a desk read, not the operator's T5 score of record",
+  "inputs": {
+    "d0_a": "runs/resolve-v2-20260929.jsonl (Kart NTL0ZNZF)",
+    "d0_b": "runs/resolve-v2-nestor-20260929.jsonl (Kart NTL0ZNZF)",
+    "model_a": "$WILLOW_HOME/willow-bot/runs/layer-b-growth-v2-lane4-20260929.jsonl (Kart 8STA6RU5)",
+    "model_b": "$WILLOW_HOME/willow-bot/runs/layer-b-growth-v2-nestor-lane4-20260929.jsonl (Kart 8STA6RU5)",
+    "model": "willow-lane4-3b:latest (SOIL active_model), host runner, no format schema"
+  },
+  "p_growth_escalations": {
+    "S-growth-06": {"verdict": "pass", "answer_chars": 105, "note": "names willow-mcp and cancelled, <=120 including the stray wrapping quotes (trivial edit)"},
+    "S-growth-13": {"verdict": "fail", "gold": "hanuman", "note": "escalated a plain build item as 'no fleet seat can act', invented id '#a8c0f5b', cited no excerpt; routes to 'the fleet coordinator (willow.sh)'"},
+    "S-growth-14": {"verdict": "fail", "gold": "loki", "note": "answered 'willow' (not in the offered seat list); called a code audit 'not a code change'"},
+    "S-growth-15": {"verdict": "pending_operator_rubric", "desk_read": 3, "machine": {"cites_excerpt": false, "no_stray_ids": true}, "note": "right substance (restates the defect), phrased as a statement not a question, cites 71b0ce7b but not the excerpt id"},
+    "S-growth-16": {"verdict": "fail", "gold": "ESCALATE", "note": "F-negative: named Ada as the route and added an 'escalation note' — false confidence. aggregate.py's substring check would pass it; it should not"}
+  },
+  "operator_scores_of_record": {
+    "sheet": "scores/rubric-v2-2026-09-29.csv (scale: 5 = a match)",
+    "rows": {
+      "S-growth-15": {"score": 4, "cloud_needed": "n"},
+      "S-growth-06": {"score": 4, "cloud_needed": "n"},
+      "S-growth-13": {"score": 5, "cloud_needed": "n"},
+      "S-growth-14": {"score": 5, "cloud_needed": "n"},
+      "S-growth-16": {"score": 3, "cloud_needed": "uncertain"},
+      "S-growth-11_A": {"score": 5, "cloud_needed": "n"},
+      "S-growth-12_A": {"score": 5, "cloud_needed": "n"},
+      "S-growth-11_B": {"score": 5, "cloud_needed": "n"},
+      "S-growth-12_B": {"score": 5, "cloud_needed": "n"}
+    },
+    "supersedes_desk_verdicts": "13 and 14 were desk 'fail' against the packets' real to_app; the operator scored both 5 (escalating to willow is a match). 16 was desk 'fail'; the operator scored it 3/uncertain. G5 batch B-12 was desk 'ungrounded'; the operator scored it 5. The operator's sheet is the score of record."
+  },
+  "step0_arithmetic_operator": {
+    "rule": "grown = D0 resolved/verbatim, or a local answer the operator scored at or above the class bar (G1 >= 4, G3 >= 3, G2 machine + score) with cloud_needed n; anything else counts as a cloud act",
+    "grown": "10 code + 4 local (06, 13, 14, 15) = 14/15 = 93.3% (T = 70%)",
+    "cloud_per_act": "1/15 = 0.07 (S-growth-16, 3/uncertain, below the G1 bar) (C = 0.3)",
+    "g5_batches": "A 5/5, B 5/5 — no difference between design-doc and seal sources on the operator's sheet"
+  },
+  "step0_arithmetic_desk_superseded": {
+    "counted_acts": 15,
+    "grown_by_code": 10,
+    "grown_by_local_strict": 1,
+    "grown_by_local_if_15_passes": 2,
+    "grown_strict": "11/15 = 73.3% (T = 70%)",
+    "grown_if_15_passes": "12/15 = 80.0%",
+    "cloud_per_act_strict": "4/15 = 0.27 (C = 0.3)",
+    "cloud_per_act_if_15_passes": "3/15 = 0.20",
+    "rule": "a failed local answer counts as a cloud act (it would have to be redone), never as grown"
+  },
+  "capability_rows_not_counted": {
+    "G1_01_02": "answered 'willow' for to_app loki and hanuman — wrong on a field read the brief names",
+    "G1_03": "ada — correct",
+    "G2_04_05": "rewrote the title instead of copying it; 05 appended source_ref; names repo+legs",
+    "G3_07_09": "07, 08 fair paraphrases; 09 garbles the question into a different one; none cite the gap id except 07",
+    "G4_10": "timed out at 600099 ms — environment defect, not scored (G4 never counts locally)"
+  },
+  "systematic_finding": "willow-lane4-3b routes to 'willow' on 4 of 7 routing rows (01, 02, 14, and 13 via 'willow.sh') where 'willow' is not the answer and in 13-16 is not even offered. The tuned lane-4 model carries a strong prior toward its own seat name.",
+  "g5_batch_comparison": {
+    "A_design_doc": {
+      "S-growth-11": {"answer": "no", "grounded": true, "cites_excerpt": false},
+      "S-growth-12": {"answer": "no", "grounded": true, "cites_excerpt": false, "note": "restates the excerpt's per-task envelope"}
+    },
+    "B_nestor_seal": {
+      "S-growth-11": {"answer": "no", "grounded": "partly", "cites_excerpt": false, "note": "right answer; the rationale ('allow_localhost only allows loopback from inside a shared-host sandbox') bends the seal's 'never a revival of allow_localhost's shared-host-netns'"},
+      "S-growth-12": {"answer": "no", "grounded": false, "cites_excerpt": false, "note": "right yes/no, invented rationale ('it only blocks local reads of those files…') found nowhere in dbb0c91e"}
+    },
+    "read": "Same yes/no in both batches (4/4 'no'). Grounding got worse with the seal text: the design-doc sentence is one claim; the seals' target_text is long, multi-claim, and for 12 only indirect. D0 marks all four 'correct' because it checks cites, not answers. n=2 per batch — suggestive only."
+  }
+}

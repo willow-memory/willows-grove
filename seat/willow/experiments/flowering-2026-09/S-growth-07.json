@@ -1,0 +1,18 @@
+{
+  "id": "S-growth-07",
+  "class": "G3",
+  "excluded_from_T": false,
+  "brief": "Draft the open question for this gap in one or two sentences. Cite the gap id. Do not introduce seal ids that are not in the excerpts.",
+  "excerpts": [
+    {
+      "id": "ex-7fab1a78081b",
+      "source": "gap_list topic forge-convergence status open 2026-09-24",
+      "text": "id 7fab1a78081b; topic forge-convergence/local-models-step0; status open; asked_count 1; question: Step 0 wiring: operator box has no provider_ladder.json or rungs.json and no $WILLOW_HOME/ratatosk/hooks.json while forge-convergence and hook orient expect ladder rung + Ratatosk row renderer — which"
+    }
+  ],
+  "expected": {
+    "must_cite": ["7fab1a78081b"],
+    "forbid_seal_ids_not_in_excerpts": true
+  },
+  "flowering_allowed_when": "no unrelated seal ids in draft AND operator rubric >= 3"
+}

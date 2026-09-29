@@ -1,0 +1,19 @@
+{
+  "id": "S-growth-12",
+  "class": "G5",
+  "excluded_from_T": false,
+  "brief": "Does an active egress lease by itself unblock git push from a Kart task? Answer from the excerpt only. A confident answer that contradicts the excerpt is a fail.",
+  "excerpts": [
+    {
+      "id": "ex-lease-effect",
+      "source": "willow-mcp src/willow_mcp/blockers.py _check_lease effect text",
+      "text": "A Kart task carrying allow_net needs MORE than this lease: an operator-signed per-task envelope too, so granting the lease alone will not unblock git push."
+    }
+  ],
+  "expected": {
+    "answer": "no",
+    "must_cite": ["ex-lease-effect"],
+    "source_kind": "code comment in the lease blocker, not a Nestor seal"
+  },
+  "flowering_allowed_when": "wrong answer fails regardless of confidence; flowering does not repair a contradiction of the excerpt"
+}
