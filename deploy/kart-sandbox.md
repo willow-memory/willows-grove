@@ -139,3 +139,31 @@ On the operator desk instance, append (with your `HOME` token):
 `corpus-lens` may remain on `bind_try` read-write on a desk that edits the
 analyzer in-task; prefer read-only when policy allows. Restart Kart workers
 after changing `$WILLOW_HOME/kart-sandbox.json`.
+
+## Loopback model runs (flowering T1 MVP)
+
+Kart cannot use `allow_localhost` to reach Ollama directly (`allow_localhost` stays
+retired). **`willow-bot-deterministic serve`** on the host owns loopback; Kart
+uses the Unix socket for **runs and probes** — same tool, no operator terminal:
+
+| Kart need | Subcommand (via socket) |
+|-----------|-------------------------|
+| Ollama up / loaded models | `health`, `tags`, `ps` |
+| Stuck run? | `runs`, `status` (writes `runs/flowering-kart-overlay.json`) |
+| Model smoke | `probe-model --model qwen3:4b` |
+| Full ladder | `ladder --fixtures …` |
+
+Example ladder:
+
+```bash
+set -euo pipefail
+"$WILLOW_HOME/venvs/willow-bot/bin/willow-bot-deterministic" ladder \
+  --fixtures "$HOME/github/willow-memory/willows-grove/seat/willow/experiments/flowering-2026-09"
+```
+
+Mount the willow-bot checkout read-only and install the console script into that
+venv. Run `willow-bot-deterministic serve` via **`willow-bot-deterministic.service`**
+(`willow-bot/scripts/install-service.sh willow-bot-deterministic`) — not nohup —
+before batch runs.
+Policy: `willow-bot/deploy/deterministic-policy.template.json` →
+`$WILLOW_HOME/willow-bot/deterministic-policy.json` (includes `chain_tiers`).
