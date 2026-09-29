@@ -1,0 +1,18 @@
+{
+  "id": "S-growth-08",
+  "class": "G3",
+  "excluded_from_T": false,
+  "brief": "Draft the open question for this gap in one or two sentences. Cite the gap id. Do not introduce seal ids that are not in the excerpts.",
+  "excerpts": [
+    {
+      "id": "ex-d0e08302a5a5",
+      "source": "gap_list topic forge-convergence status open 2026-09-24",
+      "text": "id d0e08302a5a5; topic forge-convergence/local-models-step0; status open; asked_count 1; question: Ada Wave 0b: codebase-memory archive slugs (archive-willow-2.0, flashdrive-2026-09-11, etc.) show nodes but root_exists false and search_code returns zero — should step 0 remount greenfield/flashdrive"
+    }
+  ],
+  "expected": {
+    "must_cite": ["d0e08302a5a5"],
+    "forbid_seal_ids_not_in_excerpts": true
+  },
+  "flowering_allowed_when": "no unrelated seal ids in draft AND operator rubric >= 3"
+}

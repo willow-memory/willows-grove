@@ -1,0 +1,19 @@
+{
+  "id": "S-growth-04",
+  "class": "G2",
+  "excluded_from_T": false,
+  "brief": "Write a desk-attention title from the CI snippet. At most 120 characters. Name the repo and the failing leg.",
+  "excerpts": [
+    {
+      "id": "ex-0079cdb7",
+      "source": "session_enter desk_attention.review 2026-09-24T04:36Z",
+      "text": "id 0079cdb7; title: CI red: willow-memory/willow-mcp#645 — 1 leg(s): dependabot-pr; source_ref: https://github.com/willow-memory/willow-mcp/actions/runs/35942729775/job/107453978039"
+    }
+  ],
+  "expected": {
+    "max_chars": 120,
+    "must_name": ["willow-mcp", "dependabot-pr"],
+    "reference_title": "CI red: willow-memory/willow-mcp#645 — 1 leg(s): dependabot-pr"
+  },
+  "flowering_allowed_when": "title <= 120 chars and names repo and leg"
+}

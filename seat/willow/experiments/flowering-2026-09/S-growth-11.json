@@ -1,0 +1,19 @@
+{
+  "id": "S-growth-11",
+  "class": "G5",
+  "excluded_from_T": false,
+  "brief": "Can a Kart task reach loopback Ollama by setting allow_localhost? Answer from the excerpt only. A confident answer that contradicts the excerpt is a fail.",
+  "excerpts": [
+    {
+      "id": "ex-runtime-facts",
+      "source": "docs/design/forge-convergence.md §6 step 0, runtime facts",
+      "text": "Kart cannot reach loopback Ollama (allow_localhost retired; sandbox network_mode: isolated)."
+    }
+  ],
+  "expected": {
+    "answer": "no",
+    "must_cite": ["ex-runtime-facts"],
+    "source_kind": "design-doc paragraph, not a Nestor seal"
+  },
+  "flowering_allowed_when": "wrong answer fails regardless of confidence; flowering does not repair a contradiction of the excerpt"
+}

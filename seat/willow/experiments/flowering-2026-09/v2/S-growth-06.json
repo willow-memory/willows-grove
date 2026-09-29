@@ -1,0 +1,19 @@
+{
+  "id": "S-growth-06",
+  "class": "G2",
+  "excluded_from_T": false,
+  "brief": "Write a desk-attention title from the CI snippet. At most 120 characters. Name the repo and that the legs were cancelled.",
+  "excerpts": [
+    {
+      "id": "ex-d77d0c46",
+      "source": "session_enter desk_attention.review 2026-09-24T04:36Z",
+      "text": "id d77d0c46; title: CI stuck: willow-memory/willow-mcp#642 — 2 leg(s) cancelled, no successor after 10 min: test-matrix (3.13), test-matrix (3.11); source_ref: https://github.com/willow-memory/willow-mcp/actions/runs/35901122474/job/107317300686"
+    }
+  ],
+  "expected": {
+    "max_chars": 120,
+    "must_name": ["willow-mcp", "cancelled"]
+  },
+  "flowering_allowed_when": "title <= 120 chars and names repo and leg",
+  "v2_change": "reference_title removed: the source title is 126 chars, so the v1 reference broke its own 120 limit. Excerpt unchanged — this is the one generative act in the original twelve (compress an over-long title); D0 escalating it (title_over_limit) is correct, and the escalated answer is scored on max_chars + must_name. Upstream fix is the desk-attention title template in willow-mcp, not this fixture."
+}

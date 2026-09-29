@@ -7,6 +7,14 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 ### Changed
 
 - **deploy:** retire `allow_localhost` from the Kart sandbox template — `deploy/kart-sandbox.template.json`'s `localhost_tier` note described it as a working local-only mode; it is retired (governance record `retire-allow-localhost-2026-09-23`, amends sealed 9fe5e179) and refused by name in both willow-mcp and kartikeya. (PR 86)
+- **deploy:** the Kart sandbox template stops binding anything the host later executes. `/run/user` and `XDG_RUNTIME_DIR` are unbound, `~/.local` is read-only, `.git/hooks` and `.git/config` are overlaid read-only, and `.npmrc` is dropped (Ada audit 385FBA31). The loopback-tier note cites its sealed shape, pair 3ef0211f. (PR 88)
+- **mcp template:** the desk's `nestor` entry sets `WILLOW_HOME`, `WILLOW_MCP_APPS_ROOT` and `WILLOW_STORE_ROOT`, so jeles-corpus stops falling back to the tombstoned `~/.willow` (gap 02a4de282956). (PR 88)
+- **jeles-intake:** two seed pairs corrected: the fifth federation key names which tools need a lease, and the Jeles app id is `jeles-corpus`. (PR 88)
+
+### Added
+
+- **seat/willow:** flowering step 0 is run and struck. Adds the v2 fixture set, the design-doc vs Nestor-seal G5 batches, D0, local-tier and cloud-arm run rows, and the operator's blind rubric sheets, plus the §9 verdict (keep the tree, sealed bfe001f7). The v1 fixtures, generator and aggregator are kept as the record of the superseded run. (PR 88)
+- **docs:** the willow-bot box spec (ideas #33) and the manifest-grant-federated-tools and node9 shadow-mode proposals. (PR 88)
 
 ## [0.12.1](https://github.com/willow-memory/willows-grove/compare/v0.12.0...v0.12.1) (2026-09-22)
 
@@ -81,6 +89,17 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 ## [Unreleased]
 
 ### Added
+
+- **Forge convergence design — tree, experiment protocol, step 0 gate.**
+  `docs/design/forge-convergence.md` §1.5 (one tree / one soil; growth vs
+  flowering); pre-registered
+  `docs/design/forge-convergence-flowering-experiment.md` (hypotheses T0–T6,
+  chain-depth secondary, AI-Gamemaster theory bookmark). Step **0** blocks §6
+  build PRs until the flowering-threshold test is run and signed. **§8
+  pre-run sign-off** filled (T=70%, C=0.3, N=12, R0+R1, P-cloud, tier
+  ladder, K=2); fixture home `seat/willow/experiments/flowering-2026-09/`.
+  Jeles loopback probe gaps logged on the operator box (`a6d8ae37f8be`,
+  `621488f2d6da`).
 
 - **The served page declares a WebSocket library.** (PR 83) Measured
   2026-09-22T06:29Z: `grove-serve.service` reloaded

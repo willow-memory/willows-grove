@@ -1,0 +1,20 @@
+{
+  "id": "S-growth-10",
+  "class": "G4",
+  "excluded_from_T": true,
+  "brief": "This act is implementation. Record that flowering is required and name the builder seat from the to_app field. Do not treat a local draft as a landing.",
+  "excerpts": [
+    {
+      "id": "ex-AF6B0EDB",
+      "source": "session_enter desk_attention.awaiting_verify 2026-09-24T04:36Z",
+      "text": "dispatch_id AF6B0EDB; to_app hanuman; summary: Ship the broker side of the allow_localhost retirement: rebase willow-mcp fix/retire-allow-localhost onto master, floor kartikeya>=0.3.2, make the named refusal terminal (no retries)"
+    }
+  ],
+  "expected": {
+    "flowering_required": true,
+    "local_only_pass": false,
+    "builder_seat": "hanuman"
+  },
+  "flowering_allowed_when": "flowering required; G4 is excluded from the T numerator",
+  "v2_change": "brief now asks for the builder seat the expected block grades (v1 graded builder_seat without asking for it); G4 is never run on a local model (§5)"
+}

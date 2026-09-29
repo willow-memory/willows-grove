@@ -1,0 +1,18 @@
+{
+  "id": "S-growth-02",
+  "class": "G1",
+  "excluded_from_T": false,
+  "brief": "Name the seat this dispatch is addressed to. Answer with one seat id. Cite the excerpt id.",
+  "excerpts": [
+    {
+      "id": "ex-62B59A7A",
+      "source": "session_enter desk_attention.awaiting_verify 2026-09-24T04:36Z",
+      "text": "dispatch_id 62B59A7A; to_app hanuman; summary: Amends AF6B0EDB per Loki 615C332F: stop treating egress denials as permanent (P1), and only trust the allow_localhost prefix on an executor refusal with no returncode (P2)"
+    }
+  ],
+  "expected": {
+    "to_app": "hanuman",
+    "must_cite": ["ex-62B59A7A"]
+  },
+  "flowering_allowed_when": "bullets cite excerpt ids AND (operator rubric >= 4 OR explicit ESCALATE)"
+}

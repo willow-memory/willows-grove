@@ -1,0 +1,20 @@
+{
+  "id": "S-growth-14",
+  "class": "G1",
+  "excluded_from_T": false,
+  "generative": true,
+  "brief": "Route this item to one fleet seat: hanuman (builds code), loki (audits code changes), ada (audits box posture). Answer with one app id, or ESCALATE if no fleet seat can act on it. Cite the excerpt id.",
+  "excerpts": [
+    {
+      "id": "ex-71BF5ACF",
+      "source": "session_enter desk_attention.awaiting_verify 2026-09-29 (to_app withheld)",
+      "text": "dispatch_id 71BF5ACF; summary: Audit kartikeya #76 @ b6f4b5e: cgroup leaf lifecycle, refuse unusable parents, rtk decode"
+    }
+  ],
+  "expected": {
+    "to_app": "loki",
+    "must_cite": ["ex-71BF5ACF"]
+  },
+  "flowering_allowed_when": "bullets cite excerpt ids AND (operator rubric >= 4 OR explicit ESCALATE)",
+  "v2_change": "new generative fixture: route from the summary alone; gold is the packet's real to_app. D0 must escalate (no_to_app_field)."
+}

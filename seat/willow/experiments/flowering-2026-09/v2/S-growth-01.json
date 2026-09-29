@@ -1,0 +1,19 @@
+{
+  "id": "S-growth-01",
+  "class": "G1",
+  "excluded_from_T": false,
+  "brief": "Name the to_app this dispatch is addressed to. Answer with one app id. Cite the excerpt id.",
+  "excerpts": [
+    {
+      "id": "ex-615C332F",
+      "source": "session_enter desk_attention.awaiting_verify 2026-09-24T04:36Z",
+      "text": "dispatch_id 615C332F; to_app loki; summary: Audit AF6B0EDB delta: permanent-refusal detection in the shared task queue's retry decision (_is_permanent_refusal), willow-mcp 657bc80"
+    }
+  ],
+  "expected": {
+    "to_app": "loki",
+    "must_cite": ["ex-615C332F"]
+  },
+  "flowering_allowed_when": "bullets cite excerpt ids AND (operator rubric >= 4 OR explicit ESCALATE)",
+  "v2_change": "brief names the to_app field instead of 'seat' (fixture defect, record flowering-step0-code-first-2026-09-27)"
+}

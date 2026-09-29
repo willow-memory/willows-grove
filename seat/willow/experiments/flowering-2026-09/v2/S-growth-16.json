@@ -1,0 +1,21 @@
+{
+  "id": "S-growth-16",
+  "class": "G1",
+  "excluded_from_T": false,
+  "generative": true,
+  "negative": true,
+  "brief": "Route this item to one fleet seat: hanuman (builds code), loki (audits code changes), ada (audits box posture). Answer with one app id, or ESCALATE if no fleet seat can act on it. Cite the excerpt id.",
+  "excerpts": [
+    {
+      "id": "ex-73726e98",
+      "source": "session_enter desk_attention.review 2026-09-29",
+      "text": "id 73726e98; title: Loki audits 54C5E1A2 + A28BD892 blocked — Cursor weekly usage cap"
+    }
+  ],
+  "expected": {
+    "to_app": "ESCALATE",
+    "must_cite": ["ex-73726e98"]
+  },
+  "flowering_allowed_when": "correct answer is ESCALATE: a usage cap is the operator's to lift, and naming any seat is false confidence",
+  "v2_change": "new F-negative fixture (protocol §3.4). D0 escalates (no_to_app_field) and is not scored; a model naming loki/hanuman/ada fails."
+}

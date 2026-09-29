@@ -24,12 +24,12 @@
     },
     {
       "source_text": "What are the five keys to spawn a federated MCP server?",
-      "target_text": "1) manifest permission mcp_federation; 2) per-tool grant mcp:<server_id>:<tool> for each downstream tool; 3) operator-ratified entry in $WILLOW_HOME/mcp_apps/_federation/servers.json (PGP-signed when enforced); 4) consent.federation true in settings.global.json; 5) unexpired net lease for the calling app_id. Neither manifest grant nor ratification alone is sufficient.",
+      "target_text": "1) manifest permission mcp_federation; 2) per-tool grant mcp:<server_id>:<tool> for each downstream tool; 3) operator-ratified entry in $WILLOW_HOME/mcp_apps/_federation/servers.json (PGP-signed when enforced); 4) consent.federation true in settings.global.json; 5) unexpired net lease for net-bearing federated tools (corpus_web_search, corpus_institutional_search, corpus_verify_claim, corpus_search_status), HTTP downstream federation, and other net lanes (task_net, integration_net, web_net/web_read) — loopback jeles-corpus tools (corpus_search, corpus_ask, corpus_host_card, …) do not need a lease. Neither manifest grant nor ratification alone is sufficient.",
       "reason": "Live install gates + federated-mcp-gating design"
     },
     {
       "source_text": "What app_id should Jeles use when forwarding gaps to willow-mcp?",
-      "target_text": "JELES_CORPUS_APP_ID=jeles. The back-compat default ask-jeles is not a seated manifest in willow-mcp; gap_log is denied without the jeles librarian seat (gap_write). Gaps still land under topic ask-jeles-corpus unless JELES_CORPUS_TOPIC overrides.",
+      "target_text": "JELES_CORPUS_APP_ID=jeles-corpus (retired app id jeles). The librarian seat manifest is jeles-corpus in willow-mcp; gap_log is denied without that seated app_id (gap_write). Gaps still land under topic ask-jeles-corpus unless JELES_CORPUS_TOPIC overrides.",
       "reason": "Jeles README + fleet-standup.sh + live fleet_status"
     },
     {

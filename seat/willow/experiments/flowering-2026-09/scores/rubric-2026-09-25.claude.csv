@@ -1,0 +1,61 @@
+blind_id,scenario_id,class,score_1_5,cloud_needed_YN,notes
+B001,S-growth-05,G2,4,N,Repo and both legs; wrapping quotes to strip
+B002,S-growth-07,G3,4,N,Cites gap; faithful one-sentence question
+B003,S-growth-01,G1,1,Y,Wrong seat (willow); no cite
+B004,S-growth-08,G3,2,Y,No gap cite; reframes the remount question into a muddled root-cause ask
+B005,S-growth-02,G1,1,Y,Gives the dispatch id not the seat
+B006,S-growth-08,G3,4,N,Cites gap; faithful; phrased as a request to someone
+B007,S-growth-09,G3,3,N,Preamble; cites gap as 'Excerpt'; vague 'implications' question
+B008,S-growth-02,G1,1,Y,Wrong seat (Executor)
+B009,S-growth-07,G3,3,N,Reasonable question; no gap cite
+B010,S-growth-03,G1,1,Y,Returns the excerpt id; no seat
+B011,S-growth-11,G5,3,N,Correct No; no cite
+B012,S-growth-08,G3,4,N,Cites gap; restates the gap question accurately
+B013,S-growth-10,G4,3,N,Says flowering required; closing sentence muddled; no builder seat
+B014,S-growth-05,G2,3,N,Over 120 chars; redundant second clause
+B015,S-growth-06,G2,4,N,Repo and cancelled named; redundant repo mention and cite noise
+B016,S-growth-10,G4,1,Y,Generic ramble; does not understand the act
+B017,S-growth-10,G4,4,N,Correct and minimal; no builder seat
+B018,S-growth-01,G1,5,N,Correct and cited
+B019,S-growth-12,G5,5,N,Correct and cited
+B020,S-growth-04,G2,3,N,Good title line; extra Repo/Leg lines to strip
+B021,S-growth-02,G1,1,Y,Wrong seat (willow)
+B022,S-growth-01,G1,1,Y,Gives the dispatch id not the seat
+B023,S-growth-11,G5,3,N,Correct No; garbled reason; no cite
+B024,S-growth-02,G1,5,N,Correct and cited
+B025,S-growth-05,G2,4,N,Repo and both legs; drops the PR number
+B026,S-growth-06,G2,3,N,Good title line; extra lines to strip
+B027,S-growth-07,G3,4,N,Cites gap; valid narrower question on expected file format
+B028,S-growth-10,G4,4,N,Flowering required; lists the actions; no builder seat
+B029,S-growth-03,G1,2,Y,Declines although the seat (Ada) is in the excerpt; not an ESCALATE
+B030,S-growth-06,G2,4,N,Repo; cancelled; both legs; wrapping quotes
+B031,S-growth-04,G2,1,Y,Over 120 chars; invents 'repo is green' and a missing second leg
+B032,S-growth-09,G3,4,N,Cites gap; faithful; slight over-read of the truncated 'stop'
+B033,S-growth-01,G1,3,N,Correct seat; no cite
+B034,S-growth-03,G1,5,N,Correct and cited
+B035,S-growth-12,G5,5,N,Correct and cited
+B036,S-growth-09,G3,4,N,Cites gap; faithful request for detail
+B037,S-growth-09,G3,2,Y,No cite; misreads the gap as 'what is the first build step'
+B038,S-growth-07,G3,3,N,Preamble; typo runsg.json; cites gap
+B039,S-growth-08,G3,3,N,Cites gap; question drifts from the remount decision
+B040,S-growth-04,G2,4,N,Repo and leg; cite noise in a title
+B041,S-growth-02,G1,3,N,Correct seat; no cite
+B042,S-growth-09,G3,4,N,Preamble; cites gap; good question
+B043,S-growth-12,G5,2,Y,Correct No but invents 'only grants read access to the egress surface'; no cite
+B044,S-growth-04,G2,5,N,Repo and leg; concise
+B045,S-growth-04,G2,3,N,Loose repo naming in the title line; extra lines
+B046,S-growth-03,G1,1,Y,Wrong seat (SessionStart)
+B047,S-growth-05,G2,4,N,Repo and both legs; cite noise
+B048,S-growth-01,G1,1,Y,Wrong seat ('1')
+B049,S-growth-12,G5,5,N,Correct and cited
+B050,S-growth-07,G3,4,N,Preamble; cites gap; reasonable question
+B051,S-growth-11,G5,4,N,Correct; quotes the excerpt instead of citing its id
+B052,S-growth-03,G1,2,Y,Declines although the seat is in the excerpt; not an ESCALATE
+B053,S-growth-11,G5,5,N,Correct and cited
+B054,S-growth-10,G4,3,N,Says flowering required then undercuts it with a confused note
+B055,S-growth-11,G5,5,N,Correct and cited
+B056,S-growth-05,G2,3,N,Title line lacks the full repo; extra lines
+B057,S-growth-12,G5,5,N,Correct and cited
+B058,S-growth-08,G3,2,Y,No cite; speculative reframing of the question
+B059,S-growth-06,G2,3,N,Title line names repo loosely and cancelled; extra line
+B060,S-growth-06,G2,5,N,Repo; PR; cancelled; concise

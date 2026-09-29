@@ -1,0 +1,20 @@
+{
+  "id": "S-growth-15",
+  "class": "G3",
+  "excluded_from_T": false,
+  "generative": true,
+  "brief": "No gap exists yet for this defect. Draft the open question a new gap should carry, in one or two sentences. Cite the excerpt id. Do not introduce seal ids that are not in the excerpts.",
+  "excerpts": [
+    {
+      "id": "ex-handoff-3b9ad35c",
+      "source": "session_handoff-2026-09-29-3b9ad35c_willow.md, ENVIRONMENT DEFECT paragraph",
+      "text": "ENVIRONMENT DEFECT to log if a re-run happens: nestor_draft reports retrieval.mode=disabled yet STILL injects ~3 sealed pairs as context_pair_ids — the R0 arm ('excerpts only, no sealed inject') is not achievable as-built. Sealed 71b0ce7b: an env fault obliges re-running everything under it."
+    }
+  ],
+  "expected": {
+    "must_cite": ["ex-handoff-3b9ad35c"],
+    "forbid_seal_ids_not_in_excerpts": true
+  },
+  "flowering_allowed_when": "no unrelated seal ids in draft AND operator rubric >= 3",
+  "v2_change": "new generative fixture: compose a question from prose (no id/question fields). D0 must escalate (missing_id_or_question)."
+}
