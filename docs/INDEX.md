@@ -45,6 +45,21 @@ decisions that shaped what got built.
 | [`design/every-seat-hears-the-grove.md`](design/every-seat-hears-the-grove.md) | Grove traffic for any seat — one willow-mcp events verb and cursor, read by Ratatosk, the stream and the hook |
 | [`design/autonomous-continuity.md`](design/autonomous-continuity.md) | Autonomous continuity — the sealing question for Nestor |
 | [`design/pr14-carryovers.md`](design/pr14-carryovers.md) | Punch list for v0.10 — what v0.9 punted and why |
+| [`design/forge-convergence.md`](design/forge-convergence.md) | The Forge convergence: one session machine; §6 the build order, §6a the Table |
+| [`design/forge-convergence-flowering-experiment.md`](design/forge-convergence-flowering-experiment.md) | Experiment: growth, pools, and the flowering threshold (step 0, run and struck) |
+| [`design/the-forge-shape.md`](design/the-forge-shape.md) | The Forge, the shape as talked out 2026-08-30 |
+| [`design/approval-broker.md`](design/approval-broker.md) | Approval broker: how a human act reaches a sandboxed caller |
+| [`design/fleet-wiring.md`](design/fleet-wiring.md) | How the fleet is wired |
+| [`design/fleet-standup.md`](design/fleet-standup.md) | Standing the fleet up in one box |
+| [`design/install-graph-survey-2026-09-08.md`](design/install-graph-survey-2026-09-08.md) | Install-graph survey: Grove docs vs this box |
+| [`design/operator-tier-review.md`](design/operator-tier-review.md) | OPERATOR-tier `not_do` audit |
+| [`design/seat-stack.md`](design/seat-stack.md) | Willow seat stack: phone, session, bus, desk |
+| [`design/phone-seat-production.md`](design/phone-seat-production.md) | Phone seat: production name and serve URL |
+| [`design/phone-surface-context.md`](design/phone-surface-context.md) | Phone surface: context for the remote UI session |
+| [`design/phone-tier0-sync.md`](design/phone-tier0-sync.md) | Phone seat: tier 0 homecoming |
+| [`design/vault-home-store.md`](design/vault-home-store.md) | Vault home store: the cut, two axes, not a move |
+| [`design/willow-bot-box-spec.md`](design/willow-bot-box-spec.md) | willow-bot box spec (draft, operator shape 2026-09-28) |
+| [`design/willow-bot-usable-build-brief.md`](design/willow-bot-usable-build-brief.md) | willow-bot usable build brief |
 | [`ideas.md`](ideas.md) | The idea pile — every open item this repo can land, numbered once, read by `reconciler run` |
 | [`KNOWN_GAPS.md`](KNOWN_GAPS.md) | The `GAP-00N` → pile-item map (the gaps themselves now live in `ideas.md`) |
 
@@ -57,14 +72,33 @@ decisions that shaped what got built.
 | [`audits/loki-swarm-metadata.md`](audits/loki-swarm-metadata.md) | Swarm reproducibility metadata |
 | [`audits/loki-swarm-raw.json`](audits/loki-swarm-raw.json) | Raw findings JSON |
 
+## Proposals (`governance/proposals/`)
+
+| Proposal | Status (as the file states it) |
+|---|---|
+| [`2026-08-21-registry-path-repoint`](../governance/proposals/2026-08-21-registry-path-repoint.md) | proposal · root's act (verb 12) |
+| [`2026-08-22-governed-path-write-gate`](../governance/proposals/2026-08-22-governed-path-write-gate.md) | proposal · superseded by the 2026-09-02 v2 |
+| [`2026-08-22-syscall-table-verb13-bounds`](../governance/proposals/2026-08-22-syscall-table-verb13-bounds.md) | proposal · root's act (verb 12) |
+| [`2026-08-31-journal-seam-speaks-no-protocol`](../governance/proposals/2026-08-31-journal-seam-speaks-no-protocol.md) | proposal · awaiting root's ratification |
+| [`2026-09-02-build-order`](../governance/proposals/2026-09-02-build-order.md) | index of the six 2026-09-02 proposals |
+| [`2026-09-02-governed-path-write-gate-v2`](../governance/proposals/2026-09-02-governed-path-write-gate-v2.md) | proposal · root's decision, then a willow-mcp change |
+| [`2026-09-02-grove-hooks-and-skills`](../governance/proposals/2026-09-02-grove-hooks-and-skills.md) | proposed · root ratifies |
+| [`2026-09-02-local-inference-seam`](../governance/proposals/2026-09-02-local-inference-seam.md) | proposed · cross-repo |
+| [`2026-09-02-mcp-jobs-ladder-test-plan`](../governance/proposals/2026-09-02-mcp-jobs-ladder-test-plan.md) | proposed · measurement; its `allow_localhost` ask is retired |
+| [`2026-09-02-packet-lifecycle-adr`](../governance/proposals/2026-09-02-packet-lifecycle-adr.md) | proposed · willow-mcp change |
+| [`2026-09-02-unit-retirement`](../governance/proposals/2026-09-02-unit-retirement.md) | proposed · operator's act |
+| [`2026-09-09-grove-seat-inversion`](../governance/proposals/2026-09-09-grove-seat-inversion.md) | proposed · awaiting ratification |
+| [`2026-09-26-manifest-grant-federated-tools`](../governance/proposals/2026-09-26-manifest-grant-federated-tools.md) | ruled A · built in willow-mcp |
+| [`2026-09-27-node9-shadow-mode`](../governance/proposals/2026-09-27-node9-shadow-mode.md) | ruled · built in willow-mcp |
+
 ## Not in this tree (by design)
 
 Docs describing pre-v0.9 dashboard planning
 (`superpowers/plans/*`, `superpowers/specs/*`), cross-repo synthesis
 that spans Grove and other Willow surfaces (`synthesis/*`,
 `CROSS_REPO_BRIDGE.md`, `AUTO_THIRD_PASS_AND_THREAD_PULL.md`), the
-Grove-docs extractor tool (`extractor/*`), the ADR governance system
-(`adrs/*`), and Forge-side design work
-(`design/forge-convergence.md`) live at the old
-`rudi193-cmd/safe-app-willow-grove` repo. Those cover work outside
-what shipped as `willows-grove` 0.9.0 or belong to a sibling repo.
+Grove-docs extractor tool (`extractor/*`), and the ADR governance system
+(`adrs/*`) live at the old `rudi193-cmd/safe-app-willow-grove` repo,
+which is private and archived. Those cover work outside what shipped as
+`willows-grove` 0.9.0 or belong to a sibling repo. The Forge convergence
+design moved here: [`design/forge-convergence.md`](design/forge-convergence.md).
