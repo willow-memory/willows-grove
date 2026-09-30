@@ -33,21 +33,32 @@ Every fixture file is written in a staging directory and checked before any uplo
 - a grep gate for the operator's names, paths, hostnames, and the vault/store ids;
 - a file-count gate against the manifest.
 
+Grep and a count are a tripwire, not a proof (Loki E5B1D537). The step 1 builder brief also gates these leak classes:
+
+- email, phone, and token-shaped strings;
+- Unicode lookalikes of names, and the operator's nicknames;
+- paths encoded as `file://` URIs;
+- binary or compressed payloads;
+- git author metadata on the fixture commits;
+- notebook cell outputs added after the gate ran.
+
+A paraphrase of a private fact can't be caught by grep. The authoring rule "invent, never adapt" is what covers it.
+
 The upload is one egress act under one lease. PII never touches a push, and it never touches an upload either.
 
 ## The local arm (the story)
 
-The same public fixtures also run on this box, against the local ladder: `llama3.2:1b/3b`, `qwen3:4b`, `gemma3:4b`, `llama3.1:8b`. Temperature is zero and every call keeps its raw row. `allow_localhost` is retired, so this runs through a host runner (willow-bot's deterministic socket runner), not a Kart grant. That joins forge-convergence §6 step 0.
+The same public fixtures also run on this box, against the local ladder: `llama3.2:1b/3b`, `qwen3:4b`, `gemma3:4b`, `llama3.1:8b`. Temperature is zero and every call keeps its raw row. `allow_localhost` is retired, so this runs through a host runner (willow-bot's deterministic socket runner), not a Kart grant. The sources for that retirement are forge-convergence §6 step 0 and the governance record `retire-allow-localhost-2026-09-23` (CHANGELOG, PR 86). The parent plan's own status line still asks for the grant until willows-grove #94 corrects it.
 
 The write-up puts Kaggle's hosted models beside the local ladder on one chart, with the task score on one axis and false confidence on the other. That is the independent-dev angle: can a laptop's 3B know its own limits as well as a frontier model knows its?
 
 ## Calibration, not just refusal
 
-Every answer also carries a stated confidence in [0.5, 0.99], the OakenScrolls range already canonical in the plan. Brier score and a reliability diagram go beside the false-confidence rate. The scorer is `calibration.py`, not new code.
+Every answer also carries a stated confidence in [0.5, 0.99]. That is OakenScrolls' own range (`CONF_MIN`/`CONF_MAX` in `office_db.py` and `calibration.py`). The parent plan states no confidence range; this proposal adds one. Brier score and a reliability diagram go beside the false-confidence rate. The scorer is `calibration.py`, not new code.
 
 ## Steps (11 days)
 
-1. **Fixtures** (days 1–3). Author roughly 200 items across four shapes, 20% unanswerable, and commit them with their expected outputs before any model runs. They go in a new public workshop repo, with no vault paths anywhere in it.
+1. **Fixtures** (days 1–3). Author roughly 200 items across four shapes, 20% unanswerable, and commit them with their expected outputs before any model runs. They go in the Forge (ruling 4), in a benchmark directory with no vault paths anywhere in it, after the Forge's visibility is confirmed.
 2. **Local arm** (days 3–5). Runner plus aggregation, following the parent plan's design: one JSON line per call, and aggregation as a separate script.
 3. **Kaggle** (days 5–8). Build the benchmark on Kaggle Benchmarks and run it across its model suite. *Unverified:* the exact Kaggle Benchmarks authoring API. This seat has no `web_net`, so the challenge page and Kaggle's docs are read by the operator, or through a leased fetch, before step 3 is briefed.
 4. **Write-up** (days 8–10). A DEV post in the operator's voice. **The operator publishes it**; the seat drafts.
