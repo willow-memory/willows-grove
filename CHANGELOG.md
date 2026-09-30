@@ -11,7 +11,7 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 - **mcp template:** the desk's `nestor` entry sets `WILLOW_HOME`, `WILLOW_MCP_APPS_ROOT` and `WILLOW_STORE_ROOT`, so jeles-corpus stops falling back to the tombstoned `~/.willow` (gap 02a4de282956). (PR 88)
 - **jeles-intake:** two seed pairs corrected: the fifth federation key names which tools need a lease, and the Jeles app id is `jeles-corpus`. (PR 88)
 - **docs:** `forge-convergence.md` §6 step 0 is struck, and the flowering experiment's status line and §9 verdict record pair bfe001f7 as sealed ("Step 0 is struck"). §13's open list strikes the two items willow-bot #79 closed (G2 cite scoring; the prompt and the pool agree), audited by Loki F48383F4 and B2FF599B. (PR 90)
-- **docs:** `forge-convergence.md` §6 step 1 ("Papers agree with the code") is struck, and §9 row 10 is settled: willow-mcp's `human_required_*` verbs write through `forge.human_loop`. willow-mcp's `willow-gate-seam.md` status and the Forge's `the-session-entry.md` pointer land in their own repos.
+- **docs:** `forge-convergence.md` §6 step 1 ("Papers agree with the code") is struck, and §9 row 10 is settled: willow-mcp's `human_required_*` verbs write through `forge.human_loop`. willow-mcp's `willow-gate-seam.md` status and the Forge's `the-session-entry.md` pointer land in their own repos. (PR 91)
 
 ### Added
 
