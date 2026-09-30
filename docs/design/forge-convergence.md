@@ -573,7 +573,11 @@ box."
   escalation, called only where the code returns ESCALATE (narration at a set
   piece, a join no rule covers). Cloud and egress are declared, metered
   exceptions at flowering (§1.5). This is the sealed code-first ruling (record
-  `flowering-step0-code-first-2026-09-27`, pair d19643da). Operator,
+  `flowering-step0-code-first-2026-09-27`, pair d19643da, sealed by sean
+  campbell; verify with the desk Nestor server's
+  `nestor_provenance("d19643da-2244-4c0e-a69d-dba92de11ef1")`, which returns
+  it sealed with a valid signature. The operator box's `nestor.db` holds the
+  ledger's seal line but no pair row, gap 9981651bfc2c). Operator,
   2026-09-30: "I think you're missing just how much python is built into the
   gamemaster, and how well it works."
 
@@ -584,8 +588,8 @@ box."
 |---|---|---|
 | Campaign vault schemas + chain verifier | safe-app-store `apps/ai-game-master` | built; `docs/poc_vander_room.py` exhibit |
 | GM driver, protocol, ledger sink, registry | safe-app-store `apps/the-table` | walking skeleton; three games verify |
-| `StorySession`, the fourth adapter | `apps/the-table/the_table/story_session.py`, `the_table/worlds.py` (`load_world`, JSON worlds under `worlds/`), `tests/test_story_session.py`; design in `apps/the-table/docs/storysession-design.md`, `docs/homestead-table-vision.md` | built: walks an authored world scene by scene through the unchanged driver and ledger; a decision beat has no legal move and `step()` raises on it, so only `seal()` by a named human passes it. Not built: durable persistence of a seal (its docstring: "a vault, a timeline ... is later work"; `seal()` records in memory only) and the design's store seam (story-timeline atoms, the-binder, ask-jeles) |
-| Forecast engines on the ai-game-master schema | `workshop/fleet-campaign` (`fleet_campaign.py`, `goal_campaign.py` and three more), `workshop/ohio-campaign` (not git trees) | built, stdlib Python only, no model: canon computed from the hash-chained receipt db and git tags at run time; same seed, same digest; a backtest freezes canon at a past date, scores against what happened, learns one knob and re-forecasts beside the unlearned row. Ran 2026-09-03; fleet v2 forecast window 2026-09-04..10, due 2026-09-11, `PENDING` with no grade found (KB 330CE697); Ohio resolves 2027-10-01 (KB 0F0E1C23) |
+| `StorySession`, the fourth adapter | `apps/the-table/the_table/story_session.py`, `the_table/worlds.py` (`load_world`, JSON worlds under `worlds/`), `tests/test_story_session.py`; design in `apps/the-table/docs/storysession-design.md`, `apps/the-table/docs/homestead-table-vision.md` | built: walks an authored world scene by scene through the unchanged driver and ledger; a decision beat has no legal move and `step()` raises on it, so only `seal()` by a named human passes it. Not built: durable persistence of a seal (its docstring: "a vault, a timeline ... is later work"; `seal()` records in memory only) and the design's store seam (story-timeline atoms, the-binder, ask-jeles) |
+| Forecast engines on the ai-game-master schema | `workshop/fleet-campaign` (`fleet_campaign.py`, `goal_campaign.py` and three more), `workshop/ohio-campaign` (not git trees) | built, stdlib Python only, no model (all five campaign engines). `fleet_campaign.py` and `eleven_principle_campaign.py` compute canon from the hash-chained receipt db (and, for fleet, git tags) at run time; `muon_g2_campaign.py` and `dark_matter_floor_campaign.py` seed assumed landmark figures their own docstrings flag as recalled. Same seed, same digest; fleet's backtest freezes canon at a past date, scores against what happened, learns one knob and re-forecasts beside the unlearned row. Ran 2026-09-03; fleet v2 forecast window 2026-09-04..10, due 2026-09-11, `PENDING` with no grade found (KB 330CE697); Ohio resolves 2027-10-01 (KB 0F0E1C23) |
 | Synthetic-life predictions | Nestor `audits/2026-08-19-capability-probe/` (`life-simulation-skips.md`, `life_progression.py` phase 4) | 23 anomalies tabled; predictions never scored ("no outcomes") |
 | Calibration ledger (Brier, reliability, cite-and-grade) | hornbook-knowledge `oakenscrolls-office` | built; no-egress core |
 | Outside facts, local | `almanac-data` (11 verticals, incl. climate) | catalogs, pointers to authoritative datasets |
