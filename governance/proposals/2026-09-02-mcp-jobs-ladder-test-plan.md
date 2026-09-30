@@ -1,6 +1,6 @@
 # Test plan — the MCP jobs ladder
 
-**Status:** proposed · drafted by willow 2026-09-02 · **measurement, not a build** · needs one operator grant: `allow_localhost` for a Kart batch task reaching Ollama
+**Status:** proposed · drafted by willow 2026-09-02 · **measurement, not a build** · needs one operator grant: `allow_localhost` for a Kart batch task reaching Ollama. *(2026-09-30: `allow_localhost` is retired and refused by name; governance record `retire-allow-localhost-2026-09-23`. The batch needs a host runner, e.g. willow-bot's deterministic socket runner, not a Kart grant; forge-convergence.md §6 step 0.)*
 **Build order:** 6 of 6 — see [`2026-09-02-build-order.md`](2026-09-02-build-order.md)
 **Companion:** [`2026-09-02-local-inference-seam.md`](2026-09-02-local-inference-seam.md) — this plan produces the routing table that proposal's harness set is built from.
 **Method lineage:** echo ladder (KB 63858998), format tax (KB D2D71020), lane-4 scoreboard (KB 94D8707B). Same discipline: measured, temperature zero, raw per-call records kept, aggregate recomputed from rows before ingestion.

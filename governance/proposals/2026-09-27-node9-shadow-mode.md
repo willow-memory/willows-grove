@@ -1,6 +1,6 @@
 # Proposal — node9 in shadow mode beside the willow guard
 
-**Status:** ruled by the operator 2026-09-27 ("I agree with your take"): Kart + Bash surfaces, 7-day window, 30-day ledger retention · **not built** · builder dispatch follows the seal
+**Status:** ruled by the operator 2026-09-27 ("I agree with your take"): Kart + Bash surfaces, 7-day window, 30-day ledger retention · **built** in willow-mcp (`src/willow_mcp/node9_shadow.py`, `tests/test_node9_shadow.py`, on master `15ae7b2`; corrected 2026-09-30, the line used to say "not built"). Built is not the same as shadow producing real verdicts; that is measured separately.
 **Builds on:** node9 federated as server `56c491dfe39d` (sealed `37cca612`), with read-only tools granted to willow (sealed `c1ce1f42`, willow-mcp #646)
 **Repos touched:** `willow-memory/willow-mcp` (shim caller + ledger); a small node shim that lives under `$WILLOW_HOME/venvs/node9`
 
