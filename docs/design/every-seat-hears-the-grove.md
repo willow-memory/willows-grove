@@ -24,7 +24,8 @@ from `hooks/client-hooks.json`.
 | The live stream | Grove's served page, `/events/<seat>` (`grove_serve.py`) | a client that can hold a WebSocket |
 | The "last seen" cursor | anchor files kept by `hooks/grove_hook.py` (`_grove_inbox_lines`, :416) | this repo's hook only |
 | Per-prompt surfacing | `prompt_submit → reinject`, five lines per prompt | IDE harness only |
-| Ratatosk | no grove read at all; posts its own wake receipts | — |
+| Ratatosk listener | polls its seat's channel between wakes (`grove_get_history`, last 20, `ratatosk/listener.py:228`) behind its own cursor (`state.cursor`), and wakes the seat on what it finds; posts wake receipts | the listener only |
+| Ratatosk crown (a wake in progress) | nothing read from the grove between model calls | — |
 
 §2 of `forge-convergence.md` already measured why Ratatosk cannot run the
 reinject row: it has no prompt-submit event, and it discards lifecycle hook
@@ -41,9 +42,11 @@ mid-wake, and neither would any other agent that is not an IDE seat here.
   it returned. An unreachable read never moves the cursor.
 - A CLI twin, `willow-mcp grove events --app <id> --follow`, prints one line
   per event so any process can stream it without speaking MCP.
-- The cursor is held server-side per seat. The hook's anchor files move down
-  into willow-mcp rather than being copied: three consumers each holding a
-  cursor (hook, stream, runtime) would either show a message twice or skip it.
+- The cursor is held server-side per seat. Two cursors already exist and move
+  down into willow-mcp rather than being copied: the hook's anchor files and
+  the Ratatosk listener's `state.cursor`. Consumers each holding their own
+  cursor (hook, stream, listener, crown) would either show a message twice or
+  skip it.
 
 **2. Ratatosk polls between model calls.** In the crown's turn loop, before
 each model call, call `grove_events` and append any new lines as one message,
