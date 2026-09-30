@@ -498,9 +498,11 @@ open lines are still build or operator.
    (defined shape, executed, verdict recorded) is done — not when bibliography
    alone is read.
 
-1. **Papers agree with the code.** Correct `willow-gate-seam.md`'s status in
-   willow-mcp. This file resolves the premise's link. The Forge's
-   `the-session-entry.md` becomes a pointer here.
+1. ~~**Papers agree with the code.**~~ **Struck 2026-09-29** (operator:
+   "I do."). willow-mcp `willow-gate-seam.md`'s status line now says what
+   shipped, and its §4 says `session_enter` does not call the binder. The
+   Forge's `docs/design/the-session-entry.md` is a pointer here. §9 row 10 is
+   struck. This file resolves the premise's link.
 2. **The seal and the wiring agree.** Generate the running hook wiring from
    the sealed rows, and pin it. Resolve `stop → gate` (§4).
 3. **One vocabulary.** `forge.tiers` in the Forge. orient reports every §2
@@ -581,7 +583,7 @@ answers.
 | 7 | **Does the Forge take a gate-bound `agent_id` as its `builder_id`?** It would give the Forge its first verified builder identity. It changes what the per-builder checkpoint store is keyed by, so existing stores need a mapping, not a rename. | open | operator · **Tree:** graft branch identity (§1.5) |
 | 8 | **Where the durable binder session lives.** Beside the check-in nonces under `$WILLOW_HOME/gate/`, or in the session record `session_bind` already writes. | open | design, before step 4 |
 | 9 | **Which host is canonical when they disagree?** The IDE harness has every event. Ratatosk is the fleet's own runtime. | open | operator · **Tree:** soil + ledger canonical; pin wiring (§1.5) |
-| 10 | **Do willow-mcp's `human_required_*` verbs write through `forge.human_loop`?** | to verify | a read, before §5 is built on |
+| 10 | ~~Do willow-mcp's `human_required_*` verbs write through `forge.human_loop`?~~ | settled | Yes, read 2026-09-29: willow-mcp `src/willow_mcp/human_loop.py` is `from forge.human_loop import *`, and `server.py`'s `human_required_enqueue`, `_resolve` and `_list` call `human_loop.enqueue`, `.resolve` and `.list_queue` on the SOIL store. |
 
 ## Provenance
 
