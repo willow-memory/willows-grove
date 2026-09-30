@@ -2,6 +2,15 @@
 
 All notable changes land here per INVARIANTS.md §3. Format follows Keep a Changelog v1.1.0.
 
+## [0.12.2](https://github.com/willow-memory/willows-grove/compare/v0.12.1...v0.12.2) (2026-09-30)
+
+
+### Fixed
+
+* **deps:** raise cryptography, aiohttp and starlette floors above the 2026 CVEs ([#97](https://github.com/willow-memory/willows-grove/issues/97)) ([7005893](https://github.com/willow-memory/willows-grove/commit/70058935e168910d01aa6bc84ccf9596bffb828b))
+* **deps:** raise floors above the 2026 CVEs (starlette, cryptography, aiohttp) ([3317ad8](https://github.com/willow-memory/willows-grove/commit/3317ad8ef00c01e07e8f609918942c0057290426))
+* **deps:** raise the same three floors in requirements.txt ([c70c3e8](https://github.com/willow-memory/willows-grove/commit/c70c3e8d8589937da747d9820fc3c265ede5aa9d))
+
 ## [Unreleased]
 
 ### Changed
