@@ -27,6 +27,7 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 ### Fixed
 
 - **seat/willow:** the flowering aggregator's G1 check no longer passes an F-negative that names a seat. When the gold is `ESCALATE`, an answer naming any seat the brief offered fails `names_no_offered_seat`, even if it also says "escalate" (gap 0871bb83d7d5). Seats match as whole words. (PR 89)
+- **tests:** `tests/test_flowering_aggregate_g1.py` pins that G1 rule against the real S-growth-16 fixture: a seat plus an "escalation note" fails, a clean escalation passes, a non-ESCALATE row is unchanged (gap 0871bb83d7d5).
 
 ## [0.12.1](https://github.com/willow-memory/willows-grove/compare/v0.12.0...v0.12.1) (2026-09-22)
 
