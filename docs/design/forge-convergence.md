@@ -578,7 +578,7 @@ box."
 |---|---|---|
 | Campaign vault schemas + chain verifier | safe-app-store `apps/ai-game-master` | built; `docs/poc_vander_room.py` exhibit |
 | GM driver, protocol, ledger sink, registry | safe-app-store `apps/the-table` | walking skeleton; three games verify |
-| `StorySession` (world as atoms, propose→seal, promote→timeline) | `apps/the-table/docs/storysession-design.md`, `docs/homestead-table-vision.md`, `the_table/story_session.py` | design leads code |
+| `StorySession` (world as atoms, propose→seal, promote→timeline) | `apps/the-table/docs/storysession-design.md`, `apps/the-table/docs/homestead-table-vision.md`, `apps/the-table/the_table/story_session.py` | design leads code |
 | Forecast campaigns on the ai-game-master schema | `workshop/fleet-campaign`, `workshop/ohio-campaign` (not git trees) | ran 2026-09-03; fleet v2 forecast window 2026-09-04..10, due 2026-09-11, `PENDING` with no grade found (KB 330CE697); Ohio resolves 2027-10-01 (KB 0F0E1C23) |
 | Synthetic-life predictions | Nestor `audits/2026-08-19-capability-probe/` (`life-simulation-skips.md`, `life_progression.py` phase 4) | 23 anomalies tabled; predictions never scored ("no outcomes") |
 | Calibration ledger (Brier, reliability, cite-and-grade) | hornbook-knowledge `oakenscrolls-office` | built; no-egress core |
