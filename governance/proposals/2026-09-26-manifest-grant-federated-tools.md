@@ -1,6 +1,6 @@
 # Proposal — `manifest.grant` carries federated tool grants
 
-**Status:** ruled **A** by the operator 2026-09-26 ("A") · **not built** · builder dispatch not yet authorized
+**Status:** ruled **A** by the operator 2026-09-26 ("A") · **built** in willow-mcp (the `mcp:<server_id>:<tool>` grammar in `src/willow_mcp/manifest_grant_executor.py` and `manifest_admin.validate_permission`, on master `15ae7b2`; corrected 2026-09-30, the line used to say "not built")
 **Gap:** `133e17b1291f` (recurrence of `6ff907987c41`)
 **Repo touched:** `willow-memory/willow-mcp` (one module, one syscall-table row)
 **Trigger:** node9 was ratified as federated server `56c491dfe39d` (pair `37cca612`) and still cannot be called, because no path on this box can grant `mcp:56c491dfe39d:<tool>` to any seat.
