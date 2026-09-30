@@ -576,8 +576,12 @@ box."
   `flowering-step0-code-first-2026-09-27`, pair d19643da, sealed by sean
   campbell; verify with the desk Nestor server's
   `nestor_provenance("d19643da-2244-4c0e-a69d-dba92de11ef1")`, which returns
-  it sealed with a valid signature. The operator box's `nestor.db` holds the
-  ledger's seal line but no pair row, gap 9981651bfc2c). Operator,
+  it sealed with a valid signature from the operator box's `nestor.db`, the
+  same store willow-mcp reads; gap 9b728da3624f corrects an earlier
+  "store split" reading). The escalation ladder is already built: willow-bot
+  `willow_bot/deterministic/chain.py` `chain_act` runs the D0 resolvers, then
+  one loopback Ollama call under a fixed answer-or-ESCALATE schema, and routes
+  what is left to flowering; it never calls cloud itself. Operator,
   2026-09-30: "I think you're missing just how much python is built into the
   gamemaster, and how well it works."
 
@@ -591,10 +595,12 @@ box."
 | `StorySession`, the fourth adapter | `apps/the-table/the_table/story_session.py`, `the_table/worlds.py` (`load_world`, JSON worlds under `worlds/`), `tests/test_story_session.py`; design in `apps/the-table/docs/storysession-design.md`, `apps/the-table/docs/homestead-table-vision.md` | built: walks an authored world scene by scene through the unchanged driver and ledger; a decision beat has no legal move and `step()` raises on it, so only `seal()` by a named human passes it. Not built: durable persistence of a seal (its docstring: "a vault, a timeline ... is later work"; `seal()` records in memory only) and the design's store seam (story-timeline atoms, the-binder, ask-jeles) |
 | Forecast engines on the ai-game-master schema | `workshop/fleet-campaign` (`fleet_campaign.py`, `goal_campaign.py` and three more), `workshop/ohio-campaign` (not git trees) | built, stdlib Python only, no model (all five campaign engines). `fleet_campaign.py` and `eleven_principle_campaign.py` compute canon from the hash-chained receipt db (and, for fleet, git tags) at run time; `muon_g2_campaign.py` and `dark_matter_floor_campaign.py` seed assumed landmark figures their own docstrings flag as recalled. Same seed, same digest; fleet's backtest freezes canon at a past date, scores against what happened, learns one knob and re-forecasts beside the unlearned row. Ran 2026-09-03; fleet v2 forecast window 2026-09-04..10, due 2026-09-11, `PENDING` with no grade found (KB 330CE697); Ohio resolves 2027-10-01 (KB 0F0E1C23) |
 | Synthetic-life predictions | Nestor `audits/2026-08-19-capability-probe/` (`life-simulation-skips.md`, `life_progression.py` phase 4) | 23 anomalies tabled; predictions never scored ("no outcomes") |
-| Calibration ledger (Brier, reliability, cite-and-grade) | hornbook-knowledge `oakenscrolls-office` | built; no-egress core |
+| Calibration ledger (Brier, reliability, cite-and-grade) | hornbook-knowledge `oakenscrolls-office` (`office_db.py`, `calibration.py`, `almanac_seam.py`) | built; no-egress core. Canonical calibration math; Forge `forge/calibration.py` is a vendored copy |
+| Learner model | hornbook-knowledge `UTETY` (`utety/core/mastery.py`: `BKTParams`, `predict_correct`, `update`; `core/store.py` outcomes; `subject_consent`) | built, on-device, no egress (`tests/test_no_egress.py`). Inference only; the Baum-Welch `fit()` lives in willow-2.0 `core/bkt.py` (KB ABA1C019). `predict_correct` is a probability OakenScrolls can score |
+| Suggestion pipeline | safe-app-store `apps/story-timeline/intelligence.py` | built: Jeles research + KB context + a model call with a heuristic fallback, writing suggestions with a confidence and sources. Its `infer_7b` names a tool no current willow-mcp exposes, so it falls back silently |
 | Outside facts, local | `almanac-data` (11 verticals, incl. climate) | catalogs, pointers to authoritative datasets |
 | Outside facts, egress | Jeles corpus, federated (`8cae3d1dcdf4`) | `corpus_institutional_search` works (6 of 10 primary, KB F481FA45); `corpus_verify_claim` does not (KB 0D2AC260) |
-| The world | willow-mcp `docs/story` ch. 1–7; UTETY campus canon | seed format: every named function exists or is a dare |
+| The world | willow-mcp `docs/story` ch. 1–8; UTETY campus canon (KB 052B011F gate, 0CCF6BB4 observatory, FF00C551 Dreamery, 71E12CBD Bureau of Continuity) | seed format: every named function exists or is a dare |
 
 **Steps.**
 
@@ -647,10 +653,19 @@ T5. **Outside facts.** A forecast resolves first against local almanac-data
     `corpus_verify_claim` stays out until its three gaps close (76c799a0377e,
     9b1758cf522b, f49e487971c7).
 T6. **Hornbook at the table.** Jeles for lore on demand (`ask-jeles` corpus),
-    the-binder for what each seat recognizes (safe-app-store `apps/the-binder`,
-    its `the-binder/entities` collection), UTETY for the campus the story walks
-    through. Each joins through the StorySession store seam, never by import.
-T7. **The test.** The engine plays forward from the chapters, forecasts, and
+    the-binder for what each seat recognizes, UTETY for the campus the story
+    walks through. Each joins through the StorySession store seam, never by
+    import. The public the-binder (safe-app-store `apps/the-binder`) is only
+    `willow_read.search` over an injected client: it has no entities or
+    recognition code and there is no `the-binder/entities` collection, so
+    recognition is a build, not a join.
+T7. **The test.** The subject is staged (operator, 2026-09-30, "Both, in
+    stages"): first fictional characters, with the learner model keyed on
+    `character_id`/`proposed_by`, so the Table's law ("does not record who
+    was present or how a person behaved", `apps/the-table/docs/homestead-table-vision.md:71`)
+    holds; then the operator's own sealing behaviour, only after a recorded
+    `subject_consent` grant (relation `self`, scope `person_inference`).
+    The engine plays forward from the chapters, forecasts, and
     the operator grades. The protocol is pre-registered before T7 runs, the
     same discipline as step 0: the pinned doc claim, hypotheses, what counts as
     a learned *x*→*y* join, the calibration bar, and a baseline for any hit
@@ -713,7 +728,7 @@ answers.
 | 8 | **Where the durable binder session lives.** Beside the check-in nonces under `$WILLOW_HOME/gate/`, or in the session record `session_bind` already writes. | open | design, before step 4 |
 | 9 | **Which host is canonical when they disagree?** The IDE harness has every event. Ratatosk is the fleet's own runtime. | open | operator · **Tree:** soil + ledger canonical; pin wiring (§1.5) |
 | 10 | ~~Do willow-mcp's `human_required_*` verbs write through `forge.human_loop`?~~ | settled | Yes, read 2026-09-29: willow-mcp `src/willow_mcp/human_loop.py` is `from forge.human_loop import *`, and `server.py`'s `human_required_enqueue`, `_resolve` and `_list` call `human_loop.enqueue`, `.resolve` and `.list_queue` on the SOIL store. |
-| 11 | **Where the Table's ledger lives.** the-table's `LedgerSink` writes ai-game-master's copy of the hash chain (pattern-ported from Nestor's `ledger.py`). Does the Table keep that copy, or write through Nestor's own ledger so a seal is verified by the same code everywhere? | open | decide before §6a T3 |
+| 11 | ~~Where the Table's ledger lives.~~ | settled | The Table keeps the ai-game-master chain: it is built for isolated boxes, has its own verifier (`bootstrap/verify_ledger.py`), and three games already verify on it. Writing through Nestor would need new `LEDGER_KINDS`, uses a different hash scheme (JSONL `prev` over line bytes), and mirrors to FRANK on the operator box. The chain gains a head anchor. Nestor is used only for the operator's T7 pre-registration seal. In the convergence plan the operator approved 2026-09-30 (stack record `convergence-plan-2026-09-30`). |
 
 ## Provenance
 
