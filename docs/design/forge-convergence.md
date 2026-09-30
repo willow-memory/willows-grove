@@ -421,7 +421,13 @@ Subagents and fleet dispatches use their own `app_id` and repo root (`hanuman`,
 Each step reports before the next one acts on it. Struck lines are landings;
 open lines are still build or operator.
 
-0. **Growth, pools, and the flowering threshold (before §6 1–9).** Operator,
+0. ~~**Growth, pools, and the flowering threshold (before §6 1–9).**~~
+   **Struck 2026-09-29:** "Lets keep the tree", sealed pair bfe001f7
+   (record `desk-keeps-the-tree-2026-09-29`). v2 on the operator's sheet: 14/15
+   grown, 0.07 cloud/act against cloud-first's 1.0; the chain run since reached
+   15/15 at 0.0. Results in
+   [`forge-convergence-flowering-experiment.md`](forge-convergence-flowering-experiment.md)
+   §9 and §13. Steps 1–10 are open to build. Operator,
    2026-09-23–24: the fleet built deterministic bands and local paths, but they
    are not the hot path; cloud still carries routine work. §1.5 names the target:
    **one soil**, **collection pools**, **local *x*→*y* joins** during growth,
@@ -516,6 +522,14 @@ open lines are still build or operator.
    made from `forge-play/forge-workshop` runs the flowchart from its first
    session. Hooks are per-checkout; the template is how the machine reaches
    a new project.
+10. **Every seat hears the grove.** Operator, 2026-09-30: "Not as a claude
+    tool, but as something any agent can use." willow-mcp holds one
+    `grove_events` verb and each seat's cursor; Ratatosk reads it between
+    model calls (with step 7); Grove's `/events/<seat>` stream and the
+    reinject row read through the same cursor. Written up in
+    [`every-seat-hears-the-grove.md`](every-seat-hears-the-grove.md).
+    Forge project: `fleet-spine`, joint 8, beside its open joint 7 (Forge
+    checkpoints gate a crown turn).
 
 ## 7. Held
 

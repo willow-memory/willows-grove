@@ -109,3 +109,13 @@ and a D0 routing rule would emit willow. Field reads (01–03) still expect the
    is right here. For model rows, `aggregate.py`'s G1 check passes 16 when the
    answer contains "escalate" and cites the excerpt. No willow-bot change is
    needed.
+
+## Chain runs (2026-09-30)
+
+The chain ran over this set as one pipeline: D0, then the local tier, then flowering. Full write-up: `docs/design/forge-convergence-flowering-experiment.md` §13.
+
+- **Final run, `runs/chain-v2-gpu-cite-fix-20260930T024936Z.jsonl`:** 13 closed by code, 2 by the local model, 0 flowering. That is 15/15 grown, cloud/act 0.0.
+- **Item 3 above is superseded twice over:**
+  - D0 now routes 13, 14 and 16 to willow in code (gap 82897b2f507e), so no model sees 16.
+  - `aggregate.py` fails an F-negative that names an offered seat (willows-grove #89, gap 0871bb83d7d5).
+- The fixtures are unchanged. Their `expected` blocks still name hanuman, loki and ESCALATE for 13, 14 and 16, and the routed rows are scored against the ruling instead.
