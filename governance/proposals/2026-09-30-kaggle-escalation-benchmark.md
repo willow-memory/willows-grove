@@ -1,6 +1,6 @@
 # Proposal — the escalation benchmark, on Kaggle
 
-**Status:** proposed · drafted by willow 2026-09-30 at the operator's word ("lets do it") · **new scope, beside forge-convergence Phase 2, not inside it**
+**Status:** ruled by the operator 2026-09-30 ("1. no fleet 2. Include 3. Agreed 4. Forge"): no fleet artifact of any kind, local arm included, one kaggle.com lease for step 3, fixtures in the Forge · drafted by willow 2026-09-30 at the operator's word ("lets do it") · **new scope, beside forge-convergence Phase 2, not inside it**
 **Occasion:** DEV × Kaggle Benchmarking Challenge. Submissions close **2026-10-11 23:59 PDT**; winners 2026-11-05. One submission per person. It must link a benchmark on Kaggle, and it is judged on insight, writing and creativity (DEV newsletter 2026-09-29; MLH mail 2026-09-23).
 **Parent plan:** [`2026-09-02-mcp-jobs-ladder-test-plan.md`](2026-09-02-mcp-jobs-ladder-test-plan.md). This proposal publishes that plan's **escalation column** as a public benchmark.
 
@@ -74,6 +74,15 @@ These are stated before any fixture exists, so they can be graded afterwards:
 2. **Include the local arm** (recommended; it's the story), or submit a Kaggle-only benchmark?
 3. **Egress lease** for the Kaggle upload and runs, scoped to kaggle.com, for the window of step 3.
 4. **Where the public fixtures live:** a new repo under the operator's account, or the Forge.
+
+**Rulings (operator, 2026-09-30):**
+
+1. No fleet artifacts.
+2. Include the local arm.
+3. The lease is agreed.
+4. The fixtures live in the Forge.
+
+Because the Forge will hold public fixtures, its visibility is checked before step 1 is briefed. Every file under the benchmark directory is held to the same grep gate as the upload.
 
 ## Out of scope
 
