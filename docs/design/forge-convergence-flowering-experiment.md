@@ -367,6 +367,60 @@ operator desk `kart-sandbox.json` instance pattern; do not block step **0**.
 
 ---
 
+## 13. The deterministic chain, first runs (2026-09-30)
+
+**Added after the fact.** This section does not edit §1–§9. It records the first link built after step 0: D0, then the local tier, then flowering, run as one pipeline. It was ratified 2026-09-29 ("Lets build it") as the first link of §12's chain.
+
+**What runs.** willow-bot `willow-bot-deterministic chain` (host) and `chain-client` (Kart, through the serve socket).
+- D0 runs first.
+- Only a D0 `escalate` reaches the local tier: one loopback Ollama call whose `format` is a JSON schema. `ESCALATE` is always a valid status (gap 81451b988833).
+- A local escalate, an off-schema reply, a cite outside the pool (`link_fail`) or an unreachable tier becomes a `flowering` row addressed to willow.
+- `local_unreachable` is its own reason, never counted as an escalation.
+- The chain never calls a cloud model.
+
+**D0 routing rule.** A G1 brief that opens with "Route" closes in code to `willow`, with status `routed`. This follows the operator, 2026-09-29: "Everything goes through Willow. Willow is the orchestrator." (draft pair be0b6a1e; gap 82897b2f507e).
+- Routed rows are scored against that ruling, as the operator's sheet already did.
+- They are not scored against the frozen `expected.to_app` of 13, 14 and 16. So `resolved` precision stays a measurement against each fixture's own gold.
+
+**Code.**
+- willow-bot #75 (chain and routing rule).
+- willow-bot #77, the cite-example fix (gap c2f925577c39). #77 was audited before merge (Loki AEC0E753, PASS).
+- willows-grove #89: the aggregator now fails an F-negative that names a seat (gap 0871bb83d7d5).
+
+**Runs.** v2 fixtures, willow-lane4-3b. Raw rows are in `runs/`, copied verbatim from `$WILLOW_HOME/willow-bot/runs/`.
+
+| Run | File | Code | Local | Flowering | Grown | cloud/act ≤ |
+|---|---|---|---|---|---|---|
+| CPU | `chain-v2-cpu-20260930T022424Z.jsonl` | 13 | 1 | 1 (`link_fail`, 15) | 14/15 | 0.067 |
+| GPU | `chain-v2-gpu-20260930T023059Z.jsonl` | 13 | 1 | 1 (`link_fail`, 15) | 14/15 | 0.067 |
+| GPU + #77 | `chain-v2-gpu-cite-fix-20260930T024936Z.jsonl` | 13 | 2 | 0 | **15/15** | **0.0** |
+
+Counted acts: 15. G4 (S-growth-10) is excluded from *T* (§5); D0 returns it as `flowering_required` to hanuman.
+
+- D0 precision is 13/13 on every run: 10 resolved or verbatim against fixture gold, plus 3 routed against the ruling.
+- The machine check passes both local answers (06 G2, 15 G3).
+- S-growth-15 went to flowering on the first two runs only because the model copied `<…>` from the prompt's placeholder example. The answer itself was on point. #77 shows a real pool id instead.
+
+**The number that decides the tree (§1, layer B):** `cloud_invocations / act` under growth-first is **0.0** on the chain run, against 0.07 in §9 and 1.0 for P-cloud.
+
+**Operator rubric pending.** This is not yet a verdict.
+- S-growth-15's local answer ("Draft a new gap for nestor_draft: an env fault obliges re-running everything under it — the R0 arm … is not achievable as-built.") passes the machine check. §5 still requires rubric ≥ 3 for G3, and the phrasing reads as a directive more than a question.
+- S-growth-06 (G2) has no rubric floor, but the operator's sheet scores it.
+
+**Box facts learned.**
+- **GPU.** Ollama had fallen back to CPU at boot (`inference compute id=cpu`, 2026-09-27 19:29). It started before the NVIDIA device nodes existed.
+  - Fixed 2026-09-30 by rewriting `ollama.service.d/gpu.conf` with `ExecStartPre=+/usr/bin/nvidia-smi -L` and `After=nvidia-persistenced.service`. Ollama now reports `CUDA0 … NVIDIA T500 … 4.0 GiB`.
+  - Local call latency: 17–22 s on CPU, 5–9 s on GPU once loaded. The first call after an idle unload costs about 60 s.
+- **Pre-merge audits.** Sealed pair 8d4296b5: "Audits always come pre-merge." The free-ladder pre-merge audits of #75 and willow-mcp #682 could not see the core files (gap 35de4ffe9b00). The Cursor-seat audits did.
+
+**Open on this chain (gap da93c749120b, from AEC0E753).**
+- Every v2 fixture carries one excerpt, so the prompt's example (always the first pool id) cannot show a first-excerpt habit.
+- G2 scoring ignores cites.
+- An excerpt with no id renders as `[ex]` but drops out of the pool.
+- The next fixture set needs multi-excerpt acts where the right cite is not the first.
+
+---
+
 ## Provenance
 
 Protocol drafted 2026-09-24 for operator box flowering gate. Desk probes and
