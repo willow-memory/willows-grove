@@ -2,7 +2,8 @@
 
 **b17: WGRV1 ΔΣ=42** · proposed 2026-09-23 by vishwakarma · root ratifies
 
-**Status:** proposal. Nothing here is built. The organizing model for step **0**
+**Status:** in progress. §6 steps 0 and 1 are struck (landed); §6a (the Table)
+runs before step 2; the rest of §6 is open. The organizing model for step **0**
 and cloud use is **§1.5** (one tree, one soil; growth vs flowering).
 
 `willow-grove-premise.md` has linked to this file since before it existed, as
@@ -447,7 +448,9 @@ open lines are still build or operator.
    the **specific shape** of the flowering-threshold protocol next (scenarios,
    pass/fail, what counts as "enough in one place," what escalation markers
    force cloud). Until that protocol is written, run once, and signed off, §6
-   **1–9** stay open. Pre-registered protocol:
+   **1–9** stay open. *(Met 2026-09-29: the protocol ran and step 0 is struck,
+   sealed pair bfe001f7, so this gate is closed; step 1 has since landed.)*
+   Pre-registered protocol:
    [`forge-convergence-flowering-experiment.md`](forge-convergence-flowering-experiment.md)
    (hypotheses, materials, tests T0–T6, expected findings E1–E6, post-run §9).
    Operator completes §8 sign-off there before T0.
