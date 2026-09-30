@@ -571,8 +571,22 @@ box."
 - **The machine proposes; a named human seals.** A prediction stays a
   prediction and an outcome stays an outcome. Only the operator seals an
   outcome (ai-game-master `docs/DECISION.md` §6, "No machine-sealed canon").
-- **Local by default.** Local models do the growth. Cloud and egress are
-  declared, metered exceptions at flowering (§1.5).
+- **Code first.** Python does the growth: the world walk, the dice, canon read
+  from the record, the forecasts and their backtests. Local models are the
+  escalation, called only where the code returns ESCALATE (narration at a set
+  piece, a join no rule covers). Cloud and egress are declared, metered
+  exceptions at flowering (§1.5). This is the sealed code-first ruling (record
+  `flowering-step0-code-first-2026-09-27`, pair d19643da, sealed by sean
+  campbell; verify with the desk Nestor server's
+  `nestor_provenance("d19643da-2244-4c0e-a69d-dba92de11ef1")`, which returns
+  it sealed with a valid signature from the operator box's `nestor.db`, the
+  same store willow-mcp reads; gap 9b728da3624f corrects an earlier
+  "store split" reading). The escalation ladder is already built: willow-bot
+  `willow_bot/deterministic/chain.py` `chain_act` runs the D0 resolvers, then
+  one loopback Ollama call under a fixed answer-or-ESCALATE schema, and routes
+  what is left to flowering; it never calls cloud itself. Operator,
+  2026-09-30: "I think you're missing just how much python is built into the
+  gamemaster, and how well it works."
 
 **What already exists** (read 2026-09-30; record
 `table-forecast-convergence-inputs-2026-09-30`):
@@ -581,13 +595,15 @@ box."
 |---|---|---|
 | Campaign vault schemas + chain verifier | safe-app-store `apps/ai-game-master` | built; `docs/poc_vander_room.py` exhibit |
 | GM driver, protocol, ledger sink, registry | safe-app-store `apps/the-table` | walking skeleton; three games verify |
-| `StorySession` (world as atoms, propose→seal, promote→timeline) | `apps/the-table/docs/storysession-design.md`, `apps/the-table/docs/homestead-table-vision.md`, `apps/the-table/the_table/story_session.py` | design leads code |
-| Forecast campaigns on the ai-game-master schema | `workshop/fleet-campaign`, `workshop/ohio-campaign` (not git trees) | ran 2026-09-03; fleet v2 forecast window 2026-09-04..10, due 2026-09-11, `PENDING` with no grade found (KB 330CE697); Ohio resolves 2027-10-01 (KB 0F0E1C23) |
+| `StorySession`, the fourth adapter | `apps/the-table/the_table/story_session.py`, `the_table/worlds.py` (`load_world`, JSON worlds under `worlds/`), `tests/test_story_session.py`; design in `apps/the-table/docs/storysession-design.md`, `apps/the-table/docs/homestead-table-vision.md` | built: walks an authored world scene by scene through the unchanged driver and ledger; a decision beat has no legal move and `step()` raises on it, so only `seal()` by a named human passes it. Not built: durable persistence of a seal (its docstring: "a vault, a timeline ... is later work"; `seal()` records in memory only) and the design's store seam (story-timeline atoms, the-binder, ask-jeles) |
+| Forecast engines on the ai-game-master schema | `workshop/fleet-campaign` (`fleet_campaign.py`, `goal_campaign.py` and three more), `workshop/ohio-campaign` (not git trees) | built, stdlib Python only, no model (all five campaign engines). `fleet_campaign.py` and `eleven_principle_campaign.py` compute canon from the hash-chained receipt db (and, for fleet, git tags) at run time; `muon_g2_campaign.py` and `dark_matter_floor_campaign.py` seed assumed landmark figures their own docstrings flag as recalled. Same seed, same digest; fleet's backtest freezes canon at a past date, scores against what happened, learns one knob and re-forecasts beside the unlearned row. Ran 2026-09-03; fleet v2 forecast window 2026-09-04..10, due 2026-09-11, `PENDING` with no grade found (KB 330CE697); Ohio resolves 2027-10-01 (KB 0F0E1C23) |
 | Synthetic-life predictions | Nestor `audits/2026-08-19-capability-probe/` (`life-simulation-skips.md`, `life_progression.py` phase 4) | 23 anomalies tabled; predictions never scored ("no outcomes") |
-| Calibration ledger (Brier, reliability, cite-and-grade) | hornbook-knowledge `oakenscrolls-office` | built; no-egress core |
+| Calibration ledger (Brier, reliability, cite-and-grade) | hornbook-knowledge `oakenscrolls-office` (`office_db.py`, `calibration.py`, `almanac_seam.py`) | built; no-egress core. Canonical calibration math; Forge `forge/calibration.py` is a vendored copy |
+| Learner model | hornbook-knowledge `UTETY` (`utety/core/mastery.py`: `BKTParams`, `predict_correct`, `update`; `core/store.py` outcomes; `subject_consent`) | built, on-device, no egress (`tests/test_no_egress.py`). Inference only; the Baum-Welch `fit()` lives in willow-2.0 `core/bkt.py` (KB ABA1C019). `predict_correct` is a probability OakenScrolls can score |
+| Suggestion pipeline | safe-app-store `apps/story-timeline/intelligence.py` | built: Jeles research + KB context + a model call with a heuristic fallback, writing suggestions with a confidence and sources. Its `infer_7b` names a tool no current willow-mcp exposes, so it falls back silently |
 | Outside facts, local | `almanac-data` (11 verticals, incl. climate) | catalogs, pointers to authoritative datasets |
 | Outside facts, egress | Jeles corpus, federated (`8cae3d1dcdf4`) | `corpus_institutional_search` works (6 of 10 primary, KB F481FA45); `corpus_verify_claim` does not (KB 0D2AC260) |
-| The world | willow-mcp `docs/story` ch. 1–7; UTETY campus canon | seed format: every named function exists or is a dare |
+| The world | willow-mcp `docs/story` ch. 1–8; UTETY campus canon (KB 052B011F gate, 0CCF6BB4 observatory, FF00C551 Dreamery, 71E12CBD Bureau of Continuity) | seed format: every named function exists or is a dare |
 
 **Steps.**
 
@@ -607,20 +623,30 @@ T2. **Grade what is already due.** The fleet-campaign v2 forecast window
     until it resolves 2027-10-01, then takes the same path. The Nestor
     synthetic-life predictions have no outcomes to grade; they are recorded
     here as calibration debt, not scored.
-T3. **StorySession on local models.** Build the reader the design draws: it
-    plays the story chapters and the UTETY canon as its world, through
-    the-table's unchanged driver and ledger, with local models for growth and
-    a heavier model only at set pieces. The players are never written down.
-    **Before T3 builds:** decide the ledger home. the-table's `LedgerSink`
-    writes ai-game-master's copy of the hash chain, not Nestor's own ledger
-    (demo-survey gap). §9 row 11.
-T4. **The forecast lane.** Three dares chapter 8 names:
+T3. **StorySession plays the story.** The reader exists; what it needs is:
+    - **A world:** the story chapters and the UTETY canon authored as a world
+      JSON that `load_world` validates, with the threads carried in the
+      world's scenes and beats, not in a model's context.
+    - **A durable seal:** a sealed fact written through to the campaign box's
+      canon table and ledger, so it outlasts the session. Decide the ledger
+      home first: the-table's `LedgerSink` writes ai-game-master's copy of the
+      hash chain, not Nestor's own ledger (demo-survey gap; §9 row 11).
+    - **Narration at the escalation points only:** a local model voices a set
+      piece or answers a join no rule covers, and its output is a draft the
+      world does not depend on.
+
+    The players are never written down.
+T4. **The forecast lane.** The fleet-campaign engines already do the
+    forecasting: canon from the record, `PENDING` forecasts, backtests that
+    learn. T4 joins them to the table and names the three dares chapter 8
+    uses:
     - `forecast()` seals a prediction into the ledger before the outcome.
     - `seal_outcome()` is the operator's seal on what happened.
     - `read_misses()` clusters the misses, not only counts them.
 
-    StorySession's `PENDING` rows feed OakenScrolls. The score is calibration
-    (Brier, reliability), not hit rate alone.
+    `PENDING` rows from StorySession and the campaign engines feed
+    OakenScrolls. The score is calibration (Brier, reliability), not hit rate
+    alone.
 T5. **Outside facts.** A forecast resolves first against local almanac-data
     clones (OakenScrolls cite-and-grade: no network, the catalog commit that
     vouched pinned to the grade). Only where no clone settles it does Jeles'
@@ -630,10 +656,19 @@ T5. **Outside facts.** A forecast resolves first against local almanac-data
     `corpus_verify_claim` stays out until its three gaps close (76c799a0377e,
     9b1758cf522b, f49e487971c7).
 T6. **Hornbook at the table.** Jeles for lore on demand (`ask-jeles` corpus),
-    the-binder for what each seat recognizes (safe-app-store `apps/the-binder`,
-    its `the-binder/entities` collection), UTETY for the campus the story walks
-    through. Each joins through the StorySession store seam, never by import.
-T7. **The test.** The engine plays forward from the chapters, forecasts, and
+    the-binder for what each seat recognizes, UTETY for the campus the story
+    walks through. Each joins through the StorySession store seam, never by
+    import. The public the-binder (safe-app-store `apps/the-binder`) is only
+    `willow_read.search` over an injected client: it has no entities or
+    recognition code and there is no `the-binder/entities` collection, so
+    recognition is a build, not a join.
+T7. **The test.** The subject is staged (operator, 2026-09-30, "Both, in
+    stages"): first fictional characters, with the learner model keyed on
+    `character_id`/`proposed_by`, so the Table's law ("does not record who
+    was present or how a person behaved", `apps/the-table/docs/homestead-table-vision.md:71`)
+    holds; then the operator's own sealing behaviour, only after a recorded
+    `subject_consent` grant (relation `self`, scope `person_inference`).
+    The engine plays forward from the chapters, forecasts, and
     the operator grades. The protocol is pre-registered before T7 runs, the
     same discipline as step 0: the pinned doc claim, hypotheses, what counts as
     a learned *x*→*y* join, the calibration bar, and a baseline for any hit
@@ -641,7 +676,8 @@ T7. **The test.** The engine plays forward from the chapters, forecasts, and
     sealed Nestor pair naming it, not prose alone. The misses are read as the
     map, not only scored.
 
-T1 and T2 need nothing new. T3 through T6 are builds, one packet at a time.
+T1 and T2 need nothing new. T3 through T6 are builds on built engines, one
+packet at a time.
 T7 is the verdict.
 
 ## 7. Held
@@ -695,7 +731,7 @@ answers.
 | 8 | **Where the durable binder session lives.** Beside the check-in nonces under `$WILLOW_HOME/gate/`, or in the session record `session_bind` already writes. | open | design, before step 4 |
 | 9 | **Which host is canonical when they disagree?** The IDE harness has every event. Ratatosk is the fleet's own runtime. | open | operator · **Tree:** soil + ledger canonical; pin wiring (§1.5) |
 | 10 | ~~Do willow-mcp's `human_required_*` verbs write through `forge.human_loop`?~~ | settled | Yes, read 2026-09-29: willow-mcp `src/willow_mcp/human_loop.py` is `from forge.human_loop import *`, and `server.py`'s `human_required_enqueue`, `_resolve` and `_list` call `human_loop.enqueue`, `.resolve` and `.list_queue` on the SOIL store. |
-| 11 | **Where the Table's ledger lives.** the-table's `LedgerSink` writes ai-game-master's copy of the hash chain (pattern-ported from Nestor's `ledger.py`). Does the Table keep that copy, or write through Nestor's own ledger so a seal is verified by the same code everywhere? | open | decide before §6a T3 |
+| 11 | ~~Where the Table's ledger lives.~~ | settled | The Table keeps the ai-game-master chain: it is built for isolated boxes, has its own verifier (`bootstrap/verify_ledger.py`), and three games already verify on it. Writing through Nestor would need new `LEDGER_KINDS`, uses a different hash scheme (JSONL `prev` over line bytes), and mirrors to FRANK on the operator box. The chain gains a head anchor. Nestor is used only for the operator's T7 pre-registration seal. In the convergence plan the operator approved 2026-09-30 (stack record `convergence-plan-2026-09-30`). |
 
 ## Provenance
 
