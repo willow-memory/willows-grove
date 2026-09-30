@@ -24,7 +24,7 @@ from `hooks/client-hooks.json`.
 | The live stream | Grove's served page, `/events/<seat>` (`grove_serve.py`) | a client that can hold a WebSocket |
 | The "last seen" cursor | anchor files kept by `hooks/grove_hook.py` (`_grove_inbox_lines`, :416) | this repo's hook only |
 | Per-prompt surfacing | `prompt_submit → reinject`, five lines per prompt | IDE harness only |
-| Ratatosk listener | polls its seat's channel between wakes (`grove_get_history`, last 20, `ratatosk/listener.py:228`) behind its own cursor (`state.cursor`), and wakes the seat on what it finds; posts wake receipts | the listener only |
+| Ratatosk listener | polls its seat's channel between wakes (`grove_get_history`, last 20, `ratatosk/listener.py:232`) behind its own cursor (`state.cursor`), and wakes the seat on what it finds; posts wake receipts | the listener only |
 | Ratatosk crown (a wake in progress) | nothing read from the grove between model calls | — |
 
 §2 of `forge-convergence.md` already measured why Ratatosk cannot run the
