@@ -541,10 +541,13 @@ Operator, 2026-09-30:
 > lets do it, because I have built the system for so long, it's time to
 > prove it works for a human on local models.
 
-This block runs **before §6 step 2**. It moves the AI-Gamemaster test out of
-the flowering experiment's "far horizon" (its §11) and makes it the next
-build. The claim under test is the one the docs make and have never measured:
-the system learns about a person. The test runs **as fiction and in
+This block runs **before §6 step 2**, and after step 1, which landed
+2026-09-30 (willows-grove #91, willow-mcp #686, Forge #34). It moves the
+AI-Gamemaster test out of the flowering experiment's "far horizon" (its §11)
+and makes it the next build. The claim under test is one the operator states
+the docs make and have never measured: the system learns about a person. The
+doc and line are not yet pinned; T7's protocol pins them before T7 runs. The
+test runs **as fiction and in
 isolation**. The operator, 2026-09-30: "You don't need my real life, I promise
 it's built into it, if you just read the actual stories. SO, we're going to
 continue what is already there, as a fiction, so we don't have to touch my
@@ -556,7 +559,9 @@ box."
   content is not. Run boxes live outside every git tree (record
   `learns-about-you-test-constraints-2026-09-30`). What can be committed is the
   protocol, the code with synthetic or no fixtures, and aggregate verdicts that
-  quote no content.
+  quote no content. The flowering experiment is the counterexample: its runs
+  are committed under this repo's `seat/willow/experiments/`. A T-step's run
+  box never goes there, or anywhere else in a git tree.
 - **Isolated.** A T-step's box, Nestor store and ledger are its own. Nothing it
   learns crosses into the operator box's SOIL, KB, orientation or handoffs.
   Only aggregates return to the desk.
@@ -573,29 +578,39 @@ box."
 |---|---|---|
 | Campaign vault schemas + chain verifier | safe-app-store `apps/ai-game-master` | built; `docs/poc_vander_room.py` exhibit |
 | GM driver, protocol, ledger sink, registry | safe-app-store `apps/the-table` | walking skeleton; three games verify |
-| `StorySession` (world as atoms, propose→seal, promote→timeline) | `apps/the-table/docs/storysession-design.md`, `the_table/story_session.py` | design leads code |
-| Forecast campaigns on the ai-game-master schema | `workshop/fleet-campaign`, `workshop/ohio-campaign` (not git trees) | ran 2026-09-03; fleet v2 forecast due 2026-09-11, no resolution on record |
+| `StorySession` (world as atoms, propose→seal, promote→timeline) | `apps/the-table/docs/storysession-design.md`, `docs/homestead-table-vision.md`, `the_table/story_session.py` | design leads code |
+| Forecast campaigns on the ai-game-master schema | `workshop/fleet-campaign`, `workshop/ohio-campaign` (not git trees) | ran 2026-09-03; fleet v2 forecast window 2026-09-04..10, due 2026-09-11, `PENDING` with no grade found (KB 330CE697); Ohio resolves 2027-10-01 (KB 0F0E1C23) |
+| Synthetic-life predictions | Nestor `audits/2026-08-19-capability-probe/` (`life-simulation-skips.md`, `life_progression.py` phase 4) | 23 anomalies tabled; predictions never scored ("no outcomes") |
 | Calibration ledger (Brier, reliability, cite-and-grade) | hornbook-knowledge `oakenscrolls-office` | built; no-egress core |
-| Outside facts, local | `almanac-data` (13 verticals, incl. climate) | catalogs, pointers to authoritative datasets |
+| Outside facts, local | `almanac-data` (11 verticals, incl. climate) | catalogs, pointers to authoritative datasets |
 | Outside facts, egress | Jeles corpus, federated (`8cae3d1dcdf4`) | `corpus_institutional_search` works (6 of 10 primary, KB F481FA45); `corpus_verify_claim` does not (KB 0D2AC260) |
 | The world | willow-mcp `docs/story` ch. 1–7; UTETY campus canon | seed format: every named function exists or is a dare |
 
 **Steps.**
 
-T1. **The story keeps its word.** The README promises one `.py` hit for
-    "Girth erupted." There are two: `src/willow_mcp/tree_view.py:120` and
+T1. **The story keeps its word.** The story README and the comment at
+    `src/willow_mcp/tree_view.py:118-119` both promise one `.py` hit for
+    "Girth erupted." There are two: `tree_view.py:120` and
     `docs/repatriation/engine/voices_seed.py:84`. Split the quoted copy the way
     `tests/test_tree_view.py:160` does, pin the invariant repo-wide with a
-    test, and correct the chapters' `:121`. Chapter 8, "The Table", lands
-    after this, since it names the invariant.
-T2. **Grade what is already due.** The fleet-campaign v2 forecast
-    (2026-09-04..10) resolved 2026-09-11 with no grade on record. The operator
-    seals each outcome, and OakenScrolls scores it. These are the engine's
-    first real outcomes.
+    test, and correct the chapters' `:121`. **Exit:** chapter 8, "The Table"
+    (drafted 2026-09-30, uncommitted), lands as
+    `docs/story/chapter-08-the-table.md` with its README row, after the pin,
+    since it names the invariant.
+T2. **Grade what is already due.** The fleet-campaign v2 forecast window
+    (2026-09-04..10) came due 2026-09-11 and sits `PENDING` with no grade found
+    (KB 330CE697). The operator seals each outcome, and OakenScrolls scores it.
+    These are the engine's first real outcomes. The Ohio forecast stays parked
+    until it resolves 2027-10-01, then takes the same path. The Nestor
+    synthetic-life predictions have no outcomes to grade; they are recorded
+    here as calibration debt, not scored.
 T3. **StorySession on local models.** Build the reader the design draws: it
     plays the story chapters and the UTETY canon as its world, through
     the-table's unchanged driver and ledger, with local models for growth and
     a heavier model only at set pieces. The players are never written down.
+    **Before T3 builds:** decide the ledger home. the-table's `LedgerSink`
+    writes ai-game-master's copy of the hash chain, not Nestor's own ledger
+    (demo-survey gap). §9 row 11.
 T4. **The forecast lane.** Three dares chapter 8 names:
     - `forecast()` seals a prediction into the ledger before the outcome.
     - `seal_outcome()` is the operator's seal on what happened.
@@ -606,17 +621,22 @@ T4. **The forecast lane.** Three dares chapter 8 names:
 T5. **Outside facts.** A forecast resolves first against local almanac-data
     clones (OakenScrolls cite-and-grade: no network, the catalog commit that
     vouched pinned to the grade). Only where no clone settles it does Jeles'
-    institutional search run, under an egress lease, with the operator's seal
-    on the result. `corpus_verify_claim` stays out until its three gaps close
-    (76c799a0377e, 9b1758cf522b, f49e487971c7).
-T6. **Hornbook at the table.** Jeles for lore on demand, the-binder for what
-    each seat recognizes, UTETY for the campus the story walks through. Each
-    joins through the StorySession store seam, never by import.
+    institutional search run. **Precondition:** an active egress lease for the
+    seat and the operator's `consent.internet`, checked at the call, never
+    assumed (willow's lease expired 2026-09-27). The operator seals the result.
+    `corpus_verify_claim` stays out until its three gaps close (76c799a0377e,
+    9b1758cf522b, f49e487971c7).
+T6. **Hornbook at the table.** Jeles for lore on demand (`ask-jeles` corpus),
+    the-binder for what each seat recognizes (safe-app-store `apps/the-binder`,
+    its `the-binder/entities` collection), UTETY for the campus the story walks
+    through. Each joins through the StorySession store seam, never by import.
 T7. **The test.** The engine plays forward from the chapters, forecasts, and
-    the operator grades. The protocol is pre-registered and operator-signed
-    before T7 runs, the same discipline as step 0: hypotheses, what counts as
+    the operator grades. The protocol is pre-registered before T7 runs, the
+    same discipline as step 0: the pinned doc claim, hypotheses, what counts as
     a learned *x*→*y* join, the calibration bar, and a baseline for any hit
-    rate. The misses are read as the map, not only scored.
+    rate. **Pre-registered means recorded:** a SOIL protocol record and a
+    sealed Nestor pair naming it, not prose alone. The misses are read as the
+    map, not only scored.
 
 T1 and T2 need nothing new. T3 through T6 are builds, one packet at a time.
 T7 is the verdict.
@@ -672,6 +692,7 @@ answers.
 | 8 | **Where the durable binder session lives.** Beside the check-in nonces under `$WILLOW_HOME/gate/`, or in the session record `session_bind` already writes. | open | design, before step 4 |
 | 9 | **Which host is canonical when they disagree?** The IDE harness has every event. Ratatosk is the fleet's own runtime. | open | operator · **Tree:** soil + ledger canonical; pin wiring (§1.5) |
 | 10 | ~~Do willow-mcp's `human_required_*` verbs write through `forge.human_loop`?~~ | settled | Yes, read 2026-09-29: willow-mcp `src/willow_mcp/human_loop.py` is `from forge.human_loop import *`, and `server.py`'s `human_required_enqueue`, `_resolve` and `_list` call `human_loop.enqueue`, `.resolve` and `.list_queue` on the SOIL store. |
+| 11 | **Where the Table's ledger lives.** the-table's `LedgerSink` writes ai-game-master's copy of the hash chain (pattern-ported from Nestor's `ledger.py`). Does the Table keep that copy, or write through Nestor's own ledger so a seal is verified by the same code everywhere? | open | decide before §6a T3 |
 
 ## Provenance
 
