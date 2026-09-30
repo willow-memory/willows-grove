@@ -568,8 +568,14 @@ box."
 - **The machine proposes; a named human seals.** A prediction stays a
   prediction and an outcome stays an outcome. Only the operator seals an
   outcome (ai-game-master `docs/DECISION.md` §6, "No machine-sealed canon").
-- **Local by default.** Local models do the growth. Cloud and egress are
-  declared, metered exceptions at flowering (§1.5).
+- **Code first.** Python does the growth: the world walk, the dice, canon read
+  from the record, the forecasts and their backtests. Local models are the
+  escalation, called only where the code returns ESCALATE (narration at a set
+  piece, a join no rule covers). Cloud and egress are declared, metered
+  exceptions at flowering (§1.5). This is the sealed code-first ruling (record
+  `flowering-step0-code-first-2026-09-27`, pair d19643da). Operator,
+  2026-09-30: "I think you're missing just how much python is built into the
+  gamemaster, and how well it works."
 
 **What already exists** (read 2026-09-30; record
 `table-forecast-convergence-inputs-2026-09-30`):
@@ -578,8 +584,8 @@ box."
 |---|---|---|
 | Campaign vault schemas + chain verifier | safe-app-store `apps/ai-game-master` | built; `docs/poc_vander_room.py` exhibit |
 | GM driver, protocol, ledger sink, registry | safe-app-store `apps/the-table` | walking skeleton; three games verify |
-| `StorySession` (world as atoms, propose→seal, promote→timeline) | `apps/the-table/docs/storysession-design.md`, `apps/the-table/docs/homestead-table-vision.md`, `apps/the-table/the_table/story_session.py` | design leads code |
-| Forecast campaigns on the ai-game-master schema | `workshop/fleet-campaign`, `workshop/ohio-campaign` (not git trees) | ran 2026-09-03; fleet v2 forecast window 2026-09-04..10, due 2026-09-11, `PENDING` with no grade found (KB 330CE697); Ohio resolves 2027-10-01 (KB 0F0E1C23) |
+| `StorySession`, the fourth adapter | `apps/the-table/the_table/story_session.py`, `the_table/worlds.py` (`load_world`, JSON worlds under `worlds/`), `tests/test_story_session.py`; design in `apps/the-table/docs/storysession-design.md`, `docs/homestead-table-vision.md` | built: walks an authored world scene by scene through the unchanged driver and ledger; a decision beat has no legal move and `step()` raises on it, so only `seal()` by a named human passes it. Not built: durable persistence of a seal (its docstring: "a vault, a timeline ... is later work"; `seal()` records in memory only) and the design's store seam (story-timeline atoms, the-binder, ask-jeles) |
+| Forecast engines on the ai-game-master schema | `workshop/fleet-campaign` (`fleet_campaign.py`, `goal_campaign.py` and three more), `workshop/ohio-campaign` (not git trees) | built, stdlib Python only, no model: canon computed from the hash-chained receipt db and git tags at run time; same seed, same digest; a backtest freezes canon at a past date, scores against what happened, learns one knob and re-forecasts beside the unlearned row. Ran 2026-09-03; fleet v2 forecast window 2026-09-04..10, due 2026-09-11, `PENDING` with no grade found (KB 330CE697); Ohio resolves 2027-10-01 (KB 0F0E1C23) |
 | Synthetic-life predictions | Nestor `audits/2026-08-19-capability-probe/` (`life-simulation-skips.md`, `life_progression.py` phase 4) | 23 anomalies tabled; predictions never scored ("no outcomes") |
 | Calibration ledger (Brier, reliability, cite-and-grade) | hornbook-knowledge `oakenscrolls-office` | built; no-egress core |
 | Outside facts, local | `almanac-data` (11 verticals, incl. climate) | catalogs, pointers to authoritative datasets |
@@ -604,20 +610,30 @@ T2. **Grade what is already due.** The fleet-campaign v2 forecast window
     until it resolves 2027-10-01, then takes the same path. The Nestor
     synthetic-life predictions have no outcomes to grade; they are recorded
     here as calibration debt, not scored.
-T3. **StorySession on local models.** Build the reader the design draws: it
-    plays the story chapters and the UTETY canon as its world, through
-    the-table's unchanged driver and ledger, with local models for growth and
-    a heavier model only at set pieces. The players are never written down.
-    **Before T3 builds:** decide the ledger home. the-table's `LedgerSink`
-    writes ai-game-master's copy of the hash chain, not Nestor's own ledger
-    (demo-survey gap). §9 row 11.
-T4. **The forecast lane.** Three dares chapter 8 names:
+T3. **StorySession plays the story.** The reader exists; what it needs is:
+    - **A world:** the story chapters and the UTETY canon authored as a world
+      JSON that `load_world` validates, with the threads carried in the
+      world's scenes and beats, not in a model's context.
+    - **A durable seal:** a sealed fact written through to the campaign box's
+      canon table and ledger, so it outlasts the session. Decide the ledger
+      home first: the-table's `LedgerSink` writes ai-game-master's copy of the
+      hash chain, not Nestor's own ledger (demo-survey gap; §9 row 11).
+    - **Narration at the escalation points only:** a local model voices a set
+      piece or answers a join no rule covers, and its output is a draft the
+      world does not depend on.
+
+    The players are never written down.
+T4. **The forecast lane.** The fleet-campaign engines already do the
+    forecasting: canon from the record, `PENDING` forecasts, backtests that
+    learn. T4 joins them to the table and names the three dares chapter 8
+    uses:
     - `forecast()` seals a prediction into the ledger before the outcome.
     - `seal_outcome()` is the operator's seal on what happened.
     - `read_misses()` clusters the misses, not only counts them.
 
-    StorySession's `PENDING` rows feed OakenScrolls. The score is calibration
-    (Brier, reliability), not hit rate alone.
+    `PENDING` rows from StorySession and the campaign engines feed
+    OakenScrolls. The score is calibration (Brier, reliability), not hit rate
+    alone.
 T5. **Outside facts.** A forecast resolves first against local almanac-data
     clones (OakenScrolls cite-and-grade: no network, the catalog commit that
     vouched pinned to the grade). Only where no clone settles it does Jeles'
@@ -638,7 +654,8 @@ T7. **The test.** The engine plays forward from the chapters, forecasts, and
     sealed Nestor pair naming it, not prose alone. The misses are read as the
     map, not only scored.
 
-T1 and T2 need nothing new. T3 through T6 are builds, one packet at a time.
+T1 and T2 need nothing new. T3 through T6 are builds on built engines, one
+packet at a time.
 T7 is the verdict.
 
 ## 7. Held
