@@ -10,12 +10,14 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 - **deploy:** the Kart sandbox template stops binding anything the host later executes. `/run/user` and `XDG_RUNTIME_DIR` are unbound, `~/.local` is read-only, `.git/hooks` and `.git/config` are overlaid read-only, and `.npmrc` is dropped (Ada audit 385FBA31). The loopback-tier note cites its sealed shape, pair 3ef0211f. (PR 88)
 - **mcp template:** the desk's `nestor` entry sets `WILLOW_HOME`, `WILLOW_MCP_APPS_ROOT` and `WILLOW_STORE_ROOT`, so jeles-corpus stops falling back to the tombstoned `~/.willow` (gap 02a4de282956). (PR 88)
 - **jeles-intake:** two seed pairs corrected: the fifth federation key names which tools need a lease, and the Jeles app id is `jeles-corpus`. (PR 88)
+- **docs:** `forge-convergence.md` §6 step 0 is struck, and the flowering experiment's status line and §9 verdict record pair bfe001f7 as sealed ("Step 0 is struck"). §13's open list strikes the two items willow-bot #79 closed (G2 cite scoring; the prompt and the pool agree), audited by Loki F48383F4 and B2FF599B. (PR 90)
 
 ### Added
 
 - **seat/willow:** flowering step 0 is run and struck. Adds the v2 fixture set, the design-doc vs Nestor-seal G5 batches, D0, local-tier and cloud-arm run rows, and the operator's blind rubric sheets, plus the §9 verdict (keep the tree, sealed bfe001f7). The v1 fixtures, generator and aggregator are kept as the record of the superseded run. (PR 88)
 - **docs:** the willow-bot box spec (ideas #33) and the manifest-grant-federated-tools and node9 shadow-mode proposals. (PR 88)
 - **docs:** the flowering experiment gains §13, the first runs of the deterministic chain (D0, then local, then flowering): 15/15 v2 acts grown at cloud/act 0.0 on the GPU after the cite-example fix, with the operator's G3 rubric still pending. The three chain runs are committed under `seat/willow/experiments/flowering-2026-09/runs/`. The v2 README notes the chain results and that its item 3 is superseded. (PR 90)
+- **docs:** `every-seat-hears-the-grove.md`, queued as `forge-convergence.md` §6 step 10: grove traffic for any seat, not only an IDE seat with a Monitor. willow-mcp holds one `grove_events` verb and each seat's cursor, Ratatosk reads it between model calls, and Grove's `/events/<seat>` stream and the reinject row read through the same cursor. Forge project: fleet-spine, joint 8. (PR 90)
 
 ### Fixed
 

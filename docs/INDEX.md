@@ -42,6 +42,7 @@ decisions that shaped what got built.
 | [`design/willow-grove-premise.md`](design/willow-grove-premise.md) | The founding premise — operator seat, composed not built |
 | [`design/grove-persona-partition.md`](design/grove-persona-partition.md) | Willow desk vs Heimdallr watch — persona ownership inside Grove |
 | [`design/watcher-e2e-notes.md`](design/watcher-e2e-notes.md) | Resident watcher Ollama + Postgres LISTEN end-to-end notes |
+| [`design/every-seat-hears-the-grove.md`](design/every-seat-hears-the-grove.md) | Grove traffic for any seat — one willow-mcp events verb and cursor, read by Ratatosk, the stream and the hook |
 | [`design/autonomous-continuity.md`](design/autonomous-continuity.md) | Autonomous continuity — the sealing question for Nestor |
 | [`design/pr14-carryovers.md`](design/pr14-carryovers.md) | Punch list for v0.10 — what v0.9 punted and why |
 | [`ideas.md`](ideas.md) | The idea pile — every open item this repo can land, numbered once, read by `reconciler run` |

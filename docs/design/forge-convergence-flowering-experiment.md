@@ -1,6 +1,6 @@
 # Experiment — growth, pools, and the flowering threshold
 
-**Status:** pre-registered protocol · **not run** · operator ratifies before execution  
+**Status:** run (v2, 2026-09-29) · **step 0 struck** — "Lets keep the tree", sealed pair bfe001f7 (2026-09-29T20:12Z) · results §9, chain runs §13  
 **Parent:** [`forge-convergence.md`](forge-convergence.md) §1.5, §6 step **0**  
 **Method lineage:** MCP jobs ladder
 ([`2026-09-02-mcp-jobs-ladder-test-plan.md`](../../governance/proposals/2026-09-02-mcp-jobs-ladder-test-plan.md))
@@ -309,7 +309,7 @@ Written **before** T1. Mark **confirm / refute / inconclusive** in §9.
 **Rubric summary (operator, 5 = a match):** D0 precision 1.0 (11/11 scored correct). Local tier on the 5 escalations: 15 → 4, 06 → 4, 13 → 5, 14 → 5 (escalating to willow is a match), 16 → 3/uncertain (F-negative: named Ada). G5 batch A 5/5, batch B 5/5: design-doc vs seal source made no difference. D0 cannot tell the batches apart either. Detail: `scores/score-v2-20260929.json`.  
 **E1–E8:** E1 mixed: on the escalated G1 rows, routing to willow scored a match; on the field-read capability rows 01–02 (not counted) the tier still answered "willow" where the excerpt's to_app said loki/hanuman. G5 held with an excerpt. E2 not run (R0/R1). E3 **confirm**: cloud/act 0.07 vs 1.0 (93% fewer), and 0.20 vs 1.0 on the generative rows alone. E4 **confirm**: on the model rows, local median ~10.6 s vs cloud ~4.7 s. E5 **confirm, at the edge**: the local score is within 1 point of cloud on 4 of 5 generative rows (80%). The miss is S-growth-16 (3 vs 5), the negative case, where the local model named a seat. E6 confirm: v1 escalations were fixture defects, and v2 cleared them by re-sourcing. E7, E8 not run.  
 **B-null rejected?** ☐** yes ☐ no ☐ inconclusive (small *N*). On the operator's sheet the §8 thresholds are met with room (93% ≥ 70%, 0.07 ≤ 0.3). Code carries 10 of 15 acts; the local tier carries 4 of the 5 generative ones. P-cloud is now measured on the generative rows: growth-first cuts cloud use by 93% at a quality cost of 1 point or less on 4 of 5 generative acts (mean 4.2 vs 5.0). The one real loss is a negative case (a false route where ESCALATE was correct). N = 15, with 5 generative acts.  
-**Operator verdict on step 0:** ☐ **Yes: strike §6 **0** ☐ **Yes: extend protocol ☐ **No: reject tree policy for desk. Keep the tree (operator 2026-09-29, after the P-cloud arm: "Lets keep the tree"; draft pair bfe001f7)  
+**Operator verdict on step 0:** ☑ **Yes: strike §6 0** ☐ Yes: extend protocol ☐ No: reject tree policy for desk. Keep the tree (operator 2026-09-29, after the P-cloud arm: "Lets keep the tree"; pair bfe001f7, **sealed** 2026-09-29T20:12Z by sean campbell, record `desk-keeps-the-tree-2026-09-29`: "Step 0 is struck.")  
 **Next engineering bite (if any):** Discuss the tree policy, and discuss ways to to extend the protocol as well as any other gaps that should be covered at 0.  
 **Gap ids logged:** 02babedd5620 (tree policy: P-cloud on generative rows) · 51ecb327a258 (thin generative set; routing gold = willow) · 25c12d9c15fb (D0 G5 direct vs indirect seal) · 82897b2f507e (D0 routing rule → willow) · 81451b988833 (runner schema + universal ESCALATE) · 0871bb83d7d5 (aggregate G1 check passes F-negative) · 187b6bd17e4e (nestor_draft injection blocks R0/T2) · 84f5513ea462 (T1b, E4, G4 timeout) · 02a4de282956 (nestor MCP on tombstoned ~/.willow — fixed and verified 2026-09-29, resolved)  
 
@@ -415,8 +415,8 @@ Counted acts: 15. G4 (S-growth-10) is excluded from *T* (§5); D0 returns it as 
 
 **Open on this chain (gap da93c749120b, from AEC0E753).**
 - Every v2 fixture carries one excerpt, so the prompt's example (always the first pool id) cannot show a first-excerpt habit.
-- G2 scoring ignores cites.
-- An excerpt with no id renders as `[ex]` but drops out of the pool.
+- ~~G2 scoring ignores cites.~~ Closed by willow-bot #79: G2 requires `must_cite` when the fixture names it.
+- ~~An excerpt with no id renders as `[ex]` but drops out of the pool.~~ Closed by willow-bot #79: the prompt and the pool are built from one list, and an act with any uncitable excerpt (missing, non-string or blank id, non-dict entry, non-list pool) goes to flowering before any model call. Audited pre-merge by Loki F48383F4 (PASS) and re-audited at the merged tip `20d2ee6` by B2FF599B (PASS).
 - The next fixture set needs multi-excerpt acts where the right cite is not the first.
 
 ---
