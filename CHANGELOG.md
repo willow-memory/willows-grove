@@ -15,6 +15,7 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Added
 
+- **docs:** `forge-convergence.md` §6a, "The Table: proving it for a human on local models", seven steps (T1–T7) that run before §6 step 2. It moves the AI-Gamemaster test up from the flowering experiment's far-horizon §11: fix the story's one-hit invariant, grade the fleet-campaign forecast already due, build StorySession on local models, the forecast lane into OakenScrolls calibration, outside facts from local almanac-data first and Jeles under a lease second, hornbook at the table, then an operator-signed test. Run as fiction, in isolation, with no PII in any push. (PR 92)
 - **seat/willow:** flowering step 0 is run and struck. Adds the v2 fixture set, the design-doc vs Nestor-seal G5 batches, D0, local-tier and cloud-arm run rows, and the operator's blind rubric sheets, plus the §9 verdict (keep the tree, sealed bfe001f7). The v1 fixtures, generator and aggregator are kept as the record of the superseded run. (PR 88)
 - **docs:** the willow-bot box spec (ideas #33) and the manifest-grant-federated-tools and node9 shadow-mode proposals. (PR 88)
 - **docs:** the flowering experiment gains §13, the first runs of the deterministic chain (D0, then local, then flowering): 15/15 v2 acts grown at cloud/act 0.0 on the GPU after the cite-example fix, with the operator's G3 rubric still pending. The three chain runs are committed under `seat/willow/experiments/flowering-2026-09/runs/`. The v2 README notes the chain results and that its item 3 is superseded. (PR 90)
