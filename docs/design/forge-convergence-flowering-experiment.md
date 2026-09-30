@@ -326,7 +326,11 @@ Written **before** T1. Mark **confirm / refute / inconclusive** in §9.
 
 ## 11. Far horizon — AI-Gamemaster test (theory bookmark)
 
-**Status:** not designed · not in scope for step **0** · operator memory hook only.
+**Status:** moved up 2026-09-30. Now `forge-convergence.md` §6a, "The Table:
+proving it for a human on local models", steps T1–T7, run before §6 step 2.
+Operator: "lets do it, because I have built the system for so long, it's time
+to prove it works for a human on local models." The text below is the original
+bookmark, kept as the record of what the test was first meant to be.
 
 Placeholder for a **much later** end-to-end test name the operator had in mind while
 building this protocol — may stay pure theory. No fixtures, no hypothesis id, no

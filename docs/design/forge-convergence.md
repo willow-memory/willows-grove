@@ -502,7 +502,8 @@ open lines are still build or operator.
    "I do."). willow-mcp `willow-gate-seam.md`'s status line now says what
    shipped, and its §4 says `session_enter` does not call the binder. The
    Forge's `docs/design/the-session-entry.md` is a pointer here. §9 row 10 is
-   struck. This file resolves the premise's link.
+   struck. This file resolves the premise's link. **Next is §6a, the Table,
+   before step 2** (operator, 2026-09-30).
 2. **The seal and the wiring agree.** Generate the running hook wiring from
    the sealed rows, and pin it. Resolve `stop → gate` (§4).
 3. **One vocabulary.** `forge.tiers` in the Forge. orient reports every §2
@@ -532,6 +533,93 @@ open lines are still build or operator.
     [`every-seat-hears-the-grove.md`](every-seat-hears-the-grove.md).
     Forge project: `fleet-spine`, joint 8, beside its open joint 7 (Forge
     checkpoints gate a crown turn).
+
+## 6a. The Table: proving it for a human on local models
+
+Operator, 2026-09-30:
+
+> lets do it, because I have built the system for so long, it's time to
+> prove it works for a human on local models.
+
+This block runs **before §6 step 2**. It moves the AI-Gamemaster test out of
+the flowering experiment's "far horizon" (its §11) and makes it the next
+build. The claim under test is the one the docs make and have never measured:
+the system learns about a person. The test runs **as fiction and in
+isolation**. The operator, 2026-09-30: "You don't need my real life, I promise
+it's built into it, if you just read the actual stories. SO, we're going to
+continue what is already there, as a fiction, so we don't have to touch my
+box."
+
+**Rules for every T-step.**
+
+- **No PII in any push.** Vault reads are acceptable; a push carrying personal
+  content is not. Run boxes live outside every git tree (record
+  `learns-about-you-test-constraints-2026-09-30`). What can be committed is the
+  protocol, the code with synthetic or no fixtures, and aggregate verdicts that
+  quote no content.
+- **Isolated.** A T-step's box, Nestor store and ledger are its own. Nothing it
+  learns crosses into the operator box's SOIL, KB, orientation or handoffs.
+  Only aggregates return to the desk.
+- **The machine proposes; a named human seals.** A prediction stays a
+  prediction and an outcome stays an outcome. Only the operator seals an
+  outcome (ai-game-master `docs/DECISION.md` §6, "No machine-sealed canon").
+- **Local by default.** Local models do the growth. Cloud and egress are
+  declared, metered exceptions at flowering (§1.5).
+
+**What already exists** (read 2026-09-30; record
+`table-forecast-convergence-inputs-2026-09-30`):
+
+| Piece | Where | State |
+|---|---|---|
+| Campaign vault schemas + chain verifier | safe-app-store `apps/ai-game-master` | built; `docs/poc_vander_room.py` exhibit |
+| GM driver, protocol, ledger sink, registry | safe-app-store `apps/the-table` | walking skeleton; three games verify |
+| `StorySession` (world as atoms, propose→seal, promote→timeline) | `apps/the-table/docs/storysession-design.md`, `the_table/story_session.py` | design leads code |
+| Forecast campaigns on the ai-game-master schema | `workshop/fleet-campaign`, `workshop/ohio-campaign` (not git trees) | ran 2026-09-03; fleet v2 forecast due 2026-09-11, no resolution on record |
+| Calibration ledger (Brier, reliability, cite-and-grade) | hornbook-knowledge `oakenscrolls-office` | built; no-egress core |
+| Outside facts, local | `almanac-data` (13 verticals, incl. climate) | catalogs, pointers to authoritative datasets |
+| Outside facts, egress | Jeles corpus, federated (`8cae3d1dcdf4`) | `corpus_institutional_search` works (6 of 10 primary, KB F481FA45); `corpus_verify_claim` does not (KB 0D2AC260) |
+| The world | willow-mcp `docs/story` ch. 1–7; UTETY campus canon | seed format: every named function exists or is a dare |
+
+**Steps.**
+
+T1. **The story keeps its word.** The README promises one `.py` hit for
+    "Girth erupted." There are two: `src/willow_mcp/tree_view.py:120` and
+    `docs/repatriation/engine/voices_seed.py:84`. Split the quoted copy the way
+    `tests/test_tree_view.py:160` does, pin the invariant repo-wide with a
+    test, and correct the chapters' `:121`. Chapter 8, "The Table", lands
+    after this, since it names the invariant.
+T2. **Grade what is already due.** The fleet-campaign v2 forecast
+    (2026-09-04..10) resolved 2026-09-11 with no grade on record. The operator
+    seals each outcome, and OakenScrolls scores it. These are the engine's
+    first real outcomes.
+T3. **StorySession on local models.** Build the reader the design draws: it
+    plays the story chapters and the UTETY canon as its world, through
+    the-table's unchanged driver and ledger, with local models for growth and
+    a heavier model only at set pieces. The players are never written down.
+T4. **The forecast lane.** Three dares chapter 8 names:
+    - `forecast()` seals a prediction into the ledger before the outcome.
+    - `seal_outcome()` is the operator's seal on what happened.
+    - `read_misses()` clusters the misses, not only counts them.
+
+    StorySession's `PENDING` rows feed OakenScrolls. The score is calibration
+    (Brier, reliability), not hit rate alone.
+T5. **Outside facts.** A forecast resolves first against local almanac-data
+    clones (OakenScrolls cite-and-grade: no network, the catalog commit that
+    vouched pinned to the grade). Only where no clone settles it does Jeles'
+    institutional search run, under an egress lease, with the operator's seal
+    on the result. `corpus_verify_claim` stays out until its three gaps close
+    (76c799a0377e, 9b1758cf522b, f49e487971c7).
+T6. **Hornbook at the table.** Jeles for lore on demand, the-binder for what
+    each seat recognizes, UTETY for the campus the story walks through. Each
+    joins through the StorySession store seam, never by import.
+T7. **The test.** The engine plays forward from the chapters, forecasts, and
+    the operator grades. The protocol is pre-registered and operator-signed
+    before T7 runs, the same discipline as step 0: hypotheses, what counts as
+    a learned *x*→*y* join, the calibration bar, and a baseline for any hit
+    rate. The misses are read as the map, not only scored.
+
+T1 and T2 need nothing new. T3 through T6 are builds, one packet at a time.
+T7 is the verdict.
 
 ## 7. Held
 
