@@ -16,6 +16,10 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 - **seat/willow:** flowering step 0 is run and struck. Adds the v2 fixture set, the design-doc vs Nestor-seal G5 batches, D0, local-tier and cloud-arm run rows, and the operator's blind rubric sheets, plus the §9 verdict (keep the tree, sealed bfe001f7). The v1 fixtures, generator and aggregator are kept as the record of the superseded run. (PR 88)
 - **docs:** the willow-bot box spec (ideas #33) and the manifest-grant-federated-tools and node9 shadow-mode proposals. (PR 88)
 
+### Fixed
+
+- **seat/willow:** the flowering aggregator's G1 check no longer passes an F-negative that names a seat. When the gold is `ESCALATE`, an answer naming any seat the brief offered fails `names_no_offered_seat`, even if it also says "escalate" (gap 0871bb83d7d5). Seats match as whole words. (PR 89)
+
 ## [0.12.1](https://github.com/willow-memory/willows-grove/compare/v0.12.0...v0.12.1) (2026-09-22)
 
 
