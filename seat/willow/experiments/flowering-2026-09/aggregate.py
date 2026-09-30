@@ -27,6 +27,8 @@ HERE = Path(__file__).resolve().parent
 HEX_ID = re.compile(
     r"\b(?=[0-9a-fA-F]*[0-9])(?=[0-9a-fA-F]*[a-fA-F])[0-9a-fA-F]{8,12}\b"
 )
+# Seats a routing brief offers, written "hanuman (builds code), loki (...)".
+BRIEF_SEAT = re.compile(r"\b([a-z][a-z0-9_-]*) \(")
 
 
 def answer_text(raw: str) -> str:
@@ -57,6 +59,17 @@ def check(fx: dict, answer: str) -> dict:
     items: dict[str, bool] = {}
     if cls == "G1":
         items["names_target"] = exp["to_app"].lower() in low
+        if exp["to_app"] == "ESCALATE":
+            # An F-negative fails if the answer names any seat the brief
+            # offered, even alongside the word "escalate" (gap 0871bb83d7d5).
+            named = sorted(
+                s
+                for s in BRIEF_SEAT.findall(fx["brief"])
+                if re.search(rf"\b{re.escape(s)}\b", low)
+            )
+            items["names_no_offered_seat"] = not named
+            if named:
+                items["_named_seats"] = named  # type: ignore[assignment]
         items["cites_excerpts"] = cites_ok(answer, exp["must_cite"])
     elif cls == "G2":
         items["within_max_chars"] = len(answer) <= exp["max_chars"]
