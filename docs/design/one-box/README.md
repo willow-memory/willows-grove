@@ -53,6 +53,8 @@ safe:
 1. **Honest state.** Populated, empty or unreachable (plus `not_asked` and
    `unenforced`), never collapsed, always with a reason.
 1a. **Every gate fails closed, and loud.**
+1c. **Presence is a label; authority is a passkey.** The model runs as the
+    operator's uid, so a uid alone never unlocks a human-only act (§15).
 1b. **Reading is open; saving is guarded** (operator, 2026-10-01: "There is
     nothing wrong with reading. Anyone can read anything all day long, it's
     just how, and who saves it into their system is what matters.").
@@ -605,6 +607,111 @@ templates.
   the operator reads real verdicts before it blocks.
 
 ---
+
+## 15. Gap pass (deterministic, 2026-10-01)
+
+The operator asked for everything that had been missed, found deterministically
+and backed by the web where needed. **Method:**
+1. A fixed checklist of 30 items, drawn from **STRIDE** (6 items), the
+   **OWASP Top 10 for LLM Applications 2025** (LLM01–LLM10), and a 14-item
+   operations list.
+2. A script matched each item's keywords against this file. That reported 16
+   gaps.
+3. A second fixed step read the context of every keyword hit and
+   reclassified 8 false matches (for example, "replay" matched only test
+   replays). That gives **24 real gaps**, all filled below.
+
+The script is in [`research-2026-10-01.md`](research-2026-10-01.md) §6, so the
+pass can be re-run after edits.
+
+**Facts verified this pass:**
+- `sun_path`: 107 usable bytes on Linux. A 108-byte path fails `bind`, tested
+  in a container.
+- `SO_PEERCRED` reports the uid **translated into the reader's user
+  namespace** (`cred_to_ucred` → `from_kuid_munged(current_user_ns(), …)`,
+  Linux `net/core/sock.c`).
+- CPython does not define `AF_UNIX` without `sys/un.h`, so there are no Unix
+  sockets on Windows Python (`Modules/socketmodule.h`). Windows AF_UNIX
+  itself has no peer-credential mechanism.
+- Claude Code's `allowManagedHooksOnly`, and the `managed-settings.json`
+  paths (`/etc/claude-code/` on Linux).
+- `disableAllHooks` in project settings turns hooks off, except managed hooks
+  ([docs](https://code.claude.com/docs/en/hooks);
+  [issue #26637](https://github.com/anthropics/claude-code/issues/26637)
+  reports a bypass; check it is fixed).
+- FIDO recommends registering multiple authenticators for recovery.
+
+### The four that change the design
+
+1. **The model runs as the operator's uid (STRIDE-E).** A front end's shell
+   tool runs as you. So the model can connect to Rat's socket directly, and
+   `SO_PEERCRED` can't tell it apart from you. **The uid check keeps out
+   other users and sandboxes, not the model in your own shell.**
+   - Ops split in two:
+     - **model-reachable ops** (`in`, `out`, `end`, reads, proposals)
+     - **human-only ops** (grant, seal, ratify, enable auto-merge), which
+       require a **passkey assertion every time** and never a uid alone
+   - Rat may also read the peer's pid (`SO_PEERCRED`), check
+     `/proc/<pid>/exe` and log it, for the record. That is evidence, not
+     authority.
+2. **Self-reported fields are labels, never authority (STRIDE-S).**
+   `human_present` and `front_end` in the door request are claims the
+   caller makes. They route and label; they never unlock anything. **Box
+   rule: presence is a label; authority is a passkey.**
+3. **The doors can be removed (STRIDE-T).** The model can edit
+   `.claude/settings.json` (or set `disableAllHooks`), so a fail-closed gate
+   only means anything while the hook is wired.
+   - **Prevent:** install the shims through **managed settings**
+     (`/etc/claude-code/managed-settings.json` with `allowManagedHooksOnly`),
+     which the operator's uid can't write without sudo. Use the equivalents
+     on other front ends where they exist, and record `unenforced` where
+     they don't.
+   - **Detect:** Rat expects an `out` for every `in`. A session whose turns
+     arrive without an OUT call, or which goes quiet after IN, is reported
+     loudly as **"door missing"**.
+4. **Pooled content is untrusted input: prompt injection and poisoning
+   (LLM01, LLM04, LLM05).** "Reading is
+   open", but text that is read and *saved* into the soil (a Jeles fetch, a
+   pooled nugget, a deposit) can carry instructions.
+   - Every saved item is stored with `trust: untrusted|human-sealed` and its
+     source receipt.
+   - The IN-door bundle wraps untrusted text in a labelled data block. It is
+     never placed where it reads as instructions.
+   - Nothing pooled is promoted to sealed without a human.
+   - The chain's D0 resolvers treat pooled text as data only. They extract;
+     they never execute.
+
+### The rest, filled
+
+| # | Gap | Addition |
+|---|---|---|
+| STRIDE-I / LLM02 | Sensitive information (secrets, PII) in payloads, transcripts, receipts, logs | Rat runs a deterministic secret scan before anything is saved: key prefixes, high-entropy runs (the Forge privacy gate's classes). Matches are redacted in receipts and the save is refused loudly. Hook payloads are never logged in full |
+| STRIDE-D | Fail closed means Rat down stops all work | systemd `Restart=on-failure` plus socket activation, so a connect starts Rat. A health heartbeat. A **break-glass**: a passkey-signed, time-boxed "doors advisory" override, recorded in FRANK, loud for as long as it lasts, and auto-expiring. Never a config edit |
+| LLM07 | System prompt leakage | Nothing secret goes in prompts or injected bundles. Secrets live in the keyring and env, never in context |
+| LLM09 | Overreliance and misinformation | Already measured by the escalation benchmark (false-confidence rate). Rat's OUT door applies the same check per turn |
+| LLM10 | Unbounded consumption | Per-session caps in Rat: local-model calls, cloud (flowering) calls and tokens, egress bytes. Hitting a cap fails closed and loud. Caps are growth settings |
+| LLM03 | Supply chain beyond polyhook | Hash-pinned requirements for every adopted dependency. A short SBOM in the plan's adopt table. Dependabot is on. FastMCP proxy pins tool descriptions by hash, so a changed tool description is refused (tool poisoning) |
+| OPS | macOS and Windows | **Linux:** `SO_PEERCRED`. **macOS:** `LOCAL_PEERCRED` / `getpeereid()` (uid and gid, no pid), and `sun_path` is shorter there. **Windows:** no AF_UNIX in Python and no peer credentials, so use **named pipes** with an owner-only ACL. The socket standard gets one interface with three backends, and the Grove's Windows CI legs test the pipe backend |
+| OPS | `sun_path` limit | Sockets live under `$XDG_RUNTIME_DIR` (`/run/user/<uid>/…`), never under deep `$WILLOW_HOME` paths. The standard refuses a path over 100 bytes at startup, by name |
+| OPS | Sandboxes and user namespaces | A peer in another user namespace reports its uid as translated into Rat's namespace (unmapped means the overflow uid). The Kart bind-mount of Rat's socket gets a test. The allow-list is per op, so the sandbox's uid gets only model-reachable ops |
+| OPS | Alert storms | "Loud" is deduplicated: one alert per (failure kind, door) per window, with a count. Gjallarhorn stays meaningful |
+| OPS | Rollback | Every door has a mode (`off`, `advise`, `enforce`) set per front end in the capability table. Rolling back is a mode change, recorded. Every phase ships in `advise` first |
+| OPS | Chaos tests | Kill Rat mid-turn, fill the disk, stall Ollama, drop the socket file. Each must produce the fail-closed, loud outcome, pinned by tests |
+| OPS | Passkey loss | Register **at least two** authenticators at setup (FIDO's recommendation), one kept offline. Recovery is the operator terminal plus keyring re-enrolling a new passkey, never a weaker bypass |
+| OPS | Grant replay | Nonces are single-use and expire in 120 s, the WebAuthn sign counter is checked, and a used challenge is recorded and refused |
+| OPS | Phone seat | Granting from the phone can't use `localhost`. Either use a phone-native passkey bound to the Grove's real hostname (the RP ID must match), or defer the grant until the operator is at the box, so the card waits. Decision D11 |
+| OPS | Other ungated egress | Model pulls (`model_pull_execute`), package installs, and tool or vendor telemetry all send information out. Each goes in the capability table and the egress register: gated where the box can gate it, declared where it can't |
+| OPS | Bot persona for helper commits | `governance/fleet_personas.json` has `ratatosk` but **no `willow-bot` key**. The bookkeeping helper's commits need a persona: add `willow-bot`, or have Rat author them as `ratatosk`. Decision D12 |
+
+**New decisions:**
+
+| # | Decision | Recommendation |
+|---|---|---|
+| D11 | How a grant is made away from the box (phone seat) | The card waits until the operator is at the box. A phone passkey on a real hostname comes later, if wanted |
+| D12 | The persona for helper and bookkeeping commits | Add `willow-bot` to `fleet_personas.json` through its own ratified PR |
+
+**New box rule:** presence is a label; authority is a passkey (see 1–2
+above).
 
 ## 14. The first three bites I'd propose
 
