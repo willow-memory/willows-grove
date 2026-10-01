@@ -18,6 +18,7 @@ import sys
 import threading
 import urllib.request
 from datetime import datetime, timezone
+from io import StringIO
 from pathlib import Path
 from typing import Any
 
@@ -81,8 +82,26 @@ def _willow_python() -> str:
     return os.environ.get("WILLOW_MCP_PYTHON", "").strip() or sys.executable
 
 
-def _run_willow_module(module: str) -> int:
-    return subprocess.call([_willow_python(), "-m", module], stdin=sys.stdin)
+def _run_willow_module(module: str, *, stdin_text: str | None = None) -> int:
+    """Run a willow-mcp hook module. When ``stdin_text`` is set, feed that
+    bytes to the child and leave the parent's stdin alone — composites
+    (before_stop, session_end) need the same payload for a subsequent Grove
+    act after the willow module has already consumed it."""
+    argv = [_willow_python(), "-m", module]
+    if stdin_text is None:
+        return subprocess.call(argv, stdin=sys.stdin)
+    proc = subprocess.run(
+        argv,
+        input=stdin_text.encode("utf-8"),
+        capture_output=True,
+    )
+    if proc.stdout:
+        sys.stdout.buffer.write(proc.stdout)
+        sys.stdout.buffer.flush()
+    if proc.stderr:
+        sys.stderr.buffer.write(proc.stderr)
+        sys.stderr.buffer.flush()
+    return int(proc.returncode)
 
 
 def orient() -> int:
@@ -510,11 +529,26 @@ def _grove_inbox_lines(app_id: str, session_id: str) -> list[str]:
 
 
 def before_stop() -> int:
-    return _run_willow_module("willow_mcp.stop_lint_hook")
+    """Stop composite: willow stop_lint_hook, then Grove gate().
+
+    Sealed row names the Grove act (`gate`); live action runs the willow
+    module first — same composite shape as session_start / session_end.
+    Stdin is buffered once so both halves see the Stop payload."""
+    raw = sys.stdin.read()
+    lint_rc = _run_willow_module("willow_mcp.stop_lint_hook", stdin_text=raw)
+    # gate() reads stdin via _read_hook_stdin — restore the buffered payload.
+    sys.stdin = StringIO(raw)  # type: ignore[assignment]
+    gate_rc = gate()
+    return lint_rc if lint_rc else gate_rc
 
 
 def session_end() -> int:
-    rc = _run_willow_module("willow_mcp.session_stop_hook")
+    """SessionEnd composite: willow session_stop_hook (fallback closeout),
+    then Grove deposit(). Deposit is SessionEnd-only; the stop hook skips
+    its instruments when session_handoff_write already closed the session."""
+    raw = sys.stdin.read()
+    rc = _run_willow_module("willow_mcp.session_stop_hook", stdin_text=raw)
+    sys.stdin = StringIO(raw)  # type: ignore[assignment]
     deposit()
     return rc
 
@@ -538,34 +572,64 @@ def _nestor_reach() -> str:
     return "installed_not_answering" if shutil.which("nestor") else "not_installed"
 
 
-def _nestor_ask(prompt: str) -> dict | None:
-    """Put `prompt` to Nestor. Returns a small dict {state, age, matches?} on
-    success, None on any error.
+def _nestor_ask(prompt: str) -> dict:
+    """Put ``prompt`` to Nestor's CLI. Always returns a dict with ``state``
+    in {sealed, draft, pending, unreachable} — never None, never silent
+    empty (INVARIANTS §1 / gap 7b664e84db8d).
 
-    Discovery: at execute-time this expects a `nestor ask --json <prompt>` CLI
-    surface. On the operator's box `nestor-meaning` provides this. If the shape
-    is different in a future nestor-meaning release, the JSON parse fails and
-    the caller falls back to the "installed, not answering" path — which is
-    the right behavior: an unrecognized response is not an answer.
+    Live CLI (nestor ≥0.16): ``nestor ask [--from|--to] text`` with global
+    ``--json``. Decision domains are explicit; stdin is not the prompt.
     """
     if not prompt.strip():
-        return None
+        return {"state": "unreachable", "reason": "empty_prompt"}
+    if not shutil.which("nestor"):
+        return {"state": "unreachable", "reason": "not_installed"}
     try:
         result = subprocess.run(
-            ["nestor", "ask", "--json"],
-            input=prompt.encode("utf-8"),
+            [
+                "nestor",
+                "ask",
+                "--from",
+                "decision",
+                "--to",
+                "decision",
+                "--json",
+                "--engine",
+                "offline",
+                prompt,
+            ],
             capture_output=True,
             timeout=_NESTOR_ASK_TIMEOUT,
         )
-    except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
-        return None
+    except (FileNotFoundError, subprocess.TimeoutExpired, OSError) as exc:
+        return {"state": "unreachable", "reason": type(exc).__name__}
     if result.returncode != 0:
-        return None
+        return {
+            "state": "unreachable",
+            "reason": f"rc={result.returncode}",
+        }
     try:
         parsed = json.loads(result.stdout.decode("utf-8"))
     except (json.JSONDecodeError, UnicodeDecodeError):
-        return None
-    return parsed if isinstance(parsed, dict) else None
+        return {"state": "unreachable", "reason": "bad_json"}
+    if not isinstance(parsed, dict):
+        return {"state": "unreachable", "reason": "not_object"}
+    passage = parsed.get("passage")
+    if not isinstance(passage, dict):
+        passage = {}
+    state = passage.get("state") or parsed.get("state") or "pending"
+    if state not in ("sealed", "draft", "pending"):
+        # Unknown cascade label — surface rather than invent.
+        state = str(state) if state else "pending"
+    out: dict[str, Any] = {"state": state}
+    meta = passage.get("meta") if isinstance(passage.get("meta"), dict) else {}
+    age = meta.get("age", parsed.get("age"))
+    if isinstance(age, (int, float)):
+        out["age"] = age
+    matches = parsed.get("matches")
+    if isinstance(matches, list):
+        out["matches"] = matches
+    return out
 
 
 def _status_line_sentinel_path(reach: str) -> Path:
@@ -598,15 +662,13 @@ def _emit_boot_line_once(reach: str) -> str | None:
 def _nestor_context_line(prompt: str, reach: str) -> str | None:
     """One-line attributed Nestor context ahead of a turn's reinject.
 
-    Reachable → call _nestor_ask; template a single line from its response.
-    Not installed / not answering → return the boot line ONCE per session
-    (subsequent calls return None so we don't repeat).
+    Reachable → call _nestor_ask; always emit `Nestor: <state>` (including
+    `unreachable` on CLI miss). Not installed / not answering → boot line
+    ONCE per session.
     """
     if reach == "reachable":
         answer = _nestor_ask(prompt)
-        if not answer:
-            return None
-        state = answer.get("state", "unknown")
+        state = answer.get("state", "unreachable")
         age = answer.get("age")
         age_str = f" (age {age}s)" if isinstance(age, (int, float)) else ""
         return f"Nestor: {state}{age_str}"

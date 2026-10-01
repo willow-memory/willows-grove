@@ -341,20 +341,97 @@ def test_reinject_prints_not_answering_line(monkeypatch, capsys, isolated_sentin
     assert "Nestor did not answer; unverified turn" in out
 
 
-def test_reinject_reachable_but_ask_returns_none(
-    monkeypatch, capsys, isolated_sentinel
-):
-    """When _nestor_ask returns None (transient failure — timeout, unexpected
-    stdout shape) the reinject shows no Nestor line and still emits the seat
-    lines. Fail open at the row, not at the reinject itself."""
+def test_reinject_reachable_but_ask_unreachable(monkeypatch, capsys, isolated_sentinel):
+    """When _nestor_ask returns unreachable (CLI miss / bad parse) the
+    reinject still prints `Nestor: unreachable` — never silent empty
+    (INVARIANTS §1 / gap 7b664e84db8d) — and still emits the seat lines."""
     monkeypatch.setattr(grove_hook, "_nestor_reach", lambda: "reachable")
-    monkeypatch.setattr(grove_hook, "_nestor_ask", lambda prompt: None)
+    monkeypatch.setattr(
+        grove_hook,
+        "_nestor_ask",
+        lambda prompt: {"state": "unreachable", "reason": "rc=2"},
+    )
     monkeypatch.setenv("GROVE_SEAT_FILE", "")
     _stub_stdin(monkeypatch, {"prompt": "hi"})
     grove_hook.reinject()
     out = capsys.readouterr().out
-    assert "Nestor:" not in out
+    assert "Nestor: unreachable" in out
     assert all(line in out for line in grove_hook.REINJECT)
+
+
+def test_nestor_ask_uses_positional_text_and_decision_domains(monkeypatch):
+    """CLI shape: positional text + --from/--to decision + --json; never stdin."""
+    calls: list[dict] = []
+
+    def fake_run(argv, **kwargs):
+        calls.append({"argv": list(argv), "kwargs": kwargs})
+
+        class R:
+            returncode = 0
+            stdout = b'{"passage": {"state": "pending", "meta": {}}, "matches": []}'
+            stderr = b""
+
+        return R()
+
+    monkeypatch.setattr(grove_hook.shutil, "which", lambda name: "/usr/bin/nestor")
+    monkeypatch.setattr(grove_hook.subprocess, "run", fake_run)
+    out = grove_hook._nestor_ask("is the port map sealed?")
+    assert out["state"] == "pending"
+    assert calls, "subprocess.run must be called"
+    argv = calls[0]["argv"]
+    assert argv[0] == "nestor"
+    assert argv[1] == "ask"
+    assert "--from" in argv and "decision" in argv
+    assert "--to" in argv
+    assert "--json" in argv
+    assert "is the port map sealed?" in argv
+    assert calls[0]["kwargs"].get("input") is None
+
+
+def test_nestor_ask_unreachable_on_nonzero_rc(monkeypatch):
+    monkeypatch.setattr(grove_hook.shutil, "which", lambda name: "/usr/bin/nestor")
+
+    def fake_run(argv, **kwargs):
+        class R:
+            returncode = 2
+            stdout = b""
+            stderr = b"error: required: text"
+
+        return R()
+
+    monkeypatch.setattr(grove_hook.subprocess, "run", fake_run)
+    out = grove_hook._nestor_ask("anything")
+    assert out["state"] == "unreachable"
+
+
+def test_before_stop_runs_lint_then_gate(tmp_path, monkeypatch, capsys):
+    """Composite Stop: lint module then gate; gate still blocks done-no-tool."""
+    transcript = tmp_path / "t.jsonl"
+    _write_transcript(transcript, [_asst_text("All tests pass. Done.")])
+    payload = json.dumps(
+        {"transcript_path": str(transcript), "stop_hook_active": False}
+    )
+    monkeypatch.setattr(sys, "stdin", io.StringIO(payload))
+
+    ran: list[str] = []
+
+    def fake_run_module(module, *, stdin_text=None):
+        ran.append(module)
+        assert stdin_text == payload
+        return 0
+
+    monkeypatch.setattr(grove_hook, "_run_willow_module", fake_run_module)
+    rc = grove_hook.before_stop()
+    assert rc == 0
+    assert ran == ["willow_mcp.stop_lint_hook"]
+    out = capsys.readouterr().out
+    assert '"decision": "block"' in out or '"decision":"block"' in out
+
+
+def test_reinject_tuple_length_is_four():
+    """Sealed reinject answers still say 'three'; live REINJECT is four
+    (inbox is additive). Pin the tuple length so a fifth line is intentional."""
+    assert len(grove_hook.REINJECT) == 4
 
 
 # ── B3+ Jarvis close-out at deposit ────────────────────────────────────────
@@ -515,8 +592,7 @@ def _seed_anchor(session_id: str, last_id: int) -> None:
 def _quiet_nestor(monkeypatch):
     """No Nestor line, no seat-drift line: the real hooks/seat.md carries the
     anchor, so the only lines left are REINJECT plus whatever the inbox adds."""
-    monkeypatch.setattr(grove_hook, "_nestor_reach", lambda: "reachable")
-    monkeypatch.setattr(grove_hook, "_nestor_ask", lambda prompt: None)
+    monkeypatch.setattr(grove_hook, "_nestor_context_line", lambda prompt, reach: None)
     seat = str(HOOKS / "seat.md")
     monkeypatch.setenv("GROVE_SEAT_FILE", seat)
     monkeypatch.setattr(grove_hook, "SEAT_FILE", seat)

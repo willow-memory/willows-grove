@@ -14,17 +14,17 @@
     {
       "event": "prompt_submit",
       "action": "reinject",
-      "_answers": "reinject \u2014 emit three byte-stable lines from hooks/seat.md. Keeps \u00a72 question 1 alive under compaction; also the only mid-session surface for a lease or attestation that expired since session_start. Nestor-first when installed: put the prompt to nestor_ask ahead of reinject when Nestor is reachable."
+      "_answers": "reinject \u2014 emit four byte-stable REINJECT lines from hooks/seat.md (three-state, Nestor pairs, check-before-assert, code graph). Keeps \u00a72 question 1 alive under compaction; also the only mid-session surface for a lease or attestation that expired since session_start. Nestor-first when installed: put the prompt to nestor ask (--from/--to decision) ahead of reinject when Nestor is reachable; emit sealed/draft/pending/unreachable three-state lines, never silent empty. Grove inbox lines are additive after the REINJECT tuple."
     },
     {
       "event": "pre_compact",
       "action": "reinject",
-      "_answers": "reinject \u2014 same three byte-stable lines from hooks/seat.md as prompt_submit. Compaction is where the seat rule is most likely to be lost; the reinject on pre_compact is what keeps it from silently going missing across a compress."
+      "_answers": "reinject \u2014 same four byte-stable REINJECT lines from hooks/seat.md as prompt_submit. Compaction is where the seat rule is most likely to be lost; the reinject on pre_compact is what keeps it from silently going missing across a compress. Inbox lines remain additive."
     },
     {
       "event": "stop",
       "action": "gate",
-      "_answers": "gate \u2014 refuse a turn claiming done with no evidence token; block once, then advisory (per stop_hook_active). The gate acts per turn; it does not fight the pinentry flow the approval broker \u00a75c is designing."
+      "_answers": "gate \u2014 refuse a turn claiming done with no evidence token; block once, then advisory (per stop_hook_active). Live Stop runs willow stop_lint_hook THEN gate (composite before_stop); sealed names the Grove act. The gate acts per turn; it does not fight the pinentry flow the approval broker \u00a75c is designing."
     },
     {
       "event": "session_end",
