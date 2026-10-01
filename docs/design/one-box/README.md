@@ -325,6 +325,26 @@ Rules:
   - **route** for `in`
 
   Everything else escalates. Grow classes per user later.
+- **A third D0 class: bookkeeping. The model never does clerical work.**
+  Proof from this PR: the session opened #102 just to learn its number, then
+  made a second commit to cite it in the changelog bullet, then pushed again.
+  A model turn was spent on something the system already knew (operator,
+  2026-10-01: "the system can just go read what the previous PR is, and
+  insert the next").
+  - **Don't predict the number.** GitHub shares numbering between issues and
+    PRs, so "last PR + 1" can collide. Stamp it instead.
+  - **At commit time**, a changelog bullet may carry `(PR pending)`, and
+    `scripts/check_docs_drift.py` accepts that only on a branch with no open
+    PR.
+  - **On PR open,** a willow-bot helper (PR-open event, or the OUT door after
+    a push) replaces `(PR pending)` with `(PR N)` in one commit, attributed to
+    the bot, carrying its own `Persona:` trailer.
+  - **Fails closed, and loud.** If the stamp can't land, the changelog check
+    stays red and names the reason. A guessed number is never accepted.
+  - **Same class:** release-note stubs, INDEX rows for new docs, `Persona:`
+    and `Ratified-by:` formatting checks, and copying a PR body's evidence
+    from CI results. These are mechanical steps a helper does and the big
+    model never sees.
 
 **Done when:** `ratatosk serve` answers `health`, `in` and `out` on the socket,
 with recorded latencies on the operator's box.
