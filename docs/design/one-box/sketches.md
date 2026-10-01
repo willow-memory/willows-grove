@@ -96,8 +96,12 @@ def listen_fds() -> list[socket.socket]:
 Op = Callable[[dict, tuple[int, int, int]], dict]
 
 
-def serve(path: str, ops: dict[str, Op], allowed_uids: set[int],
-          stop: Optional[threading.Event] = None) -> None:
+def serve(
+    path: str,
+    ops: dict[str, Op],
+    allowed_uids: set[int],
+    stop: Optional[threading.Event] = None,
+) -> None:
     """One JSON line in, one JSON line out, one request per connection.
     The peer's uid is checked on every accept; a disallowed peer is refused
     by name, never served."""
@@ -117,7 +121,9 @@ def serve(path: str, ops: dict[str, Op], allowed_uids: set[int],
             conn, _ = srv.accept()
         except socket.timeout:
             continue
-        threading.Thread(target=_handle, args=(conn, ops, allowed_uids), daemon=True).start()
+        threading.Thread(
+            target=_handle, args=(conn, ops, allowed_uids), daemon=True
+        ).start()
     srv.close()
 
 
@@ -129,7 +135,14 @@ def _handle(conn: socket.socket, ops: dict[str, Op], allowed_uids: set[int]) -> 
     with conn:
         cred = peer_cred(conn)
         if cred[1] not in allowed_uids:
-            _reply(conn, {"ok": False, "state": "refused", "reason": f"peer uid {cred[1]} not allowed"})
+            _reply(
+                conn,
+                {
+                    "ok": False,
+                    "state": "refused",
+                    "reason": f"peer uid {cred[1]} not allowed",
+                },
+            )
             return
         buf = b""
         while b"\n" not in buf:
@@ -138,18 +151,31 @@ def _handle(conn: socket.socket, ops: dict[str, Op], allowed_uids: set[int]) -> 
                 break
             buf += chunk
             if len(buf) > MAX_LINE:
-                _reply(conn, {"ok": False, "state": "bad_request", "reason": "request over cap"})
+                _reply(
+                    conn,
+                    {"ok": False, "state": "bad_request", "reason": "request over cap"},
+                )
                 return
         try:
             req = json.loads(buf.split(b"\n", 1)[0])
             op = ops[req["op"]]
         except (ValueError, KeyError, TypeError) as exc:
-            _reply(conn, {"ok": False, "state": "bad_request", "reason": type(exc).__name__})
+            _reply(
+                conn,
+                {"ok": False, "state": "bad_request", "reason": type(exc).__name__},
+            )
             return
         try:
             _reply(conn, {"ok": True, **op(req, cred)})
         except Exception as exc:  # an op failure is a named state, not a crash
-            _reply(conn, {"ok": False, "state": "op_failed", "reason": f"{type(exc).__name__}: {exc}"})
+            _reply(
+                conn,
+                {
+                    "ok": False,
+                    "state": "op_failed",
+                    "reason": f"{type(exc).__name__}: {exc}",
+                },
+            )
 
 
 def call(path: str, req: dict, timeout_s: float = 8.0) -> dict:
@@ -189,15 +215,16 @@ Door = Literal["in", "out", "end"]
 
 class DoorRequest(msgspec.Struct, kw_only=True):
     """Vendor-free. Rat never sees a vendor's hook payload."""
+
     v: int = 1
     door: Door
-    front_end: str                 # "claude-code" | "codex" | "gemini-cli" | "ratatosk-repl" | ...
+    front_end: str  # "claude-code" | "codex" | "gemini-cli" | "ratatosk-repl" | ...
     session_id: str
-    human_present: bool            # the willow seat is wherever the human is
-    prompt: str = ""               # IN
-    last_turn: str = ""            # OUT
+    human_present: bool  # the willow seat is wherever the human is
+    prompt: str = ""  # IN
+    last_turn: str = ""  # OUT
     tool_calls_this_turn: int = 0  # OUT evidence
-    transcript_ref: str = ""       # END
+    transcript_ref: str = ""  # END
 
 
 class DoorResult(msgspec.Struct, kw_only=True):
@@ -205,8 +232,8 @@ class DoorResult(msgspec.Struct, kw_only=True):
     decision: Literal["allow", "block"]
     reason: str = ""
     inject: str = ""
-    status: str = ""               # resolved | escalate | needs_egress | refused | unreachable | ...
-    loud: bool = False             # true: also raise to the willow seat / #alerts
+    status: str = ""  # resolved | escalate | needs_egress | refused | unreachable | ...
+    loud: bool = False  # true: also raise to the willow seat / #alerts
 
 
 def gate(path: str, req: DoorRequest, timeout_s: float = 8.0) -> DoorResult:
@@ -216,22 +243,39 @@ def gate(path: str, req: DoorRequest, timeout_s: float = 8.0) -> DoorResult:
         reply = call(path, {"op": req.door, "req": msgspec.to_builtins(req)}, timeout_s)
         return msgspec.convert(reply["result"], DoorResult)
     except SockError as exc:
-        return DoorResult(decision="block", status=exc.state, loud=True,
-                          reason=f"Rat {exc.state}: {exc.reason} (gate fails closed)")
+        return DoorResult(
+            decision="block",
+            status=exc.state,
+            loud=True,
+            reason=f"Rat {exc.state}: {exc.reason} (gate fails closed)",
+        )
     except (KeyError, msgspec.ValidationError) as exc:
-        return DoorResult(decision="block", status="bad_reply", loud=True,
-                          reason=f"Rat bad reply: {exc} (gate fails closed)")
+        return DoorResult(
+            decision="block",
+            status="bad_reply",
+            loud=True,
+            reason=f"Rat bad reply: {exc} (gate fails closed)",
+        )
 
 
 # ---------------------------------------------------------------- adapters
 # An adapter translates; it holds no logic. One per front end. polyhook
 # (MIT) can replace the parse half; ACP-speaking editors go through a proxy.
 
+
 def parse_stop(front_end: str, payload: dict, human_present: bool) -> DoorRequest:
     return DoorRequest(
-        door="out", front_end=front_end, human_present=human_present,
-        session_id=str(payload.get("session_id") or payload.get("conversation_id") or ""),
-        last_turn=str(payload.get("last_assistant_message") or payload.get("prompt_response") or ""),
+        door="out",
+        front_end=front_end,
+        human_present=human_present,
+        session_id=str(
+            payload.get("session_id") or payload.get("conversation_id") or ""
+        ),
+        last_turn=str(
+            payload.get("last_assistant_message")
+            or payload.get("prompt_response")
+            or ""
+        ),
         tool_calls_this_turn=int(payload.get("tool_calls_this_turn", 0)),
     )
 
@@ -244,7 +288,7 @@ def render_stop(front_end: str, result: DoorResult) -> tuple[str, int]:
         return json.dumps({"decision": "block", "reason": result.reason}), 0
     if front_end == "gemini-cli":  # AfterAgent: deny forces a retry with the reason
         return json.dumps({"decision": "deny", "reason": result.reason}), 0
-    if front_end == "cursor":      # stop: followup_message becomes the next user turn
+    if front_end == "cursor":  # stop: followup_message becomes the next user turn
         return json.dumps({"followup_message": result.reason}), 0
     # A front end with no blocking OUT door: unenforced, still loud.
     return json.dumps({"unenforced": True, "reason": result.reason}), 0
@@ -252,7 +296,15 @@ def render_stop(front_end: str, result: DoorResult) -> tuple[str, int]:
 
 # ---------------------------------------------------------------- D0: claim vs evidence
 
-DONE_WORDS = ("done", "fixed", "pushed", "merged", "all tests pass", "handoff written", "complete")
+DONE_WORDS = (
+    "done",
+    "fixed",
+    "pushed",
+    "merged",
+    "all tests pass",
+    "handoff written",
+    "complete",
+)
 
 
 def d0_out(req: DoorRequest) -> DoorResult:
@@ -260,12 +312,16 @@ def d0_out(req: DoorRequest) -> DoorResult:
     tool call behind it is blocked once. Everything else is allowed."""
     claims = any(w in req.last_turn.lower() for w in DONE_WORDS)
     if claims and req.tool_calls_this_turn == 0:
-        return DoorResult(decision="block", status="claim_without_evidence",
-                          reason="This turn claims completion with no tool call behind it. Show the evidence or withdraw the claim.")
+        return DoorResult(
+            decision="block",
+            status="claim_without_evidence",
+            reason="This turn claims completion with no tool call behind it. Show the evidence or withdraw the claim.",
+        )
     return DoorResult(decision="allow", status="resolved")
 
 
 # ---------------------------------------------------------------- egress grant challenge
+
 
 def grant_challenge(grant: dict, nonce: bytes) -> bytes:
     """WebAuthn challenge = SHA-256(canonical outbound grant + nonce). The
@@ -327,6 +383,7 @@ def _rat_ops():
     def out(req, cred):
         r = ob.d0_out(ob.msgspec.convert(req["req"], ob.DoorRequest))
         return {"result": ob.msgspec.to_builtins(r)}
+
     return {"out": out, "health": lambda req, cred: {"peer_uid": cred[1]}}
 
 
@@ -359,8 +416,13 @@ def test_unknown_op_and_oversize_are_bad_request():
 
 
 def test_gate_fails_closed_and_loud_when_rat_is_down():
-    req = ob.DoorRequest(door="out", front_end="codex", session_id="s", human_present=True,
-                         last_turn="All done.")
+    req = ob.DoorRequest(
+        door="out",
+        front_end="codex",
+        session_id="s",
+        human_present=True,
+        last_turn="All done.",
+    )
     r = ob.gate("/nonexistent/rat.sock", req)
     assert r.decision == "block" and r.loud and r.status == "unreachable"
 
@@ -371,7 +433,9 @@ def test_gate_fails_closed_on_timeout():
     srv = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     srv.bind(path)
     srv.listen(1)  # accepts, never replies
-    req = ob.DoorRequest(door="out", front_end="claude-code", session_id="s", human_present=True)
+    req = ob.DoorRequest(
+        door="out", front_end="claude-code", session_id="s", human_present=True
+    )
     r = ob.gate(path, req, timeout_s=0.3)
     assert r.decision == "block" and r.status == "timeout" and r.loud
     srv.close()
@@ -379,10 +443,22 @@ def test_gate_fails_closed_on_timeout():
 
 def test_claim_without_evidence_blocks_through_the_real_socket():
     path, stop = _start(_rat_ops(), {os.getuid()})
-    claim = ob.DoorRequest(door="out", front_end="gemini-cli", session_id="s", human_present=True,
-                           last_turn="Fixed and pushed.", tool_calls_this_turn=0)
-    honest = ob.DoorRequest(door="out", front_end="gemini-cli", session_id="s", human_present=True,
-                            last_turn="Fixed and pushed.", tool_calls_this_turn=3)
+    claim = ob.DoorRequest(
+        door="out",
+        front_end="gemini-cli",
+        session_id="s",
+        human_present=True,
+        last_turn="Fixed and pushed.",
+        tool_calls_this_turn=0,
+    )
+    honest = ob.DoorRequest(
+        door="out",
+        front_end="gemini-cli",
+        session_id="s",
+        human_present=True,
+        last_turn="Fixed and pushed.",
+        tool_calls_this_turn=3,
+    )
     assert ob.gate(path, claim).decision == "block"
     assert ob.gate(path, honest).decision == "allow"
     stop.set()
@@ -390,7 +466,10 @@ def test_claim_without_evidence_blocks_through_the_real_socket():
 
 def test_same_result_renders_per_front_end():
     r = ob.DoorResult(decision="block", reason="why")
-    assert json.loads(ob.render_stop("claude-code", r)[0]) == {"decision": "block", "reason": "why"}
+    assert json.loads(ob.render_stop("claude-code", r)[0]) == {
+        "decision": "block",
+        "reason": "why",
+    }
     assert json.loads(ob.render_stop("gemini-cli", r)[0])["decision"] == "deny"
     assert json.loads(ob.render_stop("cursor", r)[0]) == {"followup_message": "why"}
     assert json.loads(ob.render_stop("windsurf", r)[0])["unenforced"] is True
@@ -398,16 +477,24 @@ def test_same_result_renders_per_front_end():
 
 
 def test_parse_is_vendor_tolerant():
-    a = ob.parse_stop("claude-code", {"session_id": "x", "last_assistant_message": "hi"}, True)
+    a = ob.parse_stop(
+        "claude-code", {"session_id": "x", "last_assistant_message": "hi"}, True
+    )
     b = ob.parse_stop("cursor", {"conversation_id": "x"}, False)
-    assert a.session_id == b.session_id == "x" and a.human_present and not b.human_present
+    assert (
+        a.session_id == b.session_id == "x" and a.human_present and not b.human_present
+    )
 
 
 def test_grant_challenge_binds_exact_outbound_bytes():
     g = {"host": "search.example", "payload": "q=apple crate", "scope": "once"}
     n = b"\x01" * 16
-    assert ob.grant_challenge(g, n) == ob.grant_challenge(dict(reversed(list(g.items()))), n)
-    assert ob.grant_challenge(g, n) != ob.grant_challenge({**g, "payload": "q=apple crates"}, n)
+    assert ob.grant_challenge(g, n) == ob.grant_challenge(
+        dict(reversed(list(g.items()))), n
+    )
+    assert ob.grant_challenge(g, n) != ob.grant_challenge(
+        {**g, "payload": "q=apple crates"}, n
+    )
     assert ob.grant_challenge(g, n) != ob.grant_challenge(g, b"\x02" * 16)
 
 
@@ -421,7 +508,12 @@ def test_neighborhood_walks_edges_with_states_and_stops_cycles():
                                         ('c','a','contradicts'),('c','d','supersedes');
     """)
     got = ob.neighborhood(db, "a", hops=2)
-    assert got == [("a", "sealed", 0), ("b", "draft", 1), ("c", "sealed", 1), ("d", "draft", 2)]
+    assert got == [
+        ("a", "sealed", 0),
+        ("b", "draft", 1),
+        ("c", "sealed", 1),
+        ("d", "draft", 2),
+    ]
     assert ("z", "sealed", 1) not in got  # unlinked: never pulled in by similarity
 ```
 
@@ -436,22 +528,23 @@ fields against `research-2026-10-01.md` §1 before trusting the parse.
 ```python
 #!/usr/bin/env python3
 """Thin OUT-door shim: one call, one rendered reply. No logic lives here."""
+
 import json, os, sys
-from onebox import gate, parse_stop, render_stop   # vendored client + adapter
+from onebox import gate, parse_stop, render_stop  # vendored client + adapter
 
 FRONT_END = os.environ.get("ONEBOX_FRONT_END", "claude-code")
 SOCK = os.environ.get("RAT_SOCK", f"/run/user/{os.getuid()}/ratatosk/rat.sock")
 # Seat by presence: an interactive session with a person in it is willow;
 # headless / woken / dispatched runs are not.
-HUMAN = os.environ.get("ONEBOX_HEADLESS") != "1"   # placeholder; see below
+HUMAN = os.environ.get("ONEBOX_HEADLESS") != "1"  # placeholder; see below
 
 payload = json.load(sys.stdin) if not sys.stdin.isatty() else {}
-result = gate(SOCK, parse_stop(FRONT_END, payload, HUMAN))   # fails closed, loud
+result = gate(SOCK, parse_stop(FRONT_END, payload, HUMAN))  # fails closed, loud
 out, rc = render_stop(FRONT_END, result)
 if out:
     print(out)
 if result.loud:
-    print(f"onebox: {result.reason}", file=sys.stderr)   # also raised to #alerts by Rat
+    print(f"onebox: {result.reason}", file=sys.stderr)  # also raised to #alerts by Rat
 sys.exit(rc)
 ```
 
