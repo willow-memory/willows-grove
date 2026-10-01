@@ -26,11 +26,12 @@
       "env": {
         "NESTOR_DB": "@VAULT_BOX@/nestor.db",
         "NESTOR_LEDGER": "@VAULT_BOX@/nestor.db.ledger.jsonl",
-        "NESTOR_KEYRING": "@VAULT_BOX@/verifiers.json",
+        "NESTOR_KEYRING": "@VAULT_BOX@/config/verifiers.json",
         "NESTOR_REQUIRE_SEAL_KEY": "1",
         "WILLOW_HOME": "@VAULT_BOX@",
         "WILLOW_MCP_APPS_ROOT": "@VAULT_BOX@/mcp_apps",
-        "WILLOW_STORE_ROOT": "@VAULT_BOX@/store"
+        "WILLOW_STORE_ROOT": "@VAULT_BOX@/store",
+        "JELES_CORPUS_APP_ID": "jeles-corpus"
       }
     },
     "codebase-memory-mcp": {
