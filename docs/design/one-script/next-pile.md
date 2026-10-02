@@ -369,13 +369,13 @@ own group. A blanket "bundle it all up" isn't a grant. The card is.
 **The screen it would have shown:** NEEDS YOU (the grant card; the stale
 toolchain), then the rest as counts, then wait.
 
-## Two more layers the one script could cover (proposal)
+## Three more layers the one script could cover (proposal)
 
 *Operator, 2026-10-02: "think of two more layers of things that the one code
-could cover and write them in."*
+could cover and write them in", then "one more. three total".*
 
 The four gates check the **box**: tests, toolchain, freshness, reachability.
-Two more layers sit above them. Both are made of tonight's failures, and both
+Three more layers sit above them. Both are made of tonight's failures, and both
 land inside the seven parts, so the count stays seven plus `run`.
 Agent-reported throughout.
 
@@ -432,11 +432,39 @@ the class decides the gate.
   time, not guessed at push time); `boot` checks the last close;
   `reverse` re-checks what crossed when a source turns out wrong.
 
-### What the two layers add up to
+### Layer 7: mandate — what the run does is traced to the human's words
+
+Every act (a write, a commit, a push, a new branch, a scheduled check-in) is
+traced to the human words that authorise it **before** it runs: the turn, the
+verbatim words, and whether the act is continuing an authorised task or
+starting new scope. It's the PR's `Ratified-by:` line, moved from once per PR
+to once per act.
+
+| Check | Deterministic by | Tonight's evidence |
+|---|---|---|
+| **The referent exists** | every named thing in the request ("the proposed shutdown", "the one script") is looked up in the record; no match is a hard close (report, options, wait), never a guess | "the proposed shutdown" matched nothing. The model filled it with its own prediction (P1, "the close") and acted |
+| **The words cover the act** | the act's kind and target against the mandate row: "write them in" covers editing a doc; it doesn't cover a push to a new branch | "separated out as a draft PR" was read as permission for a new branch. The designated-branch rule asks for explicit permission, so that should have been a card, not an inference |
+| **Continuing, or new scope** | the act's paths and repos against the current bite's declared scope; outside it is an offer (Rule 4: propose before starting, not before continuing) | T67 and T77 were marked FAILURE for running ahead of the operator's idea |
+| **Standing constraints** | a list of the human's standing rules, checked against the act's paths and kind | "No Forge code changes until the day-two run finishes" and "the Kaggle benchmark comes first" are exactly this kind of row. Nothing checked them; the model remembered them |
+| **Who's asking** | the source of the request: the human, a hook, a subagent, a summary, a scheduled trigger | the stop hook demanded a push; a check-in trigger is a stored prompt, not the human |
+
+- **Where it lands:**
+  - `gate` runs the checks before the act.
+  - `record` writes the mandate row beside the act (the turn, the verbatim
+    words, continuing or new).
+  - `predict` stays separate: a prediction is never a mandate. That was the
+    shutdown's failure.
+  - `view` shows any act without a mandate in NEEDS YOU.
+- **What it can't do:** decide what the human *meant*. When the words don't
+  clearly cover the act, the answer is the hard close (ask), never a
+  closer reading by the model.
+
+### What the three layers add up to
 
 - **Layer 5** keeps the run honest about **what it says**.
 - **Layer 6** keeps it honest about **what it moves**.
+- **Layer 7** keeps it honest about **what it does, and on whose word**.
 
 Together with the four gates (what the box *is*), the human's screen becomes
-three questions with computed answers: is the box sound, are the claims true,
-and is anything leaving that needs a key.
+four questions with computed answers: is the box sound, are the claims true,
+is anything leaving that needs a key, and was every act asked for.
