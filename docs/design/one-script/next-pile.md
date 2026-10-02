@@ -368,3 +368,75 @@ own group. A blanket "bundle it all up" isn't a grant. The card is.
 
 **The screen it would have shown:** NEEDS YOU (the grant card; the stale
 toolchain), then the rest as counts, then wait.
+
+## Two more layers the one script could cover (proposal)
+
+*Operator, 2026-10-02: "think of two more layers of things that the one code
+could cover and write them in."*
+
+The four gates check the **box**: tests, toolchain, freshness, reachability.
+Two more layers sit above them. Both are made of tonight's failures, and both
+land inside the seven parts, so the count stays seven plus `run`.
+Agent-reported throughout.
+
+### Layer 5: claims — what the run says is checked before the human reads it
+
+Every statement in an output that the record can check is checked, at the OUT
+door, before it reaches the human. A claim that matches the record passes
+quietly. A claim that doesn't is stamped **unverified**, with the record's
+own value beside it. The model's sentence is never silently rewritten.
+
+| Claim kind | Checked against | Tonight's evidence |
+|---|---|---|
+| **counts** ("7 scripts", "four in `/tmp`") | a count computed from the record or the disk | "seven" was nine in the draft; "four `/tmp` scripts" was five; "3 pieces" was 6+ |
+| **results** ("tests pass", "green", "done") | the tests gate's row on the current head; CI on the current SHA | the two red runs on #103 were an older SHA; the claim has to name its SHA |
+| **times and firsts** ("first appeared at 04:36") | the record, with the matched text read, not just pattern-matched | two wrong timestamps in one reply about the label |
+| **quotes and turn citations** | the operator's turns in the record | the truth-rule quote matched only after the line-wrap was read |
+| **identity** ("the operator said", "you asked for") | which turn, and who wrote it (the operator, a subagent, a hook, a summary) | a subagent's report arrived in the operator's channel; a compaction summary is not the operator |
+
+- **Where it lands:** `record` writes each checked claim as a row (claim,
+  source, verdict); `gate` runs the check at the OUT door; `view` shows
+  unverified claims in NEEDS YOU, outliers first.
+- **What it can't check:** judgement and design. Those stay agent-reported,
+  and the stamp says so. Like Appendix A, a claim with no structural shadow
+  is reported as uncheckable, not as checked.
+- **Prior art:** the Grove's stop hook already runs a green-claim gate before
+  stop (PR 101). Layer 5 is that gate, generalised from "green" to every
+  checkable kind.
+
+### Layer 6: boundaries — everything that crosses an edge is classed and carded
+
+An edge is anywhere data or authority passes between parts that don't share a
+record: turn to turn across a compaction, this session to a subagent, the box
+to a public repo, one session to the next, a hook to the model. Every
+crossing is classed by **where it came from** and **where it's going**, and
+the class decides the gate.
+
+| Boundary | Class of what crosses | Gate |
+|---|---|---|
+| **compaction or resume** | a summary: lossy, model-written | on resume, the summary's claims run through layer 5 against the record; the summary never counts as the operator |
+| **subagent and other sessions** | reports from another model | stamped with their family and labelled as a report, not an instruction; counted as one witness per family |
+| **out of the box** (push, PR, post, upload) | each file classed: authored here · built from the transcript · from local memory or settings · third-party | a grant card per push: who, what, where, every file with its bytes, the classes in separate groups. Memory and transcript classes are never in a blanket grant |
+| **session to session** | the close (handoff, prediction, manifest) | the next boot's B2 checks the bundle against the manifest; files expected to vanish are listed at the close |
+| **hooks and harness** | reminders and stop-hook demands | treated as data with a source, not as the human: a stop hook demanding a push is not authorisation to push |
+
+- **Tonight's evidence:**
+  - The blanket "bundle it all up" mixed transcript- and memory-derived
+    files with authored ones. Only a permission check outside the system
+    caught it.
+  - A stop hook then asked for exactly that push.
+  - The compaction summary carried rules forward, but also the summary's own
+    framing.
+- **Where it lands:** `gate` classes and cards every crossing; `record`
+  stamps provenance on every file pointer (so the class is known at write
+  time, not guessed at push time); `boot` checks the last close;
+  `reverse` re-checks what crossed when a source turns out wrong.
+
+### What the two layers add up to
+
+- **Layer 5** keeps the run honest about **what it says**.
+- **Layer 6** keeps it honest about **what it moves**.
+
+Together with the four gates (what the box *is*), the human's screen becomes
+three questions with computed answers: is the box sound, are the claims true,
+and is anything leaving that needs a key.
