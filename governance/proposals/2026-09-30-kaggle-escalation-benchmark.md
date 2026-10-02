@@ -95,6 +95,280 @@ These are stated before any fixture exists, so they can be graded afterwards:
 
 Because the Forge will hold public fixtures, its visibility is checked before step 1 is briefed. Every file under the benchmark directory is held to the same grep gate as the upload.
 
+## Amendment 2026-10-02: floor and consistency (post-run analysis)
+
+**Added by addition only, after round 1 and before day two.** Nothing above
+is edited. These are **not pre-registered hypotheses**: they're two extra
+reported measures, and the forecasts above keep their original wording.
+**No code changes until the day-two run with the large cloud models has
+finished** (operator, 2026-10-02: "I want this run to finish before I change
+the code. I still have to do day two with the large cloud models, and fix
+some gaps there from the first round.").
+
+**The aim, in the operator's words:** "I'm trying to find a baseline set of
+rubrics where models behave the best across the board. I'm not trying to
+find the crazy off-end models. I am trying to find the ones that do most
+things correctly most of the time." That's reliability, not peak
+performance.
+
+The two measures to add to `aggregate.py`'s report after day two:
+
+1. **Floor across shapes.** Per model, the *worst* per-shape task score and
+   the *worst* per-shape false-confidence rate (each with its Wilson
+   interval), next to the existing per-shape and pooled numbers. Models are
+   ranked for the baseline by their floor, not their mean. A model that's
+   good everywhere beats one that's excellent on three shapes and fails the
+   fourth.
+2. **Repeat-run consistency.** Re-run a fixed subset (proposed: 20 items per
+   shape, unanswerable items included, the same seed and settings) *k* times
+   per model (proposed *k* = 3), and report:
+   - the share of items whose parsed answer is identical across all *k* runs
+   - the share whose correct / incorrect verdict flips between runs
+
+   A model that's right less often but the same way every time is easier to
+   build a deterministic chain around.
+
+**Reporting rules:**
+- **Every row is kept.** The floor is a selection view over the full table,
+  never a replacement for it. The tails decide, so they're shown.
+- **False confidence stays a first-class axis.** "Correct" includes saying
+  ESCALATE when the item is unanswerable.
+- The consistency subset is fixed and committed before its runs, the same
+  discipline as the fixtures.
+
+**The code, staged here and not yet in the Forge.** These are two new files
+for `Forge/benchmarks/escalation/`, to land only after the day-two run. They
+are additive: `aggregate.py` is imported and not changed.
+
+What was checked on 2026-10-02, against the Forge at `7c67f55`:
+- The tests pass (3).
+- `ruff==0.16.7` check and format are clean.
+- An end-to-end run on `runner.py --dry-run` rows, two runs of 80 items,
+  worked. The always-ESCALATE backend scores task floor 0.0 and false
+  confidence 0.0, which shows why the floor is read on both axes together.
+- In the tests, the row fixtures carry `shape` the way runner rows do.
+
+`benchmarks/escalation/reliability.py`:
+
+```python
+"""Floor and consistency: two post-run views over the escalation rows.
+
+Additive: imports aggregate.py and changes nothing in it. Every row stays in
+the full table; these are selection views over it (amendment 2026-10-02).
+
+  python reliability.py ROWS.jsonl [ROWS2.jsonl ...]            # floor
+  python reliability.py --consistency RUN1.jsonl RUN2.jsonl ...  # k runs of one subset
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
+
+import aggregate as ag
+
+
+def floor(result: dict) -> dict:
+    """Per model: the worst shape on task score and on false confidence.
+
+    `result` is aggregate.aggregate(rows, truth). Shapes with no measurable
+    rate are skipped, never treated as 0 or 1."""
+    out = {}
+    for model, cells in result.items():
+        shapes = {s: c for s, c in cells.items() if s != "all"}
+        task = [
+            (c["task_score"], s)
+            for s, c in shapes.items()
+            if c["task_score"] is not None
+        ]
+        fc = [
+            (c["false_confidence_rate"], s)
+            for s, c in shapes.items()
+            if c["false_confidence_rate"] is not None
+        ]
+        worst_task = min(task) if task else (None, None)
+        worst_fc = max(fc) if fc else (None, None)
+        out[model] = {
+            "task_floor": worst_task[0],
+            "task_floor_shape": worst_task[1],
+            "task_floor_ci": shapes[worst_task[1]]["task_score_ci"]
+            if worst_task[1]
+            else None,
+            "false_confidence_ceiling": worst_fc[0],
+            "false_confidence_ceiling_shape": worst_fc[1],
+            "false_confidence_ceiling_ci": (
+                shapes[worst_fc[1]]["false_confidence_ci"] if worst_fc[1] else None
+            ),
+            "shapes_measured": len(task),
+        }
+    return out
+
+
+def _canon(answer) -> str:
+    return json.dumps(answer, sort_keys=True)
+
+
+def _verdict(row: dict, t: dict) -> str:
+    if row.get("error"):
+        return "error"
+    if not row.get("parse_ok"):
+        return "unparseable"
+    return "correct" if ag.is_correct(t["shape"], row.get("answer"), t) else "incorrect"
+
+
+def consistency(runs: list[list[dict]], truth: dict[str, dict]) -> dict:
+    """k runs of the same fixed subset, one row list per run.
+
+    Per model: of the items present in every run, the share whose parsed answer
+    is identical across all runs, and the share whose verdict flips. Error and
+    unparseable are verdicts of their own, so they count as flips when mixed."""
+    k = len(runs)
+    per = {}  # (model, fixture_id) -> [row per run]
+    for i, rows in enumerate(runs):
+        for row in rows:
+            key = (row.get("model"), row.get("fixture_id"))
+            per.setdefault(key, [None] * k)[i] = row
+    out: dict = {}
+    for (model, fid), rows in sorted(
+        per.items(), key=lambda x: (str(x[0][0]), str(x[0][1]))
+    ):
+        t = truth.get(fid)
+        if t is None or any(r is None for r in rows):
+            continue
+        m = out.setdefault(
+            model,
+            {"k": k, "n_items": 0, "n_identical": 0, "n_flipped": 0, "flipped_ids": []},
+        )
+        m["n_items"] += 1
+        answers = {
+            _canon(r.get("answer"))
+            if r.get("parse_ok") and not r.get("error")
+            else f"<{_verdict(r, t)}>"
+            for r in rows
+        }
+        verdicts = {_verdict(r, t) for r in rows}
+        m["n_identical"] += len(answers) == 1
+        if len(verdicts) > 1:
+            m["n_flipped"] += 1
+            m["flipped_ids"].append(fid)  # kept by id: the flips are the tails
+    for m in out.values():
+        m["identical_rate"] = ag._rate(m["n_identical"], m["n_items"])
+        m["identical_ci"] = ag.wilson_interval(m["n_identical"], m["n_items"])
+        m["flip_rate"] = ag._rate(m["n_flipped"], m["n_items"])
+        m["flip_ci"] = ag.wilson_interval(m["n_flipped"], m["n_items"])
+    return out
+
+
+def main() -> None:
+    p = argparse.ArgumentParser()
+    p.add_argument("rows", nargs="+", type=Path)
+    p.add_argument(
+        "--consistency",
+        action="store_true",
+        help="treat each file as one run of the same fixed subset",
+    )
+    a = p.parse_args()
+    truth = ag.load_truth()
+    if a.consistency:
+        print(
+            json.dumps(
+                consistency([ag.read_rows([f]) for f in a.rows], truth), indent=2
+            )
+        )
+    else:
+        print(json.dumps(floor(ag.aggregate(ag.read_rows(a.rows), truth)), indent=2))
+
+
+if __name__ == "__main__":
+    main()
+```
+
+`tests/test_reliability.py` (it currently puts the benchmark directory on the
+path; when it lands, adapt it to the Forge's test layout):
+
+```python
+import copy
+import sys
+
+sys.path.insert(0, "/home/user/Forge/benchmarks/escalation")
+import aggregate as ag
+
+import reliability as rel
+
+TRUTH = ag.load_truth()
+
+
+def rows_for(model, picks):
+    out = []
+    for fid, answer in picks:
+        out.append(
+            {
+                "model": model,
+                "fixture_id": fid,
+                "shape": TRUTH[fid]["shape"],
+                "parse_ok": answer is not None,
+                "answer": answer,
+                "confidence": 0.7,
+            }
+        )
+    return out
+
+
+def ids(shape, answerable, n):
+    return [
+        f
+        for f, t in TRUTH.items()
+        if t["shape"] == shape and t["answerable"] == answerable
+    ][:n]
+
+
+def test_floor_picks_worst_shape_and_ceiling():
+    rows = []
+    for shape in ("route", "classify", "judge", "ground"):
+        for f in ids(shape, True, 4):
+            ans = TRUTH[f]["expected"] if shape != "judge" else "WRONG"
+            rows += rows_for("m", [(f, ans)])
+        for f in ids(shape, False, 2):
+            rows += rows_for(
+                "m", [(f, "ESCALATE" if shape != "route" else "something")]
+            )
+    fl = rel.floor(ag.aggregate(rows, TRUTH))["m"]
+    assert fl["task_floor_shape"] == "judge" and fl["task_floor"] == 0.0
+    assert (
+        fl["false_confidence_ceiling_shape"] == "route"
+        and fl["false_confidence_ceiling"] == 1.0
+    )
+    assert fl["shapes_measured"] == 4
+
+
+def test_consistency_counts_identical_and_flips():
+    a, b = ids("judge", True, 2)
+    u = ids("ground", False, 1)[0]
+    r1 = rows_for(
+        "m", [(a, TRUTH[a]["expected"]), (b, TRUTH[b]["expected"]), (u, "ESCALATE")]
+    )
+    r2 = copy.deepcopy(r1)
+    r3 = copy.deepcopy(r1)
+    r3[1]["answer"] = "WRONG"  # b flips correct -> incorrect
+    r2[2]["parse_ok"] = False
+    r2[2]["answer"] = None  # u flips correct -> unparseable
+    c = rel.consistency([r1, r2, r3], TRUTH)["m"]
+    assert c["n_items"] == 3 and c["n_identical"] == 1 and c["n_flipped"] == 2
+    assert sorted(c["flipped_ids"]) == sorted([b, u])
+
+
+def test_items_missing_from_a_run_are_not_counted():
+    a = ids("route", True, 1)[0]
+    c = rel.consistency([rows_for("m", [(a, TRUTH[a]["expected"])]), []], TRUTH)
+    assert c == {}
+```
+
+**Timing:** after the day-two cloud run and its first-round gap fixes, and
+before the write-up. If both measures don't fit before 2026-10-11, the floor
+is reported (it's computed from existing rows) and consistency is deferred
+to a follow-up.
+
 ## Out of scope
 
 - Publishing any fleet artifact, KB atom, or gap text.
