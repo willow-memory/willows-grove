@@ -95,6 +95,52 @@ These are stated before any fixture exists, so they can be graded afterwards:
 
 Because the Forge will hold public fixtures, its visibility is checked before step 1 is briefed. Every file under the benchmark directory is held to the same grep gate as the upload.
 
+## Amendment 2026-10-02: floor and consistency (post-run analysis)
+
+**Added by addition only, after round 1 and before day two.** Nothing above
+is edited. These are **not pre-registered hypotheses**: they're two extra
+reported measures, and the forecasts above keep their original wording.
+**No code changes until the day-two run with the large cloud models has
+finished** (operator, 2026-10-02: "I want this run to finish before I change
+the code. I still have to do day two with the large cloud models, and fix
+some gaps there from the first round.").
+
+**The aim, in the operator's words:** "I'm trying to find a baseline set of
+rubrics where models behave the best across the board. I'm not trying to
+find the crazy off-end models. I am trying to find the ones that do most
+things correctly most of the time." That's reliability, not peak
+performance.
+
+The two measures to add to `aggregate.py`'s report after day two:
+
+1. **Floor across shapes.** Per model, the *worst* per-shape task score and
+   the *worst* per-shape false-confidence rate (each with its Wilson
+   interval), next to the existing per-shape and pooled numbers. Models are
+   ranked for the baseline by their floor, not their mean. A model that's
+   good everywhere beats one that's excellent on three shapes and fails the
+   fourth.
+2. **Repeat-run consistency.** Re-run a fixed subset (proposed: 20 items per
+   shape, unanswerable items included, the same seed and settings) *k* times
+   per model (proposed *k* = 3), and report:
+   - the share of items whose parsed answer is identical across all *k* runs
+   - the share whose correct / incorrect verdict flips between runs
+
+   A model that's right less often but the same way every time is easier to
+   build a deterministic chain around.
+
+**Reporting rules:**
+- **Every row is kept.** The floor is a selection view over the full table,
+  never a replacement for it. The tails decide, so they're shown.
+- **False confidence stays a first-class axis.** "Correct" includes saying
+  ESCALATE when the item is unanswerable.
+- The consistency subset is fixed and committed before its runs, the same
+  discipline as the fixtures.
+
+**Timing:** after the day-two cloud run and its first-round gap fixes, and
+before the write-up. If both measures don't fit before 2026-10-11, the floor
+is reported (it's computed from existing rows) and consistency is deferred
+to a follow-up.
+
 ## Out of scope
 
 - Publishing any fleet artifact, KB atom, or gap text.
