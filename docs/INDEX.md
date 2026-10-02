@@ -48,6 +48,7 @@ decisions that shaped what got built.
 | [`design/forge-convergence.md`](design/forge-convergence.md) | The Forge convergence: one session machine; §6 the build order, §6a the Table |
 | [`design/forge-convergence-flowering-experiment.md`](design/forge-convergence-flowering-experiment.md) | Experiment: growth, pools, and the flowering threshold (step 0, run and struck) |
 | [`design/one-box/README.md`](design/one-box/README.md) | One box, every front end, portless: the build plan (proposal, 2026-10-01), with its review, session record, research and tested sketches |
+| [`design/one-script/README.md`](design/one-script/README.md) | The one script: four draft proposals from session 2026-10-02 (the workflow, the runtime as one script, a runnable skeleton, constitution amendments on Draft 0.7) |
 | [`design/the-forge-shape.md`](design/the-forge-shape.md) | The Forge, the shape as talked out 2026-08-30 |
 | [`design/approval-broker.md`](design/approval-broker.md) | Approval broker: how a human act reaches a sandboxed caller |
 | [`design/fleet-wiring.md`](design/fleet-wiring.md) | How the fleet is wired |

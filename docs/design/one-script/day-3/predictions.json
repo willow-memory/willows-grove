@@ -1,0 +1,80 @@
+[
+ {
+  "id": "P1",
+  "made_at_turn": 124,
+  "made_at": "2026-10-02T02:13Z",
+  "by": "desk (model), asked by the operator to guess the next path",
+  "question": "What is the next piece of the workflow?",
+  "distribution": [
+   {
+    "path": "the close: what a session writes at its end (snapshot, predictions as a distribution, handoff, pile pointers sealed, last map append; maybe the 13 honest questions) so boot B2 has a close state to compare against",
+    "p": 0.55,
+    "band": "likely"
+   },
+   {
+    "path": "the pile after the session: how piles accumulate into territory, clumps, promotion to SOIL/KB on seal vs staying unverified",
+    "p": 0.25,
+    "band": "middle"
+   },
+   {
+    "path": "the heartbeat: a musical pulse deciding when things run, replacing the fixed 300 s tick",
+    "p": 0.07,
+    "band": "outlier"
+   },
+   {
+    "path": "model routing from the rubric baseline (floor + consistency) onto ladder rungs",
+    "p": 0.07,
+    "band": "outlier"
+   },
+   {
+    "path": "the 23-question loop end: knowing a loop is finished and the disruptive stretch is starting",
+    "p": 0.06,
+    "band": "outlier"
+   }
+  ],
+  "outcome": null,
+  "graded_by": null,
+  "note": "Saved at the operator's word (T125: 'That gives us a wonderful data point. save it.'). Ungraded until the operator names the actual next path; the grade is the operator's, not the model's.",
+  "observed_after": "agent-reported, not a grade: after T124 the record shows the operator took the repetition ladder, the gate-is-the-script, the heartbeat, the constitution amendments, the reverse loop, the one script, and at T231 the close. The grade stays the operator's."
+ },
+ {
+  "id": "P2",
+  "made_at": "2026-10-02T06:05Z",
+  "by": "desk (model), at the close, for the next boot to grade",
+  "question": "What does the next session open with?",
+  "distribution": [
+   {
+    "path": "the Kaggle work: the day-two large-cloud run, then landing reliability.py in the Forge (the deadline is 2026-10-11)",
+    "p": 0.45,
+    "band": "likely"
+   },
+   {
+    "path": "editing and publishing the Day 3 recap (filling the [VERIFY] and [DAY 2] marks)",
+    "p": 0.2,
+    "band": "middle"
+   },
+   {
+    "path": "sealing D1 (Rat is the one runtime) and moving onescript toward Rat",
+    "p": 0.15,
+    "band": "middle"
+   },
+   {
+    "path": "redoing the constitution proposals against Draft 0.8",
+    "p": 0.1,
+    "band": "outlier"
+   },
+   {
+    "path": "something the record doesn't contain (unforeseen)",
+    "p": 0.1,
+    "band": "outlier"
+   }
+  ],
+  "outcome": {
+   "operator_words": "1 + (2 + \u03b5) where \u03b5 \u2192 0",
+   "read_as": "path 1 (the Kaggle day-two run) plus path 2 (the Day 3 recap), with the unforeseen share going to zero",
+   "read_by": "desk (model), agent-reported; the operator's words are the grade"
+  },
+  "graded_by": "operator, 2026-10-02",
+  "note": "Written at the close so boot B2 has a prediction to grade. The grade is the operator's."
+ }
+]

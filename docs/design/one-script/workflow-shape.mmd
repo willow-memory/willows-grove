@@ -1,0 +1,29 @@
+flowchart TD
+  B1[B1 create session record] -->|can't write| HC
+  B1 --> B2[B2 state check: box, creds, attestation, last close]
+  B2 -->|out of place| HC
+  B2 -->|all clear: store state| B3[B3 egress index: user-authorized paths]
+  B3 --> P[Prediction from previous graphs: OPEN]
+  P --> Q[Work: a question needs data]
+  Q -. every turn .-> F[(Append turn to session JSON + .drawio, timestamped)]
+  Q --> L[Ladder 1: user's own sources: SOIL, KB, Nestor, Jeles corpus, vault]
+  L -->|found: dense + sealed root| ANS
+  L -->|found: thin / unsealed| ANS
+  L -->|nothing| G1{Gate: Jeles web}
+  G1 -->|denied| C1[Grant card: who, what, where, bytes out] --> U1((User decides))
+  G1 -->|granted| J[Ladder 2: Jeles trusted sources online]
+  U1 -->|yes| J
+  U1 -->|no: precedent| ANS
+  J -->|found: saved unverified| ANS
+  J -->|nothing| G2{Gate: willow_web}
+  G2 -->|denied| C2[Grant card] --> U2((User decides))
+  G2 -->|granted| W[Ladder 3: willow_web finds a NEW source]
+  U2 -->|yes| W
+  U2 -->|no: precedent| ANS
+  W -->|found: guard scan, saved unverified; source proposed to user| ANS
+  W -->|nothing| M[Ladder 4: local model, then cloud: cloud is egress, needs a grant]
+  M --> ANS[Result with state + sources -> agent phrases it, last]
+  ANS --> T{Human-only attestation?}
+  T -->|yes| V[Verified]
+  T -->|no| UV[Kept as unverified until proven or disproven]
+  HC[[HARD CLOSE: stop, report to human, present options, wait]]
