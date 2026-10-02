@@ -485,7 +485,7 @@ Every autonomous fleet eventually develops an economy; ignoring it delays rather
 - A constitutional amendment that invalidates its required compliance tests may not enter force (see Article VIII).
 - Tests reference clauses by Trace ID, not prose, so law ↔ implementation ↔ test form a closed, auditable loop.
 
-**Homes (2026-08-10).** Declarative Trace-ID case cards for the eternity-clause probes that already exist (`CONST-0-2` … `CONST-0-5`) live in [`governance/compliance/cases/`](governance/compliance/cases/) — constants and forbidden-act prose only, no archived-engine imports. Executable adversarial runners that attack *current* gates are a `willow-mcp` / `mem_ratify` build, to be authored alongside the machine-readable projection. Historical willow-2.0 probe bodies remain in the greenfield archive for provenance; they are not the living suite.
+**Homes (2026-08-10).** Declarative Trace-ID case cards for the eternity-clause probes that already exist (`CONST-0-2` … `CONST-0-5`) live in [`governance/compliance/cases/`](../../../../governance/compliance/cases/) — constants and forbidden-act prose only, no archived-engine imports. Executable adversarial runners that attack *current* gates are a `willow-mcp` / `mem_ratify` build, to be authored alongside the machine-readable projection. Historical willow-2.0 probe bodies remain in the greenfield archive for provenance; they are not the living suite.
 
 ---
 
