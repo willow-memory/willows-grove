@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+import re
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -33,7 +34,9 @@ class Refused(Exception):
 
 @dataclass
 class Decision:
-    verdict: str  # pass | flagged | awaiting_seal | awaiting_grant | refused
+    # pass | flagged | awaiting_seal | awaiting_grant | awaiting_mandate
+    # | hard_close | refused
+    verdict: str
     reason: str = ""
     card: dict = field(default_factory=dict)  # a grant or seal card, when one is needed
     match: dict = field(default_factory=dict)  # a script-match result, when relevant
@@ -157,3 +160,218 @@ def _door(change: dict, law: dict, index: list[dict]) -> Decision:
         return Decision("pass", match=e)
 
     return Decision("pass")
+
+
+def _closed(fn, *args) -> Decision:
+    """Every door fails closed: a refusal, or any error in the door itself."""
+    try:
+        return fn(*args)
+    except Refused as e:
+        return Decision("refused", str(e))
+    except Exception as e:
+        return Decision(
+            "refused", f"gate error, failing closed: {type(e).__name__}: {e}"
+        )
+
+
+# ── layer 6: boundaries — what leaves the box is classed and carded ──────────
+PROVENANCE = ("authored", "transcript", "memory", "third-party")
+FILE_BY_FILE = ("transcript", "memory")  # never covered by a blanket grant
+
+
+def push_card(pile: dict, files: list[str], who: str, where: str, law: dict):
+    """A push is egress. The card lists every file and its bytes, by provenance."""
+    return _closed(_push_card, pile, files, who, where, law)
+
+
+def _push_card(pile, files, who, where, law) -> Decision:
+    ptr = {i["where"]: i for i in pile.get("items", [])}
+    groups: dict[str, list[dict]] = {}
+    for f in sorted(files):
+        p = ptr.get(f)
+        if p is None:
+            raise Refused(f"'{f}' is not in the pile; nothing unlisted leaves the box")
+        cls = p.get("provenance", "unknown")
+        if cls not in PROVENANCE:
+            raise Refused(
+                f"'{f}' has no known provenance ({cls}); unclassed never leaves"
+            )
+        groups.setdefault(cls, []).append(
+            {"where": f, "bytes": p["bytes"], "sha": p["sha"]}
+        )
+    card = {
+        "who": who,
+        "where": where,
+        "groups": dict(sorted(groups.items())),
+        "bytes": sum(i["bytes"] for g in groups.values() for i in g),
+    }
+    grant = next(
+        (g for g in law.get("grants", []) if g["who"] == who and g["where"] == where),
+        None,
+    )
+    if grant is None:
+        return Decision(
+            "awaiting_grant", "a push is outbound; no grant covers it", card
+        )
+    uncovered = [
+        i["where"]
+        for cls, items in groups.items()
+        for i in items
+        if (cls in FILE_BY_FILE and i["where"] not in grant.get("files", []))
+        or (
+            cls not in FILE_BY_FILE
+            and cls not in grant.get("classes", [])
+            and i["where"] not in grant.get("files", [])
+        )
+    ]
+    if uncovered:
+        card["uncovered"] = uncovered
+        return Decision(
+            "awaiting_grant",
+            "the grant doesn't name these; transcript and memory files are "
+            "granted file by file, never in a blanket",
+            card,
+        )
+    return Decision("pass", card=card)
+
+
+# ── layer 7: mandate — every act is traced to the human's words ─────────────
+AUTHORISE = ("human",)  # a hook, subagent, summary or trigger never authorises
+
+
+def mandate(act: dict, mandates: dict, known_names: set, constraints: list):
+    """Before an act runs: whose words, do they cover it, is it new scope."""
+    return _closed(_mandate, act, mandates, known_names, constraints)
+
+
+def _mandate(act, mandates, known_names, constraints) -> Decision:
+    m = mandates.get(act.get("mandate") or "")
+    if m is None:
+        return Decision(
+            "awaiting_mandate", "no mandate: which of the human's words asked for this?"
+        )
+    if m["source"] not in AUTHORISE:
+        raise Refused(f"asked by a {m['source']}, not the human")
+    unresolved = sorted(n for n in act.get("refers_to", []) if n not in known_names)
+    if unresolved:
+        return Decision(
+            "hard_close",
+            f"the record has nothing named {unresolved}; asking, not guessing",
+            card={"unresolved": unresolved, "words": m["words"], "turn": m["turn"]},
+        )
+    if act["kind"] not in m["covers"]:
+        return Decision(
+            "awaiting_mandate",
+            f"the words ({m['words']!r}) cover {sorted(m['covers'])}, not "
+            f"{act['kind']!r}",
+            card={"turn": m["turn"], "words": m["words"], "kind": act["kind"]},
+        )
+    paths = act.get("paths", [])
+    for c in constraints:
+        if act["kind"] in c.get("kinds", [act["kind"]]) and any(
+            p.startswith(pre) for p in paths for pre in c["paths"]
+        ):
+            raise Refused(f"standing rule: {c['rule']}")
+    outside = sorted(
+        p for p in paths if not any(p.startswith(s) for s in m.get("scope", [""]))
+    )
+    if outside:
+        return Decision(
+            "flagged",
+            "new scope: offer it before starting it (Rule 4)",
+            card={"paths": outside, "turn": m["turn"]},
+        )
+    return Decision("pass", card={"turn": m["turn"], "words": m["words"]})
+
+
+# ── layer 5: claims — what the run says is checked before the human reads it ─
+_WORDS = dict(
+    zip(
+        "one two three four five six seven eight nine ten eleven twelve".split(),
+        range(1, 13),
+    )
+)
+_GREEN = re.compile(r"\b(tests? pass(?:ed|es)?|all green|is green|went green)\b", re.I)
+_SHA = re.compile(r"\b[0-9a-f]{7,40}\b")
+_TURN = re.compile(r"\bT(\d{1,4})\b")
+_QUOTE = re.compile(r'"([^"]{20,})"')
+
+
+def _norm(text: str) -> str:
+    text = re.sub(r"(?m)^\s*>\s?", " ", text)
+    return re.sub(r"\s+", " ", text).strip().lower()
+
+
+def check_claims(text: str, facts: dict) -> list[dict]:
+    """Checkable claims only. A claim the record can't check isn't listed:
+    it stays agent-reported, and the stamp says so."""
+    rows = []
+    for noun, value in sorted(facts.get("counts", {}).items()):
+        pat = re.compile(
+            rf"\b(\d+|{'|'.join(_WORDS)})\s+(?:[\w`./-]+\s+){{0,2}}?{re.escape(noun)}\b",
+            re.I,
+        )
+        for m in pat.finditer(text):
+            said = m.group(1).lower()
+            n = int(said) if said.isdigit() else _WORDS[said]
+            ok = n == value
+            rows.append(
+                {
+                    "at": m.start(),
+                    "kind": "count",
+                    "claim": m.group(0),
+                    "verdict": "verified" if ok else "unverified",
+                    "record": value,
+                }
+            )
+    for sentence in re.split(r"(?<=[.!?])\s+", text):
+        if not _GREEN.search(sentence):
+            continue
+        shas = _SHA.findall(sentence)
+        green = facts.get("green_sha")
+        ok = bool(green) and any(
+            green.startswith(s) or s.startswith(green) for s in shas
+        )
+        why = (
+            ""
+            if ok
+            else "names no commit"
+            if not shas
+            else f"the record has green on {green or 'nothing'}"
+        )
+        rows.append(
+            {
+                "at": text.find(sentence),
+                "kind": "result",
+                "claim": sentence.strip(),
+                "verdict": "verified" if ok else "unverified",
+                "record": why or green,
+            }
+        )
+    last = facts.get("turns")
+    if last is not None:
+        for m in _TURN.finditer(text):
+            ok = 1 <= int(m.group(1)) <= last
+            rows.append(
+                {
+                    "at": m.start(),
+                    "kind": "turn",
+                    "claim": m.group(0),
+                    "verdict": "verified" if ok else "unverified",
+                    "record": f"turns 1-{last}",
+                }
+            )
+    said_by_human = _norm(facts.get("operator_text", ""))
+    if said_by_human:
+        for m in _QUOTE.finditer(text):
+            ok = _norm(m.group(1)) in said_by_human
+            rows.append(
+                {
+                    "at": m.start(),
+                    "kind": "quote",
+                    "claim": m.group(1)[:60],
+                    "verdict": "verified" if ok else "unverified",
+                    "record": "" if ok else "not in the human's turns",
+                }
+            )
+    return sorted(rows, key=lambda r: (r["at"], r["kind"]))

@@ -6,9 +6,21 @@ real path: a gate's own report about itself is not evidence).
 
 Any change without a recorded cause is a hard close: report, options, wait.
 If any probe gets through, the box does not open at all.
+
+The four gates (tests, toolchain, freshness, reachability) report on the
+Appendix A scale, and every failing row says why. They run at check-in and
+again at check-out. Each takes an injectable runner, so the gates are tested
+without the tools they check.
 """
 
 from __future__ import annotations
+
+import importlib.util
+import re
+import shutil
+import subprocess
+import sys
+from pathlib import Path
 
 from . import gate, reverse
 
@@ -59,7 +71,173 @@ def probes(keys: dict, law: dict) -> list[dict]:
     return out
 
 
-def boot(rec, keys: dict, law: dict) -> dict:
+def _row(gate_name: str, where: str, verdict: str, why: str = "", **extra) -> dict:
+    return {"gate": gate_name, "where": where, "verdict": verdict, "why": why, **extra}
+
+
+def _run(argv: list[str], cwd: str, timeout: int = 600) -> tuple[int, str]:
+    p = subprocess.run(argv, cwd=cwd, capture_output=True, text=True, timeout=timeout)
+    lines = (p.stdout + p.stderr).strip().splitlines()
+    return p.returncode, lines[-1] if lines else ""
+
+
+def tests_gate(suites: list[dict], runner=_run) -> list[dict]:
+    """Run each suite. Pass, fail, or can't run, with why."""
+    out = []
+    for s in sorted(suites, key=lambda s: s["name"]):
+        missing = [m for m in s.get("needs", []) if importlib.util.find_spec(m) is None]
+        if missing:
+            out.append(
+                _row("tests", s["name"], "failing", f"can't run: needs {missing}")
+            )
+        elif not Path(s["cwd"]).is_dir():
+            out.append(
+                _row("tests", s["name"], "failing", "can't run: no such directory")
+            )
+        else:
+            rc, last = runner(s["argv"], s["cwd"])
+            out.append(
+                _row("tests", s["name"], "satisfied", "", result=last)
+                if rc == 0
+                else _row("tests", s["name"], "failing", f"failed: {last}")
+            )
+    return out
+
+
+def _tool_version(tool: str) -> str | None:
+    exe = shutil.which(tool)
+    if exe is None:
+        return None
+    _, last = _run([exe, "--version"], ".", timeout=30)
+    m = re.search(r"\d+\.\d+(?:\.\d+)?", last)
+    return m.group(0) if m else last
+
+
+def toolchain_gate(pins: dict, version_of=_tool_version, py: str | None = None) -> list:
+    """Installed versions against the repo's pins, and whether a venv is active."""
+    out = []
+    for tool, want in sorted(pins.get("tools", {}).items()):
+        have = version_of(tool)
+        if have is None:
+            out.append(
+                _row("toolchain", tool, "failing", f"not installed; pinned {want}")
+            )
+        elif have != want:
+            out.append(
+                _row("toolchain", tool, "failing", f"{have} on PATH; pinned {want}")
+            )
+        else:
+            out.append(_row("toolchain", tool, "satisfied"))
+    py = py or f"{sys.version_info.major}.{sys.version_info.minor}"
+    if "python" in pins:
+        ok = py in pins["python"]
+        out.append(
+            _row(
+                "toolchain",
+                "python",
+                "satisfied" if ok else "failing",
+                "" if ok else f"{py}; supported {pins['python']}",
+            )
+        )
+    if pins.get("venv"):
+        in_venv = sys.prefix != sys.base_prefix
+        out.append(
+            _row(
+                "toolchain",
+                "venv",
+                "satisfied" if in_venv else "differently",
+                "" if in_venv else "the system interpreter, not a venv",
+            )
+        )
+    return out
+
+
+def _git(repo: str, *args: str) -> str:
+    p = subprocess.run(["git", "-C", repo, *args], capture_output=True, text=True)
+    return p.stdout.strip() if p.returncode == 0 else ""
+
+
+def freshness_gate(
+    repos: list[str], docs: list[dict], law_version: str, git=_git
+) -> list[dict]:
+    """Clones against their last-fetched remote (fetching is egress, so it isn't
+    done here), and documents against the law they were built on."""
+    out = []
+    for repo in sorted(repos):
+        if not git(repo, "rev-parse", "@{u}"):
+            out.append(_row("freshness", repo, "differently", "no upstream to compare"))
+            continue
+        counts = git(repo, "rev-list", "--left-right", "--count", "HEAD...@{u}")
+        ahead, behind = (int(x) for x in (counts.split() or ["0", "0"]))
+        out.append(
+            _row("freshness", repo, "failing", f"{behind} commit(s) behind its remote")
+            if behind
+            else _row("freshness", repo, "satisfied", f"{ahead} ahead" if ahead else "")
+        )
+    for d in sorted(docs, key=lambda d: d["where"]):
+        ok = d["built_on"] == law_version
+        out.append(
+            _row(
+                "freshness",
+                d["where"],
+                "satisfied" if ok else "failing",
+                ""
+                if ok
+                else f"built on Draft {d['built_on']}; the law is {law_version}",
+            )
+        )
+    return out
+
+
+def reachability_gate(deps: list[dict]) -> list[dict]:
+    """Three states, never collapsed: populated, empty, unreachable."""
+    out = []
+    for d in sorted(deps, key=lambda d: d["name"]):
+        try:
+            got = d["probe"]()
+        except Exception as e:
+            out.append(
+                _row(
+                    "reachability",
+                    d["name"],
+                    "failing",
+                    f"unreachable: {type(e).__name__}: {e}",
+                    state="unreachable",
+                )
+            )
+            continue
+        out.append(
+            _row("reachability", d["name"], "satisfied", "", state="populated")
+            if got
+            else _row(
+                "reachability",
+                d["name"],
+                "differently",
+                "reachable, empty",
+                state="empty",
+            )
+        )
+    return out
+
+
+def gates(cfg: dict) -> list[dict]:
+    """The four gates, in a fixed order. `cfg` keys are all optional."""
+    return (
+        tests_gate(cfg.get("tests", []), cfg.get("runner", _run))
+        + toolchain_gate(
+            cfg.get("pins", {}), cfg.get("version_of", _tool_version), cfg.get("python")
+        )
+        + freshness_gate(
+            cfg.get("repos", []),
+            cfg.get("docs", []),
+            cfg.get("law_version", ""),
+            cfg.get("git", _git),
+        )
+        + reachability_gate(cfg.get("deps", []))
+    )
+
+
+def boot(rec, keys: dict, law: dict, gate_cfg: dict | None = None) -> dict:
     rows = rec.rows()
     lines: list[str] = []
 
@@ -79,8 +257,16 @@ def boot(rec, keys: dict, law: dict) -> dict:
     if broke:
         raise BoxWontOpen(f"probes got through: {[p['probe'] for p in broke]}")
 
+    checked = gates(gate_cfg or {})  # the four gates
+    lines += [
+        f"{r['gate']}: {r['where']}: {r['why']}"
+        for r in checked
+        if r["verdict"] == "failing"
+    ]
+
     egress = sorted(f"{g['who']} -> {g['where']}" for g in law.get("grants", []))  # B3
     return {
+        "gates": checked,
         "hard_close": bool(lines),
         "lines": lines,
         "options": OPTIONS if lines else [],

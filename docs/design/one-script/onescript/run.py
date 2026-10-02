@@ -3,8 +3,10 @@
 The sequencer only. No logic of its own lives here: every decision is made by one
 of the seven parts, and this file only calls them in order.
 
-  check-in  = boot -> predict
+  check-in  = boot (probes + the four gates) -> predict
   each turn = verify -> open -> predict -> door -> (resolve) -> record -> grade -> close
+  each act  = mandate (layer 7) -> push card (layer 6, when it leaves the box)
+  each say  = claims checked against the record (layer 5) before the human reads
   check-out = reverse -> view
   night     = resolve.night_pool inside a budget, yielding to presence
 """
@@ -30,9 +32,11 @@ class Run:
         self.sys = gate.system()
         self.answers: list[dict] = []
         self.graded: list[dict] = []
+        self.claims: list[dict] = []
+        self.acts: list[dict] = []
 
-    def checkin(self) -> dict:
-        report = boot.boot(self.rec, self.keys, self.law)
+    def checkin(self, gate_cfg: dict | None = None) -> dict:
+        report = boot.boot(self.rec, self.keys, self.law, gate_cfg)
         self.rec.append(
             "boot", self.sys, hard_close=report["hard_close"], lines=report["lines"]
         )
@@ -107,6 +111,47 @@ class Run:
         self.rec.close_turn(who, n)
         return out
 
+    def act(
+        self,
+        act: dict,
+        mandates: dict,
+        constraints: list,
+        known_names: set | None = None,
+    ) -> dict:
+        """Layers 7 then 6. Nothing here performs the act: it says whether it
+        may run, and what card the human must see first."""
+        names = known_names if known_names is not None else self._known_names()
+        d = gate.mandate(act, mandates, names, constraints)
+        if d.verdict == "pass" and act["kind"] == "push":
+            d = gate.push_card(
+                self.rec.pile(), act["files"], act["who"], act["where"], self.law
+            )
+        row = {
+            "kind": act["kind"],
+            "verdict": d.verdict,
+            "reason": d.reason,
+            "card": d.card,
+        }
+        self.acts.append(row)
+        self.rec.append(
+            "act",
+            self.sys,
+            mandate=act.get("mandate"),
+            act_kind=row["kind"],
+            verdict=row["verdict"],
+            reason=row["reason"],
+            card=row["card"],
+        )
+        return row
+
+    def say(self, text: str, facts: dict) -> list[dict]:
+        """Layer 5: the claims in an output, checked before the human reads it.
+        The text itself is never rewritten; the rows sit beside it."""
+        rows = gate.check_claims(text, facts)
+        self.claims += rows
+        self.rec.append("claims", self.sys, text_hash=h16(text), claims=rows)
+        return rows
+
     def seal(self, subject: str, proof: str, human_key: bytes) -> dict:
         try:
             hum = gate.human(subject, proof, human_key)
@@ -145,9 +190,18 @@ class Run:
             task_of=task_of,
             predictions=self.graded,
         )
-        screen = view.morning(rep, boot_report)
+        screen = view.morning(rep, boot_report, self.claims, self.acts)
         self.rec.append("reconcile", self.sys, report_hash=h16(screen))
         return rep, screen
+
+    def _known_names(self) -> set:
+        """Names the record holds: bites, turn intents, files written."""
+        rows = self.rec.rows()
+        return (
+            {r["bite"] for r in rows if r["kind"] == "bite"}
+            | {r["intent"] for r in rows if r["kind"] == "turn_open"}
+            | {r["path"] for r in rows if r["kind"] == "write"}
+        )
 
     # ── the script index lives in the record, not in memory ──────────────────
     def _script_index(self) -> list[dict]:

@@ -12,7 +12,12 @@ from __future__ import annotations
 import json
 
 
-def morning(report: dict, boot: dict | None = None) -> str:
+def morning(
+    report: dict,
+    boot: dict | None = None,
+    claims: list | None = None,
+    acts: list | None = None,
+) -> str:
     L: list[str] = []
     needs: list[str] = []
     if boot and boot["hard_close"]:
@@ -36,6 +41,15 @@ def morning(report: dict, boot: dict | None = None) -> str:
         f"re-check row {s['row']} ({s['kind']}) · {s['why']}"
         for s in report["surfaced"]
     ]
+    for a in acts or []:  # layers 6 and 7: what would leave, what wasn't asked for
+        if a["verdict"] != "pass":
+            card = json.dumps(a.get("card", {}), sort_keys=True)
+            needs.append(f"{a['verdict']} · {a['kind']} · {a['reason']} · {card}")
+    for c in claims or []:  # layer 5: what was said that the record doesn't back
+        if c["verdict"] == "unverified":
+            needs.append(
+                f"unverified {c['kind']} · {c['claim']!r} · record: {c['record']}"
+            )
     L.append("NEEDS YOU")
     L += [f"  · {x}" for x in needs] or ["  · nothing"]
     if boot and boot["hard_close"]:
@@ -79,6 +93,14 @@ def morning(report: dict, boot: dict | None = None) -> str:
         f"  · pile {json.dumps(c, sort_keys=True)} · {report['chain_rows']} rows"
         f" · run {report['version']}"
     )
+    if boot and boot.get("gates"):
+        tally: dict[str, int] = {}
+        for g in boot["gates"]:
+            tally[g["verdict"]] = tally.get(g["verdict"], 0) + 1
+        L.append(f"  · gates {json.dumps(tally, sort_keys=True)}")
+    if claims:
+        ok = sum(c["verdict"] == "verified" for c in claims)
+        L.append(f"  · claims checked: {ok}/{len(claims)} verified")
     if boot:
         held = sum(p["held"] for p in boot["probes"])
         L.append(

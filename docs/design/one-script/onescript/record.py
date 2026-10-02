@@ -125,7 +125,11 @@ class Record:
         live: bool = False,
         expect_vanish: bool = False,
         cites: list[str] | None = None,
+        provenance: str = "unknown",
     ) -> dict:
+        """`provenance` is where the bytes came from: authored, transcript,
+        memory or third-party. It's stamped at write time so a push never has
+        to guess it; "unknown" never leaves the box (gate.push_card)."""
         if rel.startswith(("/tmp", "tmp/")) and not expect_vanish:
             raise PermissionError(
                 f"record: '{rel}' is temp; nothing kept is written to temp"
@@ -133,7 +137,12 @@ class Record:
         target = self.box / rel
         target.parent.mkdir(parents=True, exist_ok=True)
         _atomic(target, data)
-        ptr = {"where": rel, "sha": h16(data), "bytes": len(data)}
+        ptr = {
+            "where": rel,
+            "sha": h16(data),
+            "bytes": len(data),
+            "provenance": provenance,
+        }
         if live:
             ptr["live"] = True
         if expect_vanish:
