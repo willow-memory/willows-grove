@@ -264,8 +264,14 @@ def boot(rec, keys: dict, law: dict, gate_cfg: dict | None = None) -> dict:
         if r["verdict"] == "failing"
     ]
 
+    # Opus P5: a clause with no verdict is not a satisfied clause. If no
+    # reconcile has ever run, enforcement status is unknown, and says so.
+    last = [r for r in rows if r["kind"] == "reconcile"]
+    report = {"state": "current", "at": last[-1]["ts"]} if last else {"state": "never"}
+
     egress = sorted(f"{g['who']} -> {g['where']}" for g in law.get("grants", []))  # B3
     return {
+        "report": report,
         "gates": checked,
         "hard_close": bool(lines),
         "lines": lines,

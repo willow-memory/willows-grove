@@ -106,8 +106,14 @@ def witnesses(answers: list[dict]) -> dict:
                 votes.setdefault(next(iter(v)), []).append(f)
         if len(votes) == 1 and not torn and len(fams) >= 2:
             ans, fs = next(iter(votes.items()))
-            agreed.append(
-                {"q": q, "answer": ans, "families": sorted(fs), "standing": "witnessed"}
+            agreed.append(  # Opus P6 / VI.5: the absence of dissent is a recorded fact
+                {
+                    "q": q,
+                    "answer": ans,
+                    "families": sorted(fs),
+                    "standing": "witnessed",
+                    "dissent": "none recorded",
+                }
             )
         else:
             split.append(
@@ -158,6 +164,16 @@ def reconcile(
 ) -> dict:
     items = three_way(box, pile, rows)
     sealed_rows = {r["subject"] for r in rows if r["kind"] == "seal"}
+    awaiting = sorted(
+        (
+            r
+            for r in rows
+            if r["kind"] == "door"
+            and r["hash"] not in sealed_rows
+            and r["verdict"] in ("awaiting_seal", "awaiting_grant")
+        ),
+        key=lambda r: r["ts"],
+    )
     counts: dict[str, int] = {}
     for i in items:
         counts[i["verdict"]] = counts.get(i["verdict"], 0) + 1
@@ -173,12 +189,12 @@ def reconcile(
         "witness": witnesses(list(answers)),
         "grades": grades(list(answers), sealed or {}, task_of or {}),
         "predictions": list(predictions),
-        "awaiting": [
-            r
-            for r in rows
-            if r["kind"] == "door"
-            and r["hash"] not in sealed_rows
-            and r["verdict"] in ("awaiting_seal", "awaiting_grant")
-        ],
+        "awaiting": awaiting,
+        # Opus P3: the queue's depth and age are reported state. It authorizes
+        # nothing; it only stops a stall from looking like a quiet period.
+        "backpressure": {
+            "open": len(awaiting),
+            "oldest": awaiting[0]["ts"] if awaiting else None,
+        },
         "chain_rows": len(rows),
     }

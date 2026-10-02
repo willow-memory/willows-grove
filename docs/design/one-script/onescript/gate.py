@@ -294,7 +294,16 @@ _WORDS = dict(
 _GREEN = re.compile(r"\b(tests? pass(?:ed|es)?|all green|is green|went green)\b", re.I)
 _SHA = re.compile(r"\b[0-9a-f]{7,40}\b")
 _TURN = re.compile(r"\bT(\d{1,4})\b")
-_QUOTE = re.compile(r'"([^"]{20,})"')
+_QUOTE = re.compile(r'["\u201c]([^"\u201c\u201d\n]{20,})["\u201d]')
+_FENCE = re.compile(r"```.*?```", re.S)
+_INLINE = re.compile(r"`[^`\n]*`")
+
+
+def _prose(text: str) -> str:
+    """Quotes are only read in prose: not across code blocks, inline code or
+    table cells, which paired quote marks across a whole file (2026-10-02)."""
+    text = _INLINE.sub(" ", _FENCE.sub(" ", text))
+    return "\n".join(x for x in text.splitlines() if not x.lstrip().startswith("|"))
 
 
 def _norm(text: str) -> str:
@@ -363,7 +372,8 @@ def check_claims(text: str, facts: dict) -> list[dict]:
             )
     said_by_human = _norm(facts.get("operator_text", ""))
     if said_by_human:
-        for m in _QUOTE.finditer(text):
+        prose = _prose(text)
+        for m in _QUOTE.finditer(prose):
             ok = _norm(m.group(1)) in said_by_human
             rows.append(
                 {

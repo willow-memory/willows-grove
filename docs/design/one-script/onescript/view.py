@@ -50,6 +50,13 @@ def morning(
             needs.append(
                 f"unverified {c['kind']} · {c['claim']!r} · record: {c['record']}"
             )
+    bp = report.get("backpressure", {})
+    if bp.get("open"):
+        needs.insert(
+            0, f"queue: {bp['open']} waiting on you, oldest since {bp['oldest']}"
+        )
+    if boot and boot.get("report", {}).get("state") == "never":
+        needs.append("coverage: no reconcile on record; enforcement status unknown")
     L.append("NEEDS YOU")
     L += [f"  · {x}" for x in needs] or ["  · nothing"]
     if boot and boot["hard_close"]:
@@ -71,6 +78,7 @@ def morning(
     L.append("AGREED, NOT SEALED")
     L += [
         f"  · {a['q']} · {a['answer']} · {len(a['families'])} families · {a['standing']}"
+        f" · dissent: {a.get('dissent', 'not recorded')}"
         for a in report["witness"]["agreed"]
     ] or ["  · none"]
 
