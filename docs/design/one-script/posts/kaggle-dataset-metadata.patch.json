@@ -1,0 +1,30 @@
+{
+  "subtitle": "200 invented prompts: does a model know when to say ESCALATE?",
+  "description": "# Escalation benchmark: prompts\n\nLeaderboards ask whether a model gets the answer. This benchmark asks a second question: **does it know when it can't?**\n\nEvery task has a refusal token, `ESCALATE`. In each of four everyday job shapes, about one item in five has had its answer removed, or comes with text that does not contain it. On those items `ESCALATE` is the only correct reply. Every item is invented for this benchmark.\n\n| Shape | Items | The job |\n|---|---|---|\n| route | 60 | pick the right tool from a 20-tool catalogue for a one-line request |\n| classify | 50 | fill a structured record from a short note |\n| judge | 50 | decide whether a document supports a claim |\n| ground | 40 | answer a brief using only a given passage |\n\nEach model gets two numbers that are never merged: a **task score** on the answerable items, and a **false-confidence rate**: how often it answered anyway when the right reply was `ESCALATE`.\n\n## Files\n\n- `route.jsonl`, `classify.jsonl`, `judge.jsonl`, `ground.jsonl`: one JSON object per line, with `id`, `shape`, `messages` (the system and user message exactly as sent to a model) and `schema` (the reply envelope, `{answer, confidence}`).\n- `catalog/tools.json`: the invented tools the route prompts are written against.\n\nThe answer key is deliberately **not** in this dataset.\n\n## Where it runs\n\n- Kaggle Benchmarks tasks: [escalation-bench-route](https://www.kaggle.com/benchmarks/tasks/rudi193/escalation-bench-route), [classify](https://www.kaggle.com/benchmarks/tasks/rudi193/escalation-bench-classify), [judge](https://www.kaggle.com/benchmarks/tasks/rudi193/escalation-bench-judge), [ground](https://www.kaggle.com/benchmarks/tasks/rudi193/escalation-bench-ground)\n- Code (runner, aggregator, scoring, privacy gate): [forge-play/Forge, benchmarks/escalation](https://github.com/forge-play/Forge/tree/master/benchmarks/escalation)\n- Write-up: \"Does your model know when it doesn't know? A benchmark for the ESCALATE answer\" on DEV (Kaggle Benchmarking Challenge, #kagglechallenge)\n",
+  "keywords": ["nlp", "text", "artificial intelligence"],
+  "userSpecifiedSources": "Every item was written for this benchmark; no third-party dataset is included. The files are generated and checked by forge-play/Forge benchmarks/escalation (kaggle_export.py and kaggle_stage.py), whose gates refuse personal data, tokens, paths, binary payloads and the answer key before anything is uploaded.",
+  "expectedUpdateFrequency": "never",
+  "resources": [
+    {"path": "route.jsonl", "description": "60 route prompts: pick one tool from catalog/tools.json, or ESCALATE.", "schema": {"fields": [
+      {"name": "id", "type": "string", "description": "Item id, e.g. route-001"},
+      {"name": "shape", "type": "string", "description": "Always route"},
+      {"name": "messages", "type": "array", "description": "System and user messages, exactly as sent to a model"},
+      {"name": "schema", "type": "object", "description": "Reply envelope the prompt asks for: {answer, confidence}"}]}},
+    {"path": "classify.jsonl", "description": "50 classify prompts: fill a structured record from a short note, or ESCALATE.", "schema": {"fields": [
+      {"name": "id", "type": "string", "description": "Item id"},
+      {"name": "shape", "type": "string", "description": "Always classify"},
+      {"name": "messages", "type": "array", "description": "System and user messages, exactly as sent to a model"},
+      {"name": "schema", "type": "object", "description": "Reply envelope: {answer, confidence}"}]}},
+    {"path": "judge.jsonl", "description": "50 judge prompts: does the document support the claim? Or ESCALATE.", "schema": {"fields": [
+      {"name": "id", "type": "string", "description": "Item id"},
+      {"name": "shape", "type": "string", "description": "Always judge"},
+      {"name": "messages", "type": "array", "description": "System and user messages, exactly as sent to a model"},
+      {"name": "schema", "type": "object", "description": "Reply envelope: {answer, confidence}"}]}},
+    {"path": "ground.jsonl", "description": "40 ground prompts: answer a brief from the given passage only, or ESCALATE.", "schema": {"fields": [
+      {"name": "id", "type": "string", "description": "Item id"},
+      {"name": "shape", "type": "string", "description": "Always ground"},
+      {"name": "messages", "type": "array", "description": "System and user messages, exactly as sent to a model"},
+      {"name": "schema", "type": "object", "description": "Reply envelope: {answer, confidence}"}]}},
+    {"path": "catalog/tools.json", "description": "The invented 20-tool catalogue the route prompts are written against."}
+  ]
+}

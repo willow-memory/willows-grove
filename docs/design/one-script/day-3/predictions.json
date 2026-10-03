@@ -69,12 +69,14 @@
     "band": "outlier"
    }
   ],
-  "outcome": {
+  "outcome": null,
+  "misread": {
    "operator_words": "1 + (2 + \u03b5) where \u03b5 \u2192 0",
    "read_as": "path 1 (the Kaggle day-two run) plus path 2 (the Day 3 recap), with the unforeseen share going to zero",
-   "read_by": "desk (model), agent-reported; the operator's words are the grade"
+   "read_by": "desk (model), agent-reported",
+   "retracted": "2026-10-02 evening. The operator: \"It's not a grade, and I don't know where that came from. (It was really late when I closed out this morning)\". The desk had recorded these words as the operator's grade and the Day-2 post carried that reading in the operator's voice. Not a grade; P2 stays ungraded until the operator grades it."
   },
-  "graded_by": "operator, 2026-10-02",
+  "graded_by": null,
   "note": "Written at the close so boot B2 has a prediction to grade. The grade is the operator's."
  }
 ]
