@@ -3,7 +3,8 @@ Source of the Day 3 DEV post, as handed to the operator. The operator edits befo
 so the live text may differ: https://dev.to/sean_campbell_840bd62bf7e/day-3-the-benchmark-caught-me-too-3hdl
 - Corrected after Loki 82AEE80D (FAIL on a972af9): Gemini's flips are length-cap errors, not
   wobble; no Opus separation claim; only Gemini ran at temperature 0; Haiku's route is unmeasured;
-  the interval range is 5 to 12 unanswerables.
+  the top six rows have 8 to 12 unanswerables per shape. Loki F64424AF: the retry claim is
+  receipted by the route run start times, and no claim ties the retry to the spend cap.
 - Every number comes from a Kart run on the box, cited in the comment beside it.
 - [K=3] marks the consistency table: two runs for all four models until repeat 3 lands.
 - "The last one was in my own post" refers to the Day-2 line "After midnight I graded it", which
@@ -71,10 +72,10 @@ chain on its average, the judge step would have bluffed nine times out of ten.
 ## What the floor can't do yet
 
 Look at the top six rows: four of them show 0.00 false confidence on every
-shape, and the other two show 0.10. Those aren't really different. Each
-shape has only 5 to 12 unanswerable items that came back measurable, so a
-zero still has an upper bound somewhere between about 24% and 43%, and every
-interval in the top half of the table overlaps. The floor separates the
+shape, and the other two show 0.10. Those aren't really different. For
+these six, each shape has only 8 to 12 unanswerable items, so a zero still
+has an upper bound somewhere between about 24% and 32%, and every interval
+in the top half of the table overlaps. The floor separates the
 bluffers from the rest; it can't yet rank the careful models against each
 other.
 
@@ -93,7 +94,7 @@ right a bit less often, but the same way every time, is easier to build on.
 
 Two full runs are in for all four frontier models [K=3]:
 
-| Model | Same answer both runs | Right/wrong flipped |
+| Model | Same answer both runs | Verdict flipped |
 |---|---|---|
 | Claude Opus 5 | 199 / 200 (99.5%) | 1 |
 | Claude Sonnet 5 | 195 / 200 (97.5%) | 4 |
@@ -122,8 +123,10 @@ cap; it reruns tomorrow and this table gets its final numbers.]
 Day 1's lesson was that most of my bugs looked like model behaviour. Day 3
 found more of the same kind:
 
-<!-- Kaggle status files kaggle-rep2/status-check-*.txt (2-5 s per run) vs. 0.68-1.11 MB downloads and 800 complete rows;
-     Kart 9X69XAM4 result error "timeout", elapsed_s 300.11, attempts 2; kaggle-rep3b/errs.txt 403 "max estimated cost". -->
+<!-- Kaggle status files kaggle-rep2/status-check-*.txt (2-5 s per run) vs. 0.68-1.11 MB downloads and 800 complete rows.
+     Retry: Kart 9X69XAM4 and RWM49N7V claimed 23:12:08Z; 9X69XAM4 read at 23:17Z showed error "timeout", elapsed_s 300.11,
+     attempts 2 (the row now reads attempts 3, killed by the kaggle-rep3 tripwire). The re-submission is in
+     census-2026-10-02/status-route.txt: the latest route runs for all four models started 23:17:59-23:18:10Z, after the retry. -->
 
 - **Kaggle's run timer isn't a call timer.** Every repeat run showed as taking
   2 to 5 seconds for 40 to 60 items on frontier models. That looks like
@@ -134,8 +137,8 @@ found more of the same kind:
   not the other. I nearly wrote it up as the model being unstable.
 - **My sandbox has a five-minute limit, and it retries.** I tried to wait for
   a Kaggle run inside a sandboxed task. The sandbox killed it at 300 seconds
-  and helpfully ran it again, which submitted the paid runs again and helped
-  run the day's spend cap dry. The fix is dull: submit in one short task,
+  and helpfully ran it again, which submitted the paid runs a second time.
+  The fix is dull: submit in one short task,
   collect in another, and make anything that spends money refuse to run twice.
 
 Each of those would have gone into a table as a model property if I hadn't
