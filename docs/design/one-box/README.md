@@ -12,16 +12,27 @@ In the tables, **V** means I read the code, and **S** means it is inferred.
 
 1. **Read in this order:**
    - this file, §0–§2b, which give the box, the facts and the decisions
-   - [`session-2026-10-01.md`](session-2026-10-01.md), for why each rule
-     exists, in the operator's words
-   - [`research-2026-10-01.md`](research-2026-10-01.md), for the front-end
-     matrix, what to adopt, licences and sources
+   - [`session-2026-10-02.md`](session-2026-10-02.md), expand pass (B1–B3,
+     SOIL ids, next bite) — then
+     [`session-2026-10-01.md`](session-2026-10-01.md) for the founding rules
+   - [`outside-2026-10-02.md`](outside-2026-10-02.md), OW/F-chain V/S/? from
+     the Jeles-first egress burn
+   - [`parts-partition.md`](parts-partition.md), four live surfaces + open Qs
+   - [`one-script-join.md`](one-script-join.md), one-script ↔ one-box (Q14)
+   - [`crosslink-appendix.md`](crosslink-appendix.md), strengthen / contradict
+     + three-dialect OUT
+   - [`research-2026-10-01.md`](research-2026-10-01.md), front-end matrix
+     (cells promoted 2026-10-02 where F-chain closed)
    - [`sketches.md`](sketches.md), for working code with its tests
    - [`review-2026-10-01.md`](review-2026-10-01.md), for the #706 and #101
      findings that Phase 0 and Phase 4 fix
+   - [`verify-2026-10-02.md`](verify-2026-10-02.md), Kart re-check of §1
 2. **Nothing here is ratified yet.** CLAUDE.md rule 4 still applies: propose
    a bite and wait for the operator's go. D1–D3 gate the spine (Phases 1–3);
-   Phase 0 does not wait on them.
+   Phase 0 does not wait on them. **D11** (phone-seat grant) and **D12**
+   (helper persona) stay open (§13). **IN-door scope (Q13)** — which front
+   ends' prompt-submit go through Rat — sits in
+   [`parts-partition.md`](parts-partition.md); not sealed.
 3. **The operator's rules that bind every phase:**
    - every gate fails closed, and loud
    - reading is open and saving is guarded (the public-repository metaphor)
@@ -31,15 +42,20 @@ In the tables, **V** means I read the code, and **S** means it is inferred.
    - a standing grant is the human's auto-merge
 4. **What is verified:**
    - every row marked **V** in §1 and §2b
+   - outside-promoted cells in research +
+     [`outside-2026-10-02.md`](outside-2026-10-02.md) (Cursor hooks,
+     Windsurf/Goose block rules, frp CVE floor, Ollama #739, ACP close, …)
    - the sketches' 10 tests, which pass on Python 3.11 with msgspec 0.22
 5. **What is not verified:**
-   - cells marked **S**
-   - vendor docs the cloud session's egress proxy blocked (Cursor,
-     Windsurf, Kiro and Goose hook details)
-   - Safari WebAuthn on `http://localhost`
-   - whether frp is already on the operator's box
+   - cells still marked **S** or **?**
+   - Safari WebAuthn on bare `http://localhost`
+   - full ACP agent table for `sessionCapabilities.close`
+   - FastMCP 4 dep audit; Kiro full event matrix
+   - whether frp is already on the operator's box (if installed, pin
+     **≥0.68.1** — F8 / D10)
 6. **Priority:** the DEV × Kaggle benchmark (closes 2026-10-11) comes before
-   any phase here.
+   any phase here. Branch `docs/one-box-expand` holds this expand; **no PR**
+   until the operator says Kaggle proof landed.
 
 ---
 
@@ -191,22 +207,28 @@ marked S.
 | 6 | Approval queue | a plain pending-grants table (Postgres is already there) | — | DBOS (MIT) only if durable multi-step waits appear |
 | 7 | Browser front door | **Caddy** `reverse_proxy unix//…` + `handle_path` | Apache-2.0 (V) | Traefik has no unix upstreams (V). nginx (BSD-2) is the lighter alternative |
 | 7 | HTTP apps on UDS | uvicorn `--uds` / `--fd` (systemd `.socket`) | BSD-3 | The MCP SDK's `streamable_http_app()` plus `uvicorn.Config(uds=…)` works (V source; undocumented). Set `allowed_hosts` to match the proxy's Host header |
-| 7 | Remote ingress (only when opened, D10) | **frp** on an operator-owned server, `plugin type = "unix_domain_socket"` | Apache-2.0 (V) | cloudflared and Tailscale Funnel both forward to UDS, but are **excluded by the operator** (D10). Pangolin: AGPL-3 + FCL |
-| 7 | Ollama | stays on 127.0.0.1:11434 as the declared exception | — | `OLLAMA_HOST` has no unix-socket support (V; PR #8072 open) |
+| 7 | Remote ingress (only when opened, D10) | **frp** on an operator-owned server, `plugin type = "unix_domain_socket"` | Apache-2.0 (V) | cloudflared and Tailscale Funnel both forward to UDS, but are **excluded by the operator** (D10). Pangolin: AGPL-3 + FCL. **Pin frp ≥0.68.1** (CVE-2026-40910; see [outside-2026-10-02.md](outside-2026-10-02.md) F8) |
+| 7 | Ollama | stays on 127.0.0.1:11434 as the declared exception | — | `OLLAMA_HOST` has no unix-socket support (V; issue #739 still open 2026-10-02) |
 | 8 | Narrow the model's tool surface + log calls | **FastMCP 4** proxy (tags, per-session visibility, logging middleware) | Apache-2.0 (V) | IBM ContextForge does more but pulls 79 dependencies; MetaMCP needs Next.js + Postgres |
 
 **Front-end door matrix (summary):**
 - **OUT (block the stop and feed a reason back): verified** on Claude Code,
   Codex CLI, Gemini CLI (`AfterAgent` deny), Copilot CLI (`agentStop`) and
-  Qwen Code (capped at 8). Cursor via `followup_message` (S).
-- **No confirmed OUT door:** Kiro, Windsurf, Goose, OpenCode.
+  Qwen Code (capped at 8). Cursor via `followup_message` + `loop_limit`
+  default 5 (**V**, 2026-10-02).
+- **Partial / dialect-specific OUT:** Windsurf `pre_*` via exit 2 (post
+  cannot block); Goose only PreToolUse + Stop honor block; Kiro hooks exist
+  but exit-2 may be invisible to ACP clients. See
+  [crosslink-appendix.md](crosslink-appendix.md) three-dialect OUT.
+- **No confirmed OUT door:** OpenCode (session.idle only).
 - **No hooks at all:** Aider, Roo, the Zed agent. Zed is reachable as an ACP
   client.
 - **IN door:** Claude Code, Codex, Gemini and Qwen can block and inject.
-  Copilot's is non-blocking (S).
+  Copilot's is non-blocking (S). Cursor `beforeSubmitPrompt` (**V**).
 - **END:** Claude Code (shared 1.5 s budget) and Codex (1 s default, 3 s
   max). It's notify-only on most front ends, so **SessionEnd work must be
   detached**: Rat queues it and returns immediately.
+- **2026-10-02 outside pass:** [outside-2026-10-02.md](outside-2026-10-02.md).
 
 **Licence exclusions noted:**
 - Crush (FSL)

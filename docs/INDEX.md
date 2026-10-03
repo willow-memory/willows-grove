@@ -47,7 +47,13 @@ decisions that shaped what got built.
 | [`design/pr14-carryovers.md`](design/pr14-carryovers.md) | Punch list for v0.10 — what v0.9 punted and why |
 | [`design/forge-convergence.md`](design/forge-convergence.md) | The Forge convergence: one session machine; §6 the build order, §6a the Table |
 | [`design/forge-convergence-flowering-experiment.md`](design/forge-convergence-flowering-experiment.md) | Experiment: growth, pools, and the flowering threshold (step 0, run and struck) |
-| [`design/one-box/README.md`](design/one-box/README.md) | One box, every front end, portless: the build plan (proposal, 2026-10-01), with its review, session record, research and tested sketches |
+| [`design/one-box/README.md`](design/one-box/README.md) | One box, every front end, portless: the build plan (proposal, 2026-10-01), with its review, session records, research, outside pass, partition, one-script join, crosslink appendix and verify note |
+| [`design/one-box/outside-2026-10-02.md`](design/one-box/outside-2026-10-02.md) | Outside OW/F-chain (Jeles-first burn 2026-10-02) — V/S/? and born-next |
+| [`design/one-box/parts-partition.md`](design/one-box/parts-partition.md) | Four live surfaces (bot UDS, gate library, Kart, mcp leases); Q1–Q2–Q11–Q13; D10 frp pin |
+| [`design/one-box/one-script-join.md`](design/one-box/one-script-join.md) | One-script seven purposes ↔ one-box phases; nest P5–P7; Q14 wording |
+| [`design/one-box/crosslink-appendix.md`](design/one-box/crosslink-appendix.md) | Strengthen vs contradict; three-dialect OUT; Q3–Q7–Q9 |
+| [`design/one-box/session-2026-10-02.md`](design/one-box/session-2026-10-02.md) | Expand-pass session note (B1–B3, SOIL ids, next bite) |
+| [`design/one-box/verify-2026-10-02.md`](design/one-box/verify-2026-10-02.md) | Kart re-check of one-box §1 V-facts |
 | [`design/one-script/README.md`](design/one-script/README.md) | The one script: four draft proposals from session 2026-10-02 (the workflow, the runtime as one script, a runnable skeleton, constitution amendments on Draft 0.7) |
 | [`design/the-forge-shape.md`](design/the-forge-shape.md) | The Forge, the shape as talked out 2026-08-30 |
 | [`design/approval-broker.md`](design/approval-broker.md) | Approval broker: how a human act reaches a sandboxed caller |
