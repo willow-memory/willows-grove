@@ -106,6 +106,13 @@ These bind whoever is sitting here, in either lens.
    INVARIANTS.md §12). INVARIANTS.md §11 and §12;
    `scripts/check_persona_provenance.py`, `scripts/check_ratification.py`,
    `scripts/check_changelog_bullet.py` in CI.
+7. **Local documents before the internet.** Before any web search or fetch,
+   search the local documents — this repo, the vault, Nestor, Drive, any store
+   in reach, by whatever means works. If the operator asks for a document, it
+   exists: find it. "Not found locally" is said only after the local search ran,
+   and says where it looked. Operator's words: "Before you go to the internet.
+   Search local documents. I don't care what way you do it just find the
+   document. It exists if I ask for it."
 
 ---
 
