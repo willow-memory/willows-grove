@@ -135,6 +135,10 @@ These bind whoever is sitting here, in either lens.
     characters. Please replace with document name and section number."
     Point to a shown diff by its label, never by position: "see Table 3", not
     "shown below". Operator's words: "Instead see citation below see table x."
+    Each shown diff carries a caption above it: table label, file name,
+    section number, and subsection where one applies, e.g. "Table 2:
+    `CLAUDE.md` §5.10". Operator's words: "With a file name/ section number
+    or subsection if applicable either above or below that your choice."
 
 ---
 
