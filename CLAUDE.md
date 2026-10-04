@@ -133,6 +133,8 @@ These bind whoever is sitting here, in either lens.
     display dif in markdown. No pref in placement. If 500 characters or less,
     display in document. If dif is more, display dif is more than 500
     characters. Please replace with document name and section number."
+    Point to a shown diff by its label, never by position: "see Table 3", not
+    "shown below". Operator's words: "Instead see citation below see table x."
 
 ---
 
