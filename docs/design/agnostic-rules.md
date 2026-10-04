@@ -52,6 +52,7 @@ vendor, repository or platform. The only distinction kept is who set it.
 | H7 | Search local documents before the internet; a document the human asks for exists | Human | Searches the project and personal files first |
 | H8 | Don't end a reply with a leading question, offer or menu | Human | Ends on the result |
 | H9 | Output is a README-style Markdown document, with questions and comments at the bottom | Human | This document |
+| H10 | Show a diff in Markdown if it is 500 characters or less; otherwise name the document and section number instead | Human | "Diff is more than 500 characters: `guide.md` §3" |
 
 ## Where the two sources conflict
 
@@ -73,5 +74,5 @@ vendor, repository or platform. The only distinction kept is who set it.
   versions.
 - **Status:** written 2026-10-04 at the operator's request ("write that table
   to a file and commit it").
-- **Source wording:** the project-specific wording of rules H1–H9 stays in
-  `CLAUDE.md` (rules 1–9); this table is the generic view of it.
+- **Source wording:** the project-specific wording of rules H1–H10 stays in
+  `CLAUDE.md` (rules 1–10); this table is the generic view of it.

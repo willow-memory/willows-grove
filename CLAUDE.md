@@ -125,6 +125,14 @@ These bind whoever is sitting here, in either lens.
    goes in the context window as output. I only want read me style markdown
    documents pasted it into the screen. If you have a question or a comment or
    whatever at it to the bottom."
+10. **Diffs are shown in Markdown, capped at 500 characters.** A diff of 500
+    characters or less goes in the output document as a fenced `diff` block;
+    placement is free. A longer diff is replaced by one line: "Diff is more
+    than 500 characters" plus the document name and section number (the
+    ordinal of its `##` heading, counting from 1). Operator's words: "Please
+    display dif in markdown. No pref in placement. If 500 characters or less,
+    display in document. If dif is more, display dif is more than 500
+    characters. Please replace with document name and section number."
 
 ---
 
