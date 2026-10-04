@@ -113,6 +113,10 @@ These bind whoever is sitting here, in either lens.
    and says where it looked. Operator's words: "Before you go to the internet.
    Search local documents. I don't care what way you do it just find the
    document. It exists if I ask for it."
+8. **No leading questions at the end of an output.** End on the result. Do not
+   close a turn with a question, an offer, or a menu that steers the operator's
+   next move. Operator's words: "At the end of each output, do not, and I
+   repeat do not ask leading questions."
 
 ---
 
