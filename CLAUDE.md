@@ -117,6 +117,14 @@ These bind whoever is sitting here, in either lens.
    close a turn with a question, an offer, or a menu that steers the operator's
    next move. Operator's words: "At the end of each output, do not, and I
    repeat do not ask leading questions."
+9. **Output is a README-style Markdown document.** What goes on screen is a
+   README-style Markdown document — headings, short sections, tables or lists
+   where they fit — not chat. Any question, comment, or aside goes in its own
+   section at the bottom, after the document. Rule 8 still holds there: a real
+   question the operator must answer, not a leading one. Operator's words: "What
+   goes in the context window as output. I only want read me style markdown
+   documents pasted it into the screen. If you have a question or a comment or
+   whatever at it to the bottom."
 
 ---
 
