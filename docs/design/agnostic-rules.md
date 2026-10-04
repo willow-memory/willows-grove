@@ -1,10 +1,7 @@
 # Rules: agent-agnostic, system-agnostic
 
-Status: written 2026-10-04 at the operator's request ("write that table to a
-file and commit it"). Each rule is rewritten so it doesn't depend on a
-particular agent, tool, vendor, repository or platform. The only distinction
-kept is who set it. The project-specific wording of rules H1–H9 stays in
-`CLAUDE.md` (rules 1–9); this table is the generic view of it.
+Each rule is rewritten so it doesn't depend on a particular agent, tool,
+vendor, repository or platform. The only distinction kept is who set it.
 
 | Set by | Meaning |
 |---|---|
@@ -74,3 +71,7 @@ kept is who set it. The project-specific wording of rules H1–H9 stays in
 - **The A rows** summarize the agent's built-in instructions as they stood on
   2026-10-04, not their official wording; those defaults can change between
   versions.
+- **Status:** written 2026-10-04 at the operator's request ("write that table
+  to a file and commit it").
+- **Source wording:** the project-specific wording of rules H1–H9 stays in
+  `CLAUDE.md` (rules 1–9); this table is the generic view of it.
