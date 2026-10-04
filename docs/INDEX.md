@@ -62,6 +62,7 @@ decisions that shaped what got built.
 | [`design/vault-home-store.md`](design/vault-home-store.md) | Vault home store: the cut, two axes, not a move |
 | [`design/willow-bot-box-spec.md`](design/willow-bot-box-spec.md) | willow-bot box spec (draft, operator shape 2026-09-28) |
 | [`design/willow-bot-usable-build-brief.md`](design/willow-bot-usable-build-brief.md) | willow-bot usable build brief |
+| [`design/agnostic-rules.md`](design/agnostic-rules.md) | Every rule in force, agent- and system-agnostic, split only by who set it (human or agent) |
 | [`ideas.md`](ideas.md) | The idea pile — every open item this repo can land, numbered once, read by `reconciler run` |
 | [`KNOWN_GAPS.md`](KNOWN_GAPS.md) | The `GAP-00N` → pile-item map (the gaps themselves now live in `ideas.md`) |
 
