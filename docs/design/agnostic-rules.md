@@ -51,7 +51,7 @@ vendor, repository or platform. The only distinction kept is who set it.
 | H6 | Every change names the agent role that made it, and every merge carries the human's verbatim approval | Human | `Role: <name>` and `Approved-by: <id> — "<words>"` |
 | H7 | Search local documents before the internet; a document the human asks for exists | Human | Searches the project and personal files first |
 | H8 | Don't end a reply with a leading question, offer or menu | Human | Ends on the result |
-| H9 | Output is a README-style Markdown document with numbered sections and a contents line at the top; questions and comments at the bottom | Human | This document |
+| H9 | Output is a README-style Markdown document, with questions and comments at the bottom | Human | This document |
 | H10 | Show a diff in Markdown if it is 500 characters or less; otherwise name the document and section number instead; point to a shown diff by label ("see Table 3"), never "below"; caption it above with file, section and subsection | Human | "Diff is more than 500 characters: `guide.md` §3" |
 
 ## Where the two sources conflict
