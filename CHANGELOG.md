@@ -34,6 +34,7 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 - **docs:** `CLAUDE.md` rule 8: no leading questions at the end of an output; end on the result.
 - **docs:** `CLAUDE.md` rule 9: output is a README-style Markdown document; questions and comments go at the bottom.
 - **docs:** `docs/design/agnostic-rules.md`: every rule in force, agent- and system-agnostic, split only by who set it (human or agent); listed in `docs/INDEX.md`.
+- **docs:** `CLAUDE.md` rule 10 (H10 in `agnostic-rules.md`): diffs shown in Markdown when 500 characters or less, else document name and section number.
 - **docs:** Kaggle escalation benchmark Day 3. `docs/design/one-script/posts/` holds the published Day 3 DEV post source (the floor across 12 hosted models, two-run consistency for four frontier models, and the infrastructure bugs that looked like results), its cover prompt, and the dataset metadata patch applied to the Kaggle dataset. `day-3/predictions.json` retracts P2's "grade": the desk had recorded a late-night line as the operator's grade and the Day 2 post carried it in the operator's voice; P2 is ungraded. (PR 104)
 - **hooks:** `_nestor_ask` keeps populated/empty/unreachable distinct; `before_stop` composes lint then green-claim gate; sealed rows and `wiring.json` match; client-parity test pins the contract. (PR 101)
 - **mcp template:** desk `nestor` keyring paths point at the vault operator-box ring (`config/verifiers.json`), and `JELES_CORPUS_APP_ID` is set; Grove seal-prove worksheet under `seat/willow/jeles-intake/`. (PR 99)
