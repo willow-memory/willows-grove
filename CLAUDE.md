@@ -124,7 +124,11 @@ These bind whoever is sitting here, in either lens.
    question the operator must answer, not a leading one. Operator's words: "What
    goes in the context window as output. I only want read me style markdown
    documents pasted it into the screen. If you have a question or a comment or
-   whatever at it to the bottom."
+   whatever at it to the bottom." Number every `##` section (§1, §2, …) and
+   open the output with a one-line contents list of those sections, so the
+   operator can find their place without rereading. Operator's words: "Please
+   display sections again I had to read through the whole thing before I got
+   back to what I was doing and I kind of forgot where it was."
 10. **Diffs are shown in Markdown, capped at 500 characters.** A diff of 500
     characters or less goes in the output document as a fenced `diff` block;
     placement is free. A longer diff is replaced by one line: "Diff is more
