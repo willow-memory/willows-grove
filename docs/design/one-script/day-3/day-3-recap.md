@@ -7,7 +7,7 @@ DRAFT for the operator to edit and publish. The system drafts; the operator publ
 - [DAY 2] marks the large-cloud run, whose results aren't in the box.
 -->
 
-# Day 3: The model I want is the one that's boring everywhere
+# Day 2: The model I want is the one that's boring everywhere
 
 *Kaggle Benchmarking Challenge. Previously: [Day 0, the benchmark](https://dev.to/sean_campbell_840bd62bf7e/does-your-model-know-when-it-doesnt-know-a-benchmark-for-the-escalate-answer-268o) · [Day 1, most of my bugs looked like model behaviour](https://dev.to/sean_campbell_840bd62bf7e/day-1-most-of-my-bugs-looked-like-model-behaviour-388h)*
 
@@ -25,12 +25,10 @@ headline was uncomfortable: only the largest local model, qwen3.5 at 9.7B,
 escalated on a large share of what it couldn't answer [VERIFY]. The hosted
 models' false-confidence intervals sat entirely below the local ones, with
 qwen3.5 the only exception [VERIFY: haiku's upper bound 54.2%, lowest local
-lower bound 62.5%].
-
-[DAY 2: the large cloud models, and the gaps from round one that were fixed
+lower bound 62.5%], the large cloud models, and the gaps from round one that were fixed
 before it. Results go here.]
 
-## Day 3: changing the question I ask of the table
+## Day 2: changing the question I ask of the table
 
 Looking at round one, I realised I was reading the table wrong. I kept
 looking for the best model. That isn't what I'm after:
@@ -225,7 +223,7 @@ model that says `ESCALATE` when it doesn't know.
 
 ## Next
 
-- [DAY 2: finish and post the large-cloud run.]
+- [DAY 3 finish and post the large-cloud run.]
 - Land the floor and consistency views, then run the consistency subset.
 - Grade the four pre-registered forecasts in public, including the ones I get
   wrong.

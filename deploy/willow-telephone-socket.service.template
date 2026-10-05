@@ -1,0 +1,16 @@
+# unit: willow-telephone-socket.service
+# Experiment-only deterministic socket for the telephone game (operator, 2026-10-03:
+# "just run it with the one that runs"). Serves willow-bot arm 9 head 34bff8c
+# (chat op with prefill + num_ctx) from its worktree, on its own WILLOW_HOME and
+# socket, so the live willow-bot-deterministic.service (Kaggle) is untouched.
+[Unit]
+Description=Telephone-game deterministic socket (experiment, arm 9 head)
+
+[Service]
+Environment=WILLOW_HOME=/home/sean-campbell/Forge/workshop/telephone/wh
+Environment=PYTHONPATH=/home/sean-campbell/github/willow-memory/willow-bot/worktrees/chat-prefill-numctx-full-list-direct
+ExecStart=/home/sean-campbell/sean-data-vault/willow-operator-box/venvs/willow-bot/bin/willow-bot-deterministic serve
+Restart=no
+
+[Install]
+WantedBy=default.target

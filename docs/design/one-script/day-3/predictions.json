@@ -78,5 +78,35 @@
   },
   "graded_by": null,
   "note": "Written at the close so boot B2 has a prediction to grade. The grade is the operator's."
+ },
+ {
+  "id": "P3",
+  "kind": "wager",
+  "made_at": "2026-10-03T05:05Z",
+  "terms": "a gentlemen's bet, in the books Oakenscroll style (operator: \"I think, I'm still right, and that can be part of the gentlemen bet. Or we can put it in the books, Oakenscroll style\")",
+  "question": "In the small-model 3/7/13 test against the last known good human code (human-baseline-releases.md, cutoff A), how does smoothed code show up?",
+  "sides": [
+   {
+    "who": "operator",
+    "claim": "\"If the models disagree, then we know it's smoothed.\"",
+    "predicts": "where the model families disagree with each other, the output is smoothed (diverges from the human code and/or fails the human tests)"
+   },
+   {
+    "who": "desk (model)",
+    "claim": "smoothing shows as agreement: families converge on one plausible answer that diverges from the human code and fails the human tests; disagreement is uncertainty",
+    "predicts": "agreement among families, not disagreement, is what goes with divergence from the human code and failing its tests, and the agreement grows from 3 to 7 to 13 runs"
+   }
+  ],
+  "resolution_set_in_advance": {
+   "baseline": "functions from cutoff-A human releases (CPython 3.9.6, pytest 6.2.4, pydantic 1.8.2), each with its own project's tests, plus an obscure pre-2021-06-29 set to control for memorization",
+   "per_draft_measures": "passes the human tests (yes/no); syntax-tree shape distance to the human original (script_match); agreement with other families (same family = one witness); famous vs obscure",
+   "operator_wins_if": "inter-family disagreement predicts test failure / divergence better than agreement does",
+   "desk_wins_if": "inter-family agreement plus divergence from the human code predicts test failure better than disagreement does, on the obscure set",
+   "split_if": "both hold on different sets (e.g. famous vs obscure, or easy vs hard functions); recorded as split, not as a win",
+   "void_if": "the obscure set turns out to be memorized, or the human tests can't run on the drafts"
+  },
+  "outcome": null,
+  "graded_by": null,
+  "note": "The desk is a party to this bet, so it can't grade it (§0.2). The grade is the operator's, from the deterministic scores. Stakes: the operator's to name."
  }
 ]
