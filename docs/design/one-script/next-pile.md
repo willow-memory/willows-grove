@@ -1259,6 +1259,44 @@ Whether something is in the pile is a lookup, not a judgement.
 When it isn't there: ESCALATE.
 ```
 
+#### Day 5 outline, in the operator's register (desk draft)
+
+*Desk draft, 2026-10-05, written in the operator's register from session
+019xJcd52XquwTaeZYqKL8QH. These are not the operator's words, and none of it
+is to be published as theirs until they rewrite or approve it. The operator,
+same session: "This is part of the kaggle work now. This is day 5", and on
+cutting the system down, "I think most of it is just going to come down to one
+hook." The grade is the desk's pass over willow-mcp at `419017c` (v2.94.1):
+5,906 passed, the 12 failures environmental (root uid, proxy); the hole is the
+Bandit step in `tests.yml` piping to `tee` without `pipefail`. Agent-reported.*
+
+```markdown
+# Day 5: I graded my own system, and it came down to one hook
+
+## The grade
+195,000 lines. 5,906 tests passing. B+.
+The one real hole: a safety check that never ran.
+
+## Where it all went
+42 tools, 9 personas, 63 design docs.
+Most of it exists because a model was holding the tools.
+
+## Picture, cite, seal
+Hash everything. New things point back at old hashes.
+Nothing is true until a human seals it.
+
+## The model never sees the box
+It gets the points in its scope and proposes. Code does the rest.
+
+## One hook
+Start: take the picture. Before: the gate. After: one line.
+End: I seal the last hash.
+
+## It's the benchmark
+Knowing when to stop is the answer, for the model and for the system.
+If it isn't in the pile: ESCALATE. To me.
+```
+
 ### The dilemma: the same machine finds the stranger (2026-10-03)
 
 The operator walked it through in one-word turns. The desk's one-word
