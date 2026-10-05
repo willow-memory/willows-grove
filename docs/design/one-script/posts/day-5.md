@@ -87,7 +87,8 @@ I said: "This is why you can't take the average."
 Average the footage and you get a black screen. Average a life and you get
 nobody. The moment is in the one-offs.
 
-My own benchmark already showed it. On Day 3, Claude Haiku 4.5 pooled over
+My own benchmark already showed it. On Day 3, with the floor code from
+[forge-play/Forge#46](https://github.com/forge-play/Forge/pull/46), Claude Haiku 4.5 pooled over
 its three measured shapes answered anyway on 10 of the 28 questions it
 should have escalated. That reads like a model that's a bit overconfident
 everywhere. It isn't. On judge it answered 9 of 10. On the other two it
@@ -100,7 +101,8 @@ average, and the average is the black screen.
 
 ## The grade
 
-So I turned the benchmark around and graded my own system.
+So I turned the benchmark around and graded my own system: willow-mcp at
+v2.94.1 ([willow-mcp#707](https://github.com/willow-memory/willow-mcp/pull/707)).
 
 195,000 lines. 5,906 tests passing. B+.
 
@@ -126,8 +128,10 @@ request. Today the gate is one line.
 Day 4 didn't summarize the conversation. It linked it. If you want the
 context, you read the record.
 
-I wrote the hook three times. First it looked things up in the record. Then I
-made it fail closed. Then I cut it to this:
+The hook went through three versions
+([willows-grove#107](https://github.com/willow-memory/willows-grove/pull/107)).
+First it looked things up in the record. Then I made it fail closed. Then I
+cut it to this:
 
     POLICY = {"Read": "allow", "Write": "ask"}
 
@@ -148,7 +152,10 @@ One key: I make it true.
 I ran the hook on Python 3.9.0, from a tag signed in October 2020, and on
 this week's build of Python, built from source with the network off. 2,293
 hashes came out as the same bytes. The one difference, integers over 4,300
-digits, fails safe: the newer Python refuses them, and the hook asks me.
+digits, fails safe: the newer Python refuses them, and the hook asks me. The
+scripts and the numbers are in
+[willows-grove#107](https://github.com/willow-memory/willows-grove/pull/107),
+under `foundation/`.
 
 The foundation didn't move in six years. The stories did.
 
@@ -178,6 +185,21 @@ like us. Then we're surprised when it comes out confident, fluent and
 approximately right. It's a mirror. Mirrors are useful; they aren't oracles.
 The first thing to know before you look into one is that you're looking at
 yourself.
+
+## The record
+
+If you want the context, read the record. Every piece above is a pull
+request:
+
+- [forge-play/Forge#46](https://github.com/forge-play/Forge/pull/46): the floor, the code behind Day 3's table.
+- [willows-grove#104](https://github.com/willow-memory/willows-grove/pull/104): the Day 3 post source, and the retraction of a grade I never gave.
+- [willows-grove#102](https://github.com/willow-memory/willows-grove/pull/102) and [#105](https://github.com/willow-memory/willows-grove/pull/105): one box, every front end, portless; the plan this all hangs off.
+- [willows-grove#103](https://github.com/willow-memory/willows-grove/pull/103): the one script, four proposals.
+- [willows-grove#106](https://github.com/willow-memory/willows-grove/pull/106): the stack and the security core. The model never sees the box.
+- [willow-mcp#707](https://github.com/willow-memory/willow-mcp/pull/707): the release I graded.
+- [willows-grove#107](https://github.com/willow-memory/willows-grove/pull/107): the hook, three times, and the same answer in 2020 and today.
+- [willows-grove#109](https://github.com/willow-memory/willows-grove/pull/109): where the reading lands, and why the next piece is serve.
+- [willows-grove#110](https://github.com/willow-memory/willows-grove/pull/110): this post, with its corrections.
 
 ---
 
