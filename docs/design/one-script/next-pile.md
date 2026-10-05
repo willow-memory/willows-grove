@@ -1273,7 +1273,9 @@ Updated the same session for the bare hook (`a6a2fa3`), at the operator's
 words "I want bare bare min" and "The model only has read, and if the user
 allows, write". The foundation numbers are `foundation/README.md`: 3.9.0 and
 3.16.0a0, 2,293 identical hashes, every difference an integer over 4,300
-digits.*
+digits. "The one key" added at the operator's question "So, I have the one
+script, and the one hook, what's the third?" and their "That's the right
+answer."*
 
 ```markdown
 # Day 5: I graded my own system, and it came down to one hook
@@ -1307,6 +1309,14 @@ The model's whole job is reading what the last script produced.
 ## Same answer in 2020 and today
 I ran it on Python 3.9.0, signed October 2020, and on this week's build.
 2,293 hashes, the same bytes. The one difference fails safe.
+
+## The one key
+One script: code does the work.
+One hook: the model reads.
+One key: I make it true.
+Picture, cite, seal. The script never holds the key. The model never sees it.
+The only place the three meet is "Write": "ask", where the model stops
+and waits for me.
 
 ## It's the benchmark
 Knowing when to stop is the answer, for the model and for the system.
