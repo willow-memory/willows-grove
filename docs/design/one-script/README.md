@@ -1,5 +1,26 @@
 # The one script: proposals from session 2026-10-02
 
+## Start here: the one script, stripped down (2026-10-05)
+
+[`hashing-session-handoff-2026-10-05.md`](hashing-session-handoff-2026-10-05.md)
+is an outside pass that saw only the tracked repo. It cuts the one script to
+two steps:
+
+1. **Take a picture.** Hash every file and keep the list of paths and hashes.
+   One hash over the list is the picture's fingerprint.
+2. **Compare.** Same fingerprint means nothing changed; otherwise each file is
+   added, removed or changed.
+
+Everything below waits until a real change asks for it, added back one at a
+time: explain (every change carries a reason), accept (the new picture becomes
+the baseline, chained to the last), seal (the human signs the fingerprint).
+The same pass reviews the skeleton: the record chain can be truncated or
+rehashed undetected, `h16` keeps 64 bits, and one garbled line crashes boot.
+The desk checked those three against `onescript/record.py`, and they hold.
+Agent-reported throughout; a proposal, not ratified as a build.
+
+## The proposals from 2026-10-02
+
 **Status:** draft proposals for the operator to read, edit and ratify. Nothing
 here is built into a runtime or sealed. Assessments marked **agent-reported**
 are unattested. This builds on the one-box plan (PR #102), and each proposal
@@ -13,6 +34,7 @@ is in its own commit so it can be kept, edited or dropped on its own.
 | — | [`day-3/`](day-3/) | Not a proposal: the source of the published **Day 2** DEV post (despite the folder name), the 55 PRs since Day 0, the post sources, and `predictions.json` (P1 and P2, both ungraded; the desk misread a late-night line as P2's grade, retracted 2026-10-02) |
 | — | [`posts/`](posts/) | The **Day 3** DEV post source ("The benchmark caught me too"), its cover prompt, and the Kaggle dataset metadata patch that was applied to `rudi193/escalation-benchmark` |
 | — | [`incoming/`](incoming/) | Three outside passes, kept by provenance: an Opus 5 session's six proposals against Draft 0.8 (reachability and staleness), a cold Haiku 4.5 session's three proposals, and a pointer to the operator's paper "Basins, Not Walls". Its README reconciles them with this PR, cross-checked against the record, and says what the one script took from each |
+| — | [`deep_thought.py`](deep_thought.py) | Read-only probe that carries the sealed Answer (D1, D2, D9, Q13) and measures the box against it. Prints the morning screen (NEEDS YOU → … → GRADES → CHOICES → QUIET). Stdlib only; needs `WILLOW_HOME`. See next-pile.md § "deep_thought.py". Three improvements after the first run: ledger-join seals, write-kind triage, GRADES |
 | 4 | [`constitution-proposal/`](constitution-proposal/) | Ten amendments and a neutral-language pass. **They are built on Draft 0.7 and must be redone against Draft 0.8** (which forbids downward references) before any of it goes forward |
 
 **In the skeleton now:** the four gates and the three layers from #2, each
@@ -30,7 +52,7 @@ prose only. See [`incoming/README.md`](incoming/README.md).
 **Not yet:** `run.act` decides and cards; it never performs the act. Keys are
 HMAC rather than passkeys. There's no socket or peer check. Mandate rows are
 data the human supplies, never read out of their words by the model. It isn't
-wired into Rat (D1 is unsealed).
+in willow-bot yet, where D2 (sealed 2026-10-02) homes it.
 
 **Kept local, not in this PR:** the session's map, marks and pile
 (`workflow.md` cites `session-flow.md` and `marks.json`). They're built from
@@ -40,8 +62,19 @@ decision.
 ## Running the tests
 
 ```bash
-cd onescript && python3 -m pytest -q tests   # 53 tests
+cd onescript && python3 -m pytest -q tests   # 77 tests (24 for the capability door)
 ```
 
 The Grove's CI doesn't collect these (its `testpaths` is `tests/`). ruff lints
 and formats them like everything else.
+
+## Running deep_thought
+
+```bash
+WILLOW_HOME=… python3 docs/design/one-script/deep_thought.py        # screen
+WILLOW_HOME=… python3 docs/design/one-script/deep_thought.py --json  # rows
+```
+
+Read only. Without `WILLOW_HOME` the box probes report `unreachable` rather
+than guessing a path. D2 homes the one script in willow-bot; this file sits
+here until the operator moves it.
