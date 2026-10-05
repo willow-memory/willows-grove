@@ -57,8 +57,8 @@ only with `ESCALATE`. Does your model know when it doesn't know?
 Today I asked a bigger version of that question: what do we actually need AI
 for? Not what can it do. What do we need it for?
 
-This morning I had my own system graded, and halfway through I said I was
-thinking about deleting about 99% of it. That's my honest answer. Around 1%
+This morning I had my own system graded, and when it came back I said I
+was thinking about deleting about 99% of it. That's my honest answer. Around 1%
 of what we're asking AI to do is work only it can do. The rest is a faster
 typewriter.
 
@@ -110,12 +110,13 @@ fails on whether the report got written, not on what the scanner found. The
 comment above it says it gates. It can't. It reads right and isn't. That's
 the smoothing, in my own code.
 
-Then I wrote a hook and did it again. Its docstring said it fails closed.
-Three inputs crashed it, and in Claude Code a crashed hook lets the tool run.
-A line-by-line pass caught it. Reading it never would have.
+Then the model wrote me a hook and did it again. Its docstring said it
+fails closed. Three inputs crashed it, and in Claude Code a crashed hook
+lets the tool run. I told it to rubber duck each line. That caught it.
+Reading it never would have.
 
-The smoothing got the write-up too: the commit message for that fix said
-five. I recounted while writing this. It was three.
+The smoothing got the write-up too: the model's commit message for that
+fix said five. Recounted while drafting this: three.
 
 ## One script, one hook, one key
 
@@ -180,11 +181,14 @@ yourself.
 
 ---
 
-## Addendum: six corrections
+## Addendum: five corrections
 
 *Desk, 2026-10-05, after reading the draft cold at the operator's "Read it".
-Appended, not edited in: the text above stands as drafted, and each fix
-below carries its replacement.*
+Appended, not edited in: each fix below carries its replacement. A sixth,
+that the model wrote the hook and the commit message that said five, is in
+the body ("The grade", and "when it came back" in "The 1% question"): moved
+there at Professor Oakenscroll's review, item 7, "It is the argument, not a
+footnote."*
 
 **1. The title is never paid off.** The second half promises the hash and
 the stranger's photo; the body never mentions either. Add after "You can't
@@ -237,20 +241,3 @@ six years. The stories did." with:
 
 > In six years the foundation moved once, and it moved toward stopping. The
 > stories moved everywhere else.
-
-**6. The model wrote the hook, and the commit message.** And "delete 99%"
-came after the grade, not halfway through. Replace the opening of "The
-1% question"'s last paragraph with:
-
-> This morning I had my own system graded, and when it came back I said I
-> was thinking about deleting about 99% of it.
-
-and the last two paragraphs of "The grade" with:
-
-> Then the model wrote me a hook and did it again. Its docstring said it
-> fails closed. Three inputs crashed it, and in Claude Code a crashed hook
-> lets the tool run. I told it to rubber duck each line. That caught it.
-> Reading it never would have.
->
-> The smoothing got the write-up too: the model's commit message for that
-> fix said five. Recounted while drafting this: three.
