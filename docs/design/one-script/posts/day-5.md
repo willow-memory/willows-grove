@@ -177,3 +177,80 @@ like us. Then we're surprised when it comes out confident, fluent and
 approximately right. It's a mirror. Mirrors are useful; they aren't oracles.
 The first thing to know before you look into one is that you're looking at
 yourself.
+
+---
+
+## Addendum: six corrections
+
+*Desk, 2026-10-05, after reading the draft cold at the operator's "Read it".
+Appended, not edited in: the text above stands as drafted, and each fix
+below carries its replacement.*
+
+**1. The title is never paid off.** The second half promises the hash and
+the stranger's photo; the body never mentions either. Add after "You can't
+take the average":
+
+> ## Cut it down to one stranger's photo
+>
+> I hashed every line on my laptop: 1,155,461 files, 134,651,873 lines.
+> Nothing was cracked; every hash held. 93% of those lines are repeats. The
+> deepest one is `}`.
+>
+> Cut every repeat away and 9,042,260 lines are left that happen exactly
+> once. The first one I looked at was a camera timestamp on a stranger's
+> photo, in an archive I built, from a rally I was never at.
+>
+> That's the bike room again. The skeleton repeats; the moment happens once.
+> And it doesn't matter, because the machine that finds the stranger can find
+> anybody. So nobody goes looking for him.
+
+**2. Seven of twelve, not six.** DeepSeek-R1 is also 0.00 on all four
+shapes; "six" was copied from Day 3's "top six rows", which counts something
+else. And each shape has only 8 to 12 unanswerable items. Replace the
+paragraph with:
+
+> And most models do stop, as far as this benchmark can tell: seven of the
+> twelve I measured showed 0.00 or 0.10 false confidence on every shape, on
+> 8 to 12 unanswerable items per shape. The problem isn't that models never
+> stop. It's that the number we look at is the average, and the average is
+> the black screen.
+
+**3. The 2,293 hashes belong to the earlier hook.** The bare hook hashes
+nothing; the record-lookup version did. Replace the first paragraph of "Same
+answer in 2020 and today" with:
+
+> Before I cut it, the hook hashed every action and looked it up in the
+> record. I ran that hashing on Python 3.9.0, from a tag signed in October
+> 2020, and on an alpha built today from Python's main branch, with the
+> network off. 2,293 hashes came out as the same bytes. The one difference,
+> integers over 4,300 digits, fails safe: the newer Python refuses them, and
+> the hook asked me.
+
+**4. Serve isn't built.** Replace "Code does the work: one script builds the
+tables and serves the model only the ones in its scope." with:
+
+> Code does the work: one script builds the tables. The next piece, not
+> built yet, serves the model only the ones in its scope.
+
+**5. The foundation did move, once.** Replace "The foundation didn't move in
+six years. The stories did." with:
+
+> In six years the foundation moved once, and it moved toward stopping. The
+> stories moved everywhere else.
+
+**6. The model wrote the hook, and the commit message.** And "delete 99%"
+came after the grade, not halfway through. Replace the opening of "The
+1% question"'s last paragraph with:
+
+> This morning I had my own system graded, and when it came back I said I
+> was thinking about deleting about 99% of it.
+
+and the last two paragraphs of "The grade" with:
+
+> Then the model wrote me a hook and did it again. Its docstring said it
+> fails closed. Three inputs crashed it, and in Claude Code a crashed hook
+> lets the tool run. I told it to rubber duck each line. That caught it.
+> Reading it never would have.
+>
+> The smoothing got the write-up too: the model's commit message for that
+> fix said five. Recounted while drafting this: three.
