@@ -1275,7 +1275,9 @@ allows, write". The foundation numbers are `foundation/README.md`: 3.9.0 and
 3.16.0a0, 2,293 identical hashes, every difference an integer over 4,300
 digits. "The one key" added at the operator's question "So, I have the one
 script, and the one hook, what's the third?" and their "That's the right
-answer."*
+answer." "You can't take the average" is the operator's own line, posted on
+Discord as Professor Oakenscroll ("This is why you can't take the average"),
+added at their "yes, add it"; the storyteller is left unnamed.*
 
 ```markdown
 # Day 5: I graded my own system, and it came down to one hook
@@ -1317,6 +1319,15 @@ One key: I make it true.
 Picture, cite, seal. The script never holds the key. The model never sees it.
 The only place the three meet is "Write": "ask", where the model stops
 and waits for me.
+
+## You can't take the average
+Someone on Discord told a support story: a camera ticket, "streaming black picture".
+It wasn't offline. It was a bike room with a motion sensor and a timed light.
+Hours of dark, then two minutes of light: one person, one bike.
+I said: "This is why you can't take the average."
+Average the footage and you get a black screen.
+Average a life and you get nobody.
+The moment is in the one-offs. The model learns the dark room and bluffs the two minutes.
 
 ## It's the benchmark
 Knowing when to stop is the answer, for the model and for the system.
