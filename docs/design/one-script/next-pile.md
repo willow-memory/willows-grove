@@ -1268,7 +1268,12 @@ same session: "This is part of the kaggle work now. This is day 5", and on
 cutting the system down, "I think most of it is just going to come down to one
 hook." The grade is the desk's pass over willow-mcp at `419017c` (v2.94.1):
 5,906 passed, the 12 failures environmental (root uid, proxy); the hole is the
-Bandit step in `tests.yml` piping to `tee` without `pipefail`. Agent-reported.*
+Bandit step in `tests.yml` piping to `tee` without `pipefail`. Agent-reported.
+Updated the same session for the bare hook (`a6a2fa3`), at the operator's
+words "I want bare bare min" and "The model only has read, and if the user
+allows, write". The foundation numbers are `foundation/README.md`: 3.9.0 and
+3.16.0a0, 2,293 identical hashes, every difference an integer over 4,300
+digits.*
 
 ```markdown
 # Day 5: I graded my own system, and it came down to one hook
@@ -1289,8 +1294,19 @@ Nothing is true until a human seals it.
 It gets the points in its scope and proposes. Code does the rest.
 
 ## One hook
-Start: take the picture. Before: the gate. After: one line.
-End: I seal the last hash.
+I wrote it three times.
+First it looked things up in the record. Then I made it fail closed.
+Then I cut it to this:
+
+    POLICY = {"Read": "allow", "Write": "ask"}
+
+The model reads. It writes if I say yes. Everything else: no.
+Even tools that don't exist yet.
+The model's whole job is reading what the last script produced.
+
+## Same answer in 2020 and today
+I ran it on Python 3.9.0, signed October 2020, and on this week's build.
+2,293 hashes, the same bytes. The one difference fails safe.
 
 ## It's the benchmark
 Knowing when to stop is the answer, for the model and for the system.
