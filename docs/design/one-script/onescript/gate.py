@@ -284,6 +284,114 @@ def _mandate(act, mandates, known_names, constraints) -> Decision:
     return Decision("pass", card={"turn": m["turn"], "words": m["words"]})
 
 
+# ── capabilities: the questions a normal system asks ─────────────────────────
+# Operator, 2026-10-02: "More so what a normal computer system would ask. Do you
+# want to allow python. Do you want to allow node. pytest. et al." … "the gate,
+# on each, would just be that toggle. Run Once. Run For session. Run perm."
+#
+# Every command is classed into a capability (first match wins). The door asks
+# per capability, not per command. The human's answer is one of four, and
+# only a seal proof made by the human's key can give it; the model can't click.
+CAPABILITIES = (
+    ("pytest", r"\bpytest\b"),
+    ("lint", r"\b(ruff|mypy|flake8|black)\b"),
+    (
+        "git write",
+        r"\bgit (commit|push|merge|rebase|reset|checkout|switch|worktree|cherry-pick|stash|tag)\b|\bgit branch -[dD]\b",
+    ),
+    ("git read", r"\bgit\b"),
+    (
+        "package install",
+        r"\b(pip|uv|npm|pnpm|yarn|cargo|apt|brew) (install|add|sync)\b|\buvx\b|\bnpx\b",
+    ),
+    ("network", r"\b(curl|wget|gh|ssh|scp|rsync)\b|https?://"),
+    ("node", r"\b(node|deno|bun)\b"),
+    ("python", r"\bpython3?\b|\.py\b"),
+    ("systemd", r"\b(systemctl|journalctl)\b"),
+    ("database", r"\b(psql|sqlite3|mysql)\b"),
+    ("delete", r"\brm\b|\bshred\b|\btruncate\b"),
+    ("shell", r"."),
+)
+SCOPES = ("once", "session", "permanent")  # and "no", which is always on the card
+LADDER = (3, 7, 13, 23)  # the repetition ladder: the levels a capability climbs
+
+
+def capability(command: str) -> str:
+    """The capability a command needs. VAR=value prefixes are dropped first,
+    so a token in an env assignment never decides the class or reaches a card."""
+    words = command.strip().split()
+    while words and "=" in words[0] and not words[0].startswith(("-", "=")):
+        words.pop(0)
+    cmd = " ".join(words)
+    return next(name for name, pat in CAPABILITIES if re.search(pat, cmd))
+
+
+def level(times: int) -> int:
+    """The highest ladder rung a count has reached; 0 below the first."""
+    return max((n for n in LADDER if times >= n), default=0)
+
+
+def allow(
+    command: str, session: str, grants: list[dict], seen: dict | None = None
+) -> Decision:
+    """The capability door. Fails closed: no grant that covers it, no run."""
+    return _closed(_allow, command, session, grants, seen or {})
+
+
+def _allow(command, session, grants, seen) -> Decision:
+    cap = capability(command)
+    for g in grants:
+        if g["capability"] != cap or g.get("revoked"):
+            continue
+        if g["scope"] == "permanent":
+            return Decision("pass", f"{cap}: permanent grant", card={"grant": g["id"]})
+        if g["scope"] == "session" and g["session"] == session:
+            return Decision(
+                "pass", f"{cap}: granted for this session", card={"grant": g["id"]}
+            )
+        if g["scope"] == "once" and not g.get("used"):
+            g["used"] = True  # consumed by this one act; the record keeps the row
+            return Decision("pass", f"{cap}: granted once", card={"grant": g["id"]})
+    times = seen.get(cap, 0) + 1
+    rung = level(times)
+    card = {
+        "capability": cap,
+        "options": ["run once", "run for session", "run permanently", "no"],
+        "seen": times,
+        "level": rung,
+    }
+    if rung:  # the ladder offers; it never applies (§0.3)
+        card["offer"] = (
+            "run permanently?" if rung >= 13 else "run for session?"
+        ) + f" ({cap} asked {times} times)"
+    if cap in ("network", "package install"):
+        card["egress"] = "what leaves the box goes on its own card, with the bytes"
+    return Decision("awaiting_grant", f"{cap}: no grant covers it", card=card)
+
+
+def grant(
+    cap: str, scope: str, session: str, subject_proof: str, human_key: bytes, gid: str
+) -> dict:
+    """The human's answer to a capability card, as a row for the record.
+    Refused unless the seal proof was made by the human's key over exactly
+    this capability and scope: presence is a label; this is authority."""
+    if cap not in {n for n, _ in CAPABILITIES}:
+        raise Refused(f"unknown capability {cap!r}")
+    if scope not in SCOPES:
+        raise Refused(f"unknown scope {scope!r}; the answers are {SCOPES} or no")
+    if not verify_seal(f"allow:{cap}:{scope}", subject_proof, human_key):
+        raise Refused(
+            "grant proof does not verify; only the human's key answers a card"
+        )
+    return {
+        "id": gid,
+        "capability": cap,
+        "scope": scope,
+        "session": session,
+        "by": HUMAN,
+    }
+
+
 # ── layer 5: claims — what the run says is checked before the human reads it ─
 _WORDS = dict(
     zip(
