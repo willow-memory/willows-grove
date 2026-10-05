@@ -2,6 +2,18 @@
 
 All notable changes land here per INVARIANTS.md §3. Format follows Keep a Changelog v1.1.0.
 
+## [0.13.0](https://github.com/willow-memory/willows-grove/compare/v0.12.2...v0.13.0) (2026-10-05)
+
+
+### Added
+
+* **design:** the bare hook, and the hook on two foundations ([a6a2fa3](https://github.com/willow-memory/willows-grove/commit/a6a2fa31e77558d0361449599a9109376d5a69ac))
+
+
+### Fixed
+
+* **design:** the one hook never fails open ([aea0c64](https://github.com/willow-memory/willows-grove/commit/aea0c64d022728fc4439780affb8608f7d687037))
+
 ## [0.12.2](https://github.com/willow-memory/willows-grove/compare/v0.12.1...v0.12.2) (2026-09-30)
 
 
