@@ -19,6 +19,8 @@ In the tables, **V** means I read the code, and **S** means it is inferred.
      the Jeles-first egress burn
    - [`parts-partition.md`](parts-partition.md), four live surfaces + open Qs
    - [`one-script-join.md`](one-script-join.md), one-script ↔ one-box (Q14)
+   - [`four-pieces-join.md`](four-pieces-join.md), one-box ↔ one script,
+     serve, one hook, one key (Q19)
    - [`crosslink-appendix.md`](crosslink-appendix.md), strengthen / contradict
      + three-dialect OUT
    - [`research-2026-10-01.md`](research-2026-10-01.md), front-end matrix

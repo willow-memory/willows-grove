@@ -230,6 +230,51 @@ third ask and sealed by the human.
 The papers are in `~/Forge/workshop/papers-agent-security-2026-10-05/`
 (outside the repo), with `READING-ORDER.md`.
 
+### Where the reading lands: one script, serve, one hook, one key
+
+*2026-10-05, desk session 019xJcd52XquwTaeZYqKL8QH. The operator, sharing the
+reading order: "All good deterministic work, but none of it has come together
+in one place", then "Add it". The desk hasn't read the papers; this mapping
+is from the operator's descriptions of each and the desk's memory of them.
+Agent-reported; not ratified.*
+
+The one place is four pieces. Three are built; serve is the one most of the
+reading points at, and isn't.
+
+| Piece | Who | Does | Status |
+|---|---|---|---|
+| One script | code | builds the tables from the record | skeleton in `onescript/` |
+| **Serve** | code | writes only the tables in scope to one file the model reads; a table out of scope isn't named, counted or marked | **not built** |
+| One hook | the model | Reads; Writes only if the human allows (`hook.py`, PR 107) | built, not wired |
+| One key | the human | sets the scope and seals; nothing is true until then | the vault, handled separately |
+
+| Piece | Reading that shapes it | What it takes |
+|---|---|---|
+| **One script** | Blueprint First; Anthropic, *Building Effective Agents* | Code picks the path, the model never does: a workflow, not an agent |
+| | Kim and Spafford 1994, Tripwire | Picture and compare |
+| | in-toto (USENIX 2019); RFC 9162, Certificate Transparency v2 | Each step signs what came in and what went out; an append-only hash log with proofs is the record |
+| **Serve** | Willison 2023, the Dual LLM pattern | The model gets references, never the box |
+| | Miller, Yee and Shapiro 2003; Miller 2006 | Holding a reference is the permission: the one served file is the model's only reference |
+| | CaMeL, CaMeLoT, APPA | Capabilities on data: scope sits on the tables, not on tools |
+| **One hook** | Saltzer and Schroeder 1975 | Economy of mechanism (about ten lines of code), fail-safe defaults (unknown tools denied), least privilege (Read only), complete mediation (matcher `*`) |
+| | Meta, the Agents Rule of Two | The model holds untrusted input and sensitive data but no actions, so it passes by holding none |
+| | LATTICE | No piece both decides and judges: the script decides, the model proposes, the key judges |
+| | *Design Patterns* (2506.08837) | The six patterns: which is nearest, and what none of them do (open; the desk hasn't placed it) |
+| **One key** | Janus | A seal binds to the bytes, never to the request: post-approval substitution moved an approval from 100 to 1,000,000 |
+| | *Observability Gap* | Seal the visible points, not the results |
+| **Under all four** | Thompson 1984, *Reflections on Trusting Trust* | The foundation: 3.9.0's source is signature-verified (`foundation/`), the compiler that built it is not |
+
+**What the mapping shows:**
+
+- Serve carries the most reading (Dual LLM, capabilities, CaMeL, the Rule of
+  Two) and is the piece not built.
+- Janus sets a rule for the key. The hook's `"Write": "ask"` approves a
+  request; when the key comes in, the seal covers the exact bytes written, so
+  an approval can't be moved to something else.
+- What no paper does is still the prior-art table's "Not found" rows: truth
+  made only by a human seal, scope chosen by stacking piles, and a pre-AI
+  foundation.
+
 ## The proposals from 2026-10-02
 
 **Status:** draft proposals for the operator to read, edit and ratify. Nothing
