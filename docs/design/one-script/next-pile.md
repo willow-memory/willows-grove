@@ -1259,6 +1259,70 @@ Whether something is in the pile is a lookup, not a judgement.
 When it isn't there: ESCALATE.
 ```
 
+#### Day 5 outline, in the operator's register (desk draft)
+
+*Desk draft, 2026-10-05, written in the operator's register from session
+019xJcd52XquwTaeZYqKL8QH. These are not the operator's words, and none of it
+is to be published as theirs until they rewrite or approve it. The operator,
+same session: "This is part of the kaggle work now. This is day 5", and on
+cutting the system down, "I think most of it is just going to come down to one
+hook." The grade is the desk's pass over willow-mcp at `419017c` (v2.94.1):
+5,906 passed, the 12 failures environmental (root uid, proxy); the hole is the
+Bandit step in `tests.yml` piping to `tee` without `pipefail`. Agent-reported.
+Updated the same session for the bare hook (`a6a2fa3`), at the operator's
+words "I want bare bare min" and "The model only has read, and if the user
+allows, write". The foundation numbers are `foundation/README.md`: 3.9.0 and
+3.16.0a0, 2,293 identical hashes, every difference an integer over 4,300
+digits. "The one key" added at the operator's question "So, I have the one
+script, and the one hook, what's the third?" and their "That's the right
+answer."*
+
+```markdown
+# Day 5: I graded my own system, and it came down to one hook
+
+## The grade
+195,000 lines. 5,906 tests passing. B+.
+The one real hole: a safety check that never ran.
+
+## Where it all went
+42 tools, 9 personas, 63 design docs.
+Most of it exists because a model was holding the tools.
+
+## Picture, cite, seal
+Hash everything. New things point back at old hashes.
+Nothing is true until a human seals it.
+
+## The model never sees the box
+It gets the points in its scope and proposes. Code does the rest.
+
+## One hook
+I wrote it three times.
+First it looked things up in the record. Then I made it fail closed.
+Then I cut it to this:
+
+    POLICY = {"Read": "allow", "Write": "ask"}
+
+The model reads. It writes if I say yes. Everything else: no.
+Even tools that don't exist yet.
+The model's whole job is reading what the last script produced.
+
+## Same answer in 2020 and today
+I ran it on Python 3.9.0, signed October 2020, and on this week's build.
+2,293 hashes, the same bytes. The one difference fails safe.
+
+## The one key
+One script: code does the work.
+One hook: the model reads.
+One key: I make it true.
+Picture, cite, seal. The script never holds the key. The model never sees it.
+The only place the three meet is "Write": "ask", where the model stops
+and waits for me.
+
+## It's the benchmark
+Knowing when to stop is the answer, for the model and for the system.
+If it isn't in the pile: ESCALATE. To me.
+```
+
 ### The dilemma: the same machine finds the stranger (2026-10-03)
 
 The operator walked it through in one-word turns. The desk's one-word
