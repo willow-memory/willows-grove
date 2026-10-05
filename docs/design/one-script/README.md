@@ -91,6 +91,145 @@ The fixes add about 20 lines, still stdlib only.
    `deep_thought` its "only what's new" cut: the previous screen against the
    new one.
 
+### The stack: hash, one script and the operator's words on top of each other
+
+*2026-10-05, desk session c3d31e6e. The operator: "stack it all up, whatever
+from just the hash, one script, human chunks of it", then "put the stack in
+the one script doc". The merged-tables method ("what merges, what stands out
+when the pile is on top of itself?", next-pile.md) run on the ideas
+themselves. Sources: the hashing handoff, this folder (README, workflow.md,
+next-pile.md, `onescript/`), the operator's words verbatim, and the flowering
+experiment. Agent-reported; a reading, not ratified.*
+
+A ✓ means the source says it. Height is how many sources stack on the row.
+
+| # | Point | Hash handoff | One script | Operator's words | Flowering | Height |
+|---|---|---|---|---|---|---|
+| 1 | Every thing gets a hash, and the hash is its identity | ✓ fingerprint | ✓ pile pointers carry a hash; a hash check comes before keywords | ✓ "gave each plot it's own hash" | ✓ `link_id`, excerpt ids | **4** |
+| 2 | New things cite older hashes, up the list | ✓ hash chain, Merkle | ✓ record chain | ✓ "plot 1 (hash#), plot 2 (hash) up the list" | ✓ a cite is an excerpt id or an earlier `link_id` | **4** |
+| 3 | Pointers, not prose | ✓ "a baseline holds hashes only, never content" | ✓ "the pile holds pointers, not the full files" | ✓ "Not the prose, but just the points" | ✓ only `{excerpts, joins[]}` goes into the next call | **4** |
+| 4 | Code first, model last | ✓ "Git already does steps 1 and 2" | ✓ "the agent is the last call" | ✓ "It starts when it's need. Ends when the job is done. ESCILATE." | ✓ D0 13/13 (10 against fixture gold, 3 routed against the ruling); ≤ 0.0 cloud per act on 15 counted acts, rubric pending (§13) | **4** |
+| 5 | Only a human makes it true | ✓ "the human signs the fingerprint" | ✓ the seal is `COMMIT`; the truth rule | ✓ "by a human that only a human could produce" | ✓ the operator's rubric; "Lets keep the tree", sealed bfe001f7 | **4** |
+| 6 | Three states, never collapsed | ✓ a hash per panel payload | ✓ the reachability gate | ✓ INVARIANTS §1 | ✓ the materials check | **4** |
+| 7 | Pile it up; what stacks is what matters | ✓ identical records dedupe by hash | ✓ `merge_flows`; mass decides attention | ✓ "what merges, what stands out when the pile is on top of itself?" | — | **3** |
+| 8 | The model's job is connections | — | ✓ "flowering on material already gathered" (workflow §2c) | ✓ "Making connection between a group of ideas that a human hasn't seen yet." | ✓ joins, chain depth | **3** |
+| 9 | Picture and compare | ✓ `snap.py` | ✓ B2 state check, reverse three-way | ✓ "the simple", Tripwire | — | **3** |
+| 10 | A pre-AI foundation | ✓ Python 3.8.2 by checksum | ✓ the VSOCK pre-AI gate | ✓ the operator's idea | — | **3** |
+| 11 | The database builds itself | — | ✓ write-ahead log → views → `COMMIT` | ✓ "deterministic postgres that builds itself" | — | **2** |
+| 12 | The 3 / 7 / 13 / 23 rollup | — | ✓ auto flags, the ladder | ✓ "grouping the 23's by 3" | — | **2** |
+| 13 | Once / session / permanent | — | ✓ `gate.allow` | ✓ "Run Once. Run For session. Run perm." | — | **2** |
+
+**The tallest stacks, read down, are the system in five sentences:**
+
+1. Everything is a hash.
+2. Everything new cites the hashes it rests on.
+3. Only hashes and pointers move; prose stays where it lives.
+4. Code does the work, and the model is called last, only to propose connections.
+5. Nothing is true until a human seals it.
+
+**What the overlay connects that no single source does:**
+
+| Overlap | Connection |
+|---|---|
+| Row 2 on row 5 | The review's worst hole (the record chain can be cut or rehashed, because its tip is stored nowhere) is closed by the tallest stack: the human seals the tip hash at check-out. |
+| Row 7 on row 8 | The model never searches for connections. Code stacks the tables; the model looks only at what stands out. |
+| Row 3 on the boot | A boot built from rows 1–3 is a list of hashes. This session's `session_enter` returned 173,921 characters. |
+| Row 9 on row 2 | Each picture cites the previous fingerprint (the handoff's "accept"), so picture, compare and chain are one mechanism. |
+
+**Thin stacks, still open:** rungs 7 and 17 (the operator's to define);
+explain, every change carries a reason (named, not built); T1b chain depth
+(the one flowering measure never run); `h16` at 64 bits and the garbled-line
+crash in `record.py` (desk-confirmed, not fixed).
+
+**Stripped down, the one script is picture, cite, seal.** Everything else is
+a view built on those three.
+
+### The security core: the model never sees the box
+
+*2026-10-05, desk session c3d31e6e. The operator: "what is security. It's just
+a box that has to be filled out correctly. So if the model never even knows
+the Box exists and is never given the opportunity to see any other box except
+the one or the ones that it has scope too", then "That's the core of it", then
+"add the security core to the one script doc". The readings and prior art
+below are agent-reported; the prior art comes from abstracts only. Not
+ratified.*
+
+**The core, as one row:** the model is served only the points in its scope,
+named by hashes it can't guess, and returns only proposed rows. Code fills
+out every box, and the human seals. The model never sees a box, so it has
+nothing to fill out wrong.
+
+It needs no new row in the stack. It is what the five tallest rows add up to:
+
+| Stack row | Security consequence |
+|---|---|
+| 1. Everything is a hash | Scope is a set of hashes |
+| 3. Only hashes and pointers move | Serving is choosing which hashes |
+| 4. Code first, model last | The model has no hands: no tools, no forms, no doors |
+| 5. Only a human makes it true | The seal is the only write |
+
+**Why the machinery shrinks.** MCP tools, the Kart sandbox, envelopes,
+leases, hooks and session attestation exist because a model runs things. The
+cross-session pile shows the cost: 1,699 waits, 163 + 163 grant churn and 247
+refused shell calls (next-pile.md, "The pile on top of itself"). When code
+drives, security is no longer "how do we stop the model doing harm with its
+tools?" but "what are we willing to show it?"
+
+**What is already in place:**
+
+| Mechanism | Where |
+|---|---|
+| The model gets only `{excerpts, joins[]}` | flowering §1.3 |
+| A cite outside the served pool is `link_fail`: caught by code and sent to flowering (addressed to willow), never accepted as an answer | flowering §13 |
+| An act with any uncitable excerpt goes to flowering before any model call | flowering §13 (willow-bot #79) |
+| A grant is answered only with the human's seal over exactly `allow:<capability>:<scope>` | next-pile.md, the capability door |
+
+So scope is enforced by the same check that keeps joins honest: a hash the
+model was never served is a name it can't know, and the validator catches it
+and escalates the act rather than accepting it.
+
+**Shared SOIL.** The operator, the same session: "I don't think were going to
+need the shared soil anymore." The reading: each session's B1 store holds its
+own record and pile; cross-session lookups are piles merged by hash
+(`merge_flows`, a view rebuilt on demand); the one shared thing left is the
+seal ledger, append-only and written only by the human.
+
+**Where it can still leak: the content inside a served box.**
+
+| Risk | Example | Answer in this design |
+|---|---|---|
+| Injection in served text | An excerpt says "ignore your instructions" | The model has no hands; the worst case is a bad proposed row, which stays unverified |
+| Inference across boxes | Harmless points that, together, identify a person | Judge scope on the combination, not box by box (the mosaic rule) |
+| Guessable hashes | A plain hash of low-entropy content (a PIN, a name) reverses by enumeration | Served ids are keyed (HMAC) or random, never plain content hashes; `h16` at 64 bits is too short |
+| The text going to the human | A proposed row worded to talk the human into sealing | The seal stays a human act; the human reads the points, not only the model's sentence |
+| Seal substitution | Janus (below): an approval keyed to an attempt was counted for a different proposal, 100 → 1,000,000 | **A seal binds to one hash, never to an attempt or a session** |
+| The serving code | A bug serves the wrong box | The real attack surface. Keep it tiny, readable and sealed: the pre-AI foundation (stack row 10) |
+
+**Prior art** (search 2026-10-05, Jeles first, then the web; abstracts only;
+open question logged as gap `f8680acc08e6`):
+
+| Piece | Published? | Where |
+|---|---|---|
+| The model sees only references | Yes | Dual LLM pattern (Willison, 2023); CaMeL (arXiv 2503.18813) |
+| Code drives; the model never picks the path | Yes | Blueprint First, Model Second (arXiv 2508.02721) |
+| Proposals and approvals in a signed hash chain before anything runs | Yes | Janus (arXiv 2609.38266) |
+| Fixed-shape output from the model that touches data | Yes | APPA (arXiv 2607.24625) |
+| Trust the architecture, not the model | Yes | LATTICE (Frontiers in AI, 2026) |
+| Truth, not just action, made only by a human seal | Not found | Janus gates effects; a human answer is one input among validators |
+| Scope chosen by stacking hashed piles | Not found | — |
+| The model's only job is proposing connections | Not found | Elsewhere the model still does bounded tasks |
+| A pre-AI foundation under the serving code | Not found | — |
+
+The operator, after reading Blueprint First: "The way they were describing
+the workflow that they were using. Trying as hard as they could to make it
+most of it deterministic, instead of reasoning." The difference the desk
+reads (agent-reported): their blueprint is written by an expert before the
+first run; here the procedure accumulates from what repeats, offered at the
+third ask and sealed by the human.
+
+The papers are in `~/Forge/workshop/papers-agent-security-2026-10-05/`
+(outside the repo), with `READING-ORDER.md`.
+
 ## The proposals from 2026-10-02
 
 **Status:** draft proposals for the operator to read, edit and ratify. Nothing
