@@ -78,8 +78,10 @@ One row in the index, in this shape:
    isn't filled.
 4. **Propose, don't seal.** Every change is a commit on a branch with a
    `Persona:` trailer, and the operator decides whether it merges (G2–G5).
-5. **No new rules in this grid.** It's full. A new rule goes in a second grid
-   (`rules-cross-table-2`), with addresses that start from N1.
+5. **No new rules in this grid.** It's full. A new rule goes in a new grid
+   whose rows start after the last grid's last row. The second grid,
+   [`boxes-outside-2026-10-06.md`](boxes-outside-2026-10-06.md), holds N–Q,
+   so the next one starts at R. Two grids never share a row letter.
 6. **Look in the box first** (C1–C3). The source paths are all local. Don't
    go to the web for anything in this table.
 7. **The vault is the operator's key.** Row D describes the box rule. Don't

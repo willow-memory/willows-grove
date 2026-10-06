@@ -17,13 +17,16 @@ is yours to choose.
 |---|---|
 | [`cross_table.py`](cross_table.py) | The filler. Stdlib only, deterministic: the same map and the same files give the same bytes. |
 | [`example/rules-map-2026-10-06.json`](example/rules-map-2026-10-06.json) | The worked example: the map behind [`rules-cross-table-2026-10-06.md`](../../docs/design/one-box/rules-cross-table-2026-10-06.md), 13 × 13, 168 cells found and 1 silent. |
-| [`example/boxes-outside-map-2026-10-06.json`](example/boxes-outside-map-2026-10-06.json) | The second example: a 4 × 5 grid whose source is a notes section inside the same document ([`boxes-outside-2026-10-06.md`](../../docs/design/one-box/boxes-outside-2026-10-06.md)). It shows that the source can be the document itself, as long as the notes are marked for what they are. |
+| [`example/boxes-outside-map-2026-10-06.json`](example/boxes-outside-map-2026-10-06.json) | The second example: a 4 × 5 grid (rows N–Q, after the first grid's A–M) whose source is a notes section inside the same document ([`boxes-outside-2026-10-06.md`](../../docs/design/one-box/boxes-outside-2026-10-06.md)). It shows that the source can be the document itself, as long as the notes are marked for what they are. |
 
 ## The four parts
 
 1. **A grid of addresses.** Rows are letters (A–Z) and columns are numbers.
    Once an address is given out it is never renumbered. When the grid is
-   full, start a second one.
+   full, start a second one, with its rows starting where the last grid
+   stopped (`new --after`). An address names one box across every grid, so
+   two grids never share a row letter (`check --with` and `fill --with`
+   refuse it).
 2. **A map** (JSON). For each row: a title and the row's source. For each
    cell: a label, a file, a pattern that finds the passage, a mode, and a
    standing.
@@ -48,13 +51,16 @@ is yours to choose.
 ```sh
 # 1. A blank map: 13 × 13 by default, any size up to 26 rows.
 python3 templates/cross-table/cross_table.py new my-map.json --rows 13 --cols 13 --title "My table"
+#    A second grid, rows starting after the first one's last row (A–M → N…).
+python3 templates/cross-table/cross_table.py new next-map.json --rows 4 --cols 5 --after my-map.json
 
 # 2. Fill in the map by hand: rows[].title and source, and per cell the
 #    label, file, pattern, mode. This is the part that decides what the
 #    box is for, and it's the person's call.
 
 # 3. See what every cell finds. Exits 1 if anything is unreachable or not found.
-python3 templates/cross-table/cross_table.py check my-map.json
+#    --with refuses the map if it shares a row letter with another grid.
+python3 templates/cross-table/cross_table.py check next-map.json --with my-map.json
 
 # 4. Write the grid, the row sources and the index into a document.
 python3 templates/cross-table/cross_table.py fill my-map.json my-table.md

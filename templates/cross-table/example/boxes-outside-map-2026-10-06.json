@@ -3,29 +3,29 @@
  "root": "../../../..",
  "rows": [
   {
-   "row": "A",
+   "row": "N",
    "title": "Words and myths",
-   "source": "the notes, § A (agent, general knowledge; not checked against references)"
+   "source": "the notes, § N (agent, general knowledge; not checked against references)"
   },
   {
-   "row": "B",
+   "row": "O",
    "title": "Logic and thought",
-   "source": "the notes, § B (agent, general knowledge; not checked against references)"
+   "source": "the notes, § O (agent, general knowledge; not checked against references)"
   },
   {
-   "row": "C",
+   "row": "P",
    "title": "Made things",
-   "source": "the notes, § C (agent, general knowledge; not checked against references)"
+   "source": "the notes, § P (agent, general knowledge; not checked against references)"
   },
   {
-   "row": "D",
+   "row": "Q",
    "title": "Moving",
-   "source": "the notes, § D (agent, general knowledge; not checked against references)"
+   "source": "the notes, § Q (agent, general knowledge; not checked against references)"
   }
  ],
  "cells": [
   {
-   "cell": "A1",
+   "cell": "N1",
    "label": "The box tree",
    "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
    "pattern": "^- \\*\\*The box tree\\.\\*\\*",
@@ -33,7 +33,7 @@
    "standing": "unattested"
   },
   {
-   "cell": "A2",
+   "cell": "N2",
    "label": "Pandora's jar",
    "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
    "pattern": "^- \\*\\*Pandora's jar\\.\\*\\*",
@@ -41,7 +41,7 @@
    "standing": "unattested"
   },
   {
-   "cell": "A3",
+   "cell": "N3",
    "label": "Boxing Day",
    "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
    "pattern": "^- \\*\\*Boxing Day\\.\\*\\*",
@@ -49,7 +49,7 @@
    "standing": "unattested"
   },
   {
-   "cell": "A4",
+   "cell": "N4",
    "label": "Out of the box",
    "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
    "pattern": "^- \\*\\*Out of the box\\.\\*\\*",
@@ -57,7 +57,7 @@
    "standing": "unattested"
   },
   {
-   "cell": "A5",
+   "cell": "N5",
    "label": "Think outside the box",
    "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
    "pattern": "^- \\*\\*Think outside the box\\.\\*\\*",
@@ -65,7 +65,7 @@
    "standing": "unattested"
   },
   {
-   "cell": "B1",
+   "cell": "O1",
    "label": "The pigeonhole principle",
    "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
    "pattern": "^- \\*\\*The pigeonhole principle\\.\\*\\*",
@@ -73,7 +73,7 @@
    "standing": "unattested"
   },
   {
-   "cell": "B2",
+   "cell": "O2",
    "label": "Black box, white box",
    "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
    "pattern": "^- \\*\\*Black box, white box\\.\\*\\*",
@@ -81,7 +81,7 @@
    "standing": "unattested"
   },
   {
-   "cell": "B3",
+   "cell": "O3",
    "label": "Schrödinger's cat",
    "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
    "pattern": "^- \\*\\*Schrödinger's cat\\.\\*\\*",
@@ -89,7 +89,7 @@
    "standing": "unattested"
   },
   {
-   "cell": "B4",
+   "cell": "O4",
    "label": "Wittgenstein's beetle",
    "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
    "pattern": "^- \\*\\*Wittgenstein's beetle\\.\\*\\*",
@@ -97,7 +97,7 @@
    "standing": "unattested"
   },
   {
-   "cell": "B5",
+   "cell": "O5",
    "label": "Nested boxes",
    "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
    "pattern": "^- \\*\\*Nested boxes\\.\\*\\*",
@@ -105,7 +105,7 @@
    "standing": "unattested"
   },
   {
-   "cell": "C1",
+   "cell": "P1",
    "label": "The shipping container",
    "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
    "pattern": "^- \\*\\*The shipping container\\.\\*\\*",
@@ -113,7 +113,7 @@
    "standing": "unattested"
   },
   {
-   "cell": "C2",
+   "cell": "P2",
    "label": "Cornell's shadow boxes",
    "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
    "pattern": "^- \\*\\*Cornell's shadow boxes\\.\\*\\*",
@@ -121,7 +121,7 @@
    "standing": "unattested"
   },
   {
-   "cell": "C3",
+   "cell": "P3",
    "label": "The bento",
    "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
    "pattern": "^- \\*\\*The bento\\.\\*\\*",
@@ -129,7 +129,7 @@
    "standing": "unattested"
   },
   {
-   "cell": "C4",
+   "cell": "P4",
    "label": "The box model",
    "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
    "pattern": "^- \\*\\*The box model\\.\\*\\*",
@@ -137,7 +137,7 @@
    "standing": "unattested"
   },
   {
-   "cell": "C5",
+   "cell": "P5",
    "label": "The sandbox",
    "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
    "pattern": "^- \\*\\*The sandbox\\.\\*\\*",
@@ -145,7 +145,7 @@
    "standing": "unattested"
   },
   {
-   "cell": "D1",
+   "cell": "Q1",
    "label": "Label the sides",
    "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
    "pattern": "^- \\*\\*Label the sides\\.\\*\\*",
@@ -153,7 +153,7 @@
    "standing": "unattested"
   },
   {
-   "cell": "D2",
+   "cell": "Q2",
    "label": "The open-first box",
    "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
    "pattern": "^- \\*\\*The open\\-first box\\.\\*\\*",
@@ -161,7 +161,7 @@
    "standing": "unattested"
   },
   {
-   "cell": "D3",
+   "cell": "Q3",
    "label": "Heavy things in small boxes",
    "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
    "pattern": "^- \\*\\*Heavy things in small boxes\\.\\*\\*",
@@ -169,7 +169,7 @@
    "standing": "unattested"
   },
   {
-   "cell": "D4",
+   "cell": "Q4",
    "label": "Photograph the back",
    "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
    "pattern": "^- \\*\\*Photograph the back\\.\\*\\*",
@@ -177,7 +177,7 @@
    "standing": "unattested"
   },
   {
-   "cell": "D5",
+   "cell": "Q5",
    "label": "Heaviest first",
    "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
    "pattern": "^- \\*\\*Heaviest first\\.\\*\\*",

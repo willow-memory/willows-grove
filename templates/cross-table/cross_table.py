@@ -9,11 +9,13 @@ composed: a cell whose pattern finds nothing says `not found`, and a cell
 with no source says `source silent`. Same map and same files give the same
 bytes. Stdlib only.
 
-    cross_table.py new  MAP --rows 13 --cols 13 [--title T]
-    cross_table.py fill MAP DOC [--root DIR]
-    cross_table.py check MAP [--root DIR]
+    cross_table.py new  MAP --rows 13 --cols 13 [--title T] [--after EARLIER_MAP ...]
+    cross_table.py fill MAP DOC [--root DIR] [--with OTHER_MAP ...]
+    cross_table.py check MAP [--root DIR] [--with OTHER_MAP ...]
 
-`new` writes a blank map. `fill` writes the grid, the row sources and the
+`new` writes a blank map; with `--after`, its rows start after the earlier
+grids' last row, so no address is used twice. `--with` makes `check` and
+`fill` refuse a map that shares a row letter with another grid. `fill` writes the grid, the row sources and the
 index into DOC between `<!-- cross-table:… -->` markers (creating DOC if it
 does not exist) and leaves everything else in DOC alone. `check` prints
 every cell's result and exits 1 if any cell is `not found`.
@@ -41,10 +43,15 @@ SECTIONS = ("grid", "sources", "index")
 # ── the map ──────────────────────────────────────────────────────────────────
 
 
-def blank_map(rows: int, cols: int, title: str) -> dict:
-    if not 1 <= rows <= 26 or cols < 1:
-        raise SystemExit("rows must be 1–26 (lettered A–Z) and cols at least 1")
-    letters = string.ascii_uppercase[:rows]
+def blank_map(rows: int, cols: int, title: str, start: str = "A") -> dict:
+    """A blank grid. `start` is its first row letter: a new grid starts where
+    the last one stopped, so an address names one box across every grid."""
+    first = string.ascii_uppercase.find(start.upper()) if len(start) == 1 else -1
+    if first < 0 or rows < 1 or first + rows > 26 or cols < 1:
+        raise SystemExit(
+            "rows must fit in A–Z from --start, and cols must be at least 1"
+        )
+    letters = string.ascii_uppercase[first : first + rows]
     return {
         "title": title,
         "root": ".",
@@ -79,6 +86,21 @@ def load_map(path: Path) -> dict:
             raise SystemExit(f"{c['cell']}: standing must be one of {STANDINGS}")
     m["_cols"] = cols
     return m
+
+
+def rows_of(m: dict) -> set[str]:
+    return {r["row"] for r in m["rows"]}
+
+
+def next_row(earlier: list[Path]) -> str:
+    """The first row letter after every earlier grid's last row."""
+    used = set().union(*(rows_of(load_map(p)) for p in earlier)) if earlier else set()
+    if not used:
+        return "A"
+    i = max(string.ascii_uppercase.index(r) for r in used) + 1
+    if i >= 26:
+        raise SystemExit("the earlier grids use every row letter A–Z")
+    return string.ascii_uppercase[i]
 
 
 # ── reading a source ─────────────────────────────────────────────────────────
@@ -248,20 +270,47 @@ def main(argv: list[str] | None = None) -> int:
     n.add_argument("--rows", type=int, default=13)
     n.add_argument("--cols", type=int, default=13)
     n.add_argument("--title", default="")
+    n.add_argument(
+        "--after",
+        type=Path,
+        action="append",
+        default=[],
+        help="an earlier grid's map; rows start after its last row",
+    )
     f = sub.add_parser("fill")
     f.add_argument("map", type=Path)
     f.add_argument("doc", type=Path)
     f.add_argument("--root", type=Path)
+    f.add_argument(
+        "--with",
+        dest="others",
+        type=Path,
+        action="append",
+        default=[],
+        help="another grid's map; refuse if any row letter is shared",
+    )
     c = sub.add_parser("check")
     c.add_argument("map", type=Path)
     c.add_argument("--root", type=Path)
+    c.add_argument(
+        "--with",
+        dest="others",
+        type=Path,
+        action="append",
+        default=[],
+        help="another grid's map; refuse if any row letter is shared",
+    )
     a = ap.parse_args(argv)
 
     if a.cmd == "new":
         if a.map.exists():
             raise SystemExit(f"{a.map} exists; a map is never overwritten")
         a.map.write_text(
-            json.dumps(blank_map(a.rows, a.cols, a.title), indent=1, ensure_ascii=False)
+            json.dumps(
+                blank_map(a.rows, a.cols, a.title, next_row(a.after)),
+                indent=1,
+                ensure_ascii=False,
+            )
             + "\n",
             encoding="utf-8",
         )
@@ -269,6 +318,12 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     m = load_map(a.map)
+    shared = sorted(rows_of(m) & set().union(*(rows_of(load_map(o)) for o in a.others)))
+    if shared:
+        raise SystemExit(
+            f"rows {', '.join(shared)} are already used by another grid; "
+            "an address must name one box across every grid"
+        )
     root = a.root or (a.map.parent / m.get("root", ".")).resolve()
     results = resolve(m, root)
     counts = {

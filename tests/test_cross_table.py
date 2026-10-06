@@ -142,3 +142,23 @@ def test_the_script_never_raises_standing(tmp_path):
     bad = _map(tmp_path, [_cell("A1", standing="true")])
     with pytest.raises(SystemExit):
         ct.load_map(bad)
+
+
+def test_a_new_grid_starts_where_the_last_one_stopped(tmp_path):
+    first, second = tmp_path / "first.json", tmp_path / "second.json"
+    ct.main(["new", str(first), "--rows", "13", "--cols", "2"])
+    ct.main(["new", str(second), "--rows", "4", "--cols", "2", "--after", str(first)])
+    assert [r["row"] for r in json.loads(second.read_text())["rows"]] == [
+        "N",
+        "O",
+        "P",
+        "Q",
+    ]
+
+
+def test_two_grids_never_share_a_row_letter(tmp_path):
+    a, b = tmp_path / "a.json", tmp_path / "b.json"
+    ct.main(["new", str(a), "--rows", "2", "--cols", "1"])
+    ct.main(["new", str(b), "--rows", "2", "--cols", "1"])
+    with pytest.raises(SystemExit):
+        ct.main(["check", str(b), "--with", str(a), "--root", str(tmp_path)])
