@@ -54,7 +54,7 @@ decisions that shaped what got built.
 | [`design/one-box/crosslink-appendix.md`](design/one-box/crosslink-appendix.md) | Strengthen vs contradict; three-dialect OUT; Q3–Q7–Q9 |
 | [`design/one-box/session-2026-10-02.md`](design/one-box/session-2026-10-02.md) | Expand-pass session note (B1–B3, SOIL ids, next bite) |
 | [`design/one-box/verify-2026-10-02.md`](design/one-box/verify-2026-10-02.md) | Kart re-check of one-box §1 V-facts |
-| [`design/one-box/rules-cross-table-2026-10-06.md`](design/one-box/rules-cross-table-2026-10-06.md) | Boxes and branches on one 13 × 13 grid: 50 rules by address (A1–H6), each with its source; rows I–M left to grow |
+| [`design/one-box/rules-cross-table-2026-10-06.md`](design/one-box/rules-cross-table-2026-10-06.md) | Boxes and branches on one 13 × 13 grid: 169 rules by address (A1–M13), each row with its source |
 | [`design/one-script/README.md`](design/one-script/README.md) | The one script: four draft proposals from session 2026-10-02 (the workflow, the runtime as one script, a runnable skeleton, constitution amendments on Draft 0.7) |
 | [`design/the-forge-shape.md`](design/the-forge-shape.md) | The Forge, the shape as talked out 2026-08-30 |
 | [`design/approval-broker.md`](design/approval-broker.md) | Approval broker: how a human act reaches a sandboxed caller |

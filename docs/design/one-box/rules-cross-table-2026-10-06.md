@@ -9,13 +9,15 @@ here changes a rule. Each source still holds its own rule.*
 
 ## How to use it
 
-- The grid is 13 × 13. Rows are A–M and columns are 1–13, so every rule has
-  an address such as **B3** or **G2**.
-- To use a rule, name its address. The index under the grid gives the full
-  rule and where it comes from.
-- 50 of the 169 cells are filled. Rows I–M and the empty columns are room to
-  grow. A new rule takes the next free cell in its row, or a new row. Once an
-  address is given out it is never renumbered.
+- The grid is 13 × 13: 13 rows (A–M) by 13 columns (1–13), all 169 cells
+  filled. The label column and the number row are only there to give every
+  cell its address, such as **B3** or **G2**.
+- To use a rule, name its address. Each cell is a short label. "Where each
+  row comes from" names the source for the whole row, and the index under it
+  gives the full rule for the cells first gathered in this session (A1–A11,
+  B1–B8, C1–C4, D1–D6, E1–E6, F1–F3, G1–G6, H1–H6).
+- Once an address is given out it is never renumbered. When the grid needs
+  to grow, the new rules go in a second grid.
 - Picking cells is up to whoever is in the seat. This table doesn't choose
   any.
 
@@ -23,19 +25,37 @@ here changes a rule. Each source still holds its own rule.*
 
 | | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| **A** Box rules | Honest state | Gates fail closed, loud | Presence is a label; authority is a passkey | Reading open, saving guarded | Human seals, system proposes | Willow seat is where the human is | Egress: three keys + click | Portless | Hooks are doors | Auto-merge is a standing grant | Template ships the box | | |
-| **B** Security core | Model sees only its scope | Code fills, human seals | One hook: Read allow, Write ask | Cite outside the pool is `link_fail` | Mosaic rule | Unguessable ids | Seal binds to one hash | Serving code is the attack surface | | | | | |
-| **C** Look in the box first | Ask Nestor first | Then look in the box | Only then go remote | Silent corpus ≠ absence | | | | | | | | | |
-| **D** willow-bot box rule | `WILLOW_HOME`, else `WILLOW_VAULT_BOX` | Blank is unset; `~` expands | Absolute path only | Must already exist | Made only by `provision.sh` | Resolve, never create | | | | | | | |
-| **E** willow-bot box workspace | Persistence | Isolation | Egress by request only | Auditability | Reach unchanged | No runs from GitHub triggers | | | | | | | |
-| **F** One-script rules | The stamp | Every proposal cites | Reverse re-checks | | | | | | | | | | |
-| **G** Git branches | willow-mcp ruleset | Feature branch + PR | No persona merges alone | Standing grant in first commit | Trailers: `Persona:`, `Ratified-by:` | Session branch name | | | | | | | |
-| **H** The tree | One tree, one soil | Grafts splice on | Sapwood → heartwood on seal | Growth before flowering | Model at a leaf | Gate only narrows | | | | | | | |
-| **I** | | | | | | | | | | | | | |
-| **J** | | | | | | | | | | | | | |
-| **K** | | | | | | | | | | | | | |
-| **L** | | | | | | | | | | | | | |
-| **M** | | | | | | | | | | | | | |
+| **A** Box rules | Honest state | Gates fail closed, loud | Presence is a label; authority is a passkey | Reading open, saving guarded | Human seals, system proposes | Willow seat is where the human is | Egress: three keys + click | Portless | Hooks are doors | Auto-merge is a standing grant | Template ships the box | Exceptions declared, never silent | No front end is primary |
+| **B** Security core | Model sees only its scope | Code fills, human seals | One hook: Read allow, Write ask | Cite outside the pool is `link_fail` | Mosaic rule | Unguessable ids | Seal binds to one hash | Serving code is the attack surface | Injected text: the model has no hands | Human reads the points, not just the sentence | Only the seal ledger is shared | Model gets only `{excerpts, joins[]}` | Uncitable excerpt → flowering first |
+| **C** Look in the box first | Ask Nestor first | Then look in the box | Only then go remote | Silent corpus ≠ absence | Name which tier answered | Record that the box was checked | A skipped step fails loud | Greenfield archive is in the box | `superseded/` is in the box | Retired repos are a shelf | Refused ≠ retired | Rule 1: coverage is all of `~/github` | Rule 2: the PR is the extraction event |
+| **D** willow-bot box rule | `WILLOW_HOME`, else `WILLOW_VAULT_BOX` | Blank is unset; `~` expands | Absolute path only | Must already exist | Made only by `provision.sh` | Resolve, never create | Steward state lives in the box | Script key path is in the box | Counters live in the box, not `~/.willow` | Carried-over counter keeps its mode | Carry-over lock held for the whole copy | Unconfigured reads as "not configured" | Every resolver uses the one rule |
+| **E** willow-bot box workspace | Persistence | Isolation | Egress by request only | Auditability | Reach unchanged | No runs from GitHub triggers | No long-lived shells | No ambient current venv | No new MCP package or tools | No webhook surface changes | No bot-held tokens (broker only) | Doesn't replace Kart for seats | Model weights stay out (for now) |
+| **F** One-script rules | The stamp | Every proposal cites | Reverse re-checks | `view` draws the heading from the stamp | The law = constitution + the user's half | Code checks the cite's form; a witness checks it's true | Unknown law is refused | Amends waits for the seal | Egress without a grant writes a card | Any internal error fails closed | Agent proposals can't ratify themselves | Same box → same bytes | No clock but the enter key |
+| **G** Git branches | willow-mcp ruleset | Feature branch + PR | No persona merges alone | Standing grant in first commit | Trailers: `Persona:`, `Ratified-by:` | Session branch name | All commits on the feature branch | Reviewed shell work goes through Kart | Read-only git is fine | `hotfix/`: same rule, faster name | Merge commits are exempt | Release-please exempt on two conditions | Code PRs add a CHANGELOG bullet |
+| **H** The tree | One tree, one soil | Grafts splice on | Sapwood → heartwood on seal | Growth before flowering | Model at a leaf | Gate only narrows | Session and bite: one machine, two scales | Entry never refuses on orientation | The Forge imports no fleet code | The flowchart is derived | Cloud is pollination, not metabolism | Pools collect; they aren't oracles | One nutrient policy at the soil |
+| **I** The stack | Everything is a hash | New cites older hashes | Pointers, not prose | Code first, model last | Only a human makes it true | Three states, never collapsed | Pile it up; what stacks matters | The model's job is connections | Picture and compare | A pre-AI foundation | The database builds itself | The 3 / 7 / 13 / 23 rollup | Once / session / permanent |
+| **J** Invariants | §1 Three-state contract | §2 Supersedes D7 | §3 Doc discipline | §4 Reader/endpoint coverage | §5 Trust order | §6 Manifests describe code | §7 Consent is real, not automatic | §8 Panels read live endpoints | §9 Seed reads real canon | §10 CI proves the invariants | §11 Persona provenance | §12 Ratification | §12 Grandfather (PRs 1–11) |
+| **K** Operator decisions | D1 Canonical runtime | D2 Where the chain lives | D3 Home of the socket standard | D4 The browser door | D5 The #101 sealed record | D6 Friction ownership | D7 Forge refusal without Nestor | D8 u2u and the bridge | D9 Second front end | D10 Ingress: no tunnel by default | D11 Grants away from the box | D12 Helper commit persona | Kaggle benchmark comes first |
+| **L** One-box phases | 0 Close the holes | 1 The socket standard | 2 Rat gets a door | 3 Front ends: one contract | 4 The lifecycle behind Rat | 5 Nestor behind Rat | 6 Egress: click to grant | 7 Portless | 8 The surface grows per user | 9 The template ships the box | Sequencing: what not to break | Gap pass | The first three bites |
+| **M** The ladder and the seven | Rung 1: hash | Rung 2: code | Rung 3: embedder | Rung 4: small model | Rung 5: cloud | Rung 6: the human | boot | predict | record | gate | resolve | view | reverse |
+
+## Where each row comes from
+
+| Row | What it holds | Source |
+|---|---|---|
+| A | Box rules | `README.md` §0, §9, §10, §15; `session-2026-10-01.md`; CHANGELOG (PR 102) |
+| B | Security core | `../one-script/README.md`, the security core |
+| C | Look in the box first | `../the-forge-shape.md` §3, §12 |
+| D | willow-bot box rule | willow-bot `willow_bot/paths.py`, `tests/test_box_rule.py` |
+| E | willow-bot box workspace | `../willow-bot-box-spec.md` §3, §9, §11 |
+| F | One-script rules | `../one-script/next-pile.md`, rules and `gate.py` |
+| G | Git branches | willow-mcp `CONTRIBUTING.md`, `skills/worktree.md`; `INVARIANTS.md` §3, §11, §12; `CLAUDE.md` 5–6 |
+| H | The tree | `../forge-convergence.md` §1, §1.5, §8 |
+| I | The stack | `../one-script/README.md`, the stack (rows 1–13) |
+| J | Invariants | `../../INVARIANTS.md` §1–§12 |
+| K | Operator decisions | `README.md` §2 and §15 (D1–D12); `../one-script/next-pile.md`, constraints |
+| L | One-box phases | `README.md` §3–§15 |
+| M | The ladder and the seven | `../one-script/README.md` (resolve ladder); `../one-script/next-pile.md` (the seven) |
 
 ## Index
 
