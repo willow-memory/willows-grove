@@ -21,6 +21,104 @@ here changes a rule. Each source still holds its own rule.*
 - Picking cells is up to whoever is in the seat. This table doesn't choose
   any.
 
+## For agents: how to fill this out
+
+### Is there enough context here?
+
+Enough to find a rule, not yet enough to act on one. What's here:
+
+- Every cell has an address and a short label.
+- Every row names its source.
+- 50 cells (A1–A11, B1–B8, C1–C4, D1–D6, E1–E6, F1–F3, G1–G6, H1–H6) have
+  their full text in the index.
+
+What's missing:
+
+- The other 119 cells are labels only, with no full text.
+- No cell cites a line number, so nothing can be checked by hash yet.
+- The 57 documents under "Also applicable" were found by title and have not
+  been read.
+- Row F refers to numbered boxes ("box 2", "box 6") whose list was not found.
+
+"Filling this out" means closing those four gaps. It never means changing a
+rule.
+
+### The entry every filled cell gets
+
+One row in the index, in this shape:
+
+| Cell | Rule | Source | Standing |
+|---|---|---|---|
+| J5 | The rule in one or two sentences, in the source's own words where it has them. | `repo: path` §section, line N | unattested |
+
+- **Source** is one file and one line or section. If a rule has two sources,
+  name both, and say which one is canonical.
+- **Standing** is `unattested` when an agent wrote it, `witnessed` when a
+  second, independent check agreed, and `sealed` only when the operator seals
+  it. No agent writes `witnessed` or `sealed` on its own entry.
+- If the source can't be found, can't be read, or doesn't say it, write that
+  in the Rule column (`not found`, `unreachable`, `source silent`). Never
+  leave the cell blank and never fill it with a guess. This is INVARIANTS §1:
+  three states, never collapsed.
+
+### Fixed for every agent
+
+1. **Addresses never move.** Don't renumber, reorder, merge or delete a cell.
+   A cell that turns out wrong gets a correction in its entry, and the label
+   stays until the operator changes it.
+2. **Copy, don't compose.** The rule comes from the source. If the source and
+   the label disagree, the source wins, and you flag the label. Don't fix the
+   label yourself.
+3. **One cell, one source line.** If you can't point to the line, the cell
+   isn't filled.
+4. **Propose, don't seal.** Every change is a commit on a branch with a
+   `Persona:` trailer, and the operator decides whether it merges (G2–G5).
+5. **No new rules in this grid.** It's full. A new rule goes in a second grid
+   (`rules-cross-table-2`), with addresses that start from N1.
+6. **Look in the box first** (C1–C3). The source paths are all local. Don't
+   go to the web for anything in this table.
+7. **The vault is the operator's key.** Row D describes the box rule. Don't
+   read, open or write anything under the vault to fill it.
+
+### Small agents (local models, short context, single-step tools)
+
+Work one cell at a time:
+
+1. Take the lowest unfilled address, reading left to right, top to bottom
+   (A12, A13, B9 …).
+2. Open only that row's source from "Where each row comes from".
+3. Search it for the label's key words. Take the first passage that states
+   the rule.
+4. Write the entry: copy the passage (trim it to one or two sentences), with
+   the path and line number, `unattested`.
+5. If nothing matches, write `source silent` and the path you searched. Move
+   on, and don't widen the search.
+6. Stop after each cell. Your output is one index row and nothing else.
+
+Don't read the "Also applicable" documents, don't touch other cells, and
+don't decide whether a rule is right.
+
+### Large agents (frontier models, long context, many tools)
+
+Work one row at a time:
+
+1. Read the row's source in full, plus the row's "Also applicable" documents.
+2. Fill every unfilled cell in the row with an entry in the shape above.
+3. Check the first 50 entries in the row as well. Add the line numbers
+   they're missing, and flag any that no longer match the source.
+4. For each "Also applicable" document, say which cells it bears on, or that
+   it bears on none. Move a document that doesn't fit the row to the row it
+   does fit, and say why.
+5. Where two sources disagree, record both and name the conflict. Don't pick
+   a winner, because that's the operator's call.
+6. Record anything that belongs in a second grid as a proposal at the end of
+   the row. Don't put it in this grid.
+7. Row F: look for the numbered box list. If you find it, cite it. If not,
+   record where you looked.
+
+A large agent's output is one commit per row, with a summary: cells filled,
+cells `source silent`, conflicts found, and documents moved.
+
 ## The grid
 
 | | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 |
