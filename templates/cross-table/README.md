@@ -17,6 +17,7 @@ is yours to choose.
 |---|---|
 | [`cross_table.py`](cross_table.py) | The filler. Stdlib only, deterministic: the same map and the same files give the same bytes. |
 | [`example/rules-map-2026-10-06.json`](example/rules-map-2026-10-06.json) | The worked example: the map behind [`rules-cross-table-2026-10-06.md`](../../docs/design/one-box/rules-cross-table-2026-10-06.md), 13 × 13, 168 cells found and 1 silent. |
+| [`example/boxes-outside-map-2026-10-06.json`](example/boxes-outside-map-2026-10-06.json) | The second example: a 4 × 5 grid whose source is a notes section inside the same document ([`boxes-outside-2026-10-06.md`](../../docs/design/one-box/boxes-outside-2026-10-06.md)). It shows that the source can be the document itself, as long as the notes are marked for what they are. |
 
 ## The four parts
 

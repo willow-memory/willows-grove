@@ -1,0 +1,188 @@
+{
+ "title": "Boxes, from outside the system (2026-10-06)",
+ "root": "../../../..",
+ "rows": [
+  {
+   "row": "A",
+   "title": "Words and myths",
+   "source": "the notes, § A (agent, general knowledge; not checked against references)"
+  },
+  {
+   "row": "B",
+   "title": "Logic and thought",
+   "source": "the notes, § B (agent, general knowledge; not checked against references)"
+  },
+  {
+   "row": "C",
+   "title": "Made things",
+   "source": "the notes, § C (agent, general knowledge; not checked against references)"
+  },
+  {
+   "row": "D",
+   "title": "Moving",
+   "source": "the notes, § D (agent, general knowledge; not checked against references)"
+  }
+ ],
+ "cells": [
+  {
+   "cell": "A1",
+   "label": "The box tree",
+   "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
+   "pattern": "^- \\*\\*The box tree\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "A2",
+   "label": "Pandora's jar",
+   "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
+   "pattern": "^- \\*\\*Pandora's jar\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "A3",
+   "label": "Boxing Day",
+   "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
+   "pattern": "^- \\*\\*Boxing Day\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "A4",
+   "label": "Out of the box",
+   "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
+   "pattern": "^- \\*\\*Out of the box\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "A5",
+   "label": "Think outside the box",
+   "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
+   "pattern": "^- \\*\\*Think outside the box\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "B1",
+   "label": "The pigeonhole principle",
+   "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
+   "pattern": "^- \\*\\*The pigeonhole principle\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "B2",
+   "label": "Black box, white box",
+   "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
+   "pattern": "^- \\*\\*Black box, white box\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "B3",
+   "label": "Schrödinger's cat",
+   "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
+   "pattern": "^- \\*\\*Schrödinger's cat\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "B4",
+   "label": "Wittgenstein's beetle",
+   "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
+   "pattern": "^- \\*\\*Wittgenstein's beetle\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "B5",
+   "label": "Nested boxes",
+   "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
+   "pattern": "^- \\*\\*Nested boxes\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "C1",
+   "label": "The shipping container",
+   "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
+   "pattern": "^- \\*\\*The shipping container\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "C2",
+   "label": "Cornell's shadow boxes",
+   "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
+   "pattern": "^- \\*\\*Cornell's shadow boxes\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "C3",
+   "label": "The bento",
+   "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
+   "pattern": "^- \\*\\*The bento\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "C4",
+   "label": "The box model",
+   "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
+   "pattern": "^- \\*\\*The box model\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "C5",
+   "label": "The sandbox",
+   "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
+   "pattern": "^- \\*\\*The sandbox\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "D1",
+   "label": "Label the sides",
+   "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
+   "pattern": "^- \\*\\*Label the sides\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "D2",
+   "label": "The open-first box",
+   "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
+   "pattern": "^- \\*\\*The open\\-first box\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "D3",
+   "label": "Heavy things in small boxes",
+   "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
+   "pattern": "^- \\*\\*Heavy things in small boxes\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "D4",
+   "label": "Photograph the back",
+   "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
+   "pattern": "^- \\*\\*Photograph the back\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "D5",
+   "label": "Heaviest first",
+   "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
+   "pattern": "^- \\*\\*Heaviest first\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  }
+ ]
+}
