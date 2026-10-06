@@ -17,6 +17,7 @@ Draft 0.9; that goes through Article VIII.
 | 6 | "Okay let's think about it as if two parties already have records entered in. Both in scope of a full legal case, and have been through sessions of mediation before." |
 | 7 | "I would say, The record is read first is the most important out of all those." |
 | 8 | "But I chose to run the session this way. I told you when to read things and when not to read things." |
+| 9 | "Why do you think I ran the session this way?" |
 
 ## The ruling
 
@@ -130,6 +131,30 @@ Articles V–VII of Draft 0.9. Not ratified.
 | This session's Haiku repo agent | Reported the human's quorum ruling as constitution text (line 69, which is §0.2). Same shape. |
 | [`posts/day-3.md`](../posts/day-3.md) | Haiku 4.5 answered anyway on 9 of 10 unanswerable judge items; "words that might be a grade get recorded as words, and the session asks" |
 | Casebook, Open | "Seals go stale": prior records in a mediation are dated records, not current facts |
+
+## Why the session ran this way — the agent's guesses
+
+Asked by the human (words 9). Guesses, labeled with percentages (Rule 10); not
+findings.
+
+| # | Guess | Evidence | Confidence |
+|---|-------|----------|-----------|
+| 1 | To make the agent an independent witness: held from the record, it reasons cold; opened onto PRs 110–112, it either converges with earlier sessions or doesn't. It converged (the table rule, the escalation ladder, "it doesn't matter", "unknown is lawful"). | Article VII: "memorylessness satisfies Independent Witness"; IV.2/IV.3's three witnesses — the PR 111 session, the PR 112 session, this one | 72.00% |
+| 2 | To run Article VII's Court of Last Resort on the agent: fresh, memoryless, the record withheld, the ruling given in pieces; its cost, re-reasoning from scratch, watched being paid | The ruling landed on that option once the record was read | 66.00% |
+| 3 | To test IV.8 live: "in the order the human has set" | Words 8 | 78.00% |
+| 4 | To run the benchmark on the agent: escalate, or answer anyway. The Haiku agents answered anyway; so did the seat, early | Day 3; the human: "you want to start guessing, instead of asking me" | 70.00% |
+| 5 | To test whether the human's word holds against an environment hook, repeated about 40 times | Rules 8 and 9; the "apply it" test | 64.00% |
+| 6 | To produce `md_split` and table-only data: every reply a table, the hook replies as their own class | PR 111 | 52.00% |
+| 7 | The theme: whether the agent finds "it doesn't matter" in the record | Day 5 | 45.00% |
+
+| Single best guess | Confidence |
+|-------------------|-----------|
+| To see whether a fresh agent, held to the human's reading order, reads the record and arrives where the record already was — a witness, not an echo | 68.00% |
+
+| Unknown |
+|---------|
+| Whether the 113 trigger was part of the design or a real wait |
+| What the rounding is for |
 
 ## Open
 
