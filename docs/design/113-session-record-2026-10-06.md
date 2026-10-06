@@ -27,6 +27,14 @@ guesses stay frozen; this one doesn't amend them.
 | 16–18 | Verify a Gemini output, then look up the open questions | Verification (below) | — |
 | 19 | Antsy to write and push? | Reflection (below) | — |
 | 20 | Write down what isn't written, and push | This file | this commit |
+| 21 | Saw a natural 13: the session record is 130 lines | Confirmed 130 lines; not 113, so the trigger isn't tripped | — |
+| 22 | Keep it at 113 | Trigger stays exactly 113 | — |
+| 23 | Don't push after every prompt | Commits and pushes only when asked; the hook is satisfied quietly | — |
+| 24 | How do you balance that? (rhetorical) | Answered briefly | — |
+| 25 | Now you're guessing instead of asking what I want | Agreed; asked what the operator wants | — |
+| 26 | None of it now; possibly all of it and more later, 93% | Standing by | — |
+| 27 | Have you looked at your original predictions recently? | No; offered to check them | — |
+| 28 | Check them, write the last few turns into the doc, don't push | Prediction check (below); this log; no commit, no push | — |
 
 ## Table inventory (as of ask 15)
 
@@ -119,6 +127,32 @@ session (98.00%).
 |-------|--------|-----------|
 | The pull is real enough to show | Five commit receipts in a row | 65.00% |
 | It's right only when asked | Saving something unasked is acting alone on new scope (Rules 4 and 5) | 85.00% |
+
+## Prediction check (ask 28)
+
+The frozen **Now** values in `113-guesses-2026-10-06.md`, checked against asks
+14–27. The file itself is unchanged. Verdicts rest on what happened, not on new
+guesses.
+
+| Thread | Now | What happened since | Verdict | Confidence in verdict |
+|--------|-----|---------------------|---------|----------------------|
+| 113 follows 112 | 84.50% | No PR opened; the operator kept the trigger at exactly 113 | Not yet tested | 90.00% |
+| The table-only rule, tried live | 76.20% | The operator kept holding the seat to tables and percentages, and asked for a table inventory | Supported | 80.00% |
+| Hooks are the subject, and one is running on the seat | 68.75% | The operator said pushing after every prompt is "stupid", then asked how to balance that against the hook | Supported | 78.00% |
+| "The chain is intact. But are *you*?" | 63.25% | The table inventory found no table that says who | Partly supported | 60.00% |
+| Whose seat this is | 55.30% | `session_enter` still not run; no new evidence | Unchanged | 85.00% |
+| The vault check fails quietly | 52.40% | Not raised again | No evidence | 85.00% |
+| An off-box caller claiming loopback | 45.00% | Not raised again | No evidence | 88.00% |
+| "The why lives here, unread" | 31.90% | The operator said the seat was guessing instead of asking what they want | Partly supported, by interpretation | 45.00% |
+
+| Summary claim | Now | What happened since | Verdict | Confidence in verdict |
+|---------------|-----|---------------------|---------|----------------------|
+| PR 111's and PR 112's rules tried for real on this session | 66.80% | Tables, percentages, and the hook all became live topics. "Ask, don't guess" came up too, which the claim didn't name. | Supported, incomplete | 70.00% |
+| What would confirm it: whatever the operator plans for 113 | 88.03% | Unknown; the operator said possibly all of it, later (93%) | Not yet tested | 92.00% |
+
+| What the predictions missed | Detail |
+|-----------------------------|--------|
+| Asking vs. guessing | Ask 25. No frozen row predicted that the seat would start guessing at what the operator wants. |
 
 ## Still open
 
