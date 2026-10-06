@@ -154,6 +154,35 @@ guesses.
 |-----------------------------|--------|
 | Asking vs. guessing | Ask 25. No frozen row predicted that the seat would start guessing at what the operator wants. |
 
+## After ask 28, in brief
+
+The full turns live in the quorum doc and CLAUDE.md. This is the shape only.
+
+| Span | What happened |
+|------|---------------|
+| Rules | CLAUDE.md rewritten for any agent: each rule one line, linked to its Draft 0.9 clause; Heimdallr cut, the Watch reserved; Rule 7 narrowed to one short "what happened / result" table, only what the human couldn't see |
+| Quorum | The human's ruling recorded in [`quorum-ruling-2026-10-06.md`](one-script/constitution-proposal/quorum-ruling-2026-10-06.md): three parties, one neutral, mediation not a vote, the record read first; the agent's reading lands it on Article VII's Court of Last Resort |
+| Reading | Held to the human's order, then opened: PRs 110–112, the one-script README, Day 3 and Day 5, the seat proposals, the Casebook, Articles V–VII |
+| Measured | 1,521 tracked files and 373,467 lines across three repos; from the transcript, 283 chat tables against an estimate of about 270 (mean deviation 3.95%), each deviation traced to a direction the human gave first |
+
+## Next session: 13 questions
+
+| # | Question | Chance it's answered |
+|---|----------|---------------------|
+| 1 | Does the 113 trigger fire, and does the PR open? | 55.00% |
+| 2 | Is the PR number 113? | 40.00% |
+| 3 | Does `session_enter` run, so the seat is verified? | 60.00% |
+| 4 | Who is the new Watch? | 45.00% |
+| 5 | Is the quorum ruling ratified as Open Decision #1? | 35.00% |
+| 6 | Does it enter the constitution as a proposed amendment (Article VIII)? | 30.00% |
+| 7 | Are the court-practice answers ratified or changed? | 40.00% |
+| 8 | What does rung 7 mean? | 15.00% |
+| 9 | What is the "something very special" for 17? | 20.00% |
+| 10 | Does the next session follow CLAUDE.md's short rules without being told again? | 80.00% |
+| 11 | Does it read the record first — this session's three docs? | 70.00% |
+| 12 | Are the vault check (`integrations.py:113`) and W-09 picked up? | 25.00% |
+| 13 | Does it find "it doesn't matter" in the record unprompted? | 50.00% |
+
 ## Still open
 
 | Item | State |
