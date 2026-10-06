@@ -57,6 +57,26 @@ here changes a rule. Each source still holds its own rule.*
 | L | One-box phases | `README.md` §3–§15 |
 | M | The ladder and the seven | `../one-script/README.md` (resolve ladder); `../one-script/next-pile.md` (the seven) |
 
+## Also applicable (shallow pass)
+
+*Found by title and opening lines across willows-grove, willow-mcp and willow-bot (the Willow repo has no commits yet). Not read in full and not folded into the cells: each is a place to look next for that row.*
+
+| Row | Documents |
+|---|---|
+| A | willows-grove: `docs/design/approval-broker.md` · willows-grove: `docs/design/u2u-security-limits.md` · willow-mcp: `docs/design/egress-request-seam.md` · willow-mcp: `docs/design/consent-toggles.md` · willow-mcp: `skills/consent.md` · willows-grove: `docs/design/one-box/research-2026-10-06.md` · willows-grove: `docs/design/one-box/instruction-files-2026-10-06.md` |
+| B | willow-mcp: `docs/design/trust-architecture.md` · willow-mcp: `docs/design/willow-gate-seam.md` · willow-mcp: `docs/design/security-hardening-review-2026-07-08.md` · willow-mcp: `docs/design/deny-tools-completeness-review.md` · willow-bot: `SECURITY_AUDIT.md` |
+| C | willow-mcp: `skills/external-guard.md` · willow-mcp: `docs/design/nestor-tool-route.md` · willow-bot: `docs/PRIOR-ART.md` · willows-grove: `governance/LOCAL_GITHUB_LAYOUT.md` |
+| D | willow-bot: `INSTALL.md` · willow-bot: `docs/MOVE-STAY-BORROW.md` · willows-grove: `docs/design/vault-home-store.md` |
+| E | willow-mcp: `skills/kart-tasks.md` · willow-mcp: `docs/design/kart-lift-spec.md` · willow-mcp: `docs/design/kart-productionization.md` · willows-grove: `deploy/kart-sandbox.md` |
+| F | willows-grove: `docs/design/one-script/workflow.md` · willows-grove: `docs/design/one-script/constitution-proposal/README.md` · willow-mcp: `docs/design/bound-receipt-schema.md` · willow-mcp: `docs/design/build-loop-receipts.md` |
+| G | willows-grove: `CONTRIBUTING.md` · willow-mcp: `ARCHITECT.md` · willow-mcp: `skills/review.md` · willow-mcp: `skills/tdd.md` · willow-mcp: `docs/design/brokered-push.md` · willow-mcp: `docs/design/fleet-versioning.md` |
+| H | willows-grove: `docs/design/the-forge-shape.md` · willows-grove: `governance/proposals/2026-09-02-grove-hooks-and-skills.md` · willow-mcp: `docs/design/hooks-and-skills.md` · willow-mcp: `docs/design/session-lifecycle.md` · willow-mcp: `docs/design/stateless-session-state.md` |
+| I | willows-grove: `docs/design/one-script/hashing-session-handoff-2026-10-05.md` · willows-grove: `docs/design/one-script/prompt-arms-2026-10-03.md` |
+| J | willows-grove: `governance/CONSTITUTION.md` · willows-grove: `governance/CASEBOOK.md` · willow-mcp: `docs/design/permissions-matrix.md` · willow-mcp: `docs/design/pgp-and-persona.md` |
+| K | willows-grove: `docs/design/one-box/review-2026-10-01.md` · willows-grove: `docs/design/forge-convergence.md` · willow-mcp: `docs/design/operator-tier-not-do-review.md` · willow-mcp: `docs/design/human-orchestrator.md` |
+| L | willows-grove: `docs/design/one-box/parts-partition.md` · willows-grove: `docs/design/one-box/four-pieces-join.md` · willows-grove: `docs/design/one-box/one-script-join.md` · willows-grove: `docs/design/one-box/sketches.md` · willows-grove: `docs/design/one-box/verify-2026-10-02.md` |
+| M | willow-mcp: `skills/orchestrator-routing.md` · willow-mcp: `docs/design/specialist-registry.md` · willows-grove: `governance/proposals/2026-09-02-local-inference-seam.md` · willow-bot: `loki/SPEC.md` |
+
 ## Index
 
 ### A — Box rules
