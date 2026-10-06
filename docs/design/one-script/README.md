@@ -559,6 +559,17 @@ a `who`. Free prose below the table is none of those things. The table-only
 rule is the same rule as "every act cites what authorizes it" — the output
 isn't real until it's in the record, and the record is tables.
 
+**The harness exception.** The rule covers model output. Harness-injected text
+— stop hook feedback, "Tool loaded.", "Holding." — is tracked as `source =
+"harness"` in `md_split.py`, separate from `source = "model"`. It's already a
+different column in the transcript; the table-only rule doesn't touch it.
+
+**The `where` gap survives.** Even with the rule fully enforced, `kind = note`
+rows still don't carry `path` — they're notes, not writes. The gap named above
+(only `write` rows have `path`; `door`, `act`, `seal`, and `note` rows don't)
+is still there. The table-only rule closes "prose below the table"; it doesn't
+close the `where` gap.
+
 ## The proposals from 2026-10-02
 
 **Status:** draft proposals for the operator to read, edit and ratify. Nothing
