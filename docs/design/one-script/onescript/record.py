@@ -18,23 +18,24 @@ import tempfile
 from pathlib import Path
 from typing import Callable
 
-GENESIS = "0" * 16
+GENESIS = "0" * 64
 
 
 def canon(obj) -> str:
     return json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
 
 
-def h16(data: bytes | str) -> str:
+def h256(data: bytes | str) -> str:
+    """The full SHA-256, 256 bits. Never truncated: a cut digest is a cut chain."""
     return hashlib.sha256(
         data if isinstance(data, bytes) else data.encode()
-    ).hexdigest()[:16]
+    ).hexdigest()
 
 
 def version_of(pkg_dir: Path) -> str:
     """The run's own version: one hash over every .py file in the package, in order."""
     files = sorted(p for p in pkg_dir.glob("*.py"))
-    return h16(b"".join(p.name.encode() + b"\0" + p.read_bytes() for p in files))
+    return h256(b"".join(p.name.encode() + b"\0" + p.read_bytes() for p in files))
 
 
 class Verified:
@@ -80,7 +81,7 @@ class Record:
             "prev": rows[-1]["hash"] if rows else GENESIS,
             **fields,
         }
-        row["hash"] = h16(canon(row))
+        row["hash"] = h256(canon(row))
         with self.path.open("a", encoding="utf-8") as f:
             f.write(canon(row) + "\n")
             f.flush()
@@ -92,7 +93,7 @@ class Record:
         breaks, prev = [], GENESIS
         for row in self.rows():
             body = {k: v for k, v in row.items() if k != "hash"}
-            if row.get("prev") != prev or h16(canon(body)) != row.get("hash"):
+            if row.get("prev") != prev or h256(canon(body)) != row.get("hash"):
                 breaks.append(f"row {row.get('n')}: chain broken")
             prev = row.get("hash")
         return breaks
@@ -139,7 +140,7 @@ class Record:
         _atomic(target, data)
         ptr = {
             "where": rel,
-            "sha": h16(data),
+            "sha": h256(data),
             "bytes": len(data),
             "provenance": provenance,
         }
