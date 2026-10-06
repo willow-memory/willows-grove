@@ -1,0 +1,96 @@
+# Cross table — a template
+
+*Desk session, 2026-10-06. Built from the rules cross table at the
+operator's word ("yes, make it a template"). Agent-reported; not ratified.*
+
+> "This isn't about making everything fit in a box — it's about making a box
+> that the user and the system can grow together." (operator, 2026-10-01)
+
+A cross table is a grid of addresses. Each cell is filled by **copying** a
+passage from a source file, never by writing one. The template is the
+box: the grid, the map, the filler and the standing column. What goes in it
+is yours to choose.
+
+## What's here
+
+| File | What it is |
+|---|---|
+| [`cross_table.py`](cross_table.py) | The filler. Stdlib only, deterministic: the same map and the same files give the same bytes. |
+| [`example/rules-map-2026-10-06.json`](example/rules-map-2026-10-06.json) | The worked example: the map behind [`rules-cross-table-2026-10-06.md`](../../docs/design/one-box/rules-cross-table-2026-10-06.md), 13 × 13, 168 cells found and 1 silent. |
+
+## The four parts
+
+1. **A grid of addresses.** Rows are letters (A–Z) and columns are numbers.
+   Once an address is given out it is never renumbered. When the grid is
+   full, start a second one.
+2. **A map** (JSON). For each row: a title and the row's source. For each
+   cell: a label, a file, a pattern that finds the passage, a mode, and a
+   standing.
+3. **The filler** copies the matching passage with its file and line. It
+   never guesses. A cell it can't fill says why:
+
+   | State | Means |
+   |---|---|
+   | `found` | The pattern matched, and the passage is copied with its line. |
+   | `source silent` | The map names no source for this cell (add a `note` saying why). |
+   | `unreachable` | The file isn't there. |
+   | `not found` | The file is there, and the pattern matched nothing in it. |
+
+   These are never collapsed into one another (INVARIANTS §1).
+4. **Standing:** `unattested`, `witnessed` or `sealed`. It lives in the map,
+   and the script only copies it. An agent writes `unattested`. A second,
+   independent check can move a cell to `witnessed`. Only the operator
+   writes `sealed`.
+
+## Use it
+
+```sh
+# 1. A blank map: 13 × 13 by default, any size up to 26 rows.
+python3 templates/cross-table/cross_table.py new my-map.json --rows 13 --cols 13 --title "My table"
+
+# 2. Fill in the map by hand: rows[].title and source, and per cell the
+#    label, file, pattern, mode. This is the part that decides what the
+#    box is for, and it's the person's call.
+
+# 3. See what every cell finds. Exits 1 if anything is unreachable or not found.
+python3 templates/cross-table/cross_table.py check my-map.json
+
+# 4. Write the grid, the row sources and the index into a document.
+python3 templates/cross-table/cross_table.py fill my-map.json my-table.md
+```
+
+- File paths in the map are relative to the map's `root`, which is itself
+  relative to the map file. The example's root is the folder that holds the
+  three repos side by side. `--root` overrides it.
+- `fill` writes only between the `<!-- cross-table:grid -->`,
+  `<!-- cross-table:sources -->` and `<!-- cross-table:index -->` markers. The
+  rest of the document is left alone, so it can carry its own introduction
+  and notes. A new document gets the three sections appended.
+- `new` refuses to overwrite a map that already exists.
+
+## Modes
+
+| Mode | Copies |
+|---|---|
+| `para` | The whole block that matches: a list item, a paragraph, or a docstring. |
+| `sent` | Only the sentences in that block that match. |
+| `row` | A table row, with its cells joined by " — ". |
+| `head` | A heading and the block that follows it. |
+| `line` | The matching line, plus `span` lines after it. Comment markers are stripped. Use this for code. |
+
+Write patterns as Python regular expressions. A space in a pattern matches
+any run of whitespace, so a passage that wraps across lines still matches.
+Copied text is collapsed to one line and trimmed at about 420 characters (…).
+The source line is where the rest is.
+
+## Fixed for anyone using it
+
+These are the rules from the example, carried over:
+
+- **Copy, don't compose.** If the source and the label disagree, the source
+  wins, and you flag the label.
+- **One cell, one source line.**
+- **Propose, don't seal.** A filled table is a proposal until a person seals
+  it.
+- **Look in the box first.** Sources are local files, never the web.
+- **Leave the vault alone.** Nothing under the operator's vault is a source.
