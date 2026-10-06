@@ -588,7 +588,7 @@ is in its own commit so it can be kept, edited or dropped on its own.
 | — | [`posts/`](posts/) | The **Day 3** DEV post source ("The benchmark caught me too"), its cover prompt, and the Kaggle dataset metadata patch that was applied to `rudi193/escalation-benchmark` |
 | — | [`incoming/`](incoming/) | Three outside passes, kept by provenance: an Opus 5 session's six proposals against Draft 0.8 (reachability and staleness), a cold Haiku 4.5 session's three proposals, and a pointer to the operator's paper "Basins, Not Walls". Its README reconciles them with this PR, cross-checked against the record, and says what the one script took from each |
 | — | [`deep_thought.py`](deep_thought.py) | Read-only probe that carries the sealed Answer (D1, D2, D9, Q13) and measures the box against it. Prints the morning screen (NEEDS YOU → … → GRADES → CHOICES → QUIET). Stdlib only; needs `WILLOW_HOME`. See next-pile.md § "deep_thought.py". Three improvements after the first run: ledger-join seals, write-kind triage, GRADES |
-| 4 | [`constitution-proposal/`](constitution-proposal/) | Ten amendments and a neutral-language pass. **They are built on Draft 0.7 and must be redone against Draft 0.8** (which forbids downward references) before any of it goes forward |
+| 4 | [`constitution-proposal/`](constitution-proposal/) | Ten amendments and a neutral-language pass, built on Draft 0.7. **Brought into `governance/CONSTITUTION.md` as Draft 0.9 on 2026-10-06** with the Opus outside pass, renumbered where 0.8 had taken the number; unratified (see the folder's README) |
 
 **In the skeleton now:** the four gates and the three layers from #2, each
 tested against what happened on 2026-10-02. Run for real on the session's box,
