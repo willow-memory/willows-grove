@@ -1,0 +1,233 @@
+{
+ "title": "113, tables only, and the quorum ruling (2026-10-06)",
+ "root": "../../../..",
+ "rows": [
+  {
+   "row": "IZ",
+   "title": "113 and the trigger",
+   "source": "the notes, section IZ (operator words verbatim where quoted; the rest the agent's reading)"
+  },
+  {
+   "row": "JA",
+   "title": "Tables, percentages, and the rules",
+   "source": "the notes, section JA (operator words verbatim where quoted; the rest the agent's reading)"
+  },
+  {
+   "row": "JB",
+   "title": "Verifying a Gemini output",
+   "source": "the notes, section JB (operator words verbatim where quoted; the rest the agent's reading)"
+  },
+  {
+   "row": "JC",
+   "title": "The quorum ruling",
+   "source": "the notes, section JC (operator words verbatim where quoted; the rest the agent's reading)"
+  },
+  {
+   "row": "JD",
+   "title": "Measured, not estimated",
+   "source": "the notes, section JD (operator words verbatim where quoted; the rest the agent's reading)"
+  }
+ ],
+ "cells": [
+  {
+   "cell": "IZ1",
+   "label": "The opening ask",
+   "file": "willows-grove/docs/design/one-box/table-quorum-2026-10-06.md",
+   "pattern": "^- \\*\\*The opening ask\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IZ2",
+   "label": "What the box held",
+   "file": "willows-grove/docs/design/one-box/table-quorum-2026-10-06.md",
+   "pattern": "^- \\*\\*What the box held\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IZ3",
+   "label": "The quiet vault check",
+   "file": "willows-grove/docs/design/one-box/table-quorum-2026-10-06.md",
+   "pattern": "^- \\*\\*The quiet vault check\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IZ4",
+   "label": "The trigger set",
+   "file": "willows-grove/docs/design/one-box/table-quorum-2026-10-06.md",
+   "pattern": "^- \\*\\*The trigger set\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IZ5",
+   "label": "The guesses frozen",
+   "file": "willows-grove/docs/design/one-box/table-quorum-2026-10-06.md",
+   "pattern": "^- \\*\\*The guesses frozen\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "JA1",
+   "label": "The table rule",
+   "file": "willows-grove/docs/design/one-box/table-quorum-2026-10-06.md",
+   "pattern": "^- \\*\\*The table rule\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "JA2",
+   "label": "Percentages only",
+   "file": "willows-grove/docs/design/one-box/table-quorum-2026-10-06.md",
+   "pattern": "^- \\*\\*Percentages only\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "JA3",
+   "label": "Commit, push, and the hook",
+   "file": "willows-grove/docs/design/one-box/table-quorum-2026-10-06.md",
+   "pattern": "^- \\*\\*Commit, push, and the hook\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "JA4",
+   "label": "Rules linked to the constitution",
+   "file": "willows-grove/docs/design/one-box/table-quorum-2026-10-06.md",
+   "pattern": "^- \\*\\*Rules linked to the constitution\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "JA5",
+   "label": "The Watch reserved",
+   "file": "willows-grove/docs/design/one-box/table-quorum-2026-10-06.md",
+   "pattern": "^- \\*\\*The Watch reserved\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "JB1",
+   "label": "The claim checked",
+   "file": "willows-grove/docs/design/one-box/table-quorum-2026-10-06.md",
+   "pattern": "^- \\*\\*The claim checked\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "JB2",
+   "label": "The acoustics",
+   "file": "willows-grove/docs/design/one-box/table-quorum-2026-10-06.md",
+   "pattern": "^- \\*\\*The acoustics\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "JB3",
+   "label": "The key",
+   "file": "willows-grove/docs/design/one-box/table-quorum-2026-10-06.md",
+   "pattern": "^- \\*\\*The key\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "JB4",
+   "label": "The method",
+   "file": "willows-grove/docs/design/one-box/table-quorum-2026-10-06.md",
+   "pattern": "^- \\*\\*The method\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "JB5",
+   "label": "Looked up",
+   "file": "willows-grove/docs/design/one-box/table-quorum-2026-10-06.md",
+   "pattern": "^- \\*\\*Looked up\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "JC1",
+   "label": "The ruling",
+   "file": "willows-grove/docs/design/one-box/table-quorum-2026-10-06.md",
+   "pattern": "^- \\*\\*The ruling\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "JC2",
+   "label": "Mediation, not a vote",
+   "file": "willows-grove/docs/design/one-box/table-quorum-2026-10-06.md",
+   "pattern": "^- \\*\\*Mediation, not a vote\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "JC3",
+   "label": "The record first",
+   "file": "willows-grove/docs/design/one-box/table-quorum-2026-10-06.md",
+   "pattern": "^- \\*\\*The record first\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "JC4",
+   "label": "Where it lands",
+   "file": "willows-grove/docs/design/one-box/table-quorum-2026-10-06.md",
+   "pattern": "^- \\*\\*Where it lands\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "JC5",
+   "label": "Answers from other humans",
+   "file": "willows-grove/docs/design/one-box/table-quorum-2026-10-06.md",
+   "pattern": "^- \\*\\*Answers from other humans\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "JD1",
+   "label": "The reading order",
+   "file": "willows-grove/docs/design/one-box/table-quorum-2026-10-06.md",
+   "pattern": "^- \\*\\*The reading order\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "JD2",
+   "label": "The box counted",
+   "file": "willows-grove/docs/design/one-box/table-quorum-2026-10-06.md",
+   "pattern": "^- \\*\\*The box counted\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "JD3",
+   "label": "The transcript counted",
+   "file": "willows-grove/docs/design/one-box/table-quorum-2026-10-06.md",
+   "pattern": "^- \\*\\*The transcript counted\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "JD4",
+   "label": "Each deviation had a direction",
+   "file": "willows-grove/docs/design/one-box/table-quorum-2026-10-06.md",
+   "pattern": "^- \\*\\*Each deviation had a direction\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "JD5",
+   "label": "Not 100%",
+   "file": "willows-grove/docs/design/one-box/table-quorum-2026-10-06.md",
+   "pattern": "^- \\*\\*Not 100%\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  }
+ ]
+}

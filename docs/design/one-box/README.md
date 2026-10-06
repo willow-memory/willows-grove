@@ -57,6 +57,10 @@ In the tables, **V** means I read the code, and **S** means it is inferred.
    - [`hash-snapshot-2026-10-06.md`](hash-snapshot-2026-10-06.md), grid rows
      IU–IY: hashing explained, the repos' hash chains, the Deep Thought
      review, the one script as a snapshot, and a pre-AI foundation
+   - [`table-quorum-2026-10-06.md`](table-quorum-2026-10-06.md), grid rows
+     IZ–JD: 113 and its trigger, the table-only and percentage rules,
+     CLAUDE.md linked to Draft 0.9, a Gemini output verified, the quorum
+     ruling, and the session measured rather than estimated
 2. **Nothing here is ratified yet.** CLAUDE.md rule 4 still applies: propose
    a bite and wait for the operator's go. D1–D3 gate the spine (Phases 1–3);
    Phase 0 does not wait on them. **D11** (phone-seat grant) and **D12**
