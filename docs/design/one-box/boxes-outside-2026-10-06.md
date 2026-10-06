@@ -149,8 +149,9 @@ the map, so `measure --against` can show which boxes change later.*
 
 | Grid | Cells | Characters | Share of all |
 |---|---|---|---|
-| Boxes, from outside the system (2026-10-06) | 20 | 3434 | 11.2% |
-| Rules cross table: boxes and branches (2026-10-06) | 169 | 27250 | 88.8% |
+| Boxes, from outside the system (2026-10-06) | 20 | 3434 | 9.9% |
+| Rules cross table: boxes and branches (2026-10-06) | 169 | 27250 | 78.4% |
+| The fat, dripped (2026-10-06) | 90 | 4063 | 11.7% |
 <!-- /cross-table:measure -->
 
 ---

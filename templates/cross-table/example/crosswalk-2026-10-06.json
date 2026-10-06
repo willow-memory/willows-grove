@@ -115,6 +115,78 @@
    ],
    "why": "Sequencing: what goes in first carries the rest.",
    "standing": "unattested"
+  },
+  {
+   "from": "R",
+   "to": [
+    "G5"
+   ],
+   "why": "Dripped from G5: its passage cut into clauses, each copied again from the source.",
+   "standing": "unattested"
+  },
+  {
+   "from": "S",
+   "to": [
+    "K10"
+   ],
+   "why": "Dripped from K10: its passage cut into clauses, each copied again from the source.",
+   "standing": "unattested"
+  },
+  {
+   "from": "T",
+   "to": [
+    "L6"
+   ],
+   "why": "Dripped from L6: its passage cut into clauses, each copied again from the source.",
+   "standing": "unattested"
+  },
+  {
+   "from": "U",
+   "to": [
+    "J2"
+   ],
+   "why": "Dripped from J2: its passage cut into clauses, each copied again from the source.",
+   "standing": "unattested"
+  },
+  {
+   "from": "V",
+   "to": [
+    "J9"
+   ],
+   "why": "Dripped from J9: its passage cut into clauses, each copied again from the source.",
+   "standing": "unattested"
+  },
+  {
+   "from": "W",
+   "to": [
+    "G4"
+   ],
+   "why": "Dripped from G4: its passage cut into clauses, each copied again from the source.",
+   "standing": "unattested"
+  },
+  {
+   "from": "X",
+   "to": [
+    "J7"
+   ],
+   "why": "Dripped from J7: its passage cut into clauses, each copied again from the source.",
+   "standing": "unattested"
+  },
+  {
+   "from": "Y",
+   "to": [
+    "B11"
+   ],
+   "why": "Dripped from B11: its passage cut into clauses, each copied again from the source.",
+   "standing": "unattested"
+  },
+  {
+   "from": "Z",
+   "to": [
+    "P1"
+   ],
+   "why": "Dripped from P1: its passage cut into clauses, each copied again from the source.",
+   "standing": "unattested"
   }
  ]
 }

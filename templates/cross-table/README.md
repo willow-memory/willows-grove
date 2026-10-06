@@ -20,6 +20,7 @@ is yours to choose.
 | [`example/boxes-outside-map-2026-10-06.json`](example/boxes-outside-map-2026-10-06.json) | The second example: a 4 × 5 grid (rows N–Q, after the first grid's A–M) whose source is a notes section inside the same document ([`boxes-outside-2026-10-06.md`](../../docs/design/one-box/boxes-outside-2026-10-06.md)). It shows that the source can be the document itself, as long as the notes are marked for what they are. |
 | [`example/crosswalk-2026-10-06.json`](example/crosswalk-2026-10-06.json) | The third example: a crosswalk between the two grids, written by `link` into [`crosswalk-2026-10-06.md`](../../docs/design/one-box/crosswalk-2026-10-06.md). |
 | [`example/rules-snapshot-2026-10-06.json`](example/rules-snapshot-2026-10-06.json), [`example/boxes-outside-snapshot-2026-10-06.json`](example/boxes-outside-snapshot-2026-10-06.json) | Each grid's measure on 2026-10-06: every box's size and the sha256 of its passage. Run `measure --against` on one to see which boxes have changed since. |
+| [`example/drip-map-2026-10-06.json`](example/drip-map-2026-10-06.json), [`example/drip-snapshot-2026-10-06.json`](example/drip-snapshot-2026-10-06.json) | The fourth example: the nine fattest boxes dripped into rows R–Z ([`drip-2026-10-06.md`](../../docs/design/one-box/drip-2026-10-06.md)), and its snapshot. |
 
 ## The four parts
 
@@ -110,6 +111,36 @@ python3 templates/cross-table/cross_table.py measure my-map.json --snapshot my-s
 python3 templates/cross-table/cross_table.py measure my-map.json --against my-snapshot.json
 ```
 
+## Drip: let the fat drip
+
+```sh
+python3 templates/cross-table/cross_table.py drip new-map.json --source my-map.json \
+    [--source next-map.json] [--cells G5,K10] [--over 3] [--links crosswalk.json]
+```
+
+A fat box is often several rules sharing one box. `drip` cuts each fat box's
+passage into clauses and gives every clause its own box in a new grid, one
+row per parent, with rows starting after the source grids' last row. The
+fattest parent goes first, and if the letters run out before the parents
+do, it says which parents were left out.
+
+- **A clause** runs to its sentence's full stop (with any closing quote or
+  emphasis), or to a table-cell boundary. A list number ("6.") or an
+  abbreviation ("e.g.") doesn't end a clause. The `clause` mode reads by the
+  same rule.
+- **Every clause is copied again** by its own pattern, the shortest prefix
+  that finds it from the top of the file **at its own place**. If the same
+  words appear earlier in the file, the clause can't be pinned, and its box
+  is silent and says so. It never lands somewhere else.
+- **Labels** are the first five words of each clause. Row titles are the
+  parents' labels. Nothing is composed.
+- **The width** is the longest parent's clause count (at most 13). Shorter
+  rows end in silent boxes ("no more clauses").
+- `--links` adds a crosswalk link from each new row to its parent.
+- **Where it stops:** a box that is one clause can't drip again. Cutting it
+  gives back the same box. Fat that's left after a drip is one long sentence:
+  real weight, not several rules.
+
 ## Crosswalks between grids
 
 ```sh
@@ -132,6 +163,7 @@ table is written between `<!-- cross-table:links -->` markers.
 | `row` | A table row, with its cells joined by " — ". |
 | `head` | A heading and the block that follows it. |
 | `line` | The matching line, plus `span` lines after it. Comment markers are stripped. Use this for code. |
+| `clause` | One clause from the match: to its full stop, or to a table-cell boundary. `drip` writes these. |
 
 Write patterns as Python regular expressions. A space in a pattern matches
 any run of whitespace, so a passage that wraps across lines still matches.

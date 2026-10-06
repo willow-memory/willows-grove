@@ -1,0 +1,365 @@
+{
+ "title": "The fat, dripped (2026-10-06)",
+ "cells": {
+  "R1": {
+   "size": 74,
+   "sha256": "a37602ba64c998213e1c3b533aa3cebee3bbb8171bea3f646a1e8ff62d5094cd"
+  },
+  "R2": {
+   "size": 203,
+   "sha256": "970616a13f5dae26447ea2252dfff63dcf978c08a3641945dda8319a53a27c7d"
+  },
+  "R3": {
+   "size": 251,
+   "sha256": "1860fa326d4d0c71bad370ce4be94d0fcefc38a019c46ec6a21518adaf3084ea"
+  },
+  "R4": {
+   "size": 80,
+   "sha256": "87ab85a5efab7524c7b8da92e005ac577339c79438ed672ef469b9620887a083"
+  },
+  "R5": {
+   "size": 175,
+   "sha256": "f74acfa774b1bd0a1e77694ae6232fd53ece83611ada603423002a64861d30a7"
+  },
+  "R6": {
+   "size": 141,
+   "sha256": "b00bcb9e170bd7110dbbef09b8c5719edc68e3fe1125deec325cb303b8641992"
+  },
+  "R7": {
+   "size": 0,
+   "sha256": ""
+  },
+  "R8": {
+   "size": 0,
+   "sha256": ""
+  },
+  "R9": {
+   "size": 0,
+   "sha256": ""
+  },
+  "R10": {
+   "size": 0,
+   "sha256": ""
+  },
+  "S1": {
+   "size": 0,
+   "sha256": ""
+  },
+  "S2": {
+   "size": 12,
+   "sha256": "6eb5a322700e8ec192dc38e4db751970df565903b5d6c7a830f9a5f3412063ab"
+  },
+  "S3": {
+   "size": 65,
+   "sha256": "dbd37f5b5e609be8b642d973f608e82be8873734cc5a6d1e0aeeae75c75abd96"
+  },
+  "S4": {
+   "size": 25,
+   "sha256": "1ffbef489c7743db728dd6009607621597c9f3bea786a401f851d873706c0c25"
+  },
+  "S5": {
+   "size": 58,
+   "sha256": "23c243320cd20fb583d7e788287ec6a4dff0ced654f15e412f2c3c2369428bea"
+  },
+  "S6": {
+   "size": 177,
+   "sha256": "9b739e147f2ce39b7b319162b67d4cd45f9ca6c8bd73932c5ee6b6dcc895ed63"
+  },
+  "S7": {
+   "size": 235,
+   "sha256": "d0038e6f2116cf43a13219d3eaf44ac885f70c07a4f412c43246422c2ab5592a"
+  },
+  "S8": {
+   "size": 93,
+   "sha256": "1bd018c44f684c4648847b0fdb569a784cf8e17b80209d9df01fdee22b70bf2b"
+  },
+  "S9": {
+   "size": 24,
+   "sha256": "0e9782aeff874a272e64e260146b89c95100db2efed2702b01a0f602f8fce166"
+  },
+  "S10": {
+   "size": 0,
+   "sha256": ""
+  },
+  "T1": {
+   "size": 23,
+   "sha256": "4eaf0e79be3d319b0f3602943c4ff25e44c1dd6386b6c68e0c145b065a84ded8"
+  },
+  "T2": {
+   "size": 85,
+   "sha256": "0138df8046d9dced526002c1aaf40557aa8a9edd2c0fdafb9c9b1d7353cef0e3"
+  },
+  "T3": {
+   "size": 99,
+   "sha256": "8a4722351b44ffc680911ab0138f1aeb5ca454607b71bdd180f5fcc3acfc84a0"
+  },
+  "T4": {
+   "size": 74,
+   "sha256": "13e8d302f871ef8d417e504cbf28a3bcb4e4ea634b0f520f5b9e56186c20df4b"
+  },
+  "T5": {
+   "size": 50,
+   "sha256": "be531a212c25ee7e423d0e48f3269b115bc40803e89ced6abb230251a94a31aa"
+  },
+  "T6": {
+   "size": 80,
+   "sha256": "67462ddeee2cfde7927b110079e4ad48c4bd692d850117652796b9ed8e9016d7"
+  },
+  "T7": {
+   "size": 0,
+   "sha256": ""
+  },
+  "T8": {
+   "size": 0,
+   "sha256": ""
+  },
+  "T9": {
+   "size": 0,
+   "sha256": ""
+  },
+  "T10": {
+   "size": 0,
+   "sha256": ""
+  },
+  "U1": {
+   "size": 97,
+   "sha256": "4a8f8c78f2e858c081b5a235f2e41ca049e8babcff1526264559c0669f1b1519"
+  },
+  "U2": {
+   "size": 291,
+   "sha256": "a9698bcd01f95cc11366172229bc1871b64f4a9e40317cdc94b5dae7b1d1df5c"
+  },
+  "U3": {
+   "size": 0,
+   "sha256": ""
+  },
+  "U4": {
+   "size": 0,
+   "sha256": ""
+  },
+  "U5": {
+   "size": 0,
+   "sha256": ""
+  },
+  "U6": {
+   "size": 0,
+   "sha256": ""
+  },
+  "U7": {
+   "size": 0,
+   "sha256": ""
+  },
+  "U8": {
+   "size": 0,
+   "sha256": ""
+  },
+  "U9": {
+   "size": 0,
+   "sha256": ""
+  },
+  "U10": {
+   "size": 0,
+   "sha256": ""
+  },
+  "V1": {
+   "size": 209,
+   "sha256": "101e71ce3fa71e639b0e610356e9d6d730961c4e5f384079aacde170bcca00c3"
+  },
+  "V2": {
+   "size": 46,
+   "sha256": "577b92bc036f5eb5976024e813b60fa865b2048afbab9564b9a5f72ca3763a6b"
+  },
+  "V3": {
+   "size": 113,
+   "sha256": "6aa2cb7d97b41eba86f7706bacd1458b1670fefc44a5fd451cbfa3895b6eaa7c"
+  },
+  "V4": {
+   "size": 0,
+   "sha256": ""
+  },
+  "V5": {
+   "size": 0,
+   "sha256": ""
+  },
+  "V6": {
+   "size": 0,
+   "sha256": ""
+  },
+  "V7": {
+   "size": 0,
+   "sha256": ""
+  },
+  "V8": {
+   "size": 0,
+   "sha256": ""
+  },
+  "V9": {
+   "size": 0,
+   "sha256": ""
+  },
+  "V10": {
+   "size": 0,
+   "sha256": ""
+  },
+  "W1": {
+   "size": 147,
+   "sha256": "3ecd3f10752f7ae690fe49af2435c9d12e711f4caaac870d4654db24d0a2e76a"
+  },
+  "W2": {
+   "size": 234,
+   "sha256": "7c74d19c62d597ab846d507640ece3a0154cd1a9053757b5aaebf2ebf4451623"
+  },
+  "W3": {
+   "size": 0,
+   "sha256": ""
+  },
+  "W4": {
+   "size": 0,
+   "sha256": ""
+  },
+  "W5": {
+   "size": 0,
+   "sha256": ""
+  },
+  "W6": {
+   "size": 0,
+   "sha256": ""
+  },
+  "W7": {
+   "size": 0,
+   "sha256": ""
+  },
+  "W8": {
+   "size": 0,
+   "sha256": ""
+  },
+  "W9": {
+   "size": 0,
+   "sha256": ""
+  },
+  "W10": {
+   "size": 0,
+   "sha256": ""
+  },
+  "X1": {
+   "size": 45,
+   "sha256": "7f14961118fe26e113a9b4b5217a70783e959be2aebf50d89407a1d8ffe907a9"
+  },
+  "X2": {
+   "size": 47,
+   "sha256": "b0e40958502ce6415784e2b8f2c76b4a56a758dc1dbaee11125e77d0bf4924b7"
+  },
+  "X3": {
+   "size": 77,
+   "sha256": "f1dc16928cb8fa8d05854e5d930ebaf62382f20ed2d5e7036f0ba324ded7fa34"
+  },
+  "X4": {
+   "size": 131,
+   "sha256": "0fe740ddc3314bc5ad3845ba454ccbf254cf702612043e0f60ab31f7e6ddef1e"
+  },
+  "X5": {
+   "size": 0,
+   "sha256": ""
+  },
+  "X6": {
+   "size": 0,
+   "sha256": ""
+  },
+  "X7": {
+   "size": 0,
+   "sha256": ""
+  },
+  "X8": {
+   "size": 0,
+   "sha256": ""
+  },
+  "X9": {
+   "size": 0,
+   "sha256": ""
+  },
+  "X10": {
+   "size": 0,
+   "sha256": ""
+  },
+  "Y1": {
+   "size": 91,
+   "sha256": "82bc361d3f77a28c69bedb2c01496b12d4ed708f737dd374171a1515643754bb"
+  },
+  "Y2": {
+   "size": 246,
+   "sha256": "430561906bfd3c009f3bb066bf8c0196397403b35515d11c541787dc5892092a"
+  },
+  "Y3": {
+   "size": 0,
+   "sha256": ""
+  },
+  "Y4": {
+   "size": 0,
+   "sha256": ""
+  },
+  "Y5": {
+   "size": 0,
+   "sha256": ""
+  },
+  "Y6": {
+   "size": 0,
+   "sha256": ""
+  },
+  "Y7": {
+   "size": 0,
+   "sha256": ""
+  },
+  "Y8": {
+   "size": 0,
+   "sha256": ""
+  },
+  "Y9": {
+   "size": 0,
+   "sha256": ""
+  },
+  "Y10": {
+   "size": 0,
+   "sha256": ""
+  },
+  "Z1": {
+   "size": 29,
+   "sha256": "0b18f720aa36f8acd986691fe6b700d68874a7f60852ac9a6a2ed7cb9283ac65"
+  },
+  "Z2": {
+   "size": 92,
+   "sha256": "f73657e4b068625228b2d8fd2a5398ce9fd92b2b7a1b43b6efce30c6fbbaa346"
+  },
+  "Z3": {
+   "size": 29,
+   "sha256": "266b99333d7fe419d9514398d2733b023344096e8e67192ece9b33f5d4384aaa"
+  },
+  "Z4": {
+   "size": 73,
+   "sha256": "fb19cb4fee1f2b4f9e9458deb8780f4754cdab6d204bb222d45aab3e72d3ded6"
+  },
+  "Z5": {
+   "size": 42,
+   "sha256": "e15edf15a52260c34567dd75672b73f262869383d5271a39b1c514ff74d441f0"
+  },
+  "Z6": {
+   "size": 0,
+   "sha256": ""
+  },
+  "Z7": {
+   "size": 0,
+   "sha256": ""
+  },
+  "Z8": {
+   "size": 0,
+   "sha256": ""
+  },
+  "Z9": {
+   "size": 0,
+   "sha256": ""
+  },
+  "Z10": {
+   "size": 0,
+   "sha256": ""
+  }
+ }
+}

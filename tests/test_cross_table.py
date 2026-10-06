@@ -270,3 +270,47 @@ def test_a_snapshot_names_exactly_which_boxes_changed(tmp_path):
         "- **Newly found:** A3.",
         "- **No longer found:** A2.",
     ]
+
+
+def test_clauses_end_at_full_stops_and_cell_boundaries_not_list_numbers():
+    assert ct.clauses(
+        '6. **Bold rule.** It holds (e.g. here). "Quoted." | D10 | next cell'
+    ) == ["6. **Bold rule.**", "It holds (e.g. here).", '"Quoted."', "D10", "next cell"]
+
+
+def test_drip_cuts_a_fat_box_into_clauses_pinned_to_their_own_place(tmp_path):
+    (tmp_path / "src.md").write_text(
+        "- Phase 7 comes early.\n\n- **Big.** One clause here. Phase 7\n\n- small\n"
+    )
+    p = _map(
+        tmp_path,
+        [
+            _cell("A1", file="src.md", pattern=r"\*\*Big"),
+            _cell("A2", file="src.md", pattern="^- small"),
+        ],
+    )
+    new, links, left = ct.drip([(ct.load_map(p), tmp_path)], "B", over=1.5)
+    assert [r["row"] for r in new["rows"]] == ["B"] and left == []
+    cells = {c["cell"]: c for c in new["cells"]}
+    assert [cells[f"B{i}"]["label"] for i in (1, 2, 3)] == [
+        "- Big.",
+        "One clause here.",
+        "Phase 7",
+    ]
+    assert cells["B3"]["note"] == "this clause can't be found again on its own"
+    assert links == [
+        {
+            "from": "B",
+            "to": ["A1"],
+            "why": "Dripped from A1: its passage cut into clauses, each copied again from the source.",
+            "standing": "unattested",
+        }
+    ]
+    new["root"] = "."
+    out = tmp_path / "drip.json"
+    out.write_text(json.dumps(new))
+    res = {r["cell"]: r for r in ct.resolve(ct.load_map(out), tmp_path)}
+    assert (
+        res["B2"]["rule"] == "One clause here." and res["B2"]["source"] == "`src.md`:3"
+    )
+    assert res["B3"]["state"] == "silent"
