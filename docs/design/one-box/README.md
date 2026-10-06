@@ -36,6 +36,8 @@ In the tables, **V** means I read the code, and **S** means it is inferred.
    - [`python-archaeology-2026-10-06.md`](python-archaeology-2026-10-06.md),
      grid rows HO–HT: CPython 0.9.8 → 3.15.0rc3 rebuilt, hmac/hashlib, and a
      fix built only from pre-AI lines (quick-stupids session)
+   - [`relay-2026-10-06.md`](relay-2026-10-06.md), **every session reads
+     this, adds its rows to the grid, appends a baton, pushes**
 2. **Nothing here is ratified yet.** CLAUDE.md rule 4 still applies: propose
    a bite and wait for the operator's go. D1–D3 gate the spine (Phases 1–3);
    Phase 0 does not wait on them. **D11** (phone-seat grant) and **D12**
