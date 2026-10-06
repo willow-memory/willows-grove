@@ -1,0 +1,280 @@
+{
+ "title": "The desk session's grids, in the one-box grid (2026-10-06)",
+ "root": "../../../..",
+ "rows": [
+  {
+   "row": "HU",
+   "title": "The ask",
+   "source": "the notes, section HU (operator's words verbatim; counts from the documents named; the rest the agent's reading)"
+  },
+  {
+   "row": "HV",
+   "title": "The grids",
+   "source": "the notes, section HV (operator's words verbatim; counts from the documents named; the rest the agent's reading)"
+  },
+  {
+   "row": "HW",
+   "title": "The template",
+   "source": "the notes, section HW (operator's words verbatim; counts from the documents named; the rest the agent's reading)"
+  },
+  {
+   "row": "HX",
+   "title": "What it found",
+   "source": "the notes, section HX (operator's words verbatim; counts from the documents named; the rest the agent's reading)"
+  },
+  {
+   "row": "HY",
+   "title": "What it proposed",
+   "source": "the notes, section HY (operator's words verbatim; counts from the documents named; the rest the agent's reading)"
+  },
+  {
+   "row": "HZ",
+   "title": "Open",
+   "source": "the notes, section HZ (operator's words verbatim; counts from the documents named; the rest the agent's reading)"
+  }
+ ],
+ "cells": [
+  {
+   "cell": "HU1",
+   "label": "Operator, the start",
+   "file": "willows-grove/docs/design/one-box/desk-grids-2026-10-06.md",
+   "pattern": "^- \\*\\*Operator, the start\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HU2",
+   "label": "Operator, the table",
+   "file": "willows-grove/docs/design/one-box/desk-grids-2026-10-06.md",
+   "pattern": "^- \\*\\*Operator, the table\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HU3",
+   "label": "Operator, the template",
+   "file": "willows-grove/docs/design/one-box/desk-grids-2026-10-06.md",
+   "pattern": "^- \\*\\*Operator, the template\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HU4",
+   "label": "Operator, the drip",
+   "file": "willows-grove/docs/design/one-box/desk-grids-2026-10-06.md",
+   "pattern": "^- \\*\\*Operator, the drip\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HU5",
+   "label": "Operator, the data",
+   "file": "willows-grove/docs/design/one-box/desk-grids-2026-10-06.md",
+   "pattern": "^- \\*\\*Operator, the data\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HV1",
+   "label": "Rows A to M, the rules",
+   "file": "willows-grove/docs/design/one-box/desk-grids-2026-10-06.md",
+   "pattern": "^- \\*\\*Rows A to M, the rules\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HV2",
+   "label": "Rows N to Z",
+   "file": "willows-grove/docs/design/one-box/desk-grids-2026-10-06.md",
+   "pattern": "^- \\*\\*Rows N to Z\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HV3",
+   "label": "Rows AA to AR",
+   "file": "willows-grove/docs/design/one-box/desk-grids-2026-10-06.md",
+   "pattern": "^- \\*\\*Rows AA to AR\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HV4",
+   "label": "Rows AS to HG",
+   "file": "willows-grove/docs/design/one-box/desk-grids-2026-10-06.md",
+   "pattern": "^- \\*\\*Rows AS to HG\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HV5",
+   "label": "Rows HH to HN",
+   "file": "willows-grove/docs/design/one-box/desk-grids-2026-10-06.md",
+   "pattern": "^- \\*\\*Rows HH to HN\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HW1",
+   "label": "The tool",
+   "file": "willows-grove/docs/design/one-box/desk-grids-2026-10-06.md",
+   "pattern": "^- \\*\\*The tool\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HW2",
+   "label": "One address, one box",
+   "file": "willows-grove/docs/design/one-box/desk-grids-2026-10-06.md",
+   "pattern": "^- \\*\\*One address, one box\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HW3",
+   "label": "Measure",
+   "file": "willows-grove/docs/design/one-box/desk-grids-2026-10-06.md",
+   "pattern": "^- \\*\\*Measure\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HW4",
+   "label": "Drip",
+   "file": "willows-grove/docs/design/one-box/desk-grids-2026-10-06.md",
+   "pattern": "^- \\*\\*Drip\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HW5",
+   "label": "The coverage fix",
+   "file": "willows-grove/docs/design/one-box/desk-grids-2026-10-06.md",
+   "pattern": "^- \\*\\*The coverage fix\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HX1",
+   "label": "The law's coverage",
+   "file": "willows-grove/docs/design/one-box/desk-grids-2026-10-06.md",
+   "pattern": "^- \\*\\*The law's coverage\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HX2",
+   "label": "A merge predicted, then seen",
+   "file": "willows-grove/docs/design/one-box/desk-grids-2026-10-06.md",
+   "pattern": "^- \\*\\*A merge predicted, then seen\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HX3",
+   "label": "A report about citations must not be one",
+   "file": "willows-grove/docs/design/one-box/desk-grids-2026-10-06.md",
+   "pattern": "^- \\*\\*A report about citations must not be one\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HX4",
+   "label": "One name, three meanings",
+   "file": "willows-grove/docs/design/one-box/desk-grids-2026-10-06.md",
+   "pattern": "^- \\*\\*One name, three meanings\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HX5",
+   "label": "One box, three answers",
+   "file": "willows-grove/docs/design/one-box/desk-grids-2026-10-06.md",
+   "pattern": "^- \\*\\*One box, three answers\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HY1",
+   "label": "Amendments from the grids",
+   "file": "willows-grove/docs/design/one-box/desk-grids-2026-10-06.md",
+   "pattern": "^- \\*\\*Amendments from the grids\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HY2",
+   "label": "Everything in the box",
+   "file": "willows-grove/docs/design/one-box/desk-grids-2026-10-06.md",
+   "pattern": "^- \\*\\*Everything in the box\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HY3",
+   "label": "Crosswalks",
+   "file": "willows-grove/docs/design/one-box/desk-grids-2026-10-06.md",
+   "pattern": "^- \\*\\*Crosswalks\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HY4",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "para",
+   "standing": "unattested",
+   "note": "no more notes in this row"
+  },
+  {
+   "cell": "HY5",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "para",
+   "standing": "unattested",
+   "note": "no more notes in this row"
+  },
+  {
+   "cell": "HZ1",
+   "label": "A CHANGELOG bullet is owed",
+   "file": "willows-grove/docs/design/one-box/desk-grids-2026-10-06.md",
+   "pattern": "^- \\*\\*A CHANGELOG bullet is owed\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HZ2",
+   "label": "The drip row R is stale",
+   "file": "willows-grove/docs/design/one-box/desk-grids-2026-10-06.md",
+   "pattern": "^- \\*\\*The drip row R is stale\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HZ3",
+   "label": "The verdicts",
+   "file": "willows-grove/docs/design/one-box/desk-grids-2026-10-06.md",
+   "pattern": "^- \\*\\*The verdicts\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HZ4",
+   "label": "Persona without `session_enter`",
+   "file": "willows-grove/docs/design/one-box/desk-grids-2026-10-06.md",
+   "pattern": "^- \\*\\*Persona without `session_enter`\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HZ5",
+   "label": "The columns",
+   "file": "willows-grove/docs/design/one-box/desk-grids-2026-10-06.md",
+   "pattern": "^- \\*\\*The columns\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  }
+ ]
+}
