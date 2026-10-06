@@ -19,6 +19,7 @@ Draft 0.9; that goes through Article VIII.
 | 8 | "But I chose to run the session this way. I told you when to read things and when not to read things." |
 | 9 | "Why do you think I ran the session this way?" |
 | 10 | "How many Python scripts have you created this session?" |
+| 11 | "What would it take to get you 100% across every single check that you've been doing today. 100% of everything. Would that even be possible? I already know the answer." |
 
 ## The ruling
 
@@ -189,6 +190,19 @@ Asked by the human (words 10). Counted from the session (85.00%).
 | Not the agent's | Run |
 |-----------------|-----|
 | `scripts/check_persona_provenance.py`, `scripts/check_docs_drift.py` | many times each |
+
+## 100% of everything
+
+Asked by the human (words 11). The agent's answer (90.00% — never 100%, for
+the same reason).
+
+| Question | Answer |
+|----------|--------|
+| Possible? | No. "It can only ever approach" ([Day 5](../posts/day-5.md)). |
+| Where 100% is possible | Counts measured by code — files, lines, tables, CI checks. Same record in, same bytes out. Code's work, not the model's. |
+| Where it isn't | Every guess, reading, and judgment. The percentages are judgment; the corpus moves while the model stands still. |
+| What would get closest | Measure, don't estimate; read the whole record first; independent witnesses — the agent can't attest itself (§0.1) |
+| What makes it true | Not more checks: the human's seal. "Nothing is true until a human seals it." |
 
 ## Open
 
