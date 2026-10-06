@@ -17,7 +17,10 @@ What this script will and will not claim
 It reports two things it can actually see:
 
   * which clauses this document defines, parsed from the constitution itself;
-  * which clauses are cited somewhere in the scanned trees, and where.
+  * which clauses are cited somewhere in the scanned trees, and where, in any
+    of the three spellings an artifact uses: the Trace ID, a link to the
+    article's heading, or the eternity clauses' section sign (§0.4). Each row
+    says which spellings it was cited in.
 
 It does NOT decide the four verdicts. ``satisfied`` versus ``differently``
 requires knowing whether the citing artifact enforces the clause *by the
@@ -59,6 +62,19 @@ VERDICTS = ("satisfied", "differently", "not applicable", "failing")
 
 # A Trace ID as an artifact writes it: CONST-0, CONST-IV, CONST-0-3, CONST-IV-5.
 TRACE_RE = re.compile(r"\bCONST-(?:0|[IVX]+)(?:-[0-9A-Za-z]+)*\b")
+
+# The same clause cited under its other names. An upward reference is an
+# upward reference whatever it is spelled as, and a report that sees only one
+# spelling reports a clause as uncited while files link to it. Two spellings
+# map to exactly one clause each, so they are read; anything looser (a bare
+# "IV.5", which is also a version number) is not.
+#   * A link to an article heading. Its anchor ends in the article's Trace ID,
+#     lowercased by the slug: CONSTITUTION.md#article-vi--the-record-const-vi.
+#   * The section sign, which only the eternity clauses carry: §0.4.
+ANCHOR_RE = re.compile(r"CONSTITUTION\.md#[a-z0-9-]*?-const-(0|[ivx]+)(?![a-z0-9-])")
+SECTION_RE = re.compile(r"(?<![\w.§])§0\.([0-9]+[a-z]?)(?![\w.])")
+#: How each spelling is named in the report.
+FORMS = ("trace-id", "anchor", "section-sign")
 
 # How the constitution declares an article and a clause. Trace IDs are derived
 # from these rather than read as literal `CONST-*` strings, because the document
@@ -139,8 +155,25 @@ def clauses_from_constitution(path: Path) -> tuple[list[str], str | None]:
     return list(seen), None
 
 
-def scan(roots: list[Path], skip: set[Path]) -> tuple[dict[str, list[str]], list[str]]:
-    """Find upward Trace-ID citations. Returns (citations, unreadable)."""
+def cited_ids(body: str) -> dict[str, set[str]]:
+    """Every clause a text cites, by Trace ID, with the spellings it used."""
+    found: dict[str, set[str]] = {}
+    for match in TRACE_RE.findall(body):
+        found.setdefault(match, set()).add("trace-id")
+    for match in ANCHOR_RE.findall(body):
+        found.setdefault(f"CONST-{match.upper()}", set()).add("anchor")
+    for match in SECTION_RE.findall(body):
+        found.setdefault(f"CONST-0-{match}", set()).add("section-sign")
+    return found
+
+
+def scan(
+    roots: list[Path],
+    skip: set[Path],
+    forms: dict[str, dict[str, list[str]]] | None = None,
+) -> tuple[dict[str, list[str]], list[str]]:
+    """Find upward citations, in every spelling. Returns (citations, unreadable);
+    if `forms` is given, it is filled with {clause: {spelling: [paths]}}."""
     citations: dict[str, list[str]] = {}
     unreadable: list[str] = []
     for root in roots:
@@ -158,13 +191,18 @@ def scan(roots: list[Path], skip: set[Path]) -> tuple[dict[str, list[str]], list
                 except (OSError, UnicodeDecodeError) as err:
                     unreadable.append(f"{fp}: {type(err).__name__}")
                     continue
-                for match in set(TRACE_RE.findall(body)):
+                for match, spellings in cited_ids(body).items():
                     rel = (
                         str(fp.relative_to(REPO_ROOT))
                         if REPO_ROOT in fp.parents
                         else str(fp)
                     )
                     citations.setdefault(match, []).append(rel)
+                    if forms is not None:
+                        for spelling in spellings:
+                            forms.setdefault(match, {}).setdefault(spelling, []).append(
+                                rel
+                            )
     return citations, unreadable
 
 
@@ -190,7 +228,10 @@ def build_report(roots: list[Path]) -> dict:
     # This script's own Trace-ID mentions are regex examples and prose, not
     # enforcement. A gate's self-report is not evidence about that gate
     # (Appendix B; Casebook Case 7), so it excludes itself from its own scan.
-    citations, unreadable = scan(roots, skip={CONSTITUTION, Path(__file__).resolve()})
+    forms: dict[str, dict[str, list[str]]] = {}
+    citations, unreadable = scan(
+        roots, skip={CONSTITUTION, Path(__file__).resolve()}, forms=forms
+    )
     decls, decl_problem = load_declarations(DECLARATIONS)
 
     rows = []
@@ -211,7 +252,17 @@ def build_report(roots: list[Path]) -> dict:
             else:
                 note = "no citation found in the scanned roots and no verdict recorded"
         rows.append(
-            {"clause": cid, "verdict": verdict, "citations": cites, "note": note}
+            {
+                "clause": cid,
+                "verdict": verdict,
+                "citations": cites,
+                "forms": {
+                    f: sorted(set(forms.get(cid, {}).get(f, [])))
+                    for f in FORMS
+                    if forms.get(cid, {}).get(f)
+                },
+                "note": note,
+            }
         )
 
     # The other direction, which nothing checked: an artifact citing a Trace ID
@@ -258,6 +309,14 @@ def render(report: dict) -> str:
     for row in report["rows"]:
         counts[row["verdict"]] = counts.get(row["verdict"], 0) + 1
     out.append("  " + " · ".join(f"{v}: {counts[v]}" for v in sorted(counts)))
+    spelled = {
+        f: sum(1 for row in report["rows"] if f in row.get("forms", {})) for f in FORMS
+    }
+    out.append(
+        "  clauses cited by "
+        + " · ".join(f"{f}: {spelled[f]}" for f in FORMS)
+        + " (one clause can be cited in several spellings)"
+    )
     out.append("")
     width = max((len(r["clause"]) for r in report["rows"]), default=10)
     for row in report["rows"]:

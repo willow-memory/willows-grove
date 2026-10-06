@@ -144,3 +144,46 @@ def test_the_real_charter_parses_to_every_article_and_clause():
     assert len(articles) == 14, articles
     assert len(clauses) == 64, len(clauses)
     assert "CONST-X-4" in clauses, "the clause that started this"
+
+
+def test_a_clause_is_cited_under_each_of_its_names(tmp_path, monkeypatch):
+    """A link to an article's heading and the eternity clauses' section sign
+    are upward references too. A report that reads only the Trace ID calls a
+    clause uncited while files link to it."""
+    doc = _write(
+        tmp_path,
+        "## Article 0 — The Eternity Clause *(CONST-0)*\n"
+        "**§0.4 — The human key is required.** Text.\n"
+        "## Article VI — The Record *(CONST-VI)*\n"
+        "**VI.1 — Append and read.** Text.\n",
+    )
+    tree = tmp_path / "tree"
+    tree.mkdir()
+    (tree / "rules.md").write_text(
+        "See [the record](governance/CONSTITUTION.md#article-vi--the-record-const-vi).\n"
+        "The human seals (§0.4).\n",
+        encoding="utf-8",
+    )
+    (tree / "gate.py").write_text('CLAUSE = "CONST-0-4"\n', encoding="utf-8")
+    (tree / "other.md").write_text(
+        "INVARIANTS.md §11 and §12. Version 0.4. IV.5 of something else.\n"
+        "A link elsewhere: OTHER.md#article-vi--x-const-vi.\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(cc, "CONSTITUTION", doc)
+    monkeypatch.setattr(cc, "DECLARATIONS", tmp_path / "no-declarations.json")
+
+    rows = {r["clause"]: r for r in cc.build_report([tree])["rows"]}
+
+    assert rows["CONST-VI"]["forms"] == {"anchor": [str(tree / "rules.md")]}
+    assert rows["CONST-0-4"]["forms"] == {
+        "trace-id": [str(tree / "gate.py")],
+        "section-sign": [str(tree / "rules.md")],
+    }
+    assert rows["CONST-0-4"]["citations"] == sorted(
+        [str(tree / "gate.py"), str(tree / "rules.md")]
+    )
+    assert rows["CONST-VI-1"]["citations"] == [], "nothing loose is read as a citation"
+    assert "clauses cited by trace-id: 1 · anchor: 1 · section-sign: 1" in cc.render(
+        cc.build_report([tree])
+    )
