@@ -47,7 +47,7 @@ rows.
 
 ### One row per file: easy
 
-- **1,563 rows,** starting at HK, the row after HJ. The 14 files that can't
+- **1,563 rows,** starting at the row after the last grid's (HJ when this was written; HN since). The 14 files that can't
   be read as text get a row that says so (the "can't tell" state).
 - **Mechanically, this already exists.** The ledger generators in this
   session read every tracked file (the coverage ledger did it twice). A run
