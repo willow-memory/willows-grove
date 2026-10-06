@@ -54,6 +54,9 @@ In the tables, **V** means I read the code, and **S** means it is inferred.
      IQ–IT: the VSOCK fix run on `main` on a Firecracker guest, the
      reviewer points, the commit on the operator's fork, and the wall at
      `python/cpython`
+   - [`hash-snapshot-2026-10-06.md`](hash-snapshot-2026-10-06.md), grid rows
+     IU–IY: hashing explained, the repos' hash chains, the Deep Thought
+     review, the one script as a snapshot, and a pre-AI foundation
 2. **Nothing here is ratified yet.** CLAUDE.md rule 4 still applies: propose
    a bite and wait for the operator's go. D1–D3 gate the spine (Phases 1–3);
    Phase 0 does not wait on them. **D11** (phone-seat grant) and **D12**

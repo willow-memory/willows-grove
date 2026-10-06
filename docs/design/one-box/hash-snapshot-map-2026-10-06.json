@@ -1,0 +1,233 @@
+{
+  "title": "Hashing, Deep Thought reviewed, and the one script as a snapshot (2026-10-05 to 06)",
+  "root": "../../../..",
+  "rows": [
+    {
+      "row": "IU",
+      "title": "Hashing, the explainer",
+      "source": "the notes, section IU (operator words verbatim where quoted; the rest the agent's reading)"
+    },
+    {
+      "row": "IV",
+      "title": "Keys, the handoff doc, and the guess",
+      "source": "the notes, section IV (operator words verbatim where quoted; the rest the agent's reading)"
+    },
+    {
+      "row": "IW",
+      "title": "Deep Thought, reviewed",
+      "source": "the notes, section IW (operator words verbatim where quoted; the rest the agent's reading)"
+    },
+    {
+      "row": "IX",
+      "title": "The one script as a snapshot",
+      "source": "the notes, section IX (operator words verbatim where quoted; the rest the agent's reading)"
+    },
+    {
+      "row": "IY",
+      "title": "A pre-AI foundation",
+      "source": "the notes, section IY (operator words verbatim where quoted; the rest the agent's reading)"
+    }
+  ],
+  "cells": [
+    {
+      "cell": "IU1",
+      "label": "The ask",
+      "file": "willows-grove/docs/design/one-box/hash-snapshot-2026-10-06.md",
+      "pattern": "^- \\*\\*The ask\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IU2",
+      "label": "What a hash is",
+      "file": "willows-grove/docs/design/one-box/hash-snapshot-2026-10-06.md",
+      "pattern": "^- \\*\\*What a hash is\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IU3",
+      "label": "Why it can't be reversed",
+      "file": "willows-grove/docs/design/one-box/hash-snapshot-2026-10-06.md",
+      "pattern": "^- \\*\\*Why it can't be reversed\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IU4",
+      "label": "Automatic or on purpose",
+      "file": "willows-grove/docs/design/one-box/hash-snapshot-2026-10-06.md",
+      "pattern": "^- \\*\\*Automatic or on purpose\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IU5",
+      "label": "Security uses in data engineering",
+      "file": "willows-grove/docs/design/one-box/hash-snapshot-2026-10-06.md",
+      "pattern": "^- \\*\\*Security uses in data engineering\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IV1",
+      "label": "The correction",
+      "file": "willows-grove/docs/design/one-box/hash-snapshot-2026-10-06.md",
+      "pattern": "^- \\*\\*The correction\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IV2",
+      "label": "The handoff doc",
+      "file": "willows-grove/docs/design/one-box/hash-snapshot-2026-10-06.md",
+      "pattern": "^- \\*\\*The handoff doc\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IV3",
+      "label": "The first guess",
+      "file": "willows-grove/docs/design/one-box/hash-snapshot-2026-10-06.md",
+      "pattern": "^- \\*\\*The first guess\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IV4",
+      "label": "The repos read",
+      "file": "willows-grove/docs/design/one-box/hash-snapshot-2026-10-06.md",
+      "pattern": "^- \\*\\*The repos read\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IV5",
+      "label": "Two `frank_ledger` gaps",
+      "file": "willows-grove/docs/design/one-box/hash-snapshot-2026-10-06.md",
+      "pattern": "^- \\*\\*Two `frank_ledger` gaps\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IW1",
+      "label": "The ask",
+      "file": "willows-grove/docs/design/one-box/hash-snapshot-2026-10-06.md",
+      "pattern": "^- \\*\\*The ask\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IW2",
+      "label": "What passes",
+      "file": "willows-grove/docs/design/one-box/hash-snapshot-2026-10-06.md",
+      "pattern": "^- \\*\\*What passes\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IW3",
+      "label": "Three attacks",
+      "file": "willows-grove/docs/design/one-box/hash-snapshot-2026-10-06.md",
+      "pattern": "^- \\*\\*Three attacks\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IW4",
+      "label": "The fix offered",
+      "file": "willows-grove/docs/design/one-box/hash-snapshot-2026-10-06.md",
+      "pattern": "^- \\*\\*The fix offered\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IW5",
+      "label": "Docs drift",
+      "file": "willows-grove/docs/design/one-box/hash-snapshot-2026-10-06.md",
+      "pattern": "^- \\*\\*Docs drift\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IX1",
+      "label": "The operator's idea",
+      "file": "willows-grove/docs/design/one-box/hash-snapshot-2026-10-06.md",
+      "pattern": "^- \\*\\*The operator's idea\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IX2",
+      "label": "Two steps",
+      "file": "willows-grove/docs/design/one-box/hash-snapshot-2026-10-06.md",
+      "pattern": "^- \\*\\*Two steps\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IX3",
+      "label": "The test run",
+      "file": "willows-grove/docs/design/one-box/hash-snapshot-2026-10-06.md",
+      "pattern": "^- \\*\\*The test run\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IX4",
+      "label": "What Git already does",
+      "file": "willows-grove/docs/design/one-box/hash-snapshot-2026-10-06.md",
+      "pattern": "^- \\*\\*What Git already does\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IX5",
+      "label": "Add back in order",
+      "file": "willows-grove/docs/design/one-box/hash-snapshot-2026-10-06.md",
+      "pattern": "^- \\*\\*Add back in order\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IY1",
+      "label": "The narrow waist",
+      "file": "willows-grove/docs/design/one-box/hash-snapshot-2026-10-06.md",
+      "pattern": "^- \\*\\*The narrow waist\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IY2",
+      "label": "The ask",
+      "file": "willows-grove/docs/design/one-box/hash-snapshot-2026-10-06.md",
+      "pattern": "^- \\*\\*The ask\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IY3",
+      "label": "The line",
+      "file": "willows-grove/docs/design/one-box/hash-snapshot-2026-10-06.md",
+      "pattern": "^- \\*\\*The line\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IY4",
+      "label": "The proof and the cost",
+      "file": "willows-grove/docs/design/one-box/hash-snapshot-2026-10-06.md",
+      "pattern": "^- \\*\\*The proof and the cost\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IY5",
+      "label": "Bears on rows HS",
+      "file": "willows-grove/docs/design/one-box/hash-snapshot-2026-10-06.md",
+      "pattern": "^- \\*\\*Bears on rows HS\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+{
+ "title": "Hashing, Deep Thought reviewed, and the one script as a snapshot (2026-10-05 to 06)",
+ "cells": {
+  "IU1": {
+   "size": 201,
+   "sha256": "825cc89ddcfd82aba5e85c11495accb11ac0abb47b2bf35af0ca5341d667f36d"
+  },
+  "IU2": {
+   "size": 206,
+   "sha256": "bb0710d296bcce78f2bd0c7dd779f6608d0be0d1ca74a9cd0a06341950cd00fd"
+  },
+  "IU3": {
+   "size": 226,
+   "sha256": "a9449a705a60f3b07687eba4dd85594f15861707dc7af17187cb087db414e39e"
+  },
+  "IU4": {
+   "size": 207,
+   "sha256": "79688e9c0a424b3b78246d4a614cb00dc8dad2807f4c7c7b7efffc122186d2a0"
+  },
+  "IU5": {
+   "size": 241,
+   "sha256": "825f906ae75b722d0c59a851721be6f9c0d9b7a1f0fe4c9c1c5b03952948b6ea"
+  },
+  "IV1": {
+   "size": 280,
+   "sha256": "c4cb7477faeef96cf1dd62563ee6c735b2f0667eef74e66072a57ff811aa00b1"
+  },
+  "IV2": {
+   "size": 250,
+   "sha256": "e7743424af193ad788172daff72724fc1f8ebf309b63c4ee02d0fb9a2913f5a2"
+  },
+  "IV3": {
+   "size": 204,
+   "sha256": "ecdea67772e547c46b12a2db69d1dd01c4537ac88ef9ed758f5b6b8d17d152fb"
+  },
+  "IV4": {
+   "size": 285,
+   "sha256": "a81584865b6455dfffa0f6352623f962eabd8303481308021d562e0ec3920c5a"
+  },
+  "IV5": {
+   "size": 250,
+   "sha256": "2dda246d7af2f892b7efc5b57067cfc93bf44fd3db65d4e53ddf7057de82d1af"
+  },
+  "IW1": {
+   "size": 201,
+   "sha256": "825cc89ddcfd82aba5e85c11495accb11ac0abb47b2bf35af0ca5341d667f36d"
+  },
+  "IW2": {
+   "size": 212,
+   "sha256": "27d783381919899f67a0f3fda82c6b3a2e3066462135f3e8a6efa775cde1c82b"
+  },
+  "IW3": {
+   "size": 223,
+   "sha256": "a33eb5f24907345bcc03ce337e22058a88c62b4bd7528849c461adee21c17f5f"
+  },
+  "IW4": {
+   "size": 211,
+   "sha256": "274b7ab2d768ededb9f0ff6d99aae04681440d8f91be41c67d55789eebe9e0df"
+  },
+  "IW5": {
+   "size": 217,
+   "sha256": "caf528ad3b14fe5df9b228d80224a1e8bb75bfb4bc439254e8ddc92aeb39f380"
+  },
+  "IX1": {
+   "size": 226,
+   "sha256": "f64c9e4ea0d095e557d11c2f5f0de8e8fb4c1b9e03a38b4e671ffb60f1bcc95a"
+  },
+  "IX2": {
+   "size": 248,
+   "sha256": "618ad38d80f8319c8fabdc722d4e154a4c844187ddd874c5421041f1ce8344f7"
+  },
+  "IX3": {
+   "size": 272,
+   "sha256": "1310c52bd3426b5988a45e2242590aaa597b32f906c30a8d210d405759cbe4d1"
+  },
+  "IX4": {
+   "size": 168,
+   "sha256": "f7b02b1500e4f43958569dc4c7d6e385be9f170cf9c9d20ab8d3def0a38ce9c7"
+  },
+  "IX5": {
+   "size": 272,
+   "sha256": "7fe2738cb44ede094137e7e53aff7de84c577d504f078688da6047fb81ce372a"
+  },
+  "IY1": {
+   "size": 354,
+   "sha256": "6e6596490326045917793e82deac04167ef90ef30934c885ebd9122228dc42c8"
+  },
+  "IY2": {
+   "size": 201,
+   "sha256": "825cc89ddcfd82aba5e85c11495accb11ac0abb47b2bf35af0ca5341d667f36d"
+  },
+  "IY3": {
+   "size": 217,
+   "sha256": "f087a2e2b35c0361bc1cc8ff478f92563e7410f5fdbfe360dfe7537ddd49615b"
+  },
+  "IY4": {
+   "size": 285,
+   "sha256": "5424884942a6ba163350832d1944ae8ee565f6231663d67cf0dde1b1d41c56da"
+  },
+  "IY5": {
+   "size": 315,
+   "sha256": "0a2c7e786629150c789871cddef849d37fd8c2e249339db54e49f5bf7ed4ebdb"
+  }
+ }
+}
