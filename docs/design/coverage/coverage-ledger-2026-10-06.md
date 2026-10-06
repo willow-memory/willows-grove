@@ -2,8 +2,8 @@
 
 *Copied from the box's own coverage report (`governance/scripts/const_coverage.py --json`, run over
 willows-grove, willow-mcp and willow-bot), split by repo and by kind (tests, docs as `.md`, code as the
-rest). Nothing composed. Clauses are written as the constitution prints them, never as Trace IDs, so
-this ledger cites nothing. The grid in [`coverage-table-2026-10-06.md`](coverage-table-2026-10-06.md)
+rest). Nothing composed. Clauses are written as 0.1, IV.5 or Article IV: never as Trace IDs, and the
+eternity clauses without their section sign, so this ledger cites nothing. The grid in [`coverage-table-2026-10-06.md`](coverage-table-2026-10-06.md)
 copies from it.*
 
 - report: 78 clauses defined, 3 roots scanned, 0 files unreadable, declarations problem: none.
@@ -22,89 +22,89 @@ copies from it.*
 - clause `Article 0` in `willow-bot` tests: 0 files cite it.
 - clause `Article 0` in `willow-bot` docs: 0 files cite it.
 
-## §0.1
+## 0.1
 
-- clause `§0.1` is line 64 of the constitution: No self-attestation.
-- clause `§0.1` verdict, from the human-kept declarations: undeclared.
-- clause `§0.1` in `willows-grove` code: 0 files cite it.
-- clause `§0.1` in `willows-grove` tests: 1 file cites it: `tests/test_const_coverage.py`.
-- clause `§0.1` in `willows-grove` docs: 6 files cite it: `docs/design/one-script/constitution-proposal/CONSTITUTION.neutral.proposed.md`, `docs/design/one-script/constitution-proposal/CONSTITUTION.proposed.md`, `docs/design/one-script/constitution-proposal/CONSTITUTION.provenance.md`, `docs/design/one-script/constitution-proposal/in-box-terms-scan.md`, `governance/AGENT_SERVICES.md`, `governance/CASEBOOK.md`.
-- clause `§0.1` in `willow-mcp` code: 0 files cite it.
-- clause `§0.1` in `willow-mcp` tests: 0 files cite it.
-- clause `§0.1` in `willow-mcp` docs: 0 files cite it.
-- clause `§0.1` in `willow-bot` code: 0 files cite it.
-- clause `§0.1` in `willow-bot` tests: 0 files cite it.
-- clause `§0.1` in `willow-bot` docs: 0 files cite it.
+- clause `0.1` is line 64 of the constitution: No self-attestation.
+- clause `0.1` verdict, from the human-kept declarations: undeclared.
+- clause `0.1` in `willows-grove` code: 0 files cite it.
+- clause `0.1` in `willows-grove` tests: 1 file cites it: `tests/test_const_coverage.py`.
+- clause `0.1` in `willows-grove` docs: 8 files cite it: `docs/design/one-script/constitution-proposal/CONSTITUTION.neutral.proposed.md`, `docs/design/one-script/constitution-proposal/CONSTITUTION.proposed.md`, `docs/design/one-script/constitution-proposal/CONSTITUTION.provenance.md`, `docs/design/one-script/constitution-proposal/in-box-terms-scan.md`, `docs/design/one-script/incoming/opus-2026-10-02/2026-10-02-reachability-and-staleness.md`, `docs/design/one-script/workflow.md`, `governance/AGENT_SERVICES.md`, `governance/CASEBOOK.md`.
+- clause `0.1` in `willow-mcp` code: 0 files cite it.
+- clause `0.1` in `willow-mcp` tests: 0 files cite it.
+- clause `0.1` in `willow-mcp` docs: 1 file cites it: `SECURITY_AUDIT.md`.
+- clause `0.1` in `willow-bot` code: 0 files cite it.
+- clause `0.1` in `willow-bot` tests: 0 files cite it.
+- clause `0.1` in `willow-bot` docs: 0 files cite it.
 
-## §0.2
+## 0.2
 
-- clause `§0.2` is line 67 of the constitution: No self-ratification to canon.
-- clause `§0.2` verdict, from the human-kept declarations: undeclared.
-- clause `§0.2` in `willows-grove` code: 1 file cites it: `governance/compliance/cases/const_0_2_ratify.py`.
-- clause `§0.2` in `willows-grove` tests: 0 files cite it.
-- clause `§0.2` in `willows-grove` docs: 4 files cite it: `docs/design/one-script/constitution-proposal/CONSTITUTION.neutral.proposed.md`, `docs/design/one-script/constitution-proposal/CONSTITUTION.proposed.md`, `docs/design/one-script/constitution-proposal/CONSTITUTION.provenance.md`, `governance/CASEBOOK.md`.
-- clause `§0.2` in `willow-mcp` code: 0 files cite it.
-- clause `§0.2` in `willow-mcp` tests: 0 files cite it.
-- clause `§0.2` in `willow-mcp` docs: 0 files cite it.
-- clause `§0.2` in `willow-bot` code: 0 files cite it.
-- clause `§0.2` in `willow-bot` tests: 0 files cite it.
-- clause `§0.2` in `willow-bot` docs: 0 files cite it.
+- clause `0.2` is line 67 of the constitution: No self-ratification to canon.
+- clause `0.2` verdict, from the human-kept declarations: undeclared.
+- clause `0.2` in `willows-grove` code: 4 files cite it: `docs/design/one-script/day-3/predictions.json`, `docs/design/one-script/onescript/gate.py`, `docs/design/one-script/onescript/predict.py`, `governance/compliance/cases/const_0_2_ratify.py`.
+- clause `0.2` in `willows-grove` tests: 0 files cite it.
+- clause `0.2` in `willows-grove` docs: 12 files cite it: `docs/design/autonomous-continuity.md`, `docs/design/one-box/rules-cross-table-2026-10-06.md`, `docs/design/one-script/constitution-proposal/CONSTITUTION.neutral.proposed.md`, `docs/design/one-script/constitution-proposal/CONSTITUTION.proposed.md`, `docs/design/one-script/constitution-proposal/CONSTITUTION.provenance.md`, `docs/design/one-script/constitution-proposal/amendments-2026-10-06-grids.md`, `docs/design/one-script/constitution-proposal/amendments-2026-10-06-seat.md`, `docs/design/one-script/next-pile.md`, `docs/design/one-script/workflow.md`, `docs/design/the-forge-shape.md`, `docs/design/willow-grove-premise.md`, `governance/CASEBOOK.md`.
+- clause `0.2` in `willow-mcp` code: 4 files cite it: `src/willow_mcp/gaps.py`, `src/willow_mcp/mem_ratify/collect.py`, `src/willow_mcp/mem_ratify/ratify.py`, `src/willow_mcp/server.py`.
+- clause `0.2` in `willow-mcp` tests: 1 file cites it: `tests/test_witness_collector.py`.
+- clause `0.2` in `willow-mcp` docs: 1 file cites it: `docs/design/gaps-in-soil.md`.
+- clause `0.2` in `willow-bot` code: 0 files cite it.
+- clause `0.2` in `willow-bot` tests: 0 files cite it.
+- clause `0.2` in `willow-bot` docs: 0 files cite it.
 
-## §0.3
+## 0.3
 
-- clause `§0.3` is line 70 of the constitution: No self-extension of capability.
-- clause `§0.3` verdict, from the human-kept declarations: undeclared.
-- clause `§0.3` in `willows-grove` code: 3 files cite it: `governance/compliance/cases/const_0_3_capability.py`, `governance/compliance/cases/const_0_3_egress.py`, `grove/envelope_reader.py`.
-- clause `§0.3` in `willows-grove` tests: 1 file cites it: `tests/test_const_coverage.py`.
-- clause `§0.3` in `willows-grove` docs: 5 files cite it: `docs/design/one-script/constitution-proposal/CONSTITUTION.neutral.proposed.md`, `docs/design/one-script/constitution-proposal/CONSTITUTION.proposed.md`, `docs/design/willow-grove-premise.md`, `governance/CASEBOOK.md`, `governance/seed/canon/02-the-discipline.md`.
-- clause `§0.3` in `willow-mcp` code: 2 files cite it: `.willow/constitutional/syscall-table.json`, `src/willow_mcp/bundle/constitutional/syscall-table.json`.
-- clause `§0.3` in `willow-mcp` tests: 0 files cite it.
-- clause `§0.3` in `willow-mcp` docs: 1 file cites it: `docs/design/federation-wire-format.md`.
-- clause `§0.3` in `willow-bot` code: 0 files cite it.
-- clause `§0.3` in `willow-bot` tests: 0 files cite it.
-- clause `§0.3` in `willow-bot` docs: 0 files cite it.
+- clause `0.3` is line 70 of the constitution: No self-extension of capability.
+- clause `0.3` verdict, from the human-kept declarations: undeclared.
+- clause `0.3` in `willows-grove` code: 4 files cite it: `docs/design/one-script/onescript/gate.py`, `governance/compliance/cases/const_0_3_capability.py`, `governance/compliance/cases/const_0_3_egress.py`, `grove/envelope_reader.py`.
+- clause `0.3` in `willows-grove` tests: 1 file cites it: `tests/test_const_coverage.py`.
+- clause `0.3` in `willows-grove` docs: 10 files cite it: `docs/design/autonomous-continuity.md`, `docs/design/one-box/rules-cross-table-2026-10-06.md`, `docs/design/one-script/constitution-proposal/CONSTITUTION.neutral.proposed.md`, `docs/design/one-script/constitution-proposal/CONSTITUTION.proposed.md`, `docs/design/one-script/constitution-proposal/CONSTITUTION.provenance.md`, `docs/design/one-script/next-pile.md`, `docs/design/one-script/workflow.md`, `docs/design/willow-grove-premise.md`, `governance/CASEBOOK.md`, `governance/seed/canon/02-the-discipline.md`.
+- clause `0.3` in `willow-mcp` code: 2 files cite it: `.willow/constitutional/syscall-table.json`, `src/willow_mcp/bundle/constitutional/syscall-table.json`.
+- clause `0.3` in `willow-mcp` tests: 0 files cite it.
+- clause `0.3` in `willow-mcp` docs: 2 files cite it: `SECURITY_AUDIT.md`, `docs/design/federation-wire-format.md`.
+- clause `0.3` in `willow-bot` code: 0 files cite it.
+- clause `0.3` in `willow-bot` tests: 0 files cite it.
+- clause `0.3` in `willow-bot` docs: 0 files cite it.
 
-## §0.4
+## 0.4
 
-- clause `§0.4` is line 73 of the constitution: The human key is required, and cannot be forged forward.
-- clause `§0.4` verdict, from the human-kept declarations: undeclared.
-- clause `§0.4` in `willows-grove` code: 1 file cites it: `governance/compliance/cases/const_0_4_humankey.py`.
-- clause `§0.4` in `willows-grove` tests: 0 files cite it.
-- clause `§0.4` in `willows-grove` docs: 2 files cite it: `docs/design/one-script/constitution-proposal/CONSTITUTION.neutral.proposed.md`, `docs/design/one-script/constitution-proposal/CONSTITUTION.proposed.md`.
-- clause `§0.4` in `willow-mcp` code: 0 files cite it.
-- clause `§0.4` in `willow-mcp` tests: 0 files cite it.
-- clause `§0.4` in `willow-mcp` docs: 0 files cite it.
-- clause `§0.4` in `willow-bot` code: 0 files cite it.
-- clause `§0.4` in `willow-bot` tests: 0 files cite it.
-- clause `§0.4` in `willow-bot` docs: 0 files cite it.
+- clause `0.4` is line 73 of the constitution: The human key is required, and cannot be forged forward.
+- clause `0.4` verdict, from the human-kept declarations: undeclared.
+- clause `0.4` in `willows-grove` code: 1 file cites it: `governance/compliance/cases/const_0_4_humankey.py`.
+- clause `0.4` in `willows-grove` tests: 1 file cites it: `tests/test_const_coverage.py`.
+- clause `0.4` in `willows-grove` docs: 6 files cite it: `docs/design/one-script/constitution-proposal/CONSTITUTION.neutral.proposed.md`, `docs/design/one-script/constitution-proposal/CONSTITUTION.proposed.md`, `docs/design/one-script/incoming/haiku-2026-10-02/proposal-overnight-and-morning-screen.md`, `docs/design/one-script/incoming/opus-2026-10-02/2026-10-02-reachability-and-staleness.md`, `docs/design/one-script/workflow.md`, `governance/seed/canon/02-the-discipline.md`.
+- clause `0.4` in `willow-mcp` code: 0 files cite it.
+- clause `0.4` in `willow-mcp` tests: 0 files cite it.
+- clause `0.4` in `willow-mcp` docs: 0 files cite it.
+- clause `0.4` in `willow-bot` code: 0 files cite it.
+- clause `0.4` in `willow-bot` tests: 0 files cite it.
+- clause `0.4` in `willow-bot` docs: 0 files cite it.
 
-## §0.5
+## 0.5
 
-- clause `§0.5` is line 76 of the constitution: The Record is append-only and its keepers are bound by it.
-- clause `§0.5` verdict, from the human-kept declarations: undeclared.
-- clause `§0.5` in `willows-grove` code: 1 file cites it: `governance/compliance/cases/const_0_5_ledger.py`.
-- clause `§0.5` in `willows-grove` tests: 0 files cite it.
-- clause `§0.5` in `willows-grove` docs: 4 files cite it: `docs/design/one-script/constitution-proposal/CONSTITUTION.neutral.proposed.md`, `docs/design/one-script/constitution-proposal/CONSTITUTION.proposed.md`, `docs/design/one-script/constitution-proposal/CONSTITUTION.provenance.md`, `docs/design/willow-grove-premise.md`.
-- clause `§0.5` in `willow-mcp` code: 0 files cite it.
-- clause `§0.5` in `willow-mcp` tests: 0 files cite it.
-- clause `§0.5` in `willow-mcp` docs: 0 files cite it.
-- clause `§0.5` in `willow-bot` code: 0 files cite it.
-- clause `§0.5` in `willow-bot` tests: 0 files cite it.
-- clause `§0.5` in `willow-bot` docs: 0 files cite it.
+- clause `0.5` is line 76 of the constitution: The Record is append-only and its keepers are bound by it.
+- clause `0.5` verdict, from the human-kept declarations: undeclared.
+- clause `0.5` in `willows-grove` code: 1 file cites it: `governance/compliance/cases/const_0_5_ledger.py`.
+- clause `0.5` in `willows-grove` tests: 0 files cite it.
+- clause `0.5` in `willows-grove` docs: 9 files cite it: `docs/design/one-box/rules-cross-table-2026-10-06.md`, `docs/design/one-script/constitution-proposal/CONSTITUTION.neutral.proposed.md`, `docs/design/one-script/constitution-proposal/CONSTITUTION.proposed.md`, `docs/design/one-script/constitution-proposal/CONSTITUTION.provenance.md`, `docs/design/one-script/incoming/README.md`, `docs/design/one-script/incoming/haiku-2026-10-02/PROPOSALS-SUMMARY.md`, `docs/design/one-script/incoming/haiku-2026-10-02/proposal-packet-stamp-chain.md`, `docs/design/one-script/next-pile.md`, `docs/design/willow-grove-premise.md`.
+- clause `0.5` in `willow-mcp` code: 1 file cites it: `src/willow_mcp/integrations.py`.
+- clause `0.5` in `willow-mcp` tests: 1 file cites it: `tests/test_utety_adapter.py`.
+- clause `0.5` in `willow-mcp` docs: 0 files cite it.
+- clause `0.5` in `willow-bot` code: 0 files cite it.
+- clause `0.5` in `willow-bot` tests: 0 files cite it.
+- clause `0.5` in `willow-bot` docs: 0 files cite it.
 
-## §0.6
+## 0.6
 
-- clause `§0.6` is line 79 of the constitution: Silence escalates.
-- clause `§0.6` verdict, from the human-kept declarations: undeclared.
-- clause `§0.6` in `willows-grove` code: 0 files cite it.
-- clause `§0.6` in `willows-grove` tests: 0 files cite it.
-- clause `§0.6` in `willows-grove` docs: 4 files cite it: `docs/design/one-script/constitution-proposal/CONSTITUTION.neutral.proposed.md`, `docs/design/one-script/constitution-proposal/CONSTITUTION.proposed.md`, `docs/design/one-script/constitution-proposal/CONSTITUTION.provenance.md`, `docs/design/one-script/constitution-proposal/in-box-terms-scan.md`.
-- clause `§0.6` in `willow-mcp` code: 2 files cite it: `.willow/constitutional/syscall-table.json`, `src/willow_mcp/bundle/constitutional/syscall-table.json`.
-- clause `§0.6` in `willow-mcp` tests: 0 files cite it.
-- clause `§0.6` in `willow-mcp` docs: 1 file cites it: `docs/design/federation-wire-format.md`.
-- clause `§0.6` in `willow-bot` code: 0 files cite it.
-- clause `§0.6` in `willow-bot` tests: 0 files cite it.
-- clause `§0.6` in `willow-bot` docs: 0 files cite it.
+- clause `0.6` is line 79 of the constitution: Silence escalates.
+- clause `0.6` verdict, from the human-kept declarations: undeclared.
+- clause `0.6` in `willows-grove` code: 0 files cite it.
+- clause `0.6` in `willows-grove` tests: 0 files cite it.
+- clause `0.6` in `willows-grove` docs: 8 files cite it: `docs/design/one-script/constitution-proposal/CONSTITUTION.neutral.proposed.md`, `docs/design/one-script/constitution-proposal/CONSTITUTION.proposed.md`, `docs/design/one-script/constitution-proposal/CONSTITUTION.provenance.md`, `docs/design/one-script/constitution-proposal/amendments-2026-10-06-seat.md`, `docs/design/one-script/constitution-proposal/in-box-terms-scan.md`, `docs/design/one-script/incoming/opus-2026-10-02/2026-10-02-reachability-and-staleness.md`, `governance/AGENT_SERVICES.md`, `governance/PROTECTED_AGENTS.md`.
+- clause `0.6` in `willow-mcp` code: 2 files cite it: `.willow/constitutional/syscall-table.json`, `src/willow_mcp/bundle/constitutional/syscall-table.json`.
+- clause `0.6` in `willow-mcp` tests: 0 files cite it.
+- clause `0.6` in `willow-mcp` docs: 1 file cites it: `docs/design/federation-wire-format.md`.
+- clause `0.6` in `willow-bot` code: 0 files cite it.
+- clause `0.6` in `willow-bot` tests: 0 files cite it.
+- clause `0.6` in `willow-bot` docs: 0 files cite it.
 
 ## Article I
 
@@ -629,7 +629,7 @@ copies from it.*
 - clause `Article VI` is line 315 of the constitution: The Record.
 - clause `Article VI` verdict, from the human-kept declarations: undeclared.
 - clause `Article VI` in `willows-grove` code: 3 files cite it: `docs/design/one-script/onescript/record.py`, `docs/design/one-script/onescript/view.py`, `docs/design/one-script/onescript/xref.py`.
-- clause `Article VI` in `willows-grove` tests: 4 files cite it: `docs/design/one-script/onescript/tests/test_incoming.py`, `docs/design/one-script/onescript/tests/test_layers.py`, `docs/design/one-script/onescript/tests/test_onescript.py`, `docs/design/one-script/onescript/tests/test_xref.py`.
+- clause `Article VI` in `willows-grove` tests: 5 files cite it: `docs/design/one-script/onescript/tests/test_incoming.py`, `docs/design/one-script/onescript/tests/test_layers.py`, `docs/design/one-script/onescript/tests/test_onescript.py`, `docs/design/one-script/onescript/tests/test_xref.py`, `tests/test_const_coverage.py`.
 - clause `Article VI` in `willows-grove` docs: 9 files cite it: `docs/design/one-box/research-2026-10-06.md`, `docs/design/one-box/rules-cross-table-2026-10-06.md`, `docs/design/one-script/constitution-proposal/CONSTITUTION.neutral.proposed.md`, `docs/design/one-script/constitution-proposal/CONSTITUTION.proposed.md`, `docs/design/one-script/constitution-proposal/CONSTITUTION.provenance.md`, `docs/design/one-script/incoming/haiku-2026-10-02/PROPOSALS-SUMMARY.md`, `docs/design/one-script/incoming/haiku-2026-10-02/proposal-packet-stamp-chain.md`, `docs/design/one-script/next-pile.md`, `docs/design/willow-grove-premise.md`.
 - clause `Article VI` in `willow-mcp` code: 0 files cite it.
 - clause `Article VI` in `willow-mcp` tests: 0 files cite it.
@@ -643,7 +643,7 @@ copies from it.*
 - clause `VI.1` is line 319 of the constitution: Append and read, by standing.
 - clause `VI.1` verdict, from the human-kept declarations: undeclared.
 - clause `VI.1` in `willows-grove` code: 0 files cite it.
-- clause `VI.1` in `willows-grove` tests: 0 files cite it.
+- clause `VI.1` in `willows-grove` tests: 1 file cites it: `tests/test_const_coverage.py`.
 - clause `VI.1` in `willows-grove` docs: 1 file cites it: `governance/CASEBOOK.md`.
 - clause `VI.1` in `willow-mcp` code: 0 files cite it.
 - clause `VI.1` in `willow-mcp` tests: 0 files cite it.
@@ -1103,7 +1103,8 @@ copies from it.*
 ## unknown
 
 - clause `unknown` is every cited ID the report finds that names no clause.
-- clause `unknown` id `§0.3.II` (written with the CONST prefix where cited): 4 files cite it: `willows-grove:CHANGELOG.md`, `willows-grove:governance/CASEBOOK.md`, `willows-grove:governance/compliance/cases/const_0_3_capability.py`, `willows-grove:tests/test_const_coverage.py`.
+- clause `unknown` id `0.3.II` (written with the CONST prefix where cited): 4 files cite it: `willows-grove:CHANGELOG.md`, `willows-grove:governance/CASEBOOK.md`, `willows-grove:governance/compliance/cases/const_0_3_capability.py`, `willows-grove:tests/test_const_coverage.py`.
+- clause `unknown` id `0.7` (written with the CONST prefix where cited): 1 file cites it: `willows-grove:docs/design/one-script/incoming/opus-2026-10-02/2026-10-02-reachability-and-staleness.md`.
 - clause `unknown` id `X.N` (written with the CONST prefix where cited): 2 files cite it: `willows-grove:CHANGELOG.md`, `willows-grove:governance/compliance/coverage-declarations.json`.
 
 ---

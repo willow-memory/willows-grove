@@ -342,7 +342,7 @@ Read across the columns, not down the counts:
 
 | File | Cells | Drawn | File | Coverage |
 |---|---|---|---|---|
-| `willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md` | 210 | 13919 | 15998 | 87.0% |
+| `willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md` | 210 | 13919 | 16094 | 86.5% |
 
 **Across grids.** Each grid's part of all the text.
 

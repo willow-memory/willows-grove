@@ -1,0 +1,4142 @@
+{
+ "title": "Coverage by branch: the third axis (2026-10-06)",
+ "root": "../../../..",
+ "rows": [
+  {
+   "row": "EH",
+   "title": "Article 0",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section Article 0"
+  },
+  {
+   "row": "EI",
+   "title": "0.1",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section 0.1"
+  },
+  {
+   "row": "EJ",
+   "title": "0.2",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section 0.2"
+  },
+  {
+   "row": "EK",
+   "title": "0.3",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section 0.3"
+  },
+  {
+   "row": "EL",
+   "title": "0.4",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section 0.4"
+  },
+  {
+   "row": "EM",
+   "title": "0.5",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section 0.5"
+  },
+  {
+   "row": "EN",
+   "title": "0.6",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section 0.6"
+  },
+  {
+   "row": "EO",
+   "title": "Article I",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section Article I"
+  },
+  {
+   "row": "EP",
+   "title": "I.1",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section I.1"
+  },
+  {
+   "row": "EQ",
+   "title": "I.2",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section I.2"
+  },
+  {
+   "row": "ER",
+   "title": "I.3",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section I.3"
+  },
+  {
+   "row": "ES",
+   "title": "I.4",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section I.4"
+  },
+  {
+   "row": "ET",
+   "title": "I.5",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section I.5"
+  },
+  {
+   "row": "EU",
+   "title": "Article II",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section Article II"
+  },
+  {
+   "row": "EV",
+   "title": "II.1",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section II.1"
+  },
+  {
+   "row": "EW",
+   "title": "II.2",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section II.2"
+  },
+  {
+   "row": "EX",
+   "title": "II.3",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section II.3"
+  },
+  {
+   "row": "EY",
+   "title": "Article III",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section Article III"
+  },
+  {
+   "row": "EZ",
+   "title": "III.1",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section III.1"
+  },
+  {
+   "row": "FA",
+   "title": "III.2",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section III.2"
+  },
+  {
+   "row": "FB",
+   "title": "III.3",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section III.3"
+  },
+  {
+   "row": "FC",
+   "title": "III.4",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section III.4"
+  },
+  {
+   "row": "FD",
+   "title": "III.5",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section III.5"
+  },
+  {
+   "row": "FE",
+   "title": "Article IV",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section Article IV"
+  },
+  {
+   "row": "FF",
+   "title": "IV.1",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section IV.1"
+  },
+  {
+   "row": "FG",
+   "title": "IV.2",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section IV.2"
+  },
+  {
+   "row": "FH",
+   "title": "IV.3",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section IV.3"
+  },
+  {
+   "row": "FI",
+   "title": "IV.5",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section IV.5"
+  },
+  {
+   "row": "FJ",
+   "title": "IV.6",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section IV.6"
+  },
+  {
+   "row": "FK",
+   "title": "IV.4",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section IV.4"
+  },
+  {
+   "row": "FL",
+   "title": "IV.7",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section IV.7"
+  },
+  {
+   "row": "FM",
+   "title": "IV.8",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section IV.8"
+  },
+  {
+   "row": "FN",
+   "title": "Article V",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section Article V"
+  },
+  {
+   "row": "FO",
+   "title": "V.1",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section V.1"
+  },
+  {
+   "row": "FP",
+   "title": "V.2",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section V.2"
+  },
+  {
+   "row": "FQ",
+   "title": "V.3",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section V.3"
+  },
+  {
+   "row": "FR",
+   "title": "V.4",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section V.4"
+  },
+  {
+   "row": "FS",
+   "title": "V.4a",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section V.4a"
+  },
+  {
+   "row": "FT",
+   "title": "V.4b",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section V.4b"
+  },
+  {
+   "row": "FU",
+   "title": "V.5",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section V.5"
+  },
+  {
+   "row": "FV",
+   "title": "V.6",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section V.6"
+  },
+  {
+   "row": "FW",
+   "title": "V.7",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section V.7"
+  },
+  {
+   "row": "FX",
+   "title": "V.8",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section V.8"
+  },
+  {
+   "row": "FY",
+   "title": "V.9",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section V.9"
+  },
+  {
+   "row": "FZ",
+   "title": "Article VI",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section Article VI"
+  },
+  {
+   "row": "GA",
+   "title": "VI.1",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section VI.1"
+  },
+  {
+   "row": "GB",
+   "title": "VI.2",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section VI.2"
+  },
+  {
+   "row": "GC",
+   "title": "VI.3",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section VI.3"
+  },
+  {
+   "row": "GD",
+   "title": "VI.4",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section VI.4"
+  },
+  {
+   "row": "GE",
+   "title": "VI.5",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section VI.5"
+  },
+  {
+   "row": "GF",
+   "title": "VI.6",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section VI.6"
+  },
+  {
+   "row": "GG",
+   "title": "Article VII",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section Article VII"
+  },
+  {
+   "row": "GH",
+   "title": "VII.default",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section VII.default"
+  },
+  {
+   "row": "GI",
+   "title": "Article VIII",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section Article VIII"
+  },
+  {
+   "row": "GJ",
+   "title": "VIII.1",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section VIII.1"
+  },
+  {
+   "row": "GK",
+   "title": "VIII.2",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section VIII.2"
+  },
+  {
+   "row": "GL",
+   "title": "VIII.3",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section VIII.3"
+  },
+  {
+   "row": "GM",
+   "title": "Article IX",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section Article IX"
+  },
+  {
+   "row": "GN",
+   "title": "IX.1",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section IX.1"
+  },
+  {
+   "row": "GO",
+   "title": "IX.2",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section IX.2"
+  },
+  {
+   "row": "GP",
+   "title": "IX.3",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section IX.3"
+  },
+  {
+   "row": "GQ",
+   "title": "IX.4",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section IX.4"
+  },
+  {
+   "row": "GR",
+   "title": "Article X",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section Article X"
+  },
+  {
+   "row": "GS",
+   "title": "X.1",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section X.1"
+  },
+  {
+   "row": "GT",
+   "title": "X.2",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section X.2"
+  },
+  {
+   "row": "GU",
+   "title": "X.3",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section X.3"
+  },
+  {
+   "row": "GV",
+   "title": "X.4",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section X.4"
+  },
+  {
+   "row": "GW",
+   "title": "X.4a",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section X.4a"
+  },
+  {
+   "row": "GX",
+   "title": "Article XI",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section Article XI"
+  },
+  {
+   "row": "GY",
+   "title": "XI.1",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section XI.1"
+  },
+  {
+   "row": "GZ",
+   "title": "XI.2",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section XI.2"
+  },
+  {
+   "row": "HA",
+   "title": "XI.3",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section XI.3"
+  },
+  {
+   "row": "HB",
+   "title": "Article XII",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section Article XII"
+  },
+  {
+   "row": "HC",
+   "title": "XII.1",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section XII.1"
+  },
+  {
+   "row": "HD",
+   "title": "XII.2",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section XII.2"
+  },
+  {
+   "row": "HE",
+   "title": "XII.3",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section XII.3"
+  },
+  {
+   "row": "HF",
+   "title": "XII.4",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section XII.4"
+  },
+  {
+   "row": "HG",
+   "title": "Article XIII",
+   "source": "`coverage-layers-ledger-2026-10-06.md`, section Article XIII"
+  }
+ ],
+ "cells": [
+  {
+   "cell": "EH1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article 0` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EH2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article 0` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EH3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article 0` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EH4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article 0` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EH5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article 0` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EH6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article 0` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EI1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `0\\.1` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EI2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `0\\.1` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EI3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `0\\.1` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EI4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `0\\.1` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EI5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `0\\.1` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EI6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `0\\.1` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EJ1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `0\\.2` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EJ2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `0\\.2` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EJ3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `0\\.2` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EJ4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `0\\.2` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EJ5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `0\\.2` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EJ6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `0\\.2` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EK1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `0\\.3` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EK2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `0\\.3` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EK3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `0\\.3` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EK4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `0\\.3` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EK5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `0\\.3` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EK6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `0\\.3` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EL1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `0\\.4` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EL2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `0\\.4` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EL3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `0\\.4` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EL4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `0\\.4` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EL5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `0\\.4` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EL6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `0\\.4` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EM1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `0\\.5` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EM2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `0\\.5` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EM3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `0\\.5` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EM4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `0\\.5` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EM5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `0\\.5` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EM6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `0\\.5` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EN1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `0\\.6` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EN2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `0\\.6` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EN3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `0\\.6` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EN4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `0\\.6` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EN5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `0\\.6` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EN6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `0\\.6` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EO1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article I` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EO2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article I` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EO3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article I` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EO4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article I` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EO5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article I` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EO6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article I` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EP1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `I\\.1` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EP2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `I\\.1` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EP3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `I\\.1` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EP4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `I\\.1` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EP5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `I\\.1` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EP6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `I\\.1` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EQ1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `I\\.2` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EQ2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `I\\.2` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EQ3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `I\\.2` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EQ4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `I\\.2` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EQ5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `I\\.2` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EQ6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `I\\.2` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "ER1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `I\\.3` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "ER2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `I\\.3` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "ER3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `I\\.3` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "ER4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `I\\.3` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "ER5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `I\\.3` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "ER6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `I\\.3` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "ES1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `I\\.4` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "ES2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `I\\.4` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "ES3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `I\\.4` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "ES4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `I\\.4` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "ES5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `I\\.4` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "ES6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `I\\.4` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "ET1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `I\\.5` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "ET2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `I\\.5` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "ET3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `I\\.5` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "ET4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `I\\.5` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "ET5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `I\\.5` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "ET6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `I\\.5` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EU1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article II` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EU2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article II` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EU3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article II` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EU4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article II` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EU5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article II` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EU6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article II` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EV1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `II\\.1` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EV2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `II\\.1` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EV3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `II\\.1` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EV4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `II\\.1` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EV5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `II\\.1` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EV6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `II\\.1` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EW1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `II\\.2` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EW2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `II\\.2` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EW3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `II\\.2` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EW4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `II\\.2` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EW5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `II\\.2` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EW6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `II\\.2` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EX1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `II\\.3` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EX2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `II\\.3` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EX3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `II\\.3` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EX4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `II\\.3` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EX5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `II\\.3` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EX6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `II\\.3` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EY1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article III` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EY2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article III` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EY3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article III` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EY4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article III` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EY5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article III` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EY6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article III` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EZ1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `III\\.1` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EZ2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `III\\.1` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EZ3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `III\\.1` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EZ4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `III\\.1` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EZ5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `III\\.1` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "EZ6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `III\\.1` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FA1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `III\\.2` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FA2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `III\\.2` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FA3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `III\\.2` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FA4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `III\\.2` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FA5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `III\\.2` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FA6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `III\\.2` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FB1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `III\\.3` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FB2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `III\\.3` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FB3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `III\\.3` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FB4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `III\\.3` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FB5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `III\\.3` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FB6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `III\\.3` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FC1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `III\\.4` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FC2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `III\\.4` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FC3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `III\\.4` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FC4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `III\\.4` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FC5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `III\\.4` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FC6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `III\\.4` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FD1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `III\\.5` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FD2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `III\\.5` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FD3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `III\\.5` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FD4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `III\\.5` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FD5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `III\\.5` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FD6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `III\\.5` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FE1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article IV` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FE2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article IV` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FE3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article IV` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FE4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article IV` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FE5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article IV` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FE6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article IV` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FF1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.1` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FF2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.1` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FF3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.1` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FF4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.1` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FF5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.1` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FF6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.1` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FG1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.2` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FG2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.2` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FG3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.2` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FG4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.2` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FG5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.2` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FG6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.2` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FH1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.3` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FH2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.3` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FH3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.3` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FH4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.3` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FH5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.3` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FH6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.3` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FI1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.5` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FI2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.5` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FI3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.5` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FI4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.5` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FI5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.5` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FI6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.5` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FJ1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.6` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FJ2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.6` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FJ3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.6` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FJ4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.6` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FJ5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.6` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FJ6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.6` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FK1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.4` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FK2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.4` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FK3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.4` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FK4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.4` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FK5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.4` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FK6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.4` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FL1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.7` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FL2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.7` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FL3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.7` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FL4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.7` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FL5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.7` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FL6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.7` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FM1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.8` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FM2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.8` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FM3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.8` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FM4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.8` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FM5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.8` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FM6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IV\\.8` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FN1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article V` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FN2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article V` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FN3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article V` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FN4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article V` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FN5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article V` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FN6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article V` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FO1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.1` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FO2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.1` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FO3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.1` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FO4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.1` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FO5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.1` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FO6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.1` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FP1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.2` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FP2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.2` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FP3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.2` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FP4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.2` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FP5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.2` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FP6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.2` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FQ1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.3` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FQ2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.3` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FQ3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.3` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FQ4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.3` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FQ5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.3` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FQ6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.3` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FR1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.4` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FR2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.4` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FR3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.4` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FR4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.4` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FR5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.4` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FR6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.4` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FS1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.4a` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FS2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.4a` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FS3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.4a` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FS4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.4a` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FS5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.4a` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FS6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.4a` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FT1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.4b` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FT2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.4b` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FT3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.4b` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FT4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.4b` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FT5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.4b` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FT6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.4b` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FU1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.5` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FU2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.5` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FU3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.5` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FU4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.5` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FU5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.5` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FU6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.5` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FV1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.6` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FV2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.6` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FV3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.6` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FV4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.6` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FV5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.6` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FV6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.6` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FW1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.7` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FW2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.7` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FW3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.7` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FW4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.7` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FW5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.7` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FW6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.7` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FX1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.8` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FX2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.8` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FX3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.8` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FX4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.8` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FX5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.8` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FX6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.8` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FY1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.9` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FY2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.9` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FY3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.9` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FY4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.9` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FY5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.9` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FY6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `V\\.9` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FZ1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article VI` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FZ2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article VI` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FZ3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article VI` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FZ4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article VI` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FZ5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article VI` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "FZ6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article VI` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GA1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VI\\.1` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GA2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VI\\.1` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GA3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VI\\.1` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GA4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VI\\.1` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GA5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VI\\.1` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GA6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VI\\.1` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GB1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VI\\.2` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GB2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VI\\.2` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GB3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VI\\.2` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GB4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VI\\.2` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GB5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VI\\.2` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GB6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VI\\.2` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GC1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VI\\.3` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GC2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VI\\.3` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GC3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VI\\.3` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GC4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VI\\.3` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GC5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VI\\.3` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GC6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VI\\.3` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GD1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VI\\.4` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GD2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VI\\.4` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GD3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VI\\.4` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GD4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VI\\.4` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GD5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VI\\.4` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GD6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VI\\.4` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GE1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VI\\.5` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GE2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VI\\.5` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GE3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VI\\.5` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GE4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VI\\.5` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GE5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VI\\.5` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GE6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VI\\.5` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GF1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VI\\.6` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GF2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VI\\.6` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GF3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VI\\.6` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GF4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VI\\.6` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GF5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VI\\.6` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GF6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VI\\.6` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GG1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article VII` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GG2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article VII` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GG3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article VII` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GG4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article VII` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GG5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article VII` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GG6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article VII` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GH1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VII\\.default` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GH2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VII\\.default` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GH3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VII\\.default` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GH4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VII\\.default` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GH5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VII\\.default` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GH6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VII\\.default` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GI1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article VIII` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GI2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article VIII` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GI3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article VIII` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GI4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article VIII` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GI5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article VIII` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GI6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article VIII` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GJ1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VIII\\.1` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GJ2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VIII\\.1` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GJ3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VIII\\.1` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GJ4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VIII\\.1` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GJ5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VIII\\.1` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GJ6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VIII\\.1` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GK1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VIII\\.2` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GK2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VIII\\.2` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GK3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VIII\\.2` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GK4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VIII\\.2` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GK5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VIII\\.2` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GK6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VIII\\.2` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GL1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VIII\\.3` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GL2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VIII\\.3` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GL3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VIII\\.3` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GL4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VIII\\.3` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GL5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VIII\\.3` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GL6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `VIII\\.3` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GM1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article IX` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GM2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article IX` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GM3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article IX` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GM4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article IX` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GM5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article IX` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GM6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article IX` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GN1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IX\\.1` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GN2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IX\\.1` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GN3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IX\\.1` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GN4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IX\\.1` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GN5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IX\\.1` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GN6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IX\\.1` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GO1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IX\\.2` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GO2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IX\\.2` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GO3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IX\\.2` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GO4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IX\\.2` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GO5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IX\\.2` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GO6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IX\\.2` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GP1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IX\\.3` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GP2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IX\\.3` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GP3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IX\\.3` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GP4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IX\\.3` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GP5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IX\\.3` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GP6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IX\\.3` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GQ1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IX\\.4` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GQ2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IX\\.4` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GQ3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IX\\.4` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GQ4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IX\\.4` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GQ5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IX\\.4` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GQ6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `IX\\.4` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GR1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article X` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GR2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article X` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GR3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article X` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GR4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article X` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GR5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article X` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GR6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article X` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GS1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `X\\.1` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GS2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `X\\.1` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GS3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `X\\.1` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GS4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `X\\.1` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GS5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `X\\.1` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GS6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `X\\.1` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GT1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `X\\.2` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GT2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `X\\.2` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GT3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `X\\.2` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GT4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `X\\.2` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GT5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `X\\.2` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GT6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `X\\.2` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GU1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `X\\.3` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GU2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `X\\.3` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GU3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `X\\.3` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GU4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `X\\.3` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GU5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `X\\.3` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GU6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `X\\.3` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GV1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `X\\.4` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GV2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `X\\.4` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GV3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `X\\.4` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GV4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `X\\.4` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GV5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `X\\.4` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GV6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `X\\.4` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GW1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `X\\.4a` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GW2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `X\\.4a` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GW3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `X\\.4a` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GW4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `X\\.4a` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GW5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `X\\.4a` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GW6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `X\\.4a` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GX1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article XI` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GX2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article XI` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GX3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article XI` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GX4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article XI` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GX5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article XI` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GX6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article XI` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GY1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `XI\\.1` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GY2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `XI\\.1` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GY3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `XI\\.1` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GY4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `XI\\.1` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GY5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `XI\\.1` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GY6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `XI\\.1` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GZ1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `XI\\.2` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GZ2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `XI\\.2` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GZ3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `XI\\.2` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GZ4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `XI\\.2` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GZ5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `XI\\.2` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "GZ6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `XI\\.2` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HA1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `XI\\.3` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HA2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `XI\\.3` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HA3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `XI\\.3` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HA4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `XI\\.3` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HA5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `XI\\.3` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HA6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `XI\\.3` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HB1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article XII` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HB2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article XII` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HB3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article XII` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HB4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article XII` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HB5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article XII` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HB6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article XII` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HC1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `XII\\.1` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HC2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `XII\\.1` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HC3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `XII\\.1` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HC4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `XII\\.1` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HC5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `XII\\.1` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HC6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `XII\\.1` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HD1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `XII\\.2` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HD2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `XII\\.2` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HD3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `XII\\.2` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HD4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `XII\\.2` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HD5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `XII\\.2` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HD6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `XII\\.2` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HE1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `XII\\.3` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HE2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `XII\\.3` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HE3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `XII\\.3` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HE4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `XII\\.3` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HE5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `XII\\.3` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HE6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `XII\\.3` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HF1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `XII\\.4` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HF2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `XII\\.4` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HF3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `XII\\.4` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HF4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `XII\\.4` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HF5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `XII\\.4` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HF6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `XII\\.4` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HG1",
+   "label": "master",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article XIII` on `master`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HG2",
+   "label": "ccr-392b8b73-v809qu",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article XIII` on `ccr\\-392b8b73\\-v809qu`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HG3",
+   "label": "ccr-542b5884-0deee5",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article XIII` on `ccr\\-542b5884\\-0deee5`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HG4",
+   "label": "ccr-8a588c96-jf76ei",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article XIII` on `ccr\\-8a588c96\\-jf76ei`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HG5",
+   "label": "claude/agent-instruction-files",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article XIII` on `claude/agent\\-instruction\\-files`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HG6",
+   "label": "claude/ai-model-smoothing-gentrification-alc5dm",
+   "file": "willows-grove/docs/design/coverage/coverage-layers-ledger-2026-10-06.md",
+   "pattern": "^- layer `Article XIII` on `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm`:",
+   "mode": "para",
+   "standing": "unattested"
+  }
+ ]
+}

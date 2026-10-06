@@ -6,12 +6,12 @@ is used. The grid in [`handoffs-table-2026-10-06.md`](handoffs-table-2026-10-06.
 
 ## The ideas
 
-- idea `propose-ratify`: §0.2 propose and ratify, matched by `ratif|dual commit|\bpropos`.
-- idea `witness`: §0.1 a witness, not the actor, matched by `self-attest|witness|verified by|independent`.
-- idea `human-seal`: §0.4 the human key or seal, matched by `operator key|human key|human-only|sole (human )?authority|\bseal`.
-- idea `append-only`: §0.5 append-only, matched by `append-only|not erased|never (erase|rewrit)|immutable`.
-- idea `escalate`: §0.6 escalate or halt, matched by `escalat|\bhalt|ask before`.
-- idea `capability`: §0.3 capability and reach, matched by `capabilit|manifest|envelope`.
+- idea `propose-ratify`: eternity clause 0.2: propose and ratify, matched by `ratif|dual commit|\bpropos`.
+- idea `witness`: eternity clause 0.1: a witness, not the actor, matched by `self-attest|witness|verified by|independent`.
+- idea `human-seal`: eternity clause 0.4: the human key or seal, matched by `operator key|human key|human-only|sole (human )?authority|\bseal`.
+- idea `append-only`: eternity clause 0.5: append-only, matched by `append-only|not erased|never (erase|rewrit)|immutable`.
+- idea `escalate`: eternity clause 0.6: escalate or halt, matched by `escalat|\bhalt|ask before`.
+- idea `capability`: eternity clause 0.3: capability and reach, matched by `capabilit|manifest|envelope`.
 - idea `quorum`: VIII quorum, matched by `quorum`.
 - idea `delegation`: V delegation, matched by `delegat|successor`.
 - idea `supremacy`: X.1 supremacy, or the delta rule, matched by `delta wins|newer and smaller|supremacy|overrides`.

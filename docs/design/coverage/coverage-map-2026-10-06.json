@@ -9,33 +9,33 @@
   },
   {
    "row": "BH",
-   "title": "§0.1",
-   "source": "`coverage-ledger-2026-10-06.md`, section §0.1 (copied from the box's coverage report)"
+   "title": "0.1",
+   "source": "`coverage-ledger-2026-10-06.md`, section 0.1 (copied from the box's coverage report)"
   },
   {
    "row": "BI",
-   "title": "§0.2",
-   "source": "`coverage-ledger-2026-10-06.md`, section §0.2 (copied from the box's coverage report)"
+   "title": "0.2",
+   "source": "`coverage-ledger-2026-10-06.md`, section 0.2 (copied from the box's coverage report)"
   },
   {
    "row": "BJ",
-   "title": "§0.3",
-   "source": "`coverage-ledger-2026-10-06.md`, section §0.3 (copied from the box's coverage report)"
+   "title": "0.3",
+   "source": "`coverage-ledger-2026-10-06.md`, section 0.3 (copied from the box's coverage report)"
   },
   {
    "row": "BK",
-   "title": "§0.4",
-   "source": "`coverage-ledger-2026-10-06.md`, section §0.4 (copied from the box's coverage report)"
+   "title": "0.4",
+   "source": "`coverage-ledger-2026-10-06.md`, section 0.4 (copied from the box's coverage report)"
   },
   {
    "row": "BL",
-   "title": "§0.5",
-   "source": "`coverage-ledger-2026-10-06.md`, section §0.5 (copied from the box's coverage report)"
+   "title": "0.5",
+   "source": "`coverage-ledger-2026-10-06.md`, section 0.5 (copied from the box's coverage report)"
   },
   {
    "row": "BM",
-   "title": "§0.6",
-   "source": "`coverage-ledger-2026-10-06.md`, section §0.6 (copied from the box's coverage report)"
+   "title": "0.6",
+   "source": "`coverage-ledger-2026-10-06.md`, section 0.6 (copied from the box's coverage report)"
   },
   {
    "row": "BN",
@@ -491,7 +491,7 @@
    "cell": "BH1",
    "label": "the clause",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.1` is ",
+   "pattern": "^- clause `0\\.1` is ",
    "mode": "para",
    "standing": "unattested"
   },
@@ -499,7 +499,7 @@
    "cell": "BH2",
    "label": "verdict",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.1` verdict,",
+   "pattern": "^- clause `0\\.1` verdict,",
    "mode": "para",
    "standing": "unattested"
   },
@@ -507,7 +507,7 @@
    "cell": "BH3",
    "label": "willows-grove code",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.1` in `willows-grove` code:",
+   "pattern": "^- clause `0\\.1` in `willows-grove` code:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -515,7 +515,7 @@
    "cell": "BH4",
    "label": "willows-grove tests",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.1` in `willows-grove` tests:",
+   "pattern": "^- clause `0\\.1` in `willows-grove` tests:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -523,7 +523,7 @@
    "cell": "BH5",
    "label": "willows-grove docs",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.1` in `willows-grove` docs:",
+   "pattern": "^- clause `0\\.1` in `willows-grove` docs:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -531,7 +531,7 @@
    "cell": "BH6",
    "label": "willow-mcp code",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.1` in `willow-mcp` code:",
+   "pattern": "^- clause `0\\.1` in `willow-mcp` code:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -539,7 +539,7 @@
    "cell": "BH7",
    "label": "willow-mcp tests",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.1` in `willow-mcp` tests:",
+   "pattern": "^- clause `0\\.1` in `willow-mcp` tests:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -547,7 +547,7 @@
    "cell": "BH8",
    "label": "willow-mcp docs",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.1` in `willow-mcp` docs:",
+   "pattern": "^- clause `0\\.1` in `willow-mcp` docs:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -555,7 +555,7 @@
    "cell": "BH9",
    "label": "willow-bot code",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.1` in `willow-bot` code:",
+   "pattern": "^- clause `0\\.1` in `willow-bot` code:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -563,7 +563,7 @@
    "cell": "BH10",
    "label": "willow-bot tests",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.1` in `willow-bot` tests:",
+   "pattern": "^- clause `0\\.1` in `willow-bot` tests:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -571,7 +571,7 @@
    "cell": "BH11",
    "label": "willow-bot docs",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.1` in `willow-bot` docs:",
+   "pattern": "^- clause `0\\.1` in `willow-bot` docs:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -579,7 +579,7 @@
    "cell": "BI1",
    "label": "the clause",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.2` is ",
+   "pattern": "^- clause `0\\.2` is ",
    "mode": "para",
    "standing": "unattested"
   },
@@ -587,7 +587,7 @@
    "cell": "BI2",
    "label": "verdict",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.2` verdict,",
+   "pattern": "^- clause `0\\.2` verdict,",
    "mode": "para",
    "standing": "unattested"
   },
@@ -595,7 +595,7 @@
    "cell": "BI3",
    "label": "willows-grove code",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.2` in `willows-grove` code:",
+   "pattern": "^- clause `0\\.2` in `willows-grove` code:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -603,7 +603,7 @@
    "cell": "BI4",
    "label": "willows-grove tests",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.2` in `willows-grove` tests:",
+   "pattern": "^- clause `0\\.2` in `willows-grove` tests:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -611,7 +611,7 @@
    "cell": "BI5",
    "label": "willows-grove docs",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.2` in `willows-grove` docs:",
+   "pattern": "^- clause `0\\.2` in `willows-grove` docs:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -619,7 +619,7 @@
    "cell": "BI6",
    "label": "willow-mcp code",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.2` in `willow-mcp` code:",
+   "pattern": "^- clause `0\\.2` in `willow-mcp` code:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -627,7 +627,7 @@
    "cell": "BI7",
    "label": "willow-mcp tests",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.2` in `willow-mcp` tests:",
+   "pattern": "^- clause `0\\.2` in `willow-mcp` tests:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -635,7 +635,7 @@
    "cell": "BI8",
    "label": "willow-mcp docs",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.2` in `willow-mcp` docs:",
+   "pattern": "^- clause `0\\.2` in `willow-mcp` docs:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -643,7 +643,7 @@
    "cell": "BI9",
    "label": "willow-bot code",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.2` in `willow-bot` code:",
+   "pattern": "^- clause `0\\.2` in `willow-bot` code:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -651,7 +651,7 @@
    "cell": "BI10",
    "label": "willow-bot tests",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.2` in `willow-bot` tests:",
+   "pattern": "^- clause `0\\.2` in `willow-bot` tests:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -659,7 +659,7 @@
    "cell": "BI11",
    "label": "willow-bot docs",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.2` in `willow-bot` docs:",
+   "pattern": "^- clause `0\\.2` in `willow-bot` docs:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -667,7 +667,7 @@
    "cell": "BJ1",
    "label": "the clause",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.3` is ",
+   "pattern": "^- clause `0\\.3` is ",
    "mode": "para",
    "standing": "unattested"
   },
@@ -675,7 +675,7 @@
    "cell": "BJ2",
    "label": "verdict",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.3` verdict,",
+   "pattern": "^- clause `0\\.3` verdict,",
    "mode": "para",
    "standing": "unattested"
   },
@@ -683,7 +683,7 @@
    "cell": "BJ3",
    "label": "willows-grove code",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.3` in `willows-grove` code:",
+   "pattern": "^- clause `0\\.3` in `willows-grove` code:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -691,7 +691,7 @@
    "cell": "BJ4",
    "label": "willows-grove tests",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.3` in `willows-grove` tests:",
+   "pattern": "^- clause `0\\.3` in `willows-grove` tests:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -699,7 +699,7 @@
    "cell": "BJ5",
    "label": "willows-grove docs",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.3` in `willows-grove` docs:",
+   "pattern": "^- clause `0\\.3` in `willows-grove` docs:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -707,7 +707,7 @@
    "cell": "BJ6",
    "label": "willow-mcp code",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.3` in `willow-mcp` code:",
+   "pattern": "^- clause `0\\.3` in `willow-mcp` code:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -715,7 +715,7 @@
    "cell": "BJ7",
    "label": "willow-mcp tests",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.3` in `willow-mcp` tests:",
+   "pattern": "^- clause `0\\.3` in `willow-mcp` tests:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -723,7 +723,7 @@
    "cell": "BJ8",
    "label": "willow-mcp docs",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.3` in `willow-mcp` docs:",
+   "pattern": "^- clause `0\\.3` in `willow-mcp` docs:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -731,7 +731,7 @@
    "cell": "BJ9",
    "label": "willow-bot code",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.3` in `willow-bot` code:",
+   "pattern": "^- clause `0\\.3` in `willow-bot` code:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -739,7 +739,7 @@
    "cell": "BJ10",
    "label": "willow-bot tests",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.3` in `willow-bot` tests:",
+   "pattern": "^- clause `0\\.3` in `willow-bot` tests:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -747,7 +747,7 @@
    "cell": "BJ11",
    "label": "willow-bot docs",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.3` in `willow-bot` docs:",
+   "pattern": "^- clause `0\\.3` in `willow-bot` docs:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -755,7 +755,7 @@
    "cell": "BK1",
    "label": "the clause",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.4` is ",
+   "pattern": "^- clause `0\\.4` is ",
    "mode": "para",
    "standing": "unattested"
   },
@@ -763,7 +763,7 @@
    "cell": "BK2",
    "label": "verdict",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.4` verdict,",
+   "pattern": "^- clause `0\\.4` verdict,",
    "mode": "para",
    "standing": "unattested"
   },
@@ -771,7 +771,7 @@
    "cell": "BK3",
    "label": "willows-grove code",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.4` in `willows-grove` code:",
+   "pattern": "^- clause `0\\.4` in `willows-grove` code:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -779,7 +779,7 @@
    "cell": "BK4",
    "label": "willows-grove tests",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.4` in `willows-grove` tests:",
+   "pattern": "^- clause `0\\.4` in `willows-grove` tests:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -787,7 +787,7 @@
    "cell": "BK5",
    "label": "willows-grove docs",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.4` in `willows-grove` docs:",
+   "pattern": "^- clause `0\\.4` in `willows-grove` docs:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -795,7 +795,7 @@
    "cell": "BK6",
    "label": "willow-mcp code",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.4` in `willow-mcp` code:",
+   "pattern": "^- clause `0\\.4` in `willow-mcp` code:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -803,7 +803,7 @@
    "cell": "BK7",
    "label": "willow-mcp tests",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.4` in `willow-mcp` tests:",
+   "pattern": "^- clause `0\\.4` in `willow-mcp` tests:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -811,7 +811,7 @@
    "cell": "BK8",
    "label": "willow-mcp docs",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.4` in `willow-mcp` docs:",
+   "pattern": "^- clause `0\\.4` in `willow-mcp` docs:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -819,7 +819,7 @@
    "cell": "BK9",
    "label": "willow-bot code",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.4` in `willow-bot` code:",
+   "pattern": "^- clause `0\\.4` in `willow-bot` code:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -827,7 +827,7 @@
    "cell": "BK10",
    "label": "willow-bot tests",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.4` in `willow-bot` tests:",
+   "pattern": "^- clause `0\\.4` in `willow-bot` tests:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -835,7 +835,7 @@
    "cell": "BK11",
    "label": "willow-bot docs",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.4` in `willow-bot` docs:",
+   "pattern": "^- clause `0\\.4` in `willow-bot` docs:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -843,7 +843,7 @@
    "cell": "BL1",
    "label": "the clause",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.5` is ",
+   "pattern": "^- clause `0\\.5` is ",
    "mode": "para",
    "standing": "unattested"
   },
@@ -851,7 +851,7 @@
    "cell": "BL2",
    "label": "verdict",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.5` verdict,",
+   "pattern": "^- clause `0\\.5` verdict,",
    "mode": "para",
    "standing": "unattested"
   },
@@ -859,7 +859,7 @@
    "cell": "BL3",
    "label": "willows-grove code",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.5` in `willows-grove` code:",
+   "pattern": "^- clause `0\\.5` in `willows-grove` code:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -867,7 +867,7 @@
    "cell": "BL4",
    "label": "willows-grove tests",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.5` in `willows-grove` tests:",
+   "pattern": "^- clause `0\\.5` in `willows-grove` tests:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -875,7 +875,7 @@
    "cell": "BL5",
    "label": "willows-grove docs",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.5` in `willows-grove` docs:",
+   "pattern": "^- clause `0\\.5` in `willows-grove` docs:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -883,7 +883,7 @@
    "cell": "BL6",
    "label": "willow-mcp code",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.5` in `willow-mcp` code:",
+   "pattern": "^- clause `0\\.5` in `willow-mcp` code:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -891,7 +891,7 @@
    "cell": "BL7",
    "label": "willow-mcp tests",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.5` in `willow-mcp` tests:",
+   "pattern": "^- clause `0\\.5` in `willow-mcp` tests:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -899,7 +899,7 @@
    "cell": "BL8",
    "label": "willow-mcp docs",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.5` in `willow-mcp` docs:",
+   "pattern": "^- clause `0\\.5` in `willow-mcp` docs:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -907,7 +907,7 @@
    "cell": "BL9",
    "label": "willow-bot code",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.5` in `willow-bot` code:",
+   "pattern": "^- clause `0\\.5` in `willow-bot` code:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -915,7 +915,7 @@
    "cell": "BL10",
    "label": "willow-bot tests",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.5` in `willow-bot` tests:",
+   "pattern": "^- clause `0\\.5` in `willow-bot` tests:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -923,7 +923,7 @@
    "cell": "BL11",
    "label": "willow-bot docs",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.5` in `willow-bot` docs:",
+   "pattern": "^- clause `0\\.5` in `willow-bot` docs:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -931,7 +931,7 @@
    "cell": "BM1",
    "label": "the clause",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.6` is ",
+   "pattern": "^- clause `0\\.6` is ",
    "mode": "para",
    "standing": "unattested"
   },
@@ -939,7 +939,7 @@
    "cell": "BM2",
    "label": "verdict",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.6` verdict,",
+   "pattern": "^- clause `0\\.6` verdict,",
    "mode": "para",
    "standing": "unattested"
   },
@@ -947,7 +947,7 @@
    "cell": "BM3",
    "label": "willows-grove code",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.6` in `willows-grove` code:",
+   "pattern": "^- clause `0\\.6` in `willows-grove` code:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -955,7 +955,7 @@
    "cell": "BM4",
    "label": "willows-grove tests",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.6` in `willows-grove` tests:",
+   "pattern": "^- clause `0\\.6` in `willows-grove` tests:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -963,7 +963,7 @@
    "cell": "BM5",
    "label": "willows-grove docs",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.6` in `willows-grove` docs:",
+   "pattern": "^- clause `0\\.6` in `willows-grove` docs:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -971,7 +971,7 @@
    "cell": "BM6",
    "label": "willow-mcp code",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.6` in `willow-mcp` code:",
+   "pattern": "^- clause `0\\.6` in `willow-mcp` code:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -979,7 +979,7 @@
    "cell": "BM7",
    "label": "willow-mcp tests",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.6` in `willow-mcp` tests:",
+   "pattern": "^- clause `0\\.6` in `willow-mcp` tests:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -987,7 +987,7 @@
    "cell": "BM8",
    "label": "willow-mcp docs",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.6` in `willow-mcp` docs:",
+   "pattern": "^- clause `0\\.6` in `willow-mcp` docs:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -995,7 +995,7 @@
    "cell": "BM9",
    "label": "willow-bot code",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.6` in `willow-bot` code:",
+   "pattern": "^- clause `0\\.6` in `willow-bot` code:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -1003,7 +1003,7 @@
    "cell": "BM10",
    "label": "willow-bot tests",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.6` in `willow-bot` tests:",
+   "pattern": "^- clause `0\\.6` in `willow-bot` tests:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -1011,7 +1011,7 @@
    "cell": "BM11",
    "label": "willow-bot docs",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `§0\\.6` in `willow-bot` docs:",
+   "pattern": "^- clause `0\\.6` in `willow-bot` docs:",
    "mode": "para",
    "standing": "unattested"
   },
@@ -7273,9 +7273,9 @@
   },
   {
    "cell": "EG2",
-   "label": "id §0.3.II",
+   "label": "id 0.3.II",
    "file": "willows-grove/docs/design/coverage/coverage-ledger-2026-10-06.md",
-   "pattern": "^- clause `unknown` id `§0\\.3\\.II`",
+   "pattern": "^- clause `unknown` id `0\\.3\\.II`",
    "mode": "para",
    "standing": "unattested"
   },
