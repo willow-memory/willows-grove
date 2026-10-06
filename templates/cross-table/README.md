@@ -18,6 +18,7 @@ is yours to choose.
 | [`cross_table.py`](cross_table.py) | The filler. Stdlib only, deterministic: the same map and the same files give the same bytes. |
 | [`example/rules-map-2026-10-06.json`](example/rules-map-2026-10-06.json) | The worked example: the map behind [`rules-cross-table-2026-10-06.md`](../../docs/design/one-box/rules-cross-table-2026-10-06.md), 13 × 13, 168 cells found and 1 silent. |
 | [`example/boxes-outside-map-2026-10-06.json`](example/boxes-outside-map-2026-10-06.json) | The second example: a 4 × 5 grid (rows N–Q, after the first grid's A–M) whose source is a notes section inside the same document ([`boxes-outside-2026-10-06.md`](../../docs/design/one-box/boxes-outside-2026-10-06.md)). It shows that the source can be the document itself, as long as the notes are marked for what they are. |
+| [`example/crosswalk-2026-10-06.json`](example/crosswalk-2026-10-06.json) | The third example: a crosswalk between the two grids, written by `link` into [`crosswalk-2026-10-06.md`](../../docs/design/one-box/crosswalk-2026-10-06.md). |
 
 ## The four parts
 
@@ -74,6 +75,19 @@ python3 templates/cross-table/cross_table.py fill my-map.json my-table.md
   rest of the document is left alone, so it can carry its own introduction
   and notes. A new document gets the three sections appended.
 - `new` refuses to overwrite a map that already exists.
+
+## Crosswalks between grids
+
+```sh
+python3 templates/cross-table/cross_table.py link links.json crosswalk.md --map my-map.json --map next-map.json
+```
+
+A crosswalk isn't a grid, so it has no rows of its own. Each link is
+`{"from": "N1", "to": ["H", "A11"], "why": "…", "standing": "unattested"}`.
+Every address is checked against the maps and refused if it doesn't exist,
+and a bare row letter means the whole row. Labels are copied from the maps.
+The `why` is a reading, not a copy, so it carries its own standing. The
+table is written between `<!-- cross-table:links -->` markers.
 
 ## Modes
 

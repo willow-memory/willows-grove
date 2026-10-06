@@ -162,3 +162,28 @@ def test_two_grids_never_share_a_row_letter(tmp_path):
     ct.main(["new", str(b), "--rows", "2", "--cols", "1"])
     with pytest.raises(SystemExit):
         ct.main(["check", str(b), "--with", str(a), "--root", str(tmp_path)])
+
+
+def test_link_checks_every_address_and_copies_labels(tmp_path):
+    a, b = tmp_path / "a.json", tmp_path / "b.json"
+    ct.main(["new", str(a), "--rows", "1", "--cols", "2"])
+    ct.main(["new", str(b), "--rows", "1", "--cols", "1", "--after", str(a)])
+    m = json.loads(a.read_text())
+    m["rows"][0]["title"] = "Rules"
+    m["cells"][1]["label"] = "Two"
+    a.write_text(json.dumps(m))
+    links = tmp_path / "links.json"
+    links.write_text(
+        json.dumps({"links": [{"from": "B1", "to": ["A", "A2"], "why": "w"}]})
+    )
+    doc = tmp_path / "x.md"
+    ct.main(["link", str(links), str(doc), "--map", str(a), "--map", str(b)])
+    assert doc.read_text() == (
+        "# Crosswalk\n\n## Links\n\n<!-- cross-table:links -->\n"
+        "| From | To | Where they touch | Standing |\n|---|---|---|---|\n"
+        "| B1 | A row: Rules · A2 Two | w | unattested |\n"
+        "<!-- /cross-table:links -->\n"
+    )
+    links.write_text(json.dumps({"links": [{"from": "B1", "to": ["Z9"]}]}))
+    with pytest.raises(SystemExit):
+        ct.main(["link", str(links), str(doc), "--map", str(a), "--map", str(b)])

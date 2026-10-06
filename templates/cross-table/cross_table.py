@@ -12,10 +12,13 @@ bytes. Stdlib only.
     cross_table.py new  MAP --rows 13 --cols 13 [--title T] [--after EARLIER_MAP ...]
     cross_table.py fill MAP DOC [--root DIR] [--with OTHER_MAP ...]
     cross_table.py check MAP [--root DIR] [--with OTHER_MAP ...]
+    cross_table.py link LINKS DOC --map MAP [--map MAP ...]
 
 `new` writes a blank map; with `--after`, its rows start after the earlier
 grids' last row, so no address is used twice. `--with` makes `check` and
-`fill` refuse a map that shares a row letter with another grid. `fill` writes the grid, the row sources and the
+`fill` refuse a map that shares a row letter with another grid. `link`
+writes a crosswalk between grids: every address is checked against the maps,
+and labels are copied from them. `fill` writes the grid, the row sources and the
 index into DOC between `<!-- cross-table:… -->` markers (creating DOC if it
 does not exist) and leaves everything else in DOC alone. `check` prints
 every cell's result and exits 1 if any cell is `not found`.
@@ -259,6 +262,49 @@ def splice(doc: str, parts: dict[str, str]) -> str:
     return doc
 
 
+def render_links(links: dict, maps: list[dict]) -> str:
+    """The crosswalk table. Every address must exist in exactly one of the
+    grids; a bare row letter means the whole row. Labels are copied from the
+    maps. The `why` is a reading, and its standing travels with it."""
+    labels: dict[str, str] = {}
+    for m in maps:
+        for r in m["rows"]:
+            if r["row"] in labels:
+                raise SystemExit(
+                    f"row {r['row']} is in two grids; an address must name one box"
+                )
+            labels[r["row"]] = f"row: {r['title']}"
+        for c in m["cells"]:
+            labels[c["cell"]] = c.get("label", "")
+
+    def name(addr: str) -> str:
+        if addr not in labels:
+            raise SystemExit(f"{addr}: no such address in the grids given")
+        return f"{addr} {labels[addr]}".strip()
+
+    out = [
+        "| From | To | Where they touch | Standing |",
+        "|---|---|---|---|",
+    ]
+    for ln in links["links"]:
+        standing = ln.get("standing", "unattested")
+        if standing not in STANDINGS:
+            raise SystemExit(f"{ln['from']}: standing must be one of {STANDINGS}")
+        to = " · ".join(name(t) for t in ln.get("to", [])) or "—"
+        out.append(
+            f"| {esc(name(ln['from']))} | {esc(to)} | {esc(ln.get('why', ''))} | {standing} |"
+        )
+    return "\n".join(out)
+
+
+def splice_one(doc: str, name: str, body: str) -> str:
+    start, end = f"<!-- cross-table:{name} -->", f"<!-- /cross-table:{name} -->"
+    block = f"{start}\n{body}\n{end}"
+    if start in doc and end in doc:
+        return doc[: doc.index(start)] + block + doc[doc.index(end) + len(end) :]
+    return doc.rstrip("\n") + f"\n\n## {name.capitalize()}\n\n{block}\n"
+
+
 # ── commands ─────────────────────────────────────────────────────────────────
 
 
@@ -300,7 +346,23 @@ def main(argv: list[str] | None = None) -> int:
         default=[],
         help="another grid's map; refuse if any row letter is shared",
     )
+    k = sub.add_parser("link")
+    k.add_argument("links", type=Path)
+    k.add_argument("doc", type=Path)
+    k.add_argument("--map", dest="maps", type=Path, action="append", required=True)
     a = ap.parse_args(argv)
+
+    if a.cmd == "link":
+        links = json.loads(a.links.read_text(encoding="utf-8"))
+        table = render_links(links, [load_map(p) for p in a.maps])
+        doc = (
+            a.doc.read_text(encoding="utf-8")
+            if a.doc.exists()
+            else f"# {links.get('title') or 'Crosswalk'}\n"
+        )
+        a.doc.write_text(splice_one(doc, "links", table), encoding="utf-8")
+        print(f"linked {a.doc}: {len(links['links'])} link(s)")
+        return 0
 
     if a.cmd == "new":
         if a.map.exists():

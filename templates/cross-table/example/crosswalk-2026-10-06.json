@@ -1,0 +1,120 @@
+{
+ "title": "Crosswalk: the second grid against the first (2026-10-06)",
+ "links": [
+  {
+   "from": "N1",
+   "to": [
+    "H",
+    "A11"
+   ],
+   "why": "The box was a branch first, and the template ships the box, never a tree.",
+   "standing": "unattested"
+  },
+  {
+   "from": "N2",
+   "to": [
+    "A7",
+    "A4"
+   ],
+   "why": "Both are about what leaves the box once it's open.",
+   "standing": "unattested"
+  },
+  {
+   "from": "N4",
+   "to": [
+    "A11",
+    "L10"
+   ],
+   "why": "A template is a box that's complete when you open it.",
+   "standing": "unattested"
+  },
+  {
+   "from": "N5",
+   "to": [
+    "C1",
+    "C2",
+    "C3"
+   ],
+   "why": "The nine dots say go past the edge. The rule says look inside first, and only then go outside.",
+   "standing": "unattested"
+  },
+  {
+   "from": "O1",
+   "to": [
+    "B6",
+    "I1"
+   ],
+   "why": "More contents than boxes means two share one. That's why h16 hashes were too short and became h256.",
+   "standing": "unattested"
+  },
+  {
+   "from": "O2",
+   "to": [
+    "B1",
+    "F6"
+   ],
+   "why": "The model sees inside its own scope only; code checks a citation's form, and a witness checks it's true.",
+   "standing": "unattested"
+  },
+  {
+   "from": "O3",
+   "to": [
+    "A1",
+    "J1"
+   ],
+   "why": "An unopened box isn't empty and isn't full. It's not_asked, which is why the states are never collapsed.",
+   "standing": "unattested"
+  },
+  {
+   "from": "O4",
+   "to": [
+    "B1",
+    "I3"
+   ],
+   "why": "Everyone holds only their own box, so what passes between boxes is pointers, not contents.",
+   "standing": "unattested"
+  },
+  {
+   "from": "O5",
+   "to": [],
+   "why": "Boxes inside boxes until the cows come home: the grids themselves. A full grid starts a new one instead of growing forever.",
+   "standing": "unattested"
+  },
+  {
+   "from": "P1",
+   "to": [
+    "L2",
+    "A8",
+    "K3"
+   ],
+   "why": "It worked because everyone agreed the size. The socket standard is the same bet.",
+   "standing": "unattested"
+  },
+  {
+   "from": "P5",
+   "to": [
+    "E2",
+    "G8"
+   ],
+   "why": "Kart and bubblewrap are the sandbox.",
+   "standing": "unattested"
+  },
+  {
+   "from": "Q4",
+   "to": [
+    "I9"
+   ],
+   "why": "Picture and compare.",
+   "standing": "unattested"
+  },
+  {
+   "from": "Q5",
+   "to": [
+    "L11",
+    "I7"
+   ],
+   "why": "Sequencing: what goes in first carries the rest.",
+   "standing": "unattested"
+  }
+ ]
+}
