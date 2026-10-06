@@ -19,6 +19,7 @@ is the one copy to read; these files are not the law.
 | `CONSTITUTION.binding-table.md` | Not brought in: Draft 0.8 replaced the enforcement table with a generated coverage report (`governance/scripts/const_coverage.py`) |
 | `in-box-terms-scan.md` | The 0.7 scan that motivated the neutral proposal; kept as evidence |
 | `amendments-2026-10-06-seat.md` | **Not in Draft 0.9.** Four proposals from the seat against 0.9, marked *interested* where they bear on agents: VIII.4 (an interested proposal says so), an IV.1 addition (a summary is not a source), V.10 (unknown is a lawful answer), and a note that timeouts need no new clause. Unratified |
+| `amendments-2026-10-06-grids.md` | **Not in Draft 0.9.** Two proposals from the cross-table grids against 0.9, neither interested: an Article IV addition beside "Ground ages" (a Ground that moves: a fingerprint, re-located, reported **Cited (moved)**; a report, not a demotion) and a Definitions addition (one name, one referent: a reused name is qualified, a look-alike is set aside). Also lists what the session did that is already law or already proposed. Unratified |
 
 The two `CONSTITUTION.*.proposed.md` files still carry `CONST-*` Article
 headings, so the cross-reference index (`onescript/xref.py`) reports those ids
