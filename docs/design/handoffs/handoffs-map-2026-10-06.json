@@ -1,0 +1,1758 @@
+{
+ "title": "Handoffs against Draft 0.9 (2026-10-06)",
+ "root": "../../../..",
+ "rows": [
+  {
+   "row": "AS",
+   "title": "`grove-hashing-10-05`",
+   "source": "`handoff-ledger-2026-10-06.md`, section grove-hashing-10-05 (generated from the file)"
+  },
+  {
+   "row": "AT",
+   "title": "`mcp-07-23-wiring`",
+   "source": "`handoff-ledger-2026-10-06.md`, section mcp-07-23-wiring (generated from the file)"
+  },
+  {
+   "row": "AU",
+   "title": "`mcp-07-30-hooks`",
+   "source": "`handoff-ledger-2026-10-06.md`, section mcp-07-30-hooks (generated from the file)"
+  },
+  {
+   "row": "AV",
+   "title": "`session-handoff`",
+   "source": "`handoff-ledger-2026-10-06.md`, section session-handoff (generated from the file)"
+  },
+  {
+   "row": "AW",
+   "title": "`handoff-v3-assembling`",
+   "source": "`handoff-ledger-2026-10-06.md`, section handoff-v3-assembling (generated from the file)"
+  },
+  {
+   "row": "AX",
+   "title": "`session-07-18-assembling`",
+   "source": "`handoff-ledger-2026-10-06.md`, section session-07-18-assembling (generated from the file)"
+  },
+  {
+   "row": "AY",
+   "title": "`handoff-schema`",
+   "source": "`handoff-ledger-2026-10-06.md`, section handoff-schema (generated from the file)"
+  },
+  {
+   "row": "AZ",
+   "title": "`handoff-write-skill`",
+   "source": "`handoff-ledger-2026-10-06.md`, section handoff-write-skill (generated from the file)"
+  },
+  {
+   "row": "BA",
+   "title": "`handoff-py`",
+   "source": "`handoff-ledger-2026-10-06.md`, section handoff-py (generated from the file)"
+  },
+  {
+   "row": "BB",
+   "title": "`handoff-validation-py`",
+   "source": "`handoff-ledger-2026-10-06.md`, section handoff-validation-py (generated from the file)"
+  },
+  {
+   "row": "BC",
+   "title": "`session-pre-handoff-py`",
+   "source": "`handoff-ledger-2026-10-06.md`, section session-pre-handoff-py (generated from the file)"
+  },
+  {
+   "row": "BD",
+   "title": "`gerald-request`",
+   "source": "`handoff-ledger-2026-10-06.md`, section gerald-request (generated from the file)"
+  },
+  {
+   "row": "BE",
+   "title": "`gerald-answers`",
+   "source": "`handoff-ledger-2026-10-06.md`, section gerald-answers (generated from the file)"
+  },
+  {
+   "row": "BF",
+   "title": "`gerald-atoms`",
+   "source": "`handoff-ledger-2026-10-06.md`, section gerald-atoms (generated from the file)"
+  }
+ ],
+ "cells": [
+  {
+   "cell": "AS1",
+   "label": "the file",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `grove-hashing-10-05` is ",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AS2",
+   "label": "propose-ratify",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `grove-hashing-10-05` idea `propose-ratify`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AS3",
+   "label": "witness",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `grove-hashing-10-05` idea `witness`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AS4",
+   "label": "human-seal",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `grove-hashing-10-05` idea `human-seal`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AS5",
+   "label": "append-only",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `grove-hashing-10-05` idea `append-only`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AS6",
+   "label": "escalate",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `grove-hashing-10-05` idea `escalate`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AS7",
+   "label": "capability",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `grove-hashing-10-05` idea `capability`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AS8",
+   "label": "quorum",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `grove-hashing-10-05` idea `quorum`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AS9",
+   "label": "delegation",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `grove-hashing-10-05` idea `delegation`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AS10",
+   "label": "supremacy",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `grove-hashing-10-05` idea `supremacy`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AS11",
+   "label": "limits",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `grove-hashing-10-05` idea `limits`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AS12",
+   "label": "naming",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `grove-hashing-10-05` idea `naming`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AS13",
+   "label": "delta-sigma",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `grove-hashing-10-05` idea `delta-sigma`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AS14",
+   "label": "constitution",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `grove-hashing-10-05` idea `constitution`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AS15",
+   "label": "unknown",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `grove-hashing-10-05` idea `unknown`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AT1",
+   "label": "the file",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `mcp-07-23-wiring` is ",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AT2",
+   "label": "propose-ratify",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `mcp-07-23-wiring` idea `propose-ratify`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AT3",
+   "label": "witness",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `mcp-07-23-wiring` idea `witness`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AT4",
+   "label": "human-seal",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `mcp-07-23-wiring` idea `human-seal`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AT5",
+   "label": "append-only",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `mcp-07-23-wiring` idea `append-only`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AT6",
+   "label": "escalate",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `mcp-07-23-wiring` idea `escalate`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AT7",
+   "label": "capability",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `mcp-07-23-wiring` idea `capability`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AT8",
+   "label": "quorum",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `mcp-07-23-wiring` idea `quorum`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AT9",
+   "label": "delegation",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `mcp-07-23-wiring` idea `delegation`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AT10",
+   "label": "supremacy",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `mcp-07-23-wiring` idea `supremacy`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AT11",
+   "label": "limits",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `mcp-07-23-wiring` idea `limits`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AT12",
+   "label": "naming",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `mcp-07-23-wiring` idea `naming`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AT13",
+   "label": "delta-sigma",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `mcp-07-23-wiring` idea `delta-sigma`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AT14",
+   "label": "constitution",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `mcp-07-23-wiring` idea `constitution`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AT15",
+   "label": "unknown",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `mcp-07-23-wiring` idea `unknown`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AU1",
+   "label": "the file",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `mcp-07-30-hooks` is ",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AU2",
+   "label": "propose-ratify",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `mcp-07-30-hooks` idea `propose-ratify`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AU3",
+   "label": "witness",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `mcp-07-30-hooks` idea `witness`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AU4",
+   "label": "human-seal",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `mcp-07-30-hooks` idea `human-seal`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AU5",
+   "label": "append-only",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `mcp-07-30-hooks` idea `append-only`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AU6",
+   "label": "escalate",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `mcp-07-30-hooks` idea `escalate`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AU7",
+   "label": "capability",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `mcp-07-30-hooks` idea `capability`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AU8",
+   "label": "quorum",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `mcp-07-30-hooks` idea `quorum`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AU9",
+   "label": "delegation",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `mcp-07-30-hooks` idea `delegation`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AU10",
+   "label": "supremacy",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `mcp-07-30-hooks` idea `supremacy`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AU11",
+   "label": "limits",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `mcp-07-30-hooks` idea `limits`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AU12",
+   "label": "naming",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `mcp-07-30-hooks` idea `naming`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AU13",
+   "label": "delta-sigma",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `mcp-07-30-hooks` idea `delta-sigma`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AU14",
+   "label": "constitution",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `mcp-07-30-hooks` idea `constitution`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AU15",
+   "label": "unknown",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `mcp-07-30-hooks` idea `unknown`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AV1",
+   "label": "the file",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-handoff` is ",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AV2",
+   "label": "propose-ratify",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-handoff` idea `propose-ratify`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AV3",
+   "label": "witness",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-handoff` idea `witness`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AV4",
+   "label": "human-seal",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-handoff` idea `human-seal`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AV5",
+   "label": "append-only",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-handoff` idea `append-only`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AV6",
+   "label": "escalate",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-handoff` idea `escalate`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AV7",
+   "label": "capability",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-handoff` idea `capability`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AV8",
+   "label": "quorum",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-handoff` idea `quorum`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AV9",
+   "label": "delegation",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-handoff` idea `delegation`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AV10",
+   "label": "supremacy",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-handoff` idea `supremacy`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AV11",
+   "label": "limits",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-handoff` idea `limits`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AV12",
+   "label": "naming",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-handoff` idea `naming`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AV13",
+   "label": "delta-sigma",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-handoff` idea `delta-sigma`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AV14",
+   "label": "constitution",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-handoff` idea `constitution`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AV15",
+   "label": "unknown",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-handoff` idea `unknown`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AW1",
+   "label": "the file",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-v3-assembling` is ",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AW2",
+   "label": "propose-ratify",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-v3-assembling` idea `propose-ratify`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AW3",
+   "label": "witness",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-v3-assembling` idea `witness`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AW4",
+   "label": "human-seal",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-v3-assembling` idea `human-seal`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AW5",
+   "label": "append-only",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-v3-assembling` idea `append-only`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AW6",
+   "label": "escalate",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-v3-assembling` idea `escalate`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AW7",
+   "label": "capability",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-v3-assembling` idea `capability`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AW8",
+   "label": "quorum",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-v3-assembling` idea `quorum`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AW9",
+   "label": "delegation",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-v3-assembling` idea `delegation`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AW10",
+   "label": "supremacy",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-v3-assembling` idea `supremacy`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AW11",
+   "label": "limits",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-v3-assembling` idea `limits`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AW12",
+   "label": "naming",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-v3-assembling` idea `naming`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AW13",
+   "label": "delta-sigma",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-v3-assembling` idea `delta-sigma`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AW14",
+   "label": "constitution",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-v3-assembling` idea `constitution`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AW15",
+   "label": "unknown",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-v3-assembling` idea `unknown`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AX1",
+   "label": "the file",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-07-18-assembling` is ",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AX2",
+   "label": "propose-ratify",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-07-18-assembling` idea `propose-ratify`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AX3",
+   "label": "witness",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-07-18-assembling` idea `witness`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AX4",
+   "label": "human-seal",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-07-18-assembling` idea `human-seal`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AX5",
+   "label": "append-only",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-07-18-assembling` idea `append-only`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AX6",
+   "label": "escalate",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-07-18-assembling` idea `escalate`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AX7",
+   "label": "capability",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-07-18-assembling` idea `capability`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AX8",
+   "label": "quorum",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-07-18-assembling` idea `quorum`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AX9",
+   "label": "delegation",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-07-18-assembling` idea `delegation`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AX10",
+   "label": "supremacy",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-07-18-assembling` idea `supremacy`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AX11",
+   "label": "limits",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-07-18-assembling` idea `limits`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AX12",
+   "label": "naming",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-07-18-assembling` idea `naming`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AX13",
+   "label": "delta-sigma",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-07-18-assembling` idea `delta-sigma`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AX14",
+   "label": "constitution",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-07-18-assembling` idea `constitution`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AX15",
+   "label": "unknown",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-07-18-assembling` idea `unknown`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AY1",
+   "label": "the file",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-schema` is ",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AY2",
+   "label": "propose-ratify",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-schema` idea `propose-ratify`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AY3",
+   "label": "witness",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-schema` idea `witness`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AY4",
+   "label": "human-seal",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-schema` idea `human-seal`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AY5",
+   "label": "append-only",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-schema` idea `append-only`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AY6",
+   "label": "escalate",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-schema` idea `escalate`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AY7",
+   "label": "capability",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-schema` idea `capability`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AY8",
+   "label": "quorum",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-schema` idea `quorum`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AY9",
+   "label": "delegation",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-schema` idea `delegation`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AY10",
+   "label": "supremacy",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-schema` idea `supremacy`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AY11",
+   "label": "limits",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-schema` idea `limits`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AY12",
+   "label": "naming",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-schema` idea `naming`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AY13",
+   "label": "delta-sigma",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-schema` idea `delta-sigma`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AY14",
+   "label": "constitution",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-schema` idea `constitution`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AY15",
+   "label": "unknown",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-schema` idea `unknown`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AZ1",
+   "label": "the file",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-write-skill` is ",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AZ2",
+   "label": "propose-ratify",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-write-skill` idea `propose-ratify`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AZ3",
+   "label": "witness",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-write-skill` idea `witness`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AZ4",
+   "label": "human-seal",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-write-skill` idea `human-seal`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AZ5",
+   "label": "append-only",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-write-skill` idea `append-only`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AZ6",
+   "label": "escalate",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-write-skill` idea `escalate`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AZ7",
+   "label": "capability",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-write-skill` idea `capability`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AZ8",
+   "label": "quorum",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-write-skill` idea `quorum`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AZ9",
+   "label": "delegation",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-write-skill` idea `delegation`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AZ10",
+   "label": "supremacy",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-write-skill` idea `supremacy`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AZ11",
+   "label": "limits",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-write-skill` idea `limits`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AZ12",
+   "label": "naming",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-write-skill` idea `naming`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AZ13",
+   "label": "delta-sigma",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-write-skill` idea `delta-sigma`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AZ14",
+   "label": "constitution",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-write-skill` idea `constitution`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AZ15",
+   "label": "unknown",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-write-skill` idea `unknown`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BA1",
+   "label": "the file",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-py` is ",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BA2",
+   "label": "propose-ratify",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-py` idea `propose-ratify`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BA3",
+   "label": "witness",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-py` idea `witness`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BA4",
+   "label": "human-seal",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-py` idea `human-seal`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BA5",
+   "label": "append-only",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-py` idea `append-only`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BA6",
+   "label": "escalate",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-py` idea `escalate`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BA7",
+   "label": "capability",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-py` idea `capability`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BA8",
+   "label": "quorum",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-py` idea `quorum`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BA9",
+   "label": "delegation",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-py` idea `delegation`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BA10",
+   "label": "supremacy",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-py` idea `supremacy`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BA11",
+   "label": "limits",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-py` idea `limits`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BA12",
+   "label": "naming",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-py` idea `naming`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BA13",
+   "label": "delta-sigma",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-py` idea `delta-sigma`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BA14",
+   "label": "constitution",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-py` idea `constitution`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BA15",
+   "label": "unknown",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-py` idea `unknown`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BB1",
+   "label": "the file",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-validation-py` is ",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BB2",
+   "label": "propose-ratify",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-validation-py` idea `propose-ratify`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BB3",
+   "label": "witness",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-validation-py` idea `witness`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BB4",
+   "label": "human-seal",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-validation-py` idea `human-seal`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BB5",
+   "label": "append-only",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-validation-py` idea `append-only`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BB6",
+   "label": "escalate",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-validation-py` idea `escalate`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BB7",
+   "label": "capability",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-validation-py` idea `capability`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BB8",
+   "label": "quorum",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-validation-py` idea `quorum`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BB9",
+   "label": "delegation",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-validation-py` idea `delegation`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BB10",
+   "label": "supremacy",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-validation-py` idea `supremacy`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BB11",
+   "label": "limits",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-validation-py` idea `limits`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BB12",
+   "label": "naming",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-validation-py` idea `naming`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BB13",
+   "label": "delta-sigma",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-validation-py` idea `delta-sigma`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BB14",
+   "label": "constitution",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-validation-py` idea `constitution`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BB15",
+   "label": "unknown",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `handoff-validation-py` idea `unknown`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BC1",
+   "label": "the file",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-pre-handoff-py` is ",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BC2",
+   "label": "propose-ratify",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-pre-handoff-py` idea `propose-ratify`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BC3",
+   "label": "witness",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-pre-handoff-py` idea `witness`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BC4",
+   "label": "human-seal",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-pre-handoff-py` idea `human-seal`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BC5",
+   "label": "append-only",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-pre-handoff-py` idea `append-only`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BC6",
+   "label": "escalate",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-pre-handoff-py` idea `escalate`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BC7",
+   "label": "capability",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-pre-handoff-py` idea `capability`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BC8",
+   "label": "quorum",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-pre-handoff-py` idea `quorum`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BC9",
+   "label": "delegation",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-pre-handoff-py` idea `delegation`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BC10",
+   "label": "supremacy",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-pre-handoff-py` idea `supremacy`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BC11",
+   "label": "limits",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-pre-handoff-py` idea `limits`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BC12",
+   "label": "naming",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-pre-handoff-py` idea `naming`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BC13",
+   "label": "delta-sigma",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-pre-handoff-py` idea `delta-sigma`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BC14",
+   "label": "constitution",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-pre-handoff-py` idea `constitution`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BC15",
+   "label": "unknown",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `session-pre-handoff-py` idea `unknown`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BD1",
+   "label": "the file",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-request` is ",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BD2",
+   "label": "propose-ratify",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-request` idea `propose-ratify`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BD3",
+   "label": "witness",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-request` idea `witness`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BD4",
+   "label": "human-seal",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-request` idea `human-seal`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BD5",
+   "label": "append-only",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-request` idea `append-only`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BD6",
+   "label": "escalate",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-request` idea `escalate`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BD7",
+   "label": "capability",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-request` idea `capability`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BD8",
+   "label": "quorum",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-request` idea `quorum`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BD9",
+   "label": "delegation",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-request` idea `delegation`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BD10",
+   "label": "supremacy",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-request` idea `supremacy`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BD11",
+   "label": "limits",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-request` idea `limits`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BD12",
+   "label": "naming",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-request` idea `naming`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BD13",
+   "label": "delta-sigma",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-request` idea `delta-sigma`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BD14",
+   "label": "constitution",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-request` idea `constitution`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BD15",
+   "label": "unknown",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-request` idea `unknown`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BE1",
+   "label": "the file",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-answers` is ",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BE2",
+   "label": "propose-ratify",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-answers` idea `propose-ratify`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BE3",
+   "label": "witness",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-answers` idea `witness`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BE4",
+   "label": "human-seal",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-answers` idea `human-seal`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BE5",
+   "label": "append-only",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-answers` idea `append-only`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BE6",
+   "label": "escalate",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-answers` idea `escalate`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BE7",
+   "label": "capability",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-answers` idea `capability`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BE8",
+   "label": "quorum",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-answers` idea `quorum`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BE9",
+   "label": "delegation",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-answers` idea `delegation`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BE10",
+   "label": "supremacy",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-answers` idea `supremacy`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BE11",
+   "label": "limits",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-answers` idea `limits`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BE12",
+   "label": "naming",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-answers` idea `naming`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BE13",
+   "label": "delta-sigma",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-answers` idea `delta-sigma`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BE14",
+   "label": "constitution",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-answers` idea `constitution`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BE15",
+   "label": "unknown",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-answers` idea `unknown`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BF1",
+   "label": "the file",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-atoms` is ",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BF2",
+   "label": "propose-ratify",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-atoms` idea `propose-ratify`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BF3",
+   "label": "witness",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-atoms` idea `witness`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BF4",
+   "label": "human-seal",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-atoms` idea `human-seal`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BF5",
+   "label": "append-only",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-atoms` idea `append-only`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BF6",
+   "label": "escalate",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-atoms` idea `escalate`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BF7",
+   "label": "capability",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-atoms` idea `capability`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BF8",
+   "label": "quorum",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-atoms` idea `quorum`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BF9",
+   "label": "delegation",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-atoms` idea `delegation`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BF10",
+   "label": "supremacy",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-atoms` idea `supremacy`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BF11",
+   "label": "limits",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-atoms` idea `limits`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BF12",
+   "label": "naming",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-atoms` idea `naming`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BF13",
+   "label": "delta-sigma",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-atoms` idea `delta-sigma`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BF14",
+   "label": "constitution",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-atoms` idea `constitution`:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "BF15",
+   "label": "unknown",
+   "file": "willows-grove/docs/design/handoffs/handoff-ledger-2026-10-06.md",
+   "pattern": "^- handoff `gerald-atoms` idea `unknown`:",
+   "mode": "para",
+   "standing": "unattested"
+  }
+ ]
+}
