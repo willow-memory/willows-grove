@@ -18,6 +18,7 @@ Draft 0.9; that goes through Article VIII.
 | 7 | "I would say, The record is read first is the most important out of all those." |
 | 8 | "But I chose to run the session this way. I told you when to read things and when not to read things." |
 | 9 | "Why do you think I ran the session this way?" |
+| 10 | "How many Python scripts have you created this session?" |
 
 ## The ruling
 
@@ -155,6 +156,39 @@ findings.
 |---------|
 | Whether the 113 trigger was part of the design or a real wait |
 | What the rounding is for |
+
+## Python the agent wrote in the session
+
+Asked by the human (words 10). Counted from the session (85.00%).
+
+| Kind | Count |
+|------|-------|
+| `.py` files created | 0 |
+| Inline scripts (`python3 -c` or heredoc), run once, never saved | 16 when asked; this section's own edit is the 17th |
+
+| # | What it did |
+|---|-------------|
+| 1 | Listed `fleet_personas.json` keys |
+| 2 | Amended the 113 guesses (Was/Now) |
+| 3 | Recorded the 113 trigger |
+| 4 | Computed cents, A♯2, 9,072 sequences, and the odds (the Gemini check) |
+| 5 | Session record: asks 21–28 and the prediction check |
+| 6 | CLAUDE.md rules, first agent-agnostic rewrite |
+| 7 | GitHub anchors for the constitution's Article headings |
+| 8 | CLAUDE.md rules as short lines with links |
+| 9 | Rule 9 wording |
+| 10 | CLAUDE.md final pass |
+| 11 | CLAUDE.md live-state line restored |
+| 12 | Heimdallr cut from CLAUDE.md |
+| 13 | Quorum doc: IV.8 and the court model |
+| 14 | Quorum doc: the reading order |
+| 15 | Quorum doc: Article VII |
+| 16 | Quorum doc: why the session ran this way |
+| 17 | Quorum doc: this section |
+
+| Not the agent's | Run |
+|-----------------|-----|
+| `scripts/check_persona_provenance.py`, `scripts/check_docs_drift.py` | many times each |
 
 ## Open
 
