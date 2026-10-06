@@ -1,0 +1,188 @@
+{
+  "title": "The VSOCK fix on main, the fork, and the wall at upstream (2026-10-06)",
+  "root": "../../../..",
+  "rows": [
+    {
+      "row": "IQ",
+      "title": "The main version, run on a Firecracker guest",
+      "source": "the notes, section IQ (agent's reading)"
+    },
+    {
+      "row": "IR",
+      "title": "The handoff and the reviewer points",
+      "source": "the notes, section IR (operator words verbatim where quoted; the rest the agent's reading)"
+    },
+    {
+      "row": "IS",
+      "title": "The fork and the commit",
+      "source": "the notes, section IS (operator words verbatim where quoted; the rest the agent's reading)"
+    },
+    {
+      "row": "IT",
+      "title": "The wall at python/cpython",
+      "source": "the notes, section IT (operator words verbatim where quoted; the rest the agent's reading)"
+    }
+  ],
+  "cells": [
+    {
+      "cell": "IQ1",
+      "label": "The box",
+      "file": "willows-grove/docs/design/one-box/vsock-fork-2026-10-06.md",
+      "pattern": "^- \\*\\*The box\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IQ2",
+      "label": "The failure, reproduced",
+      "file": "willows-grove/docs/design/one-box/vsock-fork-2026-10-06.md",
+      "pattern": "^- \\*\\*The failure, reproduced\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IQ3",
+      "label": "Before the patch",
+      "file": "willows-grove/docs/design/one-box/vsock-fork-2026-10-06.md",
+      "pattern": "^- \\*\\*Before the patch\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IQ4",
+      "label": "After the patch",
+      "file": "willows-grove/docs/design/one-box/vsock-fork-2026-10-06.md",
+      "pattern": "^- \\*\\*After the patch\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IQ5",
+      "label": "Full `test_socket`",
+      "file": "willows-grove/docs/design/one-box/vsock-fork-2026-10-06.md",
+      "pattern": "^- \\*\\*Full `test_socket`\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IR1",
+      "label": "Handoff asked",
+      "file": "willows-grove/docs/design/one-box/vsock-fork-2026-10-06.md",
+      "pattern": "^- \\*\\*Handoff asked\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IR2",
+      "label": "`self.cli` reuse",
+      "file": "willows-grove/docs/design/one-box/vsock-fork-2026-10-06.md",
+      "pattern": "^- \\*\\*`self\\.cli` reuse\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IR3",
+      "label": "Probe cost",
+      "file": "willows-grove/docs/design/one-box/vsock-fork-2026-10-06.md",
+      "pattern": "^- \\*\\*Probe cost\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IR4",
+      "label": "Still not verified",
+      "file": "willows-grove/docs/design/one-box/vsock-fork-2026-10-06.md",
+      "pattern": "^- \\*\\*Still not verified\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IR5",
+      "label": "Bears on Baton 1",
+      "file": "willows-grove/docs/design/one-box/vsock-fork-2026-10-06.md",
+      "pattern": "^- \\*\\*Bears on Baton 1\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IS1",
+      "label": "The ask",
+      "file": "willows-grove/docs/design/one-box/vsock-fork-2026-10-06.md",
+      "pattern": "^- \\*\\*The ask\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IS2",
+      "label": "The fork",
+      "file": "willows-grove/docs/design/one-box/vsock-fork-2026-10-06.md",
+      "pattern": "^- \\*\\*The fork\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IS3",
+      "label": "The author",
+      "file": "willows-grove/docs/design/one-box/vsock-fork-2026-10-06.md",
+      "pattern": "^- \\*\\*The author\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IS4",
+      "label": "The commit",
+      "file": "willows-grove/docs/design/one-box/vsock-fork-2026-10-06.md",
+      "pattern": "^- \\*\\*The commit\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IS5",
+      "label": "The paste files",
+      "file": "willows-grove/docs/design/one-box/vsock-fork-2026-10-06.md",
+      "pattern": "^- \\*\\*The paste files\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IT1",
+      "label": "The operator's correction",
+      "file": "willows-grove/docs/design/one-box/vsock-fork-2026-10-06.md",
+      "pattern": "^- \\*\\*The operator's correction\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IT2",
+      "label": "First denial",
+      "file": "willows-grove/docs/design/one-box/vsock-fork-2026-10-06.md",
+      "pattern": "^- \\*\\*First denial\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IT3",
+      "label": "Second denial",
+      "file": "willows-grove/docs/design/one-box/vsock-fork-2026-10-06.md",
+      "pattern": "^- \\*\\*Second denial\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IT4",
+      "label": "The miss",
+      "file": "willows-grove/docs/design/one-box/vsock-fork-2026-10-06.md",
+      "pattern": "^- \\*\\*The miss\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IT5",
+      "label": "Left for the operator",
+      "file": "willows-grove/docs/design/one-box/vsock-fork-2026-10-06.md",
+      "pattern": "^- \\*\\*Left for the operator\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    }
+  ]
+}

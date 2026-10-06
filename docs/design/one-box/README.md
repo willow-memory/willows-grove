@@ -50,6 +50,10 @@ In the tables, **V** means I read the code, and **S** means it is inferred.
    - [`session-four-113-2026-10-06.md`](session-four-113-2026-10-06.md),
      grid rows IM–IP: G5 fix (pattern + root), CLAUDE.md cross-branch carry,
      session-four prompt improvement, relay initiation
+   - [`vsock-fork-2026-10-06.md`](vsock-fork-2026-10-06.md), grid rows
+     IQ–IT: the VSOCK fix run on `main` on a Firecracker guest, the
+     reviewer points, the commit on the operator's fork, and the wall at
+     `python/cpython`
 2. **Nothing here is ratified yet.** CLAUDE.md rule 4 still applies: propose
    a bite and wait for the operator's go. D1–D3 gate the spine (Phases 1–3);
    Phase 0 does not wait on them. **D11** (phone-seat grant) and **D12**
