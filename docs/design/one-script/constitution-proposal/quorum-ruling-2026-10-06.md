@@ -20,6 +20,9 @@ Draft 0.9; that goes through Article VIII.
 | 9 | "Why do you think I ran the session this way?" |
 | 10 | "How many Python scripts have you created this session?" |
 | 11 | "What would it take to get you 100% across every single check that you've been doing today. 100% of everything. Would that even be possible? I already know the answer." |
+| 12 | "1. Rounding is good because it's rounding. We don't need to know an exact number because it doesn't matter." |
+| 13 | "2. Does it really matter? In the scope of this session. If I haven't let you read it or giving you an answer for it." |
+| 14 | "But that doesn't mean they can't be answered. Lots of humans have given decisions on things." |
 
 ## The ruling
 
@@ -204,16 +207,30 @@ the same reason).
 | What would get closest | Measure, don't estimate; read the whole record first; independent witnesses — the agent can't attest itself (§0.1) |
 | What makes it true | Not more checks: the human's seal. "Nothing is true until a human seals it." |
 
+## Answers to the open questions
+
+| # | Question | Answer | Source | Confidence |
+|---|----------|--------|--------|-----------|
+| 1 | What the rounding applies to | Rounding is good because it's rounding; the exact number doesn't matter. "At least three" is a floor, not a count. | The human (words 12) | — |
+| 2 | Whether PR 111's ladder is the Next Step Up | Out of this session's scope: not read or answered here, so it stays unknown, which is lawful (V.10) — but answerable | The human (words 13, 14) | — |
+| 3 | Who appoints the neutral when the two can't agree | The next step up, as a court appoints a mediator | Other humans' decisions: court-annexed mediation practice | 85.00% |
+| 4 | How many impasses before escalation | One declared impasse returns the case; further mediation only if the next step up orders it | Court practice | 75.00% |
+| 5 | The reading order | Prior rulings and orders → settlements → filings → new submissions, newest last | Court practice | 70.00% |
+| 6 | Whether this answers Open Decision #1, and where it lands | No human precedent can answer it | The human's | — |
+
+Rows 3–5 are other humans' decisions, recorded as such (IV.8: the recorded
+before the new). They are not the human's until ratified.
+
 ## Open
 
 | Question | State |
 |----------|-------|
-| What the rounding applies to | Waiting on the human |
-| What the Next Step Up is, and the ladder above a quorum — whether PR 111's escalation ladder is it | Waiting on the human |
-| Who appoints the neutral when the two can't agree | Waiting on the human |
+| What the rounding applies to | Answered (words 12) |
+| What the Next Step Up is, and the ladder above a quorum — whether PR 111's escalation ladder is it | Out of scope this session (words 13); answerable |
+| Who appoints the neutral when the two can't agree | Court practice: the next step up (85.00%); unratified |
 | Whether a neutral from a prior session may sit again | Agent reading: no, if the neutral is Article VII's fresh interpreter (75.00%); the human's to confirm |
-| How many impasses before escalation is automatic | Waiting on the human |
-| The reading order for the record (IV.8's "order the human has set") | Waiting on the human |
+| How many impasses before escalation is automatic | Court practice: one (75.00%); unratified |
+| The reading order for the record (IV.8's "order the human has set") | Court practice: rulings → settlements → filings → new (70.00%); unratified |
 | Which open decision this answers — #1, with the neutral as a fresh, memoryless interpreter who reads the record first? | Waiting on the human |
-| Whether the rounding is in a parameter awaiting a number (IX.2 minimum agent-witness count, V.8 escalation rate) | Waiting on the human |
+| Whether the rounding is in a parameter awaiting a number (IX.2 minimum agent-witness count, V.8 escalation rate) | Answered: the exact number doesn't matter (words 12) |
 | Where it lands in the constitution | Waiting on the human |
