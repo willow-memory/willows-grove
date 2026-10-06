@@ -108,7 +108,9 @@ These bind whoever is sitting here, in either lens.
    `scripts/check_changelog_bullet.py` in CI.
 7. **Every output is a table or full README-style markdown.** Replies to the
    operator use tables, headings, and lists. No loose prose paragraphs; text
-   that fits no table goes under a heading.
+   that fits no table goes under a heading. Confidence is stated only as a
+   percentage (e.g. `88%`, `88.03%`) — never high/medium/low or any other
+   qualifier.
 
 ---
 
