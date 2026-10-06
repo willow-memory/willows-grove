@@ -1,0 +1,278 @@
+{
+ "title": "One hook, two hashes, Draft 0.9, and the instruction files, in the grid (2026-10-06)",
+ "root": "../../../..",
+ "rows": [
+  {
+   "row": "IG",
+   "title": "The ask",
+   "source": "the notes, section IG (the operator's words verbatim)"
+  },
+  {
+   "row": "IH",
+   "title": "One hook, every CLI",
+   "source": "the notes, section IH (the agent's reading of research-2026-10-06.md; per-CLI source tags there)"
+  },
+  {
+   "row": "II",
+   "title": "Two hashes and xref",
+   "source": "the notes, section II (counts and hashes measured in the session; the rest the agent's reading)"
+  },
+  {
+   "row": "IJ",
+   "title": "Draft 0.9",
+   "source": "the notes, section IJ (the agent's reading of governance/CONSTITUTION.md Draft 0.9 and PR #112)"
+  },
+  {
+   "row": "IK",
+   "title": "The instruction files",
+   "source": "the notes, section IK (the agent's reading of instruction-files-2026-10-06.md; per-CLI source tags there)"
+  },
+  {
+   "row": "IL",
+   "title": "Session three of 113",
+   "source": "the notes, section IL (the operator's words verbatim; the rest the agent's reading)"
+  }
+ ],
+ "cells": [
+  {
+   "cell": "IG1",
+   "label": "Operator, the start",
+   "file": "willows-grove/docs/design/one-box/desk-session-2026-10-06.md",
+   "pattern": "^- \\*\\*Operator, the start\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IG2",
+   "label": "Operator, the sources",
+   "file": "willows-grove/docs/design/one-box/desk-session-2026-10-06.md",
+   "pattern": "^- \\*\\*Operator, the sources\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IG3",
+   "label": "Operator, the hashes",
+   "file": "willows-grove/docs/design/one-box/desk-session-2026-10-06.md",
+   "pattern": "^- \\*\\*Operator, the hashes\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IG4",
+   "label": "Operator, the law",
+   "file": "willows-grove/docs/design/one-box/desk-session-2026-10-06.md",
+   "pattern": "^- \\*\\*Operator, the law\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IG5",
+   "label": "Operator, the files",
+   "file": "willows-grove/docs/design/one-box/desk-session-2026-10-06.md",
+   "pattern": "^- \\*\\*Operator, the files\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IH1",
+   "label": "The matrix",
+   "file": "willows-grove/docs/design/one-box/desk-session-2026-10-06.md",
+   "pattern": "^- \\*\\*The matrix\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IH2",
+   "label": "Fail open",
+   "file": "willows-grove/docs/design/one-box/desk-session-2026-10-06.md",
+   "pattern": "^- \\*\\*Fail open\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IH3",
+   "label": "Ask is not universal",
+   "file": "willows-grove/docs/design/one-box/desk-session-2026-10-06.md",
+   "pattern": "^- \\*\\*Ask is not universal\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IH4",
+   "label": "polyhook",
+   "file": "willows-grove/docs/design/one-box/desk-session-2026-10-06.md",
+   "pattern": "^- \\*\\*polyhook\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IH5",
+   "label": "What hook.py covers today",
+   "file": "willows-grove/docs/design/one-box/desk-session-2026-10-06.md",
+   "pattern": "^- \\*\\*What hook\\.py covers today\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "II1",
+   "label": "h256",
+   "file": "willows-grove/docs/design/one-box/desk-session-2026-10-06.md",
+   "pattern": "^- \\*\\*h256\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "II2",
+   "label": "Arrival",
+   "file": "willows-grove/docs/design/one-box/desk-session-2026-10-06.md",
+   "pattern": "^- \\*\\*Arrival\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "II3",
+   "label": "Checks",
+   "file": "willows-grove/docs/design/one-box/desk-session-2026-10-06.md",
+   "pattern": "^- \\*\\*Checks\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "II4",
+   "label": "First run",
+   "file": "willows-grove/docs/design/one-box/desk-session-2026-10-06.md",
+   "pattern": "^- \\*\\*First run\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "II5",
+   "label": "Tested",
+   "file": "willows-grove/docs/design/one-box/desk-session-2026-10-06.md",
+   "pattern": "^- \\*\\*Tested\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IJ1",
+   "label": "Brought in",
+   "file": "willows-grove/docs/design/one-box/desk-session-2026-10-06.md",
+   "pattern": "^- \\*\\*Brought in\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IJ2",
+   "label": "Kept",
+   "file": "willows-grove/docs/design/one-box/desk-session-2026-10-06.md",
+   "pattern": "^- \\*\\*Kept\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IJ3",
+   "label": "Held for the operator",
+   "file": "willows-grove/docs/design/one-box/desk-session-2026-10-06.md",
+   "pattern": "^- \\*\\*Held for the operator\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IJ4",
+   "label": "The seat's own proposals",
+   "file": "willows-grove/docs/design/one-box/desk-session-2026-10-06.md",
+   "pattern": "^- \\*\\*The seat's own proposals\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IJ5",
+   "label": "Merged",
+   "file": "willows-grove/docs/design/one-box/desk-session-2026-10-06.md",
+   "pattern": "^- \\*\\*Merged\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IK1",
+   "label": "AGENTS.md",
+   "file": "willows-grove/docs/design/one-box/desk-session-2026-10-06.md",
+   "pattern": "^- \\*\\*AGENTS\\.md\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IK2",
+   "label": "CLAUDE.md",
+   "file": "willows-grove/docs/design/one-box/desk-session-2026-10-06.md",
+   "pattern": "^- \\*\\*CLAUDE\\.md\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IK3",
+   "label": "Closest wins",
+   "file": "willows-grove/docs/design/one-box/desk-session-2026-10-06.md",
+   "pattern": "^- \\*\\*Closest wins\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IK4",
+   "label": "Never untrusted",
+   "file": "willows-grove/docs/design/one-box/desk-session-2026-10-06.md",
+   "pattern": "^- \\*\\*Never untrusted\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IK5",
+   "label": "Bugs on the way",
+   "file": "willows-grove/docs/design/one-box/desk-session-2026-10-06.md",
+   "pattern": "^- \\*\\*Bugs on the way\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IL1",
+   "label": "Read first",
+   "file": "willows-grove/docs/design/one-box/desk-session-2026-10-06.md",
+   "pattern": "^- \\*\\*Read first\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IL2",
+   "label": "The review",
+   "file": "willows-grove/docs/design/one-box/desk-session-2026-10-06.md",
+   "pattern": "^- \\*\\*The review\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IL3",
+   "label": "The trigger",
+   "file": "willows-grove/docs/design/one-box/desk-session-2026-10-06.md",
+   "pattern": "^- \\*\\*The trigger\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IL4",
+   "label": "The prompt record",
+   "file": "willows-grove/docs/design/one-box/desk-session-2026-10-06.md",
+   "pattern": "^- \\*\\*The prompt record\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IL5",
+   "label": "Operator, the ask",
+   "file": "willows-grove/docs/design/one-box/desk-session-2026-10-06.md",
+   "pattern": "^- \\*\\*Operator, the ask\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  }
+ ]
+}

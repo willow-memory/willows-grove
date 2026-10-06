@@ -44,6 +44,9 @@ In the tables, **V** means I read the code, and **S** means it is inferred.
    - [`grove-swoon-2026-10-06.md`](grove-swoon-2026-10-06.md), grid rows
      IA–IF: the field and the seeds, rules and branches, the stop hook and
      the classifier, the lesson three ways (Desk session, the Grove)
+   - [`desk-session-2026-10-06.md`](desk-session-2026-10-06.md), grid rows
+     IG–IL: one hook across 22 CLIs, two hashes and xref, Draft 0.9, how the
+     same CLIs load AGENTS.md and CLAUDE.md, and session three of 113
 2. **Nothing here is ratified yet.** CLAUDE.md rule 4 still applies: propose
    a bite and wait for the operator's go. D1–D3 gate the spine (Phases 1–3);
    Phase 0 does not wait on them. **D11** (phone-seat grant) and **D12**
