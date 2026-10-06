@@ -1,0 +1,188 @@
+{
+  "title": "Session four: 113, G5 fix, relay initiation (2026-10-06)",
+  "root": "../../../..",
+  "rows": [
+    {
+      "row": "IM",
+      "title": "The G5 fix",
+      "source": "the notes, section IM (operator words verbatim where applicable; the rest the agent's reading)"
+    },
+    {
+      "row": "IN",
+      "title": "The CLAUDE.md update",
+      "source": "the notes, section IN (agent's reading)"
+    },
+    {
+      "row": "IO",
+      "title": "Session four prompt",
+      "source": "the notes, section IO (agent's reading)"
+    },
+    {
+      "row": "IP",
+      "title": "Relay initiation",
+      "source": "the notes, section IP (operator words verbatim where applicable; the rest the agent's reading)"
+    }
+  ],
+  "cells": [
+    {
+      "cell": "IM1",
+      "label": "G5, what broke",
+      "file": "willows-grove/docs/design/one-box/session-four-113-2026-10-06.md",
+      "pattern": "^- \\*\\*G5, what broke\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IM2",
+      "label": "G5, the diagnosis",
+      "file": "willows-grove/docs/design/one-box/session-four-113-2026-10-06.md",
+      "pattern": "^- \\*\\*G5, the diagnosis\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IM3",
+      "label": "G5, the fix",
+      "file": "willows-grove/docs/design/one-box/session-four-113-2026-10-06.md",
+      "pattern": "^- \\*\\*G5, the fix\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IM4",
+      "label": "G5, wrong root",
+      "file": "willows-grove/docs/design/one-box/session-four-113-2026-10-06.md",
+      "pattern": "^- \\*\\*G5, wrong root\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IM5",
+      "label": "G5, re-run result",
+      "file": "willows-grove/docs/design/one-box/session-four-113-2026-10-06.md",
+      "pattern": "^- \\*\\*G5, re-run result\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IN1",
+      "label": "CLAUDE.md, the rewrite",
+      "file": "willows-grove/docs/design/one-box/session-four-113-2026-10-06.md",
+      "pattern": "^- \\*\\*CLAUDE\\.md, the rewrite\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IN2",
+      "label": "CLAUDE.md, old format",
+      "file": "willows-grove/docs/design/one-box/session-four-113-2026-10-06.md",
+      "pattern": "^- \\*\\*CLAUDE\\.md, old format\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IN3",
+      "label": "CLAUDE.md, new format",
+      "file": "willows-grove/docs/design/one-box/session-four-113-2026-10-06.md",
+      "pattern": "^- \\*\\*CLAUDE\\.md, new format\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IN4",
+      "label": "CLAUDE.md, cross-branch carry",
+      "file": "willows-grove/docs/design/one-box/session-four-113-2026-10-06.md",
+      "pattern": "^- \\*\\*CLAUDE\\.md, cross-branch carry\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IN5",
+      "label": "CLAUDE.md, G5 pointer",
+      "file": "willows-grove/docs/design/one-box/session-four-113-2026-10-06.md",
+      "pattern": "^- \\*\\*CLAUDE\\.md, G5 pointer\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IO1",
+      "label": "Prompt doc",
+      "file": "willows-grove/docs/design/one-box/session-four-113-2026-10-06.md",
+      "pattern": "^- \\*\\*Prompt doc\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IO2",
+      "label": "Session four read table",
+      "file": "willows-grove/docs/design/one-box/session-four-113-2026-10-06.md",
+      "pattern": "^- \\*\\*Session four read table\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IO3",
+      "label": "Rule 9 held",
+      "file": "willows-grove/docs/design/one-box/session-four-113-2026-10-06.md",
+      "pattern": "^- \\*\\*Rule 9 held\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IO4",
+      "label": "Improvement: branch and root",
+      "file": "willows-grove/docs/design/one-box/session-four-113-2026-10-06.md",
+      "pattern": "^- \\*\\*Improvement: branch and root\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IO5",
+      "label": "Improvement: reading list",
+      "file": "willows-grove/docs/design/one-box/session-four-113-2026-10-06.md",
+      "pattern": "^- \\*\\*Improvement: reading list\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IP1",
+      "label": "Standing instruction",
+      "file": "willows-grove/docs/design/one-box/session-four-113-2026-10-06.md",
+      "pattern": "^- \\*\\*Standing instruction\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IP2",
+      "label": "Branch pull",
+      "file": "willows-grove/docs/design/one-box/session-four-113-2026-10-06.md",
+      "pattern": "^- \\*\\*Branch pull\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IP3",
+      "label": "Last baton found",
+      "file": "willows-grove/docs/design/one-box/session-four-113-2026-10-06.md",
+      "pattern": "^- \\*\\*Last baton found\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IP4",
+      "label": "This session's contribution",
+      "file": "willows-grove/docs/design/one-box/session-four-113-2026-10-06.md",
+      "pattern": "^- \\*\\*This session's contribution\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "IP5",
+      "label": "The invariant",
+      "file": "willows-grove/docs/design/one-box/session-four-113-2026-10-06.md",
+      "pattern": "^- \\*\\*The invariant\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    }
+  ]
+}
