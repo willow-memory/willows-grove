@@ -1,0 +1,123 @@
+{
+ "title": "A random pull, and where it lands (2026-10-06)",
+ "root": "../../../..",
+ "rows": [
+  {
+   "row": "HH",
+   "title": "Hit the work",
+   "source": "the notes, section HH (agent, general knowledge; not checked against references)"
+  },
+  {
+   "row": "HI",
+   "title": "Describe the method",
+   "source": "the notes, section HI (agent, general knowledge; not checked against references)"
+  },
+  {
+   "row": "HJ",
+   "title": "Mood",
+   "source": "the notes, section HJ (agent, general knowledge; not checked against references)"
+  }
+ ],
+ "cells": [
+  {
+   "cell": "HH1",
+   "label": "The Library of Babel",
+   "file": "willows-grove/docs/design/one-box/random-pull-2026-10-06.md",
+   "pattern": "^- \\*\\*The Library of Babel\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HH2",
+   "label": "Dewey 001.9",
+   "file": "willows-grove/docs/design/one-box/random-pull-2026-10-06.md",
+   "pattern": "^- \\*\\*Dewey 001\\.9\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HH3",
+   "label": "The map is not the territory",
+   "file": "willows-grove/docs/design/one-box/random-pull-2026-10-06.md",
+   "pattern": "^- \\*\\*The map is not the territory\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HH4",
+   "label": "The Voynich manuscript",
+   "file": "willows-grove/docs/design/one-box/random-pull-2026-10-06.md",
+   "pattern": "^- \\*\\*The Voynich manuscript\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HI1",
+   "label": "Linnaeus's slips",
+   "file": "willows-grove/docs/design/one-box/random-pull-2026-10-06.md",
+   "pattern": "^- \\*\\*Linnaeus's slips\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HI2",
+   "label": "Mise en place",
+   "file": "willows-grove/docs/design/one-box/random-pull-2026-10-06.md",
+   "pattern": "^- \\*\\*Mise en place\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HI3",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "para",
+   "standing": "unattested",
+   "note": "no more pulls in this row"
+  },
+  {
+   "cell": "HI4",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "para",
+   "standing": "unattested",
+   "note": "no more pulls in this row"
+  },
+  {
+   "cell": "HJ1",
+   "label": "Lisbon, 1755",
+   "file": "willows-grove/docs/design/one-box/random-pull-2026-10-06.md",
+   "pattern": "^- \\*\\*Lisbon, 1755\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HJ2",
+   "label": "The rotisserie",
+   "file": "willows-grove/docs/design/one-box/random-pull-2026-10-06.md",
+   "pattern": "^- \\*\\*The rotisserie\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HJ3",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "para",
+   "standing": "unattested",
+   "note": "no more pulls in this row"
+  },
+  {
+   "cell": "HJ4",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "para",
+   "standing": "unattested",
+   "note": "no more pulls in this row"
+  }
+ ]
+}
