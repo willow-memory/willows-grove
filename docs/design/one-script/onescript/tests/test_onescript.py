@@ -161,6 +161,31 @@ def test_editing_a_past_row_breaks_the_chain_loudly(run):
     assert run.rec.verify_chain()
 
 
+def test_every_hash_keeps_all_256_bits(run):
+    from onescript.record import GENESIS, h256
+
+    assert len(h256(b"x")) == 64 and len(GENESIS) == 64
+    run.turn(
+        ident("hanuman"),
+        "edit",
+        change={"kind": "edit", "path": "a.md", "data": b"x", "cites": ["CONST-VI"]},
+    )
+    rows = run.rec.rows()
+    assert rows[0]["prev"] == GENESIS
+    assert all(len(r["hash"]) == 64 and len(r["prev"]) == 64 for r in rows)
+    assert all(len(i["sha"]) == 64 for i in run.rec.pile()["items"])
+
+
+def test_a_hash_cut_to_64_bits_is_a_chain_break(run):
+    run.turn(ident("hanuman"), "edit")
+    lines = run.rec.path.read_text().splitlines()
+    row = json.loads(lines[0])
+    row["hash"] = row["hash"][:16]
+    lines[0] = json.dumps(row, sort_keys=True, separators=(",", ":"))
+    run.rec.path.write_text("\n".join(lines) + "\n")
+    assert run.rec.verify_chain()
+
+
 def test_every_write_adds_its_own_pointer_and_files_are_0644(run):
     run.turn(
         ident("hanuman"),

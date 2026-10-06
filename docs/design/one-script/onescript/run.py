@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Callable
 
 from . import boot, gate, predict, record, resolve, reverse, view
-from .record import h16
+from .record import h256
 
 PKG = Path(__file__).resolve().parent
 
@@ -149,7 +149,7 @@ class Run:
         The text itself is never rewritten; the rows sit beside it."""
         rows = gate.check_claims(text, facts)
         self.claims += rows
-        self.rec.append("claims", self.sys, text_hash=h16(text), claims=rows)
+        self.rec.append("claims", self.sys, text_hash=h256(text), claims=rows)
         return rows
 
     def seal(self, subject: str, proof: str, human_key: bytes) -> dict:
@@ -191,7 +191,7 @@ class Run:
             predictions=self.graded,
         )
         screen = view.morning(rep, boot_report, self.claims, self.acts)
-        self.rec.append("reconcile", self.sys, report_hash=h16(screen))
+        self.rec.append("reconcile", self.sys, report_hash=h256(screen))
         return rep, screen
 
     def _known_names(self) -> set:

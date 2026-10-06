@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from .record import h16
+from .record import h256
 
 KEEP_OUT = {"record.jsonl", "pile.json"}
 
@@ -32,7 +32,7 @@ def three_way(box: Path, pile: dict, rows: list[dict]) -> list[dict]:
         if i and p:
             if i.get("live"):
                 v, why = "differently", "live: changes by design"
-            elif h16(p.read_bytes()) == i["sha"]:
+            elif h256(p.read_bytes()) == i["sha"]:
                 v, why = "satisfied", ""
             else:
                 v, why = (

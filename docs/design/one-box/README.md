@@ -25,6 +25,8 @@ In the tables, **V** means I read the code, and **S** means it is inferred.
      + three-dialect OUT
    - [`research-2026-10-01.md`](research-2026-10-01.md), front-end matrix
      (cells promoted 2026-10-02 where F-chain closed)
+   - [`research-2026-10-06.md`](research-2026-10-06.md), pre-tool gate
+     matrix across 22 CLIs + polyhook re-check (one hook, every front end)
    - [`sketches.md`](sketches.md), for working code with its tests
    - [`review-2026-10-01.md`](review-2026-10-01.md), for the #706 and #101
      findings that Phase 0 and Phase 4 fix

@@ -17,6 +17,8 @@ the baseline, chained to the last), seal (the human signs the fingerprint).
 The same pass reviews the skeleton: the record chain can be truncated or
 rehashed undetected, `h16` keeps 64 bits, and one garbled line crashes boot.
 The desk checked those three against `onescript/record.py`, and they hold.
+(2026-10-06: the 64-bit hole is closed — `h16` is now `h256`, the full
+digest; the other two are still open.)
 Agent-reported throughout; a proposal, not ratified as a build.
 
 ### The two steps already exist: file integrity checkers
@@ -138,8 +140,8 @@ A ✓ means the source says it. Height is how many sources stack on the row.
 
 **Thin stacks, still open:** rungs 7 and 17 (the operator's to define);
 explain, every change carries a reason (named, not built); T1b chain depth
-(the one flowering measure never run); `h16` at 64 bits and the garbled-line
-crash in `record.py` (desk-confirmed, not fixed).
+(the one flowering measure never run); the garbled-line crash in `record.py`
+(desk-confirmed, not fixed). `h16` at 64 bits was fixed 2026-10-06 (`h256`).
 
 **Stripped down, the one script is picture, cite, seal.** Everything else is
 a view built on those three.
@@ -200,7 +202,7 @@ seal ledger, append-only and written only by the human.
 |---|---|---|
 | Injection in served text | An excerpt says "ignore your instructions" | The model has no hands; the worst case is a bad proposed row, which stays unverified |
 | Inference across boxes | Harmless points that, together, identify a person | Judge scope on the combination, not box by box (the mosaic rule) |
-| Guessable hashes | A plain hash of low-entropy content (a PIN, a name) reverses by enumeration | Served ids are keyed (HMAC) or random, never plain content hashes; `h16` at 64 bits is too short |
+| Guessable hashes | A plain hash of low-entropy content (a PIN, a name) reverses by enumeration | Served ids are keyed (HMAC) or random, never plain content hashes; `h16` at 64 bits was too short (now `h256`, 2026-10-06) |
 | The text going to the human | A proposed row worded to talk the human into sealing | The seal stays a human act; the human reads the points, not only the model's sentence |
 | Seal substitution | Janus (below): an approval keyed to an attempt was counted for a different proposal, 100 → 1,000,000 | **A seal binds to one hash, never to an attempt or a session** |
 | The serving code | A bug serves the wrong box | The real attack surface. Keep it tiny, readable and sealed: the pre-AI foundation (stack row 10) |
@@ -586,7 +588,7 @@ is in its own commit so it can be kept, edited or dropped on its own.
 | — | [`posts/`](posts/) | The **Day 3** DEV post source ("The benchmark caught me too"), its cover prompt, and the Kaggle dataset metadata patch that was applied to `rudi193/escalation-benchmark` |
 | — | [`incoming/`](incoming/) | Three outside passes, kept by provenance: an Opus 5 session's six proposals against Draft 0.8 (reachability and staleness), a cold Haiku 4.5 session's three proposals, and a pointer to the operator's paper "Basins, Not Walls". Its README reconciles them with this PR, cross-checked against the record, and says what the one script took from each |
 | — | [`deep_thought.py`](deep_thought.py) | Read-only probe that carries the sealed Answer (D1, D2, D9, Q13) and measures the box against it. Prints the morning screen (NEEDS YOU → … → GRADES → CHOICES → QUIET). Stdlib only; needs `WILLOW_HOME`. See next-pile.md § "deep_thought.py". Three improvements after the first run: ledger-join seals, write-kind triage, GRADES |
-| 4 | [`constitution-proposal/`](constitution-proposal/) | Ten amendments and a neutral-language pass. **They are built on Draft 0.7 and must be redone against Draft 0.8** (which forbids downward references) before any of it goes forward |
+| 4 | [`constitution-proposal/`](constitution-proposal/) | Ten amendments and a neutral-language pass, built on Draft 0.7. **Brought into `governance/CONSTITUTION.md` as Draft 0.9 on 2026-10-06** with the Opus outside pass, renumbered where 0.8 had taken the number; unratified (see the folder's README) |
 
 **In the skeleton now:** the four gates and the three layers from #2, each
 tested against what happened on 2026-10-02. Run for real on the session's box,
@@ -613,11 +615,27 @@ decision.
 ## Running the tests
 
 ```bash
-cd onescript && python3 -m pytest -q tests   # 77 tests (24 for the capability door)
+cd onescript && python3 -m pytest -q tests   # 97 tests (24 capability door, 12 xref)
 ```
 
 The Grove's CI doesn't collect these (its `testpaths` is `tests/`). ruff lints
 and formats them like everything else.
+
+## Running xref
+
+Two hashes per file on arrival (git's blob id, recomputed here from the bytes on
+disk, and the system's own SHA-256), then every id, link, `file:line` and commit
+SHA checked across the repos. Read-only; same repos at the same commits give the
+same bytes. Scope and first run: [`../one-box/research-2026-10-06.md`](../one-box/research-2026-10-06.md) §13.
+Serve's home under D2 is willow-bot; serve reads this index, it does not rebuild it.
+
+```bash
+python3 -m onescript.xref index --repo ../../../../willows-grove \
+    --repo ../../../../willow-bot --repo ../../../../willow-mcp \
+    --out /tmp/xref --cache /tmp/xref-cache [--record BOX]
+python3 -m onescript.xref slice --index /tmp/xref/index.json \
+    --repo ../../../../willows-grove --id Q19 --out q19.txt   # for people (Q19)
+```
 
 ## Running deep_thought
 
