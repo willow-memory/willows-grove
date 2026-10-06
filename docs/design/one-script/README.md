@@ -275,6 +275,290 @@ reading points at, and isn't.
   made only by a human seal, scope chosen by stacking piles, and a pre-AI
   foundation.
 
+### How the tables group: who, what, when, where
+
+*2026-10-06, desk session 019xJcd52XquwTaeZYqKL8QH. The operator, on how the
+tables cluster and group: "I think I just saw one of the easiest ways", "the
+easiest ones are the easiest ones. The who what when where", then "yes" to
+the reading below, and "add it to the one script doc". Agent-reported; not
+ratified as a build.*
+
+The four are the facts code can know without judging anything, so grouping
+by them is exact matching, not fuzzy clustering. The record already stamps
+three of them on every row, and the fourth on writes only
+(`onescript/record.py`, `onescript/run.py`):
+
+| W | Field | Groups into |
+|---|---|---|
+| **Who** | `who`, from the identity the gate verified | everything one seat or person did |
+| **What** | `kind`: a write, a door, a seal, an act | everything of one kind: the auto flags' "same kind" axis (next-pile.md) |
+| **When** | `ts` from the injected clock on every row; the turn on most | a turn, a session, a day |
+| **Where** | `path` on a `write` row and `where` on its pile pointer; **no other row kind carries one** | everything that touched one place: the auto flags' "same subject" thread |
+
+**The gap, found on a second pass (2026-10-06):** only `write` rows say
+where. A `door` row records the verdict on a change but not the change's
+path, an `act` row (a push) not where it went, and a `seal` row only its
+`subject`. Until every `append` carries a `where` (the change's path, the
+push's destination, the sealed subject), "who keeps touching this file"
+only sees the writes. One field on `Record.append`; not built.
+
+Grouping is a `GROUP BY` on fields that already exist. Each group's key is
+hashed, the 3/7/13/23 ladder counts inside it, and pairs of W's are the
+clusters:
+
+- **who + where:** who keeps touching this file
+- **what + when:** what kinds of thing happen at check-out
+- **where + when:** the bike room at 06:27:22
+
+That last one is the Discord ticket (Day 5, "You can't take the average"):
+its answer was a when and a where, "Please review footage from 06:27:22".
+Nobody judged anything; the timeline already held it.
+
+**Why is the fifth W: code can't write it, but it can stamp where it came
+from.** A why is a pointer, never prose, and there are two kinds:
+
+| Kind of why | Already in the record | Code can check it |
+|---|---|---|
+| a cite: the earlier rows this one rests on | `cites` on `write` and `door` rows ("new things cite older hashes") | the hashes exist, or they don't |
+| the human's words: what authorized it | the mandate on an `act` row (layer 7), and `Ratified-by: … "<verbatim>"` on every PR | the quote is on the record, or it isn't |
+
+So a why groups like the other four: by mandate (everything done under one
+"Lets PR") or by cite (everything built on one seal). A row with no why,
+nothing cited and no mandate, is the "explain" step's hard close (every
+change carries a reason; the hashing handoff's first add-back), and it goes
+to the human. A why the model proposes ("these connect because …") is its
+1%: it cites like everything else and stays unattested until the human
+seals it. That's the four pieces again: the script groups by the four W's,
+serve hands the model the groups in its scope, and the key answers why.
+
+**Measured: the record has three and a half, the markdown has two.** The operator:
+"That's what is written into the md/ tables, pretty regularly."
+`scripts/scan/four_ws.py` counts it (stdlib, read only, the same output on
+3.9.0 and 3.11). Across the 260 tables under `docs/`, each table is counted
+from its cells, then again with what it inherits from the dated italic line
+under its headings:
+
+| W | Cells | With heading |
+|---|---|---|
+| who | 191 (73%) | 196 (75%) |
+| what | 48 (18%) | 52 (20%) |
+| when | 43 (16%) | 55 (21%) |
+| where | 126 (48%) | 126 (48%) |
+| all four | 9 (3%) | 12 (4%) |
+
+Who and where are written regularly; when and what mostly aren't, and the
+heading barely helps, because few sections carry a dated line. The record
+stamps who, what and when on every row because code writes it, and where
+on writes (the gap above). So grouping reads the record, not the prose: tables are written from the record, not parsed back
+out of it. Two caveats: "who" counts any operator or persona name in a cell,
+so it runs high; and "what" counts any seven-plus hex letters, so a word
+like "defaced" passes as a commit.
+
+**Matching when the wording isn't exact: the escalation ladder.** The
+operator: "all those, with the hash groupings, could be matched, even if the
+verbiage wasn't exact (think slm's)"; then "really, the majority of that can
+be done with a nomic embedder" (`nomic-embed-text`; the voice-to-text garble
+corrected at the operator's word); then "that's just another step on the escalate path";
+then "yes, add it to the one script doc". It's the loop's ladder (next-pile.md,
+the loop) and `resolve`'s, with rungs fitted to the four W's:
+
+| Rung | Does | Passes up when |
+|---|---|---|
+| 1. Hash | the W as written is a lookup | no exact match |
+| 2. Code | parses **when** (dates, turns) and **where** (paths: resolve, strip `./`) exactly | it doesn't parse |
+| 3. Embedder | nearest known canonical **who** or **what** ("the operator", "Sean", "op" → one `who`; "wrote", "saved" → `write`) | below the similarity threshold, or a near-tie |
+| 4. Small model | normalizes what's left into the four fields, citing its words | it can't cite, or answers `ESCALATE` |
+| 5. Cloud | the same job with bigger context, still citing | the same |
+| 6. The human | `ESCALATE` | — |
+
+Every rung answers or passes the row up, and every answer is written back by
+the hash of the phrasing, so the next time it stops at rung 1 and nothing
+runs. Each rung is cheaper and dumber than the one above it.
+
+- **The embedder can't make anything up.** It only measures closeness to
+  canonical values that already exist, so its worst case is matching the
+  wrong one, never producing a new value. Code takes when and where because
+  embedders are poor at numbers and paths.
+- **Deterministic rungs:** a pinned embedder or small model on CPU (fixed
+  revision; greedy decoding for the small model) gives the same output for
+  the same row (next-pile.md, "pinned small models as deterministic
+  functions").
+- **Cite or escalate.** Every field above rung 2 points at the words it came
+  from; a value with nothing behind it fails, as `link_fail` does in
+  flowering, and `ESCALATE` is always valid.
+- **The risk is a wrong hit, not a miss** (next-pile.md, "A wrong hit doesn't
+  escalate"): a confident match that merges two different things. So the
+  threshold is conservative, and near-ties go up a rung instead of being
+  guessed.
+- **The threshold is the operator's number.** `deep_thought.py` already
+  lists it ("the numbers are yours … the similarity threshold"); this is
+  where it's used.
+
+**The escalation benchmark already measures rung 4.** It's the classify
+shape: fill a structured record from a short note, or `ESCALATE`.
+On Day 3 every model's weakest shape was classify or ground. Classify was
+the weakest for five of the twelve (Qwen3 235B, Claude Haiku 4.5, Gemma 4
+26B, gpt-oss-20b and DeepSeek-R1), at 0.60 to 0.78 on task score
+(`posts/day-3.md`). So the small model for this is chosen by its classify
+floor, not its average.
+
+### Who wrote it: the model writes markdown, the human doesn't
+
+*2026-10-06, desk session 019xJcd52XquwTaeZYqKL8QH. The operator: "if
+everything that goes into that file is markdown, then it's an instant easy
+readable cross reference"; "yes, run it on this transcript"; "go through the
+last couple of PR is worth of notes. And look at what I have been doing
+specifically with markdown testing"; then "yes, add it to the one script
+doc". Agent-reported; not ratified as a build.*
+
+**The tell.** In an agent transcript, the human types plain sentences (or
+voice-to-text) and the model writes markdown: headings, tables, bold, lists,
+backticks. The transcript already says whose turn each text is (`user` or
+`assistant`), so markdown against role is a cross-check, and its useful cell
+is the one where they disagree.
+
+`scripts/scan/md_split.py` (stdlib, read only, runs on 3.9.0) ran it on this
+session's own transcript, 285 texts:
+
+| Role | Source | Markdown | Plain |
+|---|---|---|---|
+| user | typed | 1 | 93 |
+| user | attached file | 2 | 0 |
+| user | harness (hook feedback, "Tool loaded.") | 0 | 3 |
+| assistant | the model | 104 | 82 |
+
+- **The human's side, markdown: three texts, all model-written.** The
+  pasted reading order (from `READING-ORDER.md` in the papers folder), "The
+  Median Machine" (smoothed in another session), and the item 7 review file
+  (written by a chat session). Every piece of model text that came in
+  through the human's hand was caught, and nothing the human typed was.
+- **The model's side, plain: short status lines.** Of the first 80 counted,
+  39 were "Holding." and 77 were under 200 characters: the one-liners
+  before a tool call. Everything substantial the model wrote was markdown.
+- It's a tell, not proof (box rule 1c: presence is a label; authority is a
+  passkey). A model can be told to write plain, and a person can paste a
+  table. The seal stays the proof.
+
+**What the operator has been doing with markdown: shapes a script can
+test.** The last few PRs (107, 109, 110) each had to pass four scripts in
+Grove's CI before merging, and each tests one fixed markdown shape that
+carries W's:
+
+| Shape | Tested by | Carries |
+|---|---|---|
+| `Ratified-by: <id> — "<verbatim words>"`, the last line of a PR body | `scripts/check_ratification.py` | who and why, in the human's own words |
+| `Persona: <key>` trailer on every commit | `scripts/check_persona_provenance.py` | who, on the model's side |
+| a `PR N` on every `[Unreleased]` CHANGELOG bullet | `scripts/check_docs_drift.py`, `scripts/check_changelog_bullet.py` | what and where |
+| an `INVARIANTS §N` citation resolves to a `## §N — …` heading | `scripts/check_docs_drift.py` | where, as a cite |
+| every `## §N` names a test or workflow path that exists | `scripts/check_docs_drift.py` | why the rule holds: its witness |
+
+It's the same idea as `md_split`, done on purpose: the markdown stays
+readable to a person and checkable by code, because what matters sits in an
+exact place. The human's words always sit in quotes in a known position
+(`Ratified-by:`, or "The operator: …"), and everything around them is
+labelled as the model's.
+
+**A W is only as regular as what checks it.** That's the `four_ws`
+measurement above. The tested shapes come out complete: every merged PR has
+a `Ratified-by`, every commit a `Persona:`, every bullet a `PR N`. The
+untested shape comes out sparse: the dated italic line that opens a section
+("*2026-10-05, desk session …*") is a convention, nothing checks it, and
+`four_ws` found when in only 16 to 21% of tables.
+
+**Next, proposed:** a `check_*.py` in the same family. Every new section
+under `docs/design/` opens with a dated line that names the session and
+quotes the human. Then the markdown carries all four W's for the same reason
+the PR bodies do: CI won't merge it without them. Not built.
+
+### The words the documents share
+
+*2026-10-06, desk session 019xJcd52XquwTaeZYqKL8QH. The operator: "Are there
+any words in common or phrases in common across any of these documents?",
+then "Add please". Counts computed; the reading is agent-reported.*
+
+The pile on top of itself, run on words. `scripts/scan/shared_phrases.py`
+(stdlib, read only, the same output on 3.9.0 and 3.11) counts each phrase
+once per document across `one-script/` and `one-box/`: 33 documents, the
+four constitution-proposal copies counted as one. Links, code, file names
+and anything with a digit in it (ids, hashes, dates) are stripped first, so
+what's counted is wording.
+
+| Idea | Phrases (documents holding them) |
+|---|---|
+| Fail closed | "fails closed" (9), "fail closed" (6), "closed and loud" (6), "gate fails closed" (4), "fails closed and loud" (3) |
+| The human makes it true | "human seals" (7), "operator's word" (7), "operator's call" (6), "standing grant" (6), "makes it true" (4), "reading is open" (4), "grant is the human's" (3) |
+| Check against the record | "against the record" (6), "compared against the record" (3), "check on the assertion" (3) |
+| The model's limits | "model never" (6), "gate is the script" (4) |
+| How the work moves | "next bite" (8), "still open" (8), "morning screen" (7), "overnight pool" (6) |
+| The series' own lines | "the benchmark caught me too" (4), "bugs looked like model behaviour" (4), "hook, one key" (4), "can't take the average" (3) |
+
+**What it shows:**
+
+1. **The most repeated rule is "fail closed and loud", and the stack's five
+   sentences leave it out.** The five tallest rows of the stack (above)
+   are hash, cite, pointers, code first and model last, and only a human
+   seals. Measured by the documents' own words, "fails closed" is held by
+   more documents than any phrasing of those five. Whether it's the sixth
+   sentence is the operator's call.
+2. **The shared phrases are the canonical values.** "Human seals",
+   "against the record", "fails closed", "model never": these are the short
+   fixed phrases rung 3 of the escalation ladder (the embedder) matches
+   variant wordings onto. The documents already have their vocabulary;
+   nobody has to invent one.
+3. **Some repeats are the desk's habit, not ideas.** "Everything else" (9)
+   and "desk session" (9) are the model's own signature phrases, the
+   smoothing showing up in the record. They're stripped before grouping,
+   not grouped on.
+
+### If the model only writes tables
+
+*2026-10-06, desk session 019xJcd52XquwTaeZYqKL8QH. The operator: "If a model
+wrote all of their output as markdown tables. Add that into the docs wear
+applicable. And I do mean all. Even prose. They get a box for that, if it can't
+fit anywhere else in the current table from the session. Not a next bite, not a
+wrap up. Literally anything that does not fit in a box." Agent-reported; not
+ratified as a build.*
+
+Take the "who wrote it" signal one step further. If the model enforces the rule
+on itself — everything goes into a table, including prose — then "markdown on
+the model's side" becomes "table on the model's side", and the 82 plain
+one-liners collapse to a small set of structural exceptions (the harness
+feedback, the one-word holds). The cross-check gets cleaner, and the
+authorship gap widens.
+
+**The rule:** every model output goes into the current session's table if it
+fits any column. If it doesn't fit — prose that isn't a finding, a
+context note, a planning remark — it gets a catch-all cell in that same row.
+The cell is never "to be continued" and never left as free-flowing text
+below the table. The session's table is the session.
+
+| Fits | Where it goes |
+|---|---|
+| A finding (who, what, when, where, why) | The finding's row in the current table |
+| A step done | A row with `kind = act` |
+| A question to the operator | A row with `kind = ask` |
+| Anything else — prose, context, caveat | A `notes` cell on the nearest relevant row; if no row exists yet, a new row `kind = note` |
+| Nothing else fits | A `kind = note` row with a `text` cell; the session timestamp on it is its `when` |
+
+**What this changes for the record.** The `md_split` results above show 82
+model-side plain texts; with this rule enforced, those compress to three
+categories: the one-liners before a tool call (structural, under 30 chars),
+the harness-injected holds, and genuine single-word acknowledgements. Every
+substantive output is now a table row with a `ts`, a `who`, and a `kind`. The
+four W's are on it by construction, not by convention.
+
+**The authorship signal sharpens.** The `md_split.py` cross-check already
+catches model text pasted into the human's side (it did in this session). With
+the table-only rule, the inverse also holds: plain prose on the model's side
+without a structural reason is anomalous. The check now has two cells worth
+testing, not one.
+
+**Not a formatting preference.** The rule isn't about aesthetics. It's about
+the record. A `notes` cell on a row is a field with a `ts`, a session ID, and
+a `who`. Free prose below the table is none of those things. The table-only
+rule is the same rule as "every act cites what authorizes it" — the output
+isn't real until it's in the record, and the record is tables.
+
 ## The proposals from 2026-10-02
 
 **Status:** draft proposals for the operator to read, edit and ratify. Nothing
