@@ -1,0 +1,125 @@
+{
+ "title": "The Grove, the field and the gates, in the grid (2026-10-06)",
+ "cells": {
+  "IA1": {
+   "size": 174,
+   "sha256": "38c3978dfb26dcc3128c8cea745bafbb990b9cd869df94edbbf305b172403a07"
+  },
+  "IA2": {
+   "size": 153,
+   "sha256": "545bdfd328855cf676ea91417a477fdd2274fc4af888880d8163139af9c48002"
+  },
+  "IA3": {
+   "size": 193,
+   "sha256": "baf2d91c47650633b1cba9da566c7b9ecf2df73106918eab6712344618fbf650"
+  },
+  "IA4": {
+   "size": 268,
+   "sha256": "16ed0bc82c253d88f40b0bf4515ba51d63be342240e6a1e27366ce2773f576c5"
+  },
+  "IA5": {
+   "size": 185,
+   "sha256": "058a2fbee143c6924e2e92311c3ddfa44f36abedf84a7338259eb8f43cef0043"
+  },
+  "IB1": {
+   "size": 123,
+   "sha256": "a5d51f2570c4b352177fd79ed4b435015205a27305fe970f5e4d55ecee2785f2"
+  },
+  "IB2": {
+   "size": 231,
+   "sha256": "ee96c03ece1811a972aeb98a69f6fc888e954fa13743a05bbf647bfb95c2fdd5"
+  },
+  "IB3": {
+   "size": 161,
+   "sha256": "72f9a804d33c254cc642294c86ea69867efcc1c48889ca9297522f1cbce9d3c6"
+  },
+  "IB4": {
+   "size": 252,
+   "sha256": "c3d0cfbe46379af2bd3f96eeea4263580845739577e4d40d4a8ad4292025520f"
+  },
+  "IB5": {
+   "size": 146,
+   "sha256": "066d7785ec72266463b1a3c244c1e742413e983dac1d0c5fcdbadb1242a91ee4"
+  },
+  "IC1": {
+   "size": 181,
+   "sha256": "64236c414ef5ac03fada44ae9f5dff496d84c5ba08b19156d135334fdfd0b822"
+  },
+  "IC2": {
+   "size": 222,
+   "sha256": "5f1ab4c75c0c653e8ebb5c498d62397c5ada0bd3afef694e1c4e2a9d359cc19b"
+  },
+  "IC3": {
+   "size": 151,
+   "sha256": "d2b0c30d00b0e02ceada4fb7453d2fb1018267278760158e4ef1f2e62d6c79c0"
+  },
+  "IC4": {
+   "size": 180,
+   "sha256": "92655ec2734130bea537d41f285413ce8d5f4dc475df9872975190ff95c494c6"
+  },
+  "IC5": {
+   "size": 129,
+   "sha256": "57e8b0cf30d03623245911ccb1dee024d611ced2a0bbd5934093363ca59ed74b"
+  },
+  "ID1": {
+   "size": 195,
+   "sha256": "459d3cde14ab42ccefaf5569aac3e3f39eb4aba26b5e9c891d5cb7f4a508eb2f"
+  },
+  "ID2": {
+   "size": 137,
+   "sha256": "2b2c147e9300bdb0aa8ab14c42a2bbd3fbd2cb05181f986acf54246e9f08d29e"
+  },
+  "ID3": {
+   "size": 144,
+   "sha256": "f86278ff83e9b312ca9a35378b02b3d9d01efff474791e0bd5f4b1d72a6be177"
+  },
+  "ID4": {
+   "size": 292,
+   "sha256": "ce1a2357d2da8bf03766411eaf463d42a75ae02cfc24f4eca89a99b7f2cb62b1"
+  },
+  "ID5": {
+   "size": 216,
+   "sha256": "8edf9da9bd4d1330b866d9cd23735cceacdf54f993b2ebce158c01597bcb7511"
+  },
+  "IE1": {
+   "size": 214,
+   "sha256": "17dd783eb08605a6684b1655c3d65214aeaa508372d86161968d4b4a9f35126c"
+  },
+  "IE2": {
+   "size": 128,
+   "sha256": "4d5e8d6404a85e32cdc15b596afd79ce5a28cac80fccb431d9b19aeac99a7270"
+  },
+  "IE3": {
+   "size": 87,
+   "sha256": "761323164d1ef92a8c3533dd5801cbee1dd02fb49e519cda93d56e7607b3dde8"
+  },
+  "IE4": {
+   "size": 188,
+   "sha256": "7c3f4763e983e1f860fd0c843b7ed1f9dfe33cd7403a7a09ed6e54756d616eb8"
+  },
+  "IE5": {
+   "size": 152,
+   "sha256": "1a719de60ecba96443b0d3cf44cf6a33967f556ef2621184c6db8c154c606c8b"
+  },
+  "IF1": {
+   "size": 202,
+   "sha256": "f7aecd0d08bd1fe6e6badb892c846967e1e36742b7a19841d90cc01c7a38b93f"
+  },
+  "IF2": {
+   "size": 180,
+   "sha256": "f836a0cefa875e8ded994f05f0b3436bfb1ea9f3a489ea599d95c510af470acc"
+  },
+  "IF3": {
+   "size": 174,
+   "sha256": "8bd3e20a3187db1864ec01121f789a70e27138cd729f707544795eea38ecd0fc"
+  },
+  "IF4": {
+   "size": 186,
+   "sha256": "91fc5d781dd644089d67eeada8d8c5457ce25df8c256c3ac5cfea755bcf3c396"
+  },
+  "IF5": {
+   "size": 193,
+   "sha256": "b8c4d1e66a827c96731d0747d1da381df95ff01447f70cf9c9786a7711cd4a76"
+  }
+ }
+}
