@@ -84,29 +84,54 @@ last one stopped. Rows R onward are free for anyone to add.
 ## Index
 
 <!-- cross-table:index -->
-| Cell | Rule | Source | Standing |
-|---|---|---|---|
-| N1 | - **The box tree.** "Box" comes from the box tree (Latin *buxus*). Its wood is dense and fine-grained, small containers were carved from it, and the container took the tree's name. The box was a branch first. | `willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md`:32 | unattested |
-| N2 | - **Pandora's jar.** In Hesiod, Pandora opens a *pithos*, a large storage jar. Erasmus rendered it as *pyxis*, a box, in the 1500s, and the box stuck. Hope stays inside. | `willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md`:33 | unattested |
-| N3 | - **Boxing Day.** One common account: the day after Christmas, when "Christmas boxes" of money or gifts went to servants and tradespeople. The origin is debated. | `willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md`:34 | unattested |
-| N4 | - **Out of the box.** Software or a device that works "out of the box" needs nothing added before it's used. The phrase praises a box that's already complete when you open it. | `willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md`:35 | unattested |
-| N5 | - **Think outside the box.** This probably comes from the nine-dots puzzle: join a 3 × 3 grid of dots with four straight lines without lifting the pen. You can only do it if your lines run past the edge of the grid. | `willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md`:36 | unattested |
-| O1 | - **The pigeonhole principle.** If there are more things than boxes, at least one box holds two. It sounds obvious, but it proves surprising results, like the fact that two people in a large city have exactly the same number of hairs on their heads. | `willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md`:40 | unattested |
-| O2 | - **Black box, white box.** You can see inside a white box. With a black box you only see what goes in and what comes out. Most trust problems come down to which kind you're dealing with. | `willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md`:41 | unattested |
-| O3 | - **Schrödinger's cat.** Schrödinger meant the cat in the box as a joke about how absurd quantum theory gets when you apply it to big things. The box became the most famous part. | `willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md`:42 | unattested |
-| O4 | - **Wittgenstein's beetle.** Everyone has a box with a "beetle" inside, and nobody can look in anyone else's. The word still works between people, even though nobody can compare what's actually in the boxes. | `willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md`:43 | unattested |
-| O5 | - **Nested boxes.** A box inside a box inside a box: Chinese boxes, Russian dolls, a recursion. Each level looks complete until you open it, and the question is always where it stops. | `willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md`:44 | unattested |
-| P1 | - **The shipping container.** Malcom McLean's standard steel box in the 1950s cut the cost of loading a ship dramatically. The box itself wasn't clever. The point was that every port, crane, truck and train agreed on its size. Marc Levinson's *The Box* tells the story. | `willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md`:48 | unattested |
-| P2 | - **Cornell's shadow boxes.** Joseph Cornell made art from small glass-fronted boxes of found objects, birds and maps. Whole worlds, kept small on purpose. | `willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md`:49 | unattested |
-| P3 | - **The bento.** A meal in one box, divided into compartments, so each thing keeps its place and the whole still travels as one. | `willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md`:50 | unattested |
-| P4 | - **The box model.** On a web page, every element is a box: its content, then padding, then a border, then a margin. Layout is boxes arranged next to and inside other boxes. | `willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md`:51 | unattested |
-| P5 | - **The sandbox.** A box for running something you don't trust yet. It can do what it likes inside, and nothing it does gets out without permission. | `willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md`:52 | unattested |
-| Q1 | - **Label the sides.** Write on the side of each box, not the top. Stacked boxes hide their tops. | `willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md`:56 | unattested |
-| Q2 | - **The open-first box.** Pack one box with sheets, a towel, toilet paper, a charger, the coffee setup and a box cutter, and ride with it, not in the truck. | `willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md`:57 | unattested |
-| Q3 | - **Heavy things in small boxes.** Books and dishes go in small boxes, and light bulky things in big ones. A big box of books is a box nobody can lift. | `willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md`:58 | unattested |
-| Q4 | - **Photograph the back.** Before unplugging electronics, take a photo of where every cable goes. | `willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md`:59 | unattested |
-| Q5 | - **Heaviest first.** Load the heaviest boxes first, low and against the front wall of the truck, and the lightest last, on top. | `willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md`:60 | unattested |
+| Cell | Rule | Source | Share | Standing |
+|---|---|---|---|---|
+| N1 | - **The box tree.** "Box" comes from the box tree (Latin *buxus*). Its wood is dense and fine-grained, small containers were carved from it, and the container took the tree's name. The box was a branch first. | `willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md`:32 | 6.06% | unattested |
+| N2 | - **Pandora's jar.** In Hesiod, Pandora opens a *pithos*, a large storage jar. Erasmus rendered it as *pyxis*, a box, in the 1500s, and the box stuck. Hope stays inside. | `willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md`:33 | 4.92% | unattested |
+| N3 | - **Boxing Day.** One common account: the day after Christmas, when "Christmas boxes" of money or gifts went to servants and tradespeople. The origin is debated. | `willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md`:34 | 4.69% | unattested |
+| N4 | - **Out of the box.** Software or a device that works "out of the box" needs nothing added before it's used. The phrase praises a box that's already complete when you open it. | `willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md`:35 | 5.10% | unattested |
+| N5 | - **Think outside the box.** This probably comes from the nine-dots puzzle: join a 3 × 3 grid of dots with four straight lines without lifting the pen. You can only do it if your lines run past the edge of the grid. | `willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md`:36 | 6.26% | unattested |
+| O1 | - **The pigeonhole principle.** If there are more things than boxes, at least one box holds two. It sounds obvious, but it proves surprising results, like the fact that two people in a large city have exactly the same number of hairs on their heads. | `willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md`:40 | 7.25% | unattested |
+| O2 | - **Black box, white box.** You can see inside a white box. With a black box you only see what goes in and what comes out. Most trust problems come down to which kind you're dealing with. | `willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md`:41 | 5.45% | unattested |
+| O3 | - **Schrödinger's cat.** Schrödinger meant the cat in the box as a joke about how absurd quantum theory gets when you apply it to big things. The box became the most famous part. | `willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md`:42 | 5.18% | unattested |
+| O4 | - **Wittgenstein's beetle.** Everyone has a box with a "beetle" inside, and nobody can look in anyone else's. The word still works between people, even though nobody can compare what's actually in the boxes. | `willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md`:43 | 6.03% | unattested |
+| O5 | - **Nested boxes.** A box inside a box inside a box: Chinese boxes, Russian dolls, a recursion. Each level looks complete until you open it, and the question is always where it stops. | `willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md`:44 | 5.33% | unattested |
+| P1 | - **The shipping container.** Malcom McLean's standard steel box in the 1950s cut the cost of loading a ship dramatically. The box itself wasn't clever. The point was that every port, crane, truck and train agreed on its size. Marc Levinson's *The Box* tells the story. | `willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md`:48 | 7.83% | unattested |
+| P2 | - **Cornell's shadow boxes.** Joseph Cornell made art from small glass-fronted boxes of found objects, birds and maps. Whole worlds, kept small on purpose. | `willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md`:49 | 4.51% | unattested |
+| P3 | - **The bento.** A meal in one box, divided into compartments, so each thing keeps its place and the whole still travels as one. | `willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md`:50 | 3.73% | unattested |
+| P4 | - **The box model.** On a web page, every element is a box: its content, then padding, then a border, then a margin. Layout is boxes arranged next to and inside other boxes. | `willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md`:51 | 5.04% | unattested |
+| P5 | - **The sandbox.** A box for running something you don't trust yet. It can do what it likes inside, and nothing it does gets out without permission. | `willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md`:52 | 4.31% | unattested |
+| Q1 | - **Label the sides.** Write on the side of each box, not the top. Stacked boxes hide their tops. | `willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md`:56 | 2.82% | unattested |
+| Q2 | - **The open-first box.** Pack one box with sheets, a towel, toilet paper, a charger, the coffee setup and a box cutter, and ride with it, not in the truck. | `willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md`:57 | 4.54% | unattested |
+| Q3 | - **Heavy things in small boxes.** Books and dishes go in small boxes, and light bulky things in big ones. A big box of books is a box nobody can lift. | `willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md`:58 | 4.40% | unattested |
+| Q4 | - **Photograph the back.** Before unplugging electronics, take a photo of where every cable goes. | `willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md`:59 | 2.82% | unattested |
+| Q5 | - **Heaviest first.** Load the heaviest boxes first, low and against the front wall of the truck, and the lightest last, on top. | `willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md`:60 | 3.73% | unattested |
 <!-- /cross-table:index -->
+
+
+## Measure
+
+*How much of the grid's text each box holds, by percentage: a cell's size is
+its full copied passage in characters, before the trim, and its share is that
+size over the grid's total. The same map and files always give the same
+numbers. The index's Share column is the same figure per cell. Written by
+`cross_table.py fill --measure`.*
+
+<!-- cross-table:measure -->
+- **Cells:** 20, of which 20 found (100.0%).
+- **Text:** 3434 characters. An even share would be 5.00% per cell.
+- **Trim:** 0 cell(s) cut at 420 characters; the index keeps 100.0% of the source text.
+
+| Row | What it holds | Found | Characters | Share | Largest cell |
+|---|---|---|---|---|---|
+| N | Words and myths | 5/5 | 928 | 27.02% | N5 6.26% |
+| O | Logic and thought | 5/5 | 1004 | 29.24% | O1 7.25% |
+| P | Made things | 5/5 | 873 | 25.42% | P1 7.83% |
+| Q | Moving | 5/5 | 629 | 18.32% | Q2 4.54% |
+
+- **Largest:** P1 7.83%, O1 7.25%, N5 6.26%, N1 6.06%, O4 6.03%.
+- **Smallest:** Q4 2.82%, Q1 2.82%, Q5 3.73%, P3 3.73%, P5 4.31%.
+<!-- /cross-table:measure -->
 
 ---
 

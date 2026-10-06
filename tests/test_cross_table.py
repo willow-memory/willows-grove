@@ -187,3 +187,29 @@ def test_link_checks_every_address_and_copies_labels(tmp_path):
     links.write_text(json.dumps({"links": [{"from": "B1", "to": ["Z9"]}]}))
     with pytest.raises(SystemExit):
         ct.main(["link", str(links), str(doc), "--map", str(a), "--map", str(b)])
+
+
+def test_measure_counts_the_full_passage_by_percentage(tmp_path):
+    (tmp_path / "src.md").write_text("- " + "x" * 498 + "\n- yy\n")
+    p = _map(
+        tmp_path,
+        [
+            _cell("A1", file="src.md", pattern="^- x"),
+            _cell("A2", file="src.md", pattern="^- yy"),
+            _cell("A3"),
+        ],
+    )
+    m = ct.load_map(p)
+    results = ct.resolve(m, tmp_path)
+    assert [r["size"] if "size" in r else 0 for r in results] == [500, 4, 0]
+    report = ct.measure(m, results)
+    assert report.splitlines()[:3] == [
+        "- **Cells:** 3, of which 2 found (66.7%).",
+        "- **Text:** 504 characters. An even share would be 33.33% per cell.",
+        "- **Trim:** 1 cell(s) cut at 420 characters; the index keeps 84.1% of the source text.",
+    ]
+    assert report.splitlines()[-1] == "- **Holding nothing:** A3."
+    assert ct.measure(m, results) == report
+    index = ct.render(m, results, share=True)["index"].splitlines()
+    assert index[0] == "| Cell | Rule | Source | Share | Standing |"
+    assert index[3] == "| A2 | - yy | `src.md`:2 | 0.79% | unattested |"

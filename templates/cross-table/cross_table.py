@@ -13,12 +13,16 @@ bytes. Stdlib only.
     cross_table.py fill MAP DOC [--root DIR] [--with OTHER_MAP ...]
     cross_table.py check MAP [--root DIR] [--with OTHER_MAP ...]
     cross_table.py link LINKS DOC --map MAP [--map MAP ...]
+    cross_table.py measure MAP [DOC] [--root DIR]
 
 `new` writes a blank map; with `--after`, its rows start after the earlier
 grids' last row, so no address is used twice. `--with` makes `check` and
 `fill` refuse a map that shares a row letter with another grid. `link`
 writes a crosswalk between grids: every address is checked against the maps,
-and labels are copied from them. `fill` writes the grid, the row sources and the
+and labels are copied from them. `measure` reports how much of the grid's
+text each box holds, by percentage (with DOC, it writes that between
+`<!-- cross-table:measure -->` markers); `fill --measure` also adds a Share
+column to the index. `fill` writes the grid, the row sources and the
 index into DOC between `<!-- cross-table:… -->` markers (creating DOC if it
 does not exist) and leaves everything else in DOC alone. `check` prints
 every cell's result and exits 1 if any cell is `not found`.
@@ -214,6 +218,7 @@ def resolve(m: dict, root: Path) -> list[dict]:
             res.update(rule="*not found*", source=f"`{f}`", state="not_found")
         else:
             line_no, text = got
+            res["size"] = len(text)
             if len(text) > CAP:
                 text = text[:CAP].rsplit(" ", 1)[0] + " …"
             res.update(rule=text, source=f"`{f}`:{line_no}", state="found")
@@ -228,7 +233,54 @@ def esc(s: str) -> str:
     return s.replace("|", "\\|")
 
 
-def render(m: dict, results: list[dict]) -> dict[str, str]:
+def measure(m: dict, results: list[dict]) -> str:
+    """How much of the grid's text each box holds, by percentage. A cell's
+    size is its full copied passage in characters (whitespace collapsed,
+    before the trim); a cell that isn't `found` is 0. Same map, same files,
+    same numbers."""
+    sizes = {r["cell"]: r.get("size", 0) for r in results}
+    total = sum(sizes.values())
+    n, found = len(results), sum(r["state"] == "found" for r in results)
+    pct = (lambda v: f"{v / total:.2%}") if total else (lambda v: "—")
+    kept = sum(min(v, CAP) for v in sizes.values())
+    trimmed = sum(v > CAP for v in sizes.values())
+    out = [
+        f"- **Cells:** {n}, of which {found} found ({found / n:.1%}).",
+        f"- **Text:** {total} characters. An even share would be {1 / n:.2%} per cell.",
+        f"- **Trim:** {trimmed} cell(s) cut at {CAP} characters; the index keeps "
+        + (f"{kept / total:.1%}" if total else "—")
+        + " of the source text.",
+        "",
+        "| Row | What it holds | Found | Characters | Share | Largest cell |",
+        "|---|---|---|---|---|---|",
+    ]
+    for r in m["rows"]:
+        mine = {c: v for c, v in sizes.items() if c[0] == r["row"]}
+        row_total = sum(mine.values())
+        big = max(mine, key=lambda c: (mine[c], -int(c[1:]))) if row_total else "—"
+        hit = sum(by["state"] == "found" for by in results if by["cell"] in mine)
+        out.append(
+            f"| {r['row']} | {esc(r['title'])} | {hit}/{len(mine)} | {row_total} "
+            f"| {pct(row_total)} | {big + ' ' + pct(mine[big]) if row_total else '—'} |"
+        )
+    order = sorted((c for c in sizes if sizes[c]), key=lambda c: (-sizes[c], c))
+    if order:
+        out += [
+            "",
+            "- **Largest:** "
+            + ", ".join(f"{c} {pct(sizes[c])}" for c in order[:5])
+            + ".",
+            "- **Smallest:** "
+            + ", ".join(f"{c} {pct(sizes[c])}" for c in order[::-1][:5])
+            + ".",
+        ]
+    empty = [c for c in sizes if not sizes[c]]
+    if empty:
+        out.append("- **Holding nothing:** " + ", ".join(empty) + ".")
+    return "\n".join(out)
+
+
+def render(m: dict, results: list[dict], share: bool = False) -> dict[str, str]:
     cols = m["_cols"]
     by = {r["cell"]: r for r in results}
     grid = ["| | " + " | ".join(map(str, cols)) + " |", "|---" * (len(cols) + 1) + "|"]
@@ -243,11 +295,20 @@ def render(m: dict, results: list[dict]) -> dict[str, str]:
     src += [
         f"| {r['row']} | {esc(r['title'])} | {esc(r['source'])} |" for r in m["rows"]
     ]
-    idx = ["| Cell | Rule | Source | Standing |", "|---|---|---|---|"]
-    idx += [
-        f"| {r['cell']} | {esc(r['rule'])} | {esc(r['source'])} | {r['standing']} |"
-        for r in results
-    ]
+    total = sum(r.get("size", 0) for r in results)
+    if share:
+        idx = ["| Cell | Rule | Source | Share | Standing |", "|---|---|---|---|---|"]
+        idx += [
+            f"| {r['cell']} | {esc(r['rule'])} | {esc(r['source'])} "
+            f"| {(r.get('size', 0) / total if total else 0):.2%} | {r['standing']} |"
+            for r in results
+        ]
+    else:
+        idx = ["| Cell | Rule | Source | Standing |", "|---|---|---|---|"]
+        idx += [
+            f"| {r['cell']} | {esc(r['rule'])} | {esc(r['source'])} | {r['standing']} |"
+            for r in results
+        ]
     return {"grid": "\n".join(grid), "sources": "\n".join(src), "index": "\n".join(idx)}
 
 
@@ -346,6 +407,15 @@ def main(argv: list[str] | None = None) -> int:
         default=[],
         help="another grid's map; refuse if any row letter is shared",
     )
+    f.add_argument(
+        "--measure",
+        action="store_true",
+        help="add a Share column to the index and write the measure section",
+    )
+    me = sub.add_parser("measure")
+    me.add_argument("map", type=Path)
+    me.add_argument("doc", type=Path, nargs="?")
+    me.add_argument("--root", type=Path)
     k = sub.add_parser("link")
     k.add_argument("links", type=Path)
     k.add_argument("doc", type=Path)
@@ -380,7 +450,10 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     m = load_map(a.map)
-    shared = sorted(rows_of(m) & set().union(*(rows_of(load_map(o)) for o in a.others)))
+    shared = sorted(
+        rows_of(m)
+        & set().union(*(rows_of(load_map(o)) for o in getattr(a, "others", [])))
+    )
     if shared:
         raise SystemExit(
             f"rows {', '.join(shared)} are already used by another grid; "
@@ -392,6 +465,19 @@ def main(argv: list[str] | None = None) -> int:
         s: sum(r["state"] == s for r in results)
         for s in ("found", "silent", "unreachable", "not_found")
     }
+    if a.cmd == "measure":
+        report = measure(m, results)
+        if a.doc:
+            doc = (
+                a.doc.read_text(encoding="utf-8")
+                if a.doc.exists()
+                else f"# {m.get('title') or 'Cross table'}\n"
+            )
+            a.doc.write_text(splice_one(doc, "measure", report), encoding="utf-8")
+            print(f"measured {a.doc}")
+        else:
+            print(report)
+        return 0
     if a.cmd == "check":
         for r in results:
             print(
@@ -405,7 +491,10 @@ def main(argv: list[str] | None = None) -> int:
         if a.doc.exists()
         else f"# {m.get('title') or 'Cross table'}\n"
     )
-    a.doc.write_text(splice(doc, render(m, results)), encoding="utf-8")
+    doc = splice(doc, render(m, results, share=a.measure))
+    if a.measure:
+        doc = splice_one(doc, "measure", measure(m, results))
+    a.doc.write_text(doc, encoding="utf-8")
     print(f"filled {a.doc}: " + ", ".join(f"{k} {v}" for k, v in counts.items()))
     return 0
 

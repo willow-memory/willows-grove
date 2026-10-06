@@ -76,6 +76,26 @@ python3 templates/cross-table/cross_table.py fill my-map.json my-table.md
   and notes. A new document gets the three sections appended.
 - `new` refuses to overwrite a map that already exists.
 
+## Measure
+
+```sh
+python3 templates/cross-table/cross_table.py measure my-map.json            # print the report
+python3 templates/cross-table/cross_table.py fill my-map.json my-table.md --measure
+```
+
+How much of the grid's text each box holds, by percentage. A cell's size is
+its full copied passage in characters (whitespace collapsed, before the
+trim), and its share is that size over the grid's total. A cell that isn't
+`found` holds 0%. The report covers how many cells were found, the total
+against an even share, how much the trim cut, each row's share and its
+largest cell, the five largest and smallest cells, and any cell holding
+nothing. `fill --measure` also adds a Share column to the index and writes
+the report between `<!-- cross-table:measure -->` markers. The same map and
+the same files always give the same numbers.
+
+A fat cell is often several rules sharing one box, and a candidate to split
+in the next grid. A thin cell is a label with a line number behind it.
+
 ## Crosswalks between grids
 
 ```sh
