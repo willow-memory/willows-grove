@@ -18,6 +18,7 @@ is the one copy to read; these files are not the law.
 | `CONSTITUTION.provenance.md` | Still the record of what the neutral proposal moved out of 0.7's text |
 | `CONSTITUTION.binding-table.md` | Not brought in: Draft 0.8 replaced the enforcement table with a generated coverage report (`governance/scripts/const_coverage.py`) |
 | `in-box-terms-scan.md` | The 0.7 scan that motivated the neutral proposal; kept as evidence |
+| `amendments-2026-10-06-seat.md` | **Not in Draft 0.9.** Four proposals from the seat against 0.9, marked *interested* where they bear on agents: VIII.4 (an interested proposal says so), an IV.1 addition (a summary is not a source), V.10 (unknown is a lawful answer), and a note that timeouts need no new clause. Unratified |
 
 The two `CONSTITUTION.*.proposed.md` files still carry `CONST-*` Article
 headings, so the cross-reference index (`onescript/xref.py`) reports those ids
