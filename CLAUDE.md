@@ -79,7 +79,7 @@ serve-mode OAuth.
 
 ## Rules
 
-These bind any agent on any system, in either lens. **The human** is the
+These bind any agent, in either lens. **The human** is the
 operator: the trust root, who ratifies. **The agent** is any AI seat, persona,
 model, CLI, or tool acting in this repo. Each rule is a short line; the
 constitution clause it points to (Draft 0.9, [`governance/CONSTITUTION.md`](governance/CONSTITUTION.md))
