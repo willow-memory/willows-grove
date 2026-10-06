@@ -19,6 +19,7 @@ is yours to choose.
 | [`example/rules-map-2026-10-06.json`](example/rules-map-2026-10-06.json) | The worked example: the map behind [`rules-cross-table-2026-10-06.md`](../../docs/design/one-box/rules-cross-table-2026-10-06.md), 13 × 13, 168 cells found and 1 silent. |
 | [`example/boxes-outside-map-2026-10-06.json`](example/boxes-outside-map-2026-10-06.json) | The second example: a 4 × 5 grid (rows N–Q, after the first grid's A–M) whose source is a notes section inside the same document ([`boxes-outside-2026-10-06.md`](../../docs/design/one-box/boxes-outside-2026-10-06.md)). It shows that the source can be the document itself, as long as the notes are marked for what they are. |
 | [`example/crosswalk-2026-10-06.json`](example/crosswalk-2026-10-06.json) | The third example: a crosswalk between the two grids, written by `link` into [`crosswalk-2026-10-06.md`](../../docs/design/one-box/crosswalk-2026-10-06.md). |
+| [`example/rules-snapshot-2026-10-06.json`](example/rules-snapshot-2026-10-06.json), [`example/boxes-outside-snapshot-2026-10-06.json`](example/boxes-outside-snapshot-2026-10-06.json) | Each grid's measure on 2026-10-06: every box's size and the sha256 of its passage. Run `measure --against` on one to see which boxes have changed since. |
 
 ## The four parts
 
@@ -93,8 +94,21 @@ nothing. `fill --measure` also adds a Share column to the index and writes
 the report between `<!-- cross-table:measure -->` markers. The same map and
 the same files always give the same numbers.
 
-A fat cell is often several rules sharing one box, and a candidate to split
-in the next grid. A thin cell is a label with a line number behind it.
+The report goes further than shares:
+
+| Part | What it says |
+|---|---|
+| **Evenness** | A Gini figure for the grid: 0 means every box holds the same, and 1 means one box holds everything. |
+| **Fat and thin** | A fat box holds at least 3× an even share. It's often several rules sharing one box, and a candidate to split in the next grid. A thin box holds at most a quarter of an even share: a label with a line number behind it. |
+| **Sources** | How much of each source file the grid draws on: distinct passages over the file's characters. Tables this script generated inside a document don't count, so a document that is its own source is measured by its notes. |
+| **Across grids** | With `--with`, each grid's part of all the text. |
+| **Since the snapshot** | `--snapshot NEW.json` saves each box's size and the sha256 of its full passage. A later `--against OLD.json` names exactly which boxes changed (with the change in characters), which are newly found, and which are no longer found. A snapshot is never overwritten. |
+
+```sh
+python3 templates/cross-table/cross_table.py measure my-map.json --snapshot my-snapshot.json
+# … the sources change …
+python3 templates/cross-table/cross_table.py measure my-map.json --against my-snapshot.json
+```
 
 ## Crosswalks between grids
 

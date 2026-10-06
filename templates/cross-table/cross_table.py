@@ -13,7 +13,8 @@ bytes. Stdlib only.
     cross_table.py fill MAP DOC [--root DIR] [--with OTHER_MAP ...]
     cross_table.py check MAP [--root DIR] [--with OTHER_MAP ...]
     cross_table.py link LINKS DOC --map MAP [--map MAP ...]
-    cross_table.py measure MAP [DOC] [--root DIR]
+    cross_table.py measure MAP [DOC] [--root DIR] [--with OTHER_MAP ...]
+                           [--snapshot NEW.json] [--against OLD.json]
 
 `new` writes a blank map; with `--after`, its rows start after the earlier
 grids' last row, so no address is used twice. `--with` makes `check` and
@@ -35,6 +36,7 @@ take in `line` mode) and `note` (why a cell with no source is silent).
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import string
@@ -219,6 +221,8 @@ def resolve(m: dict, root: Path) -> list[dict]:
         else:
             line_no, text = got
             res["size"] = len(text)
+            res["file"] = f
+            res["sha256"] = hashlib.sha256(text.encode("utf-8")).hexdigest()
             if len(text) > CAP:
                 text = text[:CAP].rsplit(" ", 1)[0] + " …"
             res.update(rule=text, source=f"`{f}`:{line_no}", state="found")
@@ -233,11 +237,44 @@ def esc(s: str) -> str:
     return s.replace("|", "\\|")
 
 
-def measure(m: dict, results: list[dict]) -> str:
+FAT, THIN = 3.0, 0.25
+
+
+def gini(values: list[int]) -> float:
+    """0 when every box holds the same; towards 1 when one box holds it all."""
+    xs, n = sorted(values), len(values)
+    total = sum(xs)
+    if not n or not total:
+        return 0.0
+    return 2 * sum(i * x for i, x in enumerate(xs, 1)) / (n * total) - (n + 1) / n
+
+
+def snapshot(m: dict, results: list[dict]) -> dict:
+    """What `measure --snapshot` saves: each cell's size and the sha256 of its
+    full passage, so a later run can say exactly which boxes changed."""
+    return {
+        "title": m.get("title", ""),
+        "cells": {
+            r["cell"]: {"size": r.get("size", 0), "sha256": r.get("sha256", "")}
+            for r in results
+        },
+    }
+
+
+def measure(
+    m: dict,
+    results: list[dict],
+    root: Path | None = None,
+    others: list[tuple[str, list[dict]]] | None = None,
+    against: dict | None = None,
+) -> str:
     """How much of the grid's text each box holds, by percentage. A cell's
     size is its full copied passage in characters (whitespace collapsed,
-    before the trim); a cell that isn't `found` is 0. Same map, same files,
-    same numbers."""
+    before the trim); a cell that isn't `found` is 0. Then: how evenly the
+    text is spread, which boxes are fat or thin, how much of each source the
+    grid draws on (with `root`), each grid's part of the whole (with
+    `others`), and which boxes changed since a snapshot (with `against`).
+    Same map, same files, same numbers."""
     sizes = {r["cell"]: r.get("size", 0) for r in results}
     total = sum(sizes.values())
     n, found = len(results), sum(r["state"] == "found" for r in results)
@@ -277,6 +314,99 @@ def measure(m: dict, results: list[dict]) -> str:
     empty = [c for c in sizes if not sizes[c]]
     if empty:
         out.append("- **Holding nothing:** " + ", ".join(empty) + ".")
+
+    even = total / n if n else 0
+    fat = [c for c in sizes if even and sizes[c] >= FAT * even]
+    thin = [c for c in sizes if even and 0 < sizes[c] <= THIN * even]
+    out += [
+        "",
+        "**Evenness.** Gini "
+        f"{gini(list(sizes.values())):.2f} (0 means every box holds the same, "
+        "1 means one box holds everything).",
+        f"- **Fat** (at least {FAT:g}× an even share; often several rules in one "
+        "box, a candidate to split): " + (", ".join(fat) or "none") + ".",
+        f"- **Thin** (at most {THIN:g}× an even share; a label with a line "
+        "behind it): " + (", ".join(thin) or "none") + ".",
+    ]
+
+    if root is not None:
+        drawn: dict[str, dict[str, int]] = {}
+        cells: dict[str, int] = {}
+        for r in results:
+            if r["state"] == "found":
+                drawn.setdefault(r["file"], {})[r["sha256"]] = r["size"]
+                cells[r["file"]] = cells.get(r["file"], 0) + 1
+        out += [
+            "",
+            "**Sources.** How much of each source file the grid draws on "
+            "(distinct passages over the file's characters, whitespace collapsed, "
+            "not counting any tables this script generated in it).",
+            "",
+            "| File | Cells | Drawn | File | Coverage |",
+            "|---|---|---|---|---|",
+        ]
+        for f in sorted(drawn):
+            text = (root / f).read_text(encoding="utf-8")
+            # A document can be its own source; its generated tables aren't.
+            text = re.sub(
+                r"<!-- cross-table:(\w+) -->.*?<!-- /cross-table:\1 -->",
+                "",
+                text,
+                flags=re.S,
+            )
+            size = len(flat(text))
+            got = sum(drawn[f].values())
+            out.append(
+                f"| `{f}` | {cells[f]} | {got} | {size} | {got / size if size else 0:.1%} |"
+            )
+
+    if others:
+        grids = [(m.get("title") or "this grid", results)] + others
+        everything = sum(r.get("size", 0) for _, res in grids for r in res)
+        out += [
+            "",
+            "**Across grids.** Each grid's part of all the text.",
+            "",
+            "| Grid | Cells | Characters | Share of all |",
+            "|---|---|---|---|",
+        ]
+        for title, res in grids:
+            chars = sum(r.get("size", 0) for r in res)
+            share = f"{chars / everything:.1%}" if everything else "—"
+            out.append(f"| {esc(title)} | {len(res)} | {chars} | {share} |")
+
+    if against is not None:
+        then = against.get("cells", {})
+        now = snapshot(m, results)["cells"]
+        changed = [
+            c
+            for c in now
+            if c in then
+            and then[c]["sha256"]
+            and now[c]["sha256"]
+            and then[c]["sha256"] != now[c]["sha256"]
+        ]
+        new = [c for c in now if now[c]["sha256"] and not then.get(c, {}).get("sha256")]
+        gone = [
+            c
+            for c in then
+            if then[c].get("sha256") and not now.get(c, {}).get("sha256")
+        ]
+        out += ["", "**Since the snapshot.** Compared by each passage's sha256."]
+        if not (changed or new or gone):
+            out.append("- No box changed.")
+        if changed:
+            out.append(
+                "- **Changed:** "
+                + ", ".join(
+                    f"{c} ({now[c]['size'] - then[c]['size']:+d})" for c in changed
+                )
+                + "."
+            )
+        if new:
+            out.append("- **Newly found:** " + ", ".join(new) + ".")
+        if gone:
+            out.append("- **No longer found:** " + ", ".join(gone) + ".")
     return "\n".join(out)
 
 
@@ -416,6 +546,18 @@ def main(argv: list[str] | None = None) -> int:
     me.add_argument("map", type=Path)
     me.add_argument("doc", type=Path, nargs="?")
     me.add_argument("--root", type=Path)
+    me.add_argument(
+        "--with",
+        dest="others",
+        type=Path,
+        action="append",
+        default=[],
+        help="another grid's map; adds each grid's part of all the text",
+    )
+    me.add_argument(
+        "--snapshot", type=Path, help="save each box's size and sha256 here"
+    )
+    me.add_argument("--against", type=Path, help="an earlier snapshot to compare with")
     k = sub.add_parser("link")
     k.add_argument("links", type=Path)
     k.add_argument("doc", type=Path)
@@ -465,8 +607,28 @@ def main(argv: list[str] | None = None) -> int:
         s: sum(r["state"] == s for r in results)
         for s in ("found", "silent", "unreachable", "not_found")
     }
+    others = [
+        (
+            mo.get("title") or o.stem,
+            resolve(mo, (o.parent / mo.get("root", ".")).resolve()),
+        )
+        for o in getattr(a, "others", [])
+        for mo in [load_map(o)]
+    ]
     if a.cmd == "measure":
-        report = measure(m, results)
+        against = (
+            json.loads(a.against.read_text(encoding="utf-8")) if a.against else None
+        )
+        report = measure(m, results, root, others, against)
+        if a.snapshot:
+            if a.snapshot.exists():
+                raise SystemExit(
+                    f"{a.snapshot} exists; a snapshot is never overwritten"
+                )
+            a.snapshot.write_text(
+                json.dumps(snapshot(m, results), indent=1, ensure_ascii=False) + "\n",
+                encoding="utf-8",
+            )
         if a.doc:
             doc = (
                 a.doc.read_text(encoding="utf-8")
@@ -493,7 +655,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     doc = splice(doc, render(m, results, share=a.measure))
     if a.measure:
-        doc = splice_one(doc, "measure", measure(m, results))
+        doc = splice_one(doc, "measure", measure(m, results, root, others))
     a.doc.write_text(doc, encoding="utf-8")
     print(f"filled {a.doc}: " + ", ".join(f"{k} {v}" for k, v in counts.items()))
     return 0

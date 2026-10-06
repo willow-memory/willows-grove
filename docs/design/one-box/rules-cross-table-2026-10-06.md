@@ -371,8 +371,11 @@ cells `source silent`, conflicts found, and documents moved.
 *How much of the grid's text each box holds, by percentage: a cell's size is
 its full copied passage in characters, before the trim, and its share is that
 size over the grid's total. The same map and files always give the same
-numbers. The index's Share column is the same figure per cell. Written by
-`cross_table.py fill --measure`.*
+numbers. The index's Share column is the same figure per cell. It also says
+how evenly the text is spread, which boxes are fat or thin, how much of each
+source the grid draws on, and each grid's part of all the text. Written by
+`cross_table.py fill --measure`. A snapshot of this measure is saved beside
+the map, so `measure --against` can show which boxes change later.*
 
 <!-- cross-table:measure -->
 - **Cells:** 169, of which 168 found (99.4%).
@@ -398,6 +401,36 @@ numbers. The index's Share column is the same figure per cell. Written by
 - **Largest:** G5 3.41%, K10 2.62%, L6 1.73%, J2 1.55%, J9 1.46%.
 - **Smallest:** F12 0.08%, F7 0.08%, F8 0.10%, M6 0.11%, F10 0.12%.
 - **Holding nothing:** G6.
+
+**Evenness.** Gini 0.34 (0 means every box holds the same, 1 means one box holds everything).
+- **Fat** (at least 3× an even share; often several rules in one box, a candidate to split): G5, K10.
+- **Thin** (at most 0.25× an even share; a label with a line behind it): E7, F7, F8, F10, F12, M6.
+
+**Sources.** How much of each source file the grid draws on (distinct passages over the file's characters, whitespace collapsed, not counting any tables this script generated in it).
+
+| File | Cells | Drawn | File | Coverage |
+|---|---|---|---|---|
+| `willow-bot/sigh.py` | 1 | 140 | 1823 | 7.7% |
+| `willow-bot/tests/test_box_rule.py` | 4 | 346 | 9904 | 3.5% |
+| `willow-bot/willow_bot/paths.py` | 8 | 1290 | 3959 | 32.6% |
+| `willow-mcp/CONTRIBUTING.md` | 1 | 156 | 6691 | 2.3% |
+| `willow-mcp/skills/worktree.md` | 5 | 519 | 3525 | 14.7% |
+| `willows-grove/CLAUDE.md` | 1 | 929 | 5838 | 15.9% |
+| `willows-grove/docs/INVARIANTS.md` | 18 | 4476 | 27826 | 16.1% |
+| `willows-grove/docs/design/forge-convergence.md` | 13 | 2048 | 48083 | 4.3% |
+| `willows-grove/docs/design/one-box/README.md` | 38 | 7096 | 47175 | 15.0% |
+| `willows-grove/docs/design/one-script/README.md` | 31 | 4694 | 41757 | 11.2% |
+| `willows-grove/docs/design/one-script/next-pile.md` | 22 | 2391 | 103971 | 2.3% |
+| `willows-grove/docs/design/the-forge-shape.md` | 12 | 1456 | 40254 | 3.6% |
+| `willows-grove/docs/design/willow-bot-box-spec.md` | 13 | 1491 | 16825 | 8.9% |
+| `willows-grove/governance/architecture/superseded/README.md` | 1 | 218 | 608 | 35.9% |
+
+**Across grids.** Each grid's part of all the text.
+
+| Grid | Cells | Characters | Share of all |
+|---|---|---|---|
+| Rules cross table: boxes and branches (2026-10-06) | 169 | 27250 | 88.8% |
+| Boxes, from outside the system (2026-10-06) | 20 | 3434 | 11.2% |
 <!-- /cross-table:measure -->
 
 ---

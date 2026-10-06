@@ -208,8 +208,65 @@ def test_measure_counts_the_full_passage_by_percentage(tmp_path):
         "- **Text:** 504 characters. An even share would be 33.33% per cell.",
         "- **Trim:** 1 cell(s) cut at 420 characters; the index keeps 84.1% of the source text.",
     ]
-    assert report.splitlines()[-1] == "- **Holding nothing:** A3."
+    assert "- **Holding nothing:** A3." in report.splitlines()
     assert ct.measure(m, results) == report
     index = ct.render(m, results, share=True)["index"].splitlines()
     assert index[0] == "| Cell | Rule | Source | Share | Standing |"
     assert index[3] == "| A2 | - yy | `src.md`:2 | 0.79% | unattested |"
+
+
+def test_gini_is_zero_when_even_and_rises_when_one_box_holds_it_all():
+    assert ct.gini([5, 5, 5, 5]) == 0
+    assert ct.gini([0, 0, 0, 0]) == 0
+    assert ct.gini([0, 0, 0, 12]) == 0.75
+
+
+def test_measure_flags_fat_and_thin_and_covers_sources(tmp_path):
+    (tmp_path / "src.md").write_text(
+        "- " + "x" * 98 + "\n- y\n- zz\n- ww\n\n"
+        "<!-- cross-table:grid -->\nnot counted\n<!-- /cross-table:grid -->\n"
+    )
+    p = _map(
+        tmp_path,
+        [
+            _cell(f"A{i}", file="src.md", pattern=pat)
+            for i, pat in enumerate(["^- x", "^- y", "^- zz", "^- ww"], 1)
+        ],
+    )
+    m = ct.load_map(p)
+    report = ct.measure(m, ct.resolve(m, tmp_path), tmp_path).splitlines()
+    assert (
+        "- **Fat** (at least 3× an even share; often several rules in one box, a candidate to split): A1."
+        in report
+    )
+    assert (
+        "- **Thin** (at most 0.25× an even share; a label with a line behind it): A2, A3, A4."
+        in report
+    )
+    assert "| `src.md` | 4 | 111 | 114 | 97.4% |" in report
+
+
+def test_a_snapshot_names_exactly_which_boxes_changed(tmp_path):
+    src = tmp_path / "src.md"
+    src.write_text("- one\n- two\n")
+    p = _map(
+        tmp_path,
+        [
+            _cell("A1", file="src.md", pattern="^- one"),
+            _cell("A2", file="src.md", pattern="^- two"),
+            _cell("A3", file="src.md", pattern="^- three"),
+        ],
+    )
+    snap = tmp_path / "snap.json"
+    ct.main(["measure", str(p), "--snapshot", str(snap)])
+    with pytest.raises(SystemExit):
+        ct.main(["measure", str(p), "--snapshot", str(snap)])
+    src.write_text("- one, longer\n- three\n")
+    m = ct.load_map(p)
+    then = json.loads(snap.read_text())
+    report = ct.measure(m, ct.resolve(m, tmp_path), against=then).splitlines()
+    assert report[-3:] == [
+        "- **Changed:** A1 (+8).",
+        "- **Newly found:** A3.",
+        "- **No longer found:** A2.",
+    ]

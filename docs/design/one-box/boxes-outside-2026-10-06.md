@@ -114,8 +114,11 @@ last one stopped. Rows R onward are free for anyone to add.
 *How much of the grid's text each box holds, by percentage: a cell's size is
 its full copied passage in characters, before the trim, and its share is that
 size over the grid's total. The same map and files always give the same
-numbers. The index's Share column is the same figure per cell. Written by
-`cross_table.py fill --measure`.*
+numbers. The index's Share column is the same figure per cell. It also says
+how evenly the text is spread, which boxes are fat or thin, how much of each
+source the grid draws on, and each grid's part of all the text. Written by
+`cross_table.py fill --measure`. A snapshot of this measure is saved beside
+the map, so `measure --against` can show which boxes change later.*
 
 <!-- cross-table:measure -->
 - **Cells:** 20, of which 20 found (100.0%).
@@ -131,6 +134,23 @@ numbers. The index's Share column is the same figure per cell. Written by
 
 - **Largest:** P1 7.83%, O1 7.25%, N5 6.26%, N1 6.06%, O4 6.03%.
 - **Smallest:** Q4 2.82%, Q1 2.82%, Q5 3.73%, P3 3.73%, P5 4.31%.
+
+**Evenness.** Gini 0.14 (0 means every box holds the same, 1 means one box holds everything).
+- **Fat** (at least 3× an even share; often several rules in one box, a candidate to split): none.
+- **Thin** (at most 0.25× an even share; a label with a line behind it): none.
+
+**Sources.** How much of each source file the grid draws on (distinct passages over the file's characters, whitespace collapsed, not counting any tables this script generated in it).
+
+| File | Cells | Drawn | File | Coverage |
+|---|---|---|---|---|
+| `willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md` | 20 | 3434 | 5623 | 61.1% |
+
+**Across grids.** Each grid's part of all the text.
+
+| Grid | Cells | Characters | Share of all |
+|---|---|---|---|
+| Boxes, from outside the system (2026-10-06) | 20 | 3434 | 11.2% |
+| Rules cross table: boxes and branches (2026-10-06) | 169 | 27250 | 88.8% |
 <!-- /cross-table:measure -->
 
 ---
