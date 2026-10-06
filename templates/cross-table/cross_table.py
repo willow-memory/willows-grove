@@ -57,15 +57,39 @@ SECTIONS = ("grid", "sources", "index")
 # ── the map ──────────────────────────────────────────────────────────────────
 
 
+def row_index(label: str) -> int:
+    """A=0 … Z=25, AA=26, AB=27 …: rows run on past Z the way spreadsheet
+    columns do, so an address still names one box across every grid."""
+    if not re.fullmatch(r"[A-Z]+", label or ""):
+        raise SystemExit(f"{label!r} is not a row label (A–Z, then AA, AB …)")
+    n = 0
+    for ch in label:
+        n = n * 26 + string.ascii_uppercase.index(ch) + 1
+    return n - 1
+
+
+def row_label(i: int) -> str:
+    out, n = "", i + 1
+    while n:
+        n, r = divmod(n - 1, 26)
+        out = string.ascii_uppercase[r] + out
+    return out
+
+
+def split_cell(cell: str) -> tuple[str, int]:
+    m = re.fullmatch(r"([A-Z]+)(\d+)", cell)
+    if not m:
+        raise SystemExit(f"{cell!r} is not a cell address (a row label, then a number)")
+    return m[1], int(m[2])
+
+
 def blank_map(rows: int, cols: int, title: str, start: str = "A") -> dict:
-    """A blank grid. `start` is its first row letter: a new grid starts where
+    """A blank grid. `start` is its first row label: a new grid starts where
     the last one stopped, so an address names one box across every grid."""
-    first = string.ascii_uppercase.find(start.upper()) if len(start) == 1 else -1
-    if first < 0 or rows < 1 or first + rows > 26 or cols < 1:
-        raise SystemExit(
-            "rows must fit in A–Z from --start, and cols must be at least 1"
-        )
-    letters = string.ascii_uppercase[first : first + rows]
+    first = row_index(start.upper())
+    if rows < 1 or cols < 1:
+        raise SystemExit("rows and cols must be at least 1")
+    letters = [row_label(first + k) for k in range(rows)]
     return {
         "title": title,
         "root": ".",
@@ -88,7 +112,7 @@ def blank_map(rows: int, cols: int, title: str, start: str = "A") -> dict:
 def load_map(path: Path) -> dict:
     m = json.loads(path.read_text(encoding="utf-8"))
     rows = [r["row"] for r in m["rows"]]
-    cols = sorted({int(c["cell"][1:]) for c in m["cells"]})
+    cols = sorted({split_cell(c["cell"])[1] for c in m["cells"]})
     want = {f"{r}{c}" for r in rows for c in cols}
     have = [c["cell"] for c in m["cells"]]
     if len(have) != len(set(have)) or set(have) != want:
@@ -107,14 +131,11 @@ def rows_of(m: dict) -> set[str]:
 
 
 def next_row(earlier: list[Path]) -> str:
-    """The first row letter after every earlier grid's last row."""
+    """The first row label after every earlier grid's last row (Z, then AA)."""
     used = set().union(*(rows_of(load_map(p)) for p in earlier)) if earlier else set()
     if not used:
         return "A"
-    i = max(string.ascii_uppercase.index(r) for r in used) + 1
-    if i >= 26:
-        raise SystemExit("the earlier grids use every row letter A–Z")
-    return string.ascii_uppercase[i]
+    return row_label(max(row_index(r) for r in used) + 1)
 
 
 # ── reading a source ─────────────────────────────────────────────────────────
@@ -344,9 +365,11 @@ def measure(
         "|---|---|---|---|---|---|",
     ]
     for r in m["rows"]:
-        mine = {c: v for c, v in sizes.items() if c[0] == r["row"]}
+        mine = {c: v for c, v in sizes.items() if split_cell(c)[0] == r["row"]}
         row_total = sum(mine.values())
-        big = max(mine, key=lambda c: (mine[c], -int(c[1:]))) if row_total else "—"
+        big = (
+            max(mine, key=lambda c: (mine[c], -split_cell(c)[1])) if row_total else "—"
+        )
         hit = sum(by["state"] == "found" for by in results if by["cell"] in mine)
         out.append(
             f"| {r['row']} | {esc(r['title'])} | {hit}/{len(mine)} | {row_total} "
@@ -607,8 +630,8 @@ def drip(
     missing = [c for c in cells if c not in found]
     if missing:
         raise SystemExit(f"{', '.join(missing)}: not a found box in the source grids")
-    letters = string.ascii_uppercase[string.ascii_uppercase.index(start) :]
-    chosen, left = cells[: len(letters)], cells[len(letters) :]
+    letters = [row_label(row_index(start) + k) for k in range(len(cells))]
+    chosen, left = cells, []
     if not chosen:
         raise SystemExit("nothing to drip")
 

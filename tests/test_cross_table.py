@@ -314,3 +314,21 @@ def test_drip_cuts_a_fat_box_into_clauses_pinned_to_their_own_place(tmp_path):
         res["B2"]["rule"] == "One clause here." and res["B2"]["source"] == "`src.md`:3"
     )
     assert res["B3"]["state"] == "silent"
+
+
+def test_rows_run_on_past_z_like_spreadsheet_columns(tmp_path):
+    assert [ct.row_label(i) for i in (0, 25, 26, 51, 52, 701, 702)] == [
+        "A",
+        "Z",
+        "AA",
+        "AZ",
+        "BA",
+        "ZZ",
+        "AAA",
+    ]
+    assert all(ct.row_index(ct.row_label(i)) == i for i in range(800))
+    a, b = tmp_path / "a.json", tmp_path / "b.json"
+    ct.main(["new", str(a), "--rows", "26", "--cols", "1"])
+    ct.main(["new", str(b), "--rows", "2", "--cols", "12", "--after", str(a)])
+    m = ct.load_map(b)
+    assert [r["row"] for r in m["rows"]] == ["AA", "AB"] and m["_cols"][-1] == 12
