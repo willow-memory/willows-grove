@@ -21,10 +21,12 @@ is yours to choose.
 | [`example/crosswalk-2026-10-06.json`](example/crosswalk-2026-10-06.json) | The third example: a crosswalk between the two grids, written by `link` into [`crosswalk-2026-10-06.md`](../../docs/design/one-box/crosswalk-2026-10-06.md). |
 | [`example/rules-snapshot-2026-10-06.json`](example/rules-snapshot-2026-10-06.json), [`example/boxes-outside-snapshot-2026-10-06.json`](example/boxes-outside-snapshot-2026-10-06.json) | Each grid's measure on 2026-10-06: every box's size and the sha256 of its passage. Run `measure --against` on one to see which boxes have changed since. |
 | [`example/drip-map-2026-10-06.json`](example/drip-map-2026-10-06.json), [`example/drip-snapshot-2026-10-06.json`](example/drip-snapshot-2026-10-06.json) | The fourth example: the nine fattest boxes dripped into rows R–Z ([`drip-2026-10-06.md`](../../docs/design/one-box/drip-2026-10-06.md)), and its snapshot. |
+| [`../../docs/design/gerald/gerald-atoms-map-2026-10-06.json`](../../docs/design/gerald/gerald-atoms-map-2026-10-06.json) | The fifth example, the first past Z: 134 Gerald session atoms in rows AA–AL ([`gerald-atoms-table-2026-10-06.md`](../../docs/design/gerald/gerald-atoms-table-2026-10-06.md)), linked to the main table by the addresses the atoms name ([`gerald-to-main-2026-10-06.md`](../../docs/design/gerald/gerald-to-main-2026-10-06.md)). |
 
 ## The four parts
 
-1. **A grid of addresses.** Rows are letters (A–Z) and columns are numbers.
+1. **A grid of addresses.** Rows are letters (A–Z, then AA, AB … the way
+   spreadsheet columns run on) and columns are numbers.
    Once an address is given out it is never renumbered. When the grid is
    full, start a second one, with its rows starting where the last grid
    stopped (`new --after`). An address names one box across every grid, so
@@ -52,7 +54,7 @@ is yours to choose.
 ## Use it
 
 ```sh
-# 1. A blank map: 13 × 13 by default, any size up to 26 rows.
+# 1. A blank map: 13 × 13 by default, any size.
 python3 templates/cross-table/cross_table.py new my-map.json --rows 13 --cols 13 --title "My table"
 #    A second grid, rows starting after the first one's last row (A–M → N…).
 python3 templates/cross-table/cross_table.py new next-map.json --rows 4 --cols 5 --after my-map.json
