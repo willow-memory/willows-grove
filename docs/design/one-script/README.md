@@ -615,11 +615,27 @@ decision.
 ## Running the tests
 
 ```bash
-cd onescript && python3 -m pytest -q tests   # 77 tests (24 for the capability door)
+cd onescript && python3 -m pytest -q tests   # 97 tests (24 capability door, 12 xref)
 ```
 
 The Grove's CI doesn't collect these (its `testpaths` is `tests/`). ruff lints
 and formats them like everything else.
+
+## Running xref
+
+Two hashes per file on arrival (git's blob id, recomputed here from the bytes on
+disk, and the system's own SHA-256), then every id, link, `file:line` and commit
+SHA checked across the repos. Read-only; same repos at the same commits give the
+same bytes. Scope and first run: [`../one-box/research-2026-10-06.md`](../one-box/research-2026-10-06.md) §13.
+Serve's home under D2 is willow-bot; serve reads this index, it does not rebuild it.
+
+```bash
+python3 -m onescript.xref index --repo ../../../../willows-grove \
+    --repo ../../../../willow-bot --repo ../../../../willow-mcp \
+    --out /tmp/xref --cache /tmp/xref-cache [--record BOX]
+python3 -m onescript.xref slice --index /tmp/xref/index.json \
+    --repo ../../../../willows-grove --id Q19 --out q19.txt   # for people (Q19)
+```
 
 ## Running deep_thought
 
