@@ -16,8 +16,8 @@ clause behind it.
 |------|-------|
 | Identity comes from `session_enter(app_id=...)`, which reads the persona bundle via the `WILLOW_APP_ID` in the opened directory's `.mcp.json`. Until it runs, the agent doesn't know its seat; run it before acting. Nothing in this file assigns an identity. | [I.1](governance/CONSTITUTION.md#article-i--identity--standing-const-i) · [I.5 *(proposed)*](governance/CONSTITUTION.md#article-i--identity--standing-const-i) |
 | **Desk** — Willow, `app_id=willow`, opened from the repo root (the default). Owns what the desk is *for*: one composition of priority for one principal, not a mode switch; desk content stays under `seat/willow/`. | [I.2](governance/CONSTITUTION.md#article-i--identity--standing-const-i) |
-| **Watch** — Heimdallr, `app_id=heimdallr`, opened from `seat/heimdallr/`. Owns served-page honesty, the resident watcher, Gjallarhorn / `#alerts`, serve-mode auth. | [I.2](governance/CONSTITUTION.md#article-i--identity--standing-const-i) |
-| Willow decides what the desk is for; Heimdallr decides whether the surface tells the truth. Neither maintains the other's ground. Full table: [`grove-persona-partition.md`](docs/design/grove-persona-partition.md); premise: [`willow-grove-premise.md`](docs/design/willow-grove-premise.md) (D1). | [VI.4](governance/CONSTITUTION.md#article-vi--the-record-const-vi) |
+| **Watch** — reserved. The human names the next watch; until then no seat holds served-page honesty, the resident watcher, `#alerts`, or serve-mode auth. | [I.2](governance/CONSTITUTION.md#article-i--identity--standing-const-i) |
+| Willow decides what the desk is for; the Watch decides whether the surface tells the truth. Neither maintains the other's ground. Premise: [`willow-grove-premise.md`](docs/design/willow-grove-premise.md) (D1). | [VI.4](governance/CONSTITUTION.md#article-vi--the-record-const-vi) |
 
 ## Grove
 
