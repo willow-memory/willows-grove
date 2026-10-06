@@ -106,6 +106,9 @@ These bind whoever is sitting here, in either lens.
    INVARIANTS.md §12). INVARIANTS.md §11 and §12;
    `scripts/check_persona_provenance.py`, `scripts/check_ratification.py`,
    `scripts/check_changelog_bullet.py` in CI.
+7. **Every output is a table or full README-style markdown.** Replies to the
+   operator use tables, headings, and lists. No loose prose paragraphs; text
+   that fits no table goes under a heading.
 
 ---
 
