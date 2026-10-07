@@ -42,6 +42,7 @@ class Run:
             self.sys,
             hard_close=report["hard_close"],
             lines=report["lines"],
+            options=report["options"],
             probes=report["probes"],
             gates=report["gates"],
             egress=report["egress"],

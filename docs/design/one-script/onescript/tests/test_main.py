@@ -85,10 +85,64 @@ def test_every_invocation_names_its_inputs(tmp_path):
 def test_the_tests_gate_never_nests(monkeypatch):
     """The gate's suite runs checkin; a checkin under the gate must not run the
     gate again (2026-10-06: an unguarded loop took the box's memory)."""
-    monkeypatch.delenv(cli.NESTED, raising=False)
+    monkeypatch.setenv(cli.NESTED, "x")  # so undo leaves it unset, as found
+    monkeypatch.delenv(cli.NESTED)
     assert "tests" in cli._gate_cfg(False, "", Path("/v"))
     assert cli.os.environ[cli.NESTED] == "1"
     assert "tests" not in cli._gate_cfg(False, "", Path("/v"))
+
+
+def test_a_breached_checkin_closes_the_box_for_later_turns(
+    tmp_path, capsys, monkeypatch
+):
+    """Loki AAEDF24D: a probe that gets through writes a closed boot row, so a
+    later turn can't open on an older, clean check-in."""
+    v = venv_with(tmp_path, "0.16.7")
+    assert run(tmp_path, v, "checkin") == 0
+    monkeypatch.setattr(
+        cli.boot,
+        "probes",
+        lambda keys, law: [{"probe": "planted", "held": False, "got": "verified"}],
+    )
+    assert run(tmp_path, v, "checkin") == 3
+    monkeypatch.undo()
+    assert run(tmp_path, v, "turn", "after breach") == 1
+    assert run(tmp_path, v, "checkout") == 0
+    out = capsys.readouterr().out
+    assert "BOX WON'T OPEN" in out and "the last check-in hard-closed" in out
+    assert "HARD CLOSE · box won't open" in out and "options: stop here" in out
+
+
+def test_checkout_reads_claims_acts_and_probes_from_the_record(tmp_path, capsys):
+    """A checkout in its own invocation shows what earlier ones recorded."""
+    v = venv_with(tmp_path, "0.16.7")
+    assert run(tmp_path, v, "checkin") == 0
+    from onescript import gate, record
+    from onescript.run import Run
+
+    r = Run(tmp_path / "box", {}, {"trace_ids": []}, lambda: "t")
+    r.rec.append(
+        "claims",
+        gate.system(),
+        text_hash=record.h256("x"),
+        claims=[
+            {"kind": "count", "claim": "7 files", "verdict": "unverified", "record": 9}
+        ],
+    )
+    r.rec.append(
+        "act",
+        gate.system(),
+        mandate=None,
+        act_kind="push",
+        verdict="awaiting_grant",
+        reason="leaves the box",
+        card={"where": "origin"},
+    )
+    assert run(tmp_path, v, "checkout") == 0
+    out = capsys.readouterr().out
+    assert "unverified count · '7 files' · record: 9" in out
+    assert "awaiting_grant · push · leaves the box" in out
+    assert "probes held: 4/4" in out
 
 
 def test_the_toolchain_gate_reads_the_bot_venv_not_path(tmp_path, capsys):

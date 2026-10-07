@@ -83,7 +83,7 @@ def _last_boot(rows: list[dict]) -> dict | None:
     return {
         "hard_close": b["hard_close"],
         "lines": b["lines"],
-        "options": boot.OPTIONS if b["hard_close"] else [],
+        "options": b.get("options", boot.OPTIONS if b["hard_close"] else []),
         "report": {"state": "current" if reconciled else "never"},
         "probes": b.get("probes", []),
         "gates": b.get("gates", []),
@@ -220,12 +220,25 @@ def main(argv: list[str] | None = None) -> int:
             "venv_ruff": _in_venv(args.venv)("ruff"),
         },
         trace_ids=len(law["trace_ids"]),
+        nested=bool(os.environ.get(NESTED)),  # the tests gate is skipped, and says so
     )
 
     if args.cmd == "checkin":
         try:
             rep = run.checkin(_gate_cfg(args.no_tests, ci_text, args.venv))
         except boot.BoxWontOpen as e:
+            # Recorded as a closed boot, so no later turn opens on an older,
+            # clean check-in (Loki AAEDF24D).
+            run.rec.append(
+                "boot",
+                run.sys,
+                hard_close=True,
+                lines=[f"box won't open: {e}"],
+                options=["stop here"],
+                probes=[],
+                gates=[],
+                egress=[],
+            )
             print(f"BOX WON'T OPEN: {e}")
             return 3
         print(_checkin_screen(rep))
