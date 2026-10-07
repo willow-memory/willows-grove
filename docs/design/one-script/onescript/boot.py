@@ -33,7 +33,12 @@ OPTIONS = [
 
 
 class BoxWontOpen(Exception):
-    """A probe got through the gate. Nothing runs until a human looks."""
+    """A probe got through the gate. Nothing runs until a human looks.
+    Carries every probe's result, held or not, so the record shows them all."""
+
+    def __init__(self, msg: str, probes: list[dict]):
+        super().__init__(msg)
+        self.probes = probes
 
 
 def probes(keys: dict, law: dict) -> list[dict]:
@@ -252,6 +257,7 @@ def boot(rec, keys: dict, law: dict, gate_cfg: dict | None = None) -> dict:
 
     for b in rec.verify_chain():  # B1: the record holds?
         lines.append(f"record: {b}")
+    lines += rec.verify_anchor(keys.get(gate.HUMAN))  # ...and reaches the sealed tip?
     for t in reverse.open_turns(rows):  # a crash left a row
         intent = next(
             r["intent"] for r in rows if r["kind"] == "turn_open" and r["turn"] == t
@@ -264,7 +270,7 @@ def boot(rec, keys: dict, law: dict, gate_cfg: dict | None = None) -> dict:
     held = probes(keys, law)  # App. B, every morning
     broke = [p for p in held if not p["held"]]
     if broke:
-        raise BoxWontOpen(f"probes got through: {[p['probe'] for p in broke]}")
+        raise BoxWontOpen(f"probes got through: {[p['probe'] for p in broke]}", held)
 
     checked = gates(gate_cfg or {})  # the four gates
     lines += [
@@ -287,4 +293,5 @@ def boot(rec, keys: dict, law: dict, gate_cfg: dict | None = None) -> dict:
         "options": OPTIONS if lines else [],
         "probes": held,
         "egress": egress,
+        "anchor": rec.anchor_state(),
     }

@@ -37,6 +37,7 @@ ROOT = PKG.parents[3]  # onescript -> one-script -> design -> docs -> repo
 CONSTITUTION = ROOT / "governance" / "CONSTITUTION.md"
 CI = ROOT / ".github" / "workflows" / "tests.yml"
 DESK = ("desk", "claude")
+ANCHOR = "anchor.json"  # the sealed tip, beside the keys: outside the box
 
 
 def _now() -> str:
@@ -79,15 +80,21 @@ def _last_boot(rows: list[dict]) -> dict | None:
     if i is None:
         return None
     b = rows[i]
-    reconciled = any(r["kind"] == "reconcile" for r in rows[:i])
+    before = [r for r in rows[:i] if r["kind"] == "reconcile"]
     return {
         "hard_close": b["hard_close"],
         "lines": b["lines"],
         "options": b.get("options", boot.OPTIONS if b["hard_close"] else []),
-        "report": {"state": "current" if reconciled else "never"},
+        # as boot() wrote it: the last reconcile before this check-in, and when
+        "report": {"state": "current", "at": before[-1]["ts"]}
+        if before
+        else {"state": "never"},
+        # a checkout after this check-in ends the run; a turn needs a new one
+        "checked_out": any(r["kind"] == "reconcile" for r in rows[i + 1 :]),
         "probes": b.get("probes", []),
         "gates": b.get("gates", []),
         "egress": b.get("egress", []),
+        "anchor": b.get("anchor"),
     }
 
 
@@ -202,7 +209,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"refused: {e}")
         return 2
     law = _law(law_text)
-    run = Run(args.box, keys, law, clock)
+    nested = bool(os.environ.get(NESTED))  # before _gate_cfg sets it for the child
+    run = Run(args.box, keys, law, clock, anchor=args.keys.parent / ANCHOR)
     run.rec.append(
         "invocation",
         run.sys,
@@ -220,7 +228,7 @@ def main(argv: list[str] | None = None) -> int:
             "venv_ruff": _in_venv(args.venv)("ruff"),
         },
         trace_ids=len(law["trace_ids"]),
-        nested=bool(os.environ.get(NESTED)),  # the tests gate is skipped, and says so
+        nested=nested,  # the tests gate is skipped, and says so
     )
 
     if args.cmd == "checkin":
@@ -235,22 +243,25 @@ def main(argv: list[str] | None = None) -> int:
                 hard_close=True,
                 lines=[f"box won't open: {e}"],
                 options=["stop here"],
-                probes=[],
+                probes=e.probes,
                 gates=[],
                 egress=[],
+                anchor=run.rec.anchor_state(),
             )
             print(f"BOX WON'T OPEN: {e}")
             return 3
-        print(_checkin_screen(rep))
+        print(_checkin_screen(rep, nested))
         return 1 if rep["hard_close"] else 0
 
     last = _last_boot(run.rec.rows())
     if args.cmd == "turn":
-        if last is None or last["hard_close"]:
+        if last is None or last["hard_close"] or last["checked_out"]:
             why = (
                 "no check-in on record"
                 if last is None
                 else "the last check-in hard-closed"
+                if last["hard_close"]
+                else "the run checked out after its last check-in"
             )
             run.rec.append("refused", run.sys, at="turn", reason=why, bite=args.bite)
             print(f"refused: {why}; nothing moves until a check-in opens")
@@ -267,10 +278,20 @@ def main(argv: list[str] | None = None) -> int:
     return 0
 
 
-def _checkin_screen(rep: dict) -> str:
+ANCHOR_SAYS = {
+    "never": "never sealed; a cut or a rewrite of the record can't be seen",
+    "sealed": "a tip is sealed; a break against it shows under HARD CLOSE",
+    "unreadable": "unreadable",
+}
+
+
+def _checkin_screen(rep: dict, nested: bool = False) -> str:
     L = ["CHECK-IN"]
+    if nested:
+        L.append(f"nested: inside the tests gate ({NESTED}); tests gate skipped")
     held = sum(p["held"] for p in rep["probes"])
     L.append(f"probes: {held}/{len(rep['probes'])} held")
+    L.append(f"anchor: {ANCHOR_SAYS.get(rep['anchor'], rep['anchor'])}")
     for g in rep["gates"]:
         why = f" — {g['why']}" if g["why"] else ""
         L.append(f"  {g['verdict']:12} {g['gate']}: {g['where']}{why}")
