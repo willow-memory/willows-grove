@@ -332,6 +332,14 @@ model receives it and found four leaks; the operator: "yes to all five"):
 - **The served path in the model's prompt.** The hook allows only
   `ONESCRIPT_SERVED`; the same code that sets it must tell the model the
   path. Not built.
+  **Decided 2026-10-07** (the operator: "Sounds good"): no path at all.
+  Read as the model, a path names the box ("the model never even knows the
+  Box exists"), the files beside it, and lets the model read at a time it
+  picks. So code puts the served content into each prompt as a framed data
+  block (`prompt.py`, Claude Code `UserPromptSubmit`), and the hook drops
+  Read: the model has Write-asks and nothing else. A front end that can't add
+  context at prompt time falls back to a path in its instruction file; that
+  fallback is unbuilt until one is needed. Built in willow-bot `one-script/`.
 - **Rows written before `where`.** Records from before this change have no
   `where` key on doors, acts and seals; they stay in no where-pile, as
   `cannot_hold` says.
