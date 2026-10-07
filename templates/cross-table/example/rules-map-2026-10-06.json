@@ -1,0 +1,1429 @@
+{
+  "title": "Rules cross table: boxes and branches (2026-10-06)",
+  "root": "../../../..",
+  "rows": [
+    {
+      "row": "A",
+      "title": "Box rules",
+      "source": "`README.md` \u00a70, \u00a79, \u00a710, \u00a715; `session-2026-10-01.md`; CHANGELOG (PR 102)"
+    },
+    {
+      "row": "B",
+      "title": "Security core",
+      "source": "`../one-script/README.md`, the security core"
+    },
+    {
+      "row": "C",
+      "title": "Look in the box first",
+      "source": "`../the-forge-shape.md` \u00a73, \u00a712"
+    },
+    {
+      "row": "D",
+      "title": "willow-bot box rule",
+      "source": "willow-bot `willow_bot/paths.py`, `tests/test_box_rule.py`"
+    },
+    {
+      "row": "E",
+      "title": "willow-bot box workspace",
+      "source": "`../willow-bot-box-spec.md` \u00a73, \u00a79, \u00a711"
+    },
+    {
+      "row": "F",
+      "title": "One-script rules",
+      "source": "`../one-script/next-pile.md`, rules and `gate.py`"
+    },
+    {
+      "row": "G",
+      "title": "Git branches",
+      "source": "willow-mcp `CONTRIBUTING.md`, `skills/worktree.md`; `INVARIANTS.md` \u00a73, \u00a711, \u00a712; `CLAUDE.md` 5\u20136"
+    },
+    {
+      "row": "H",
+      "title": "The tree",
+      "source": "`../forge-convergence.md` \u00a71, \u00a71.5, \u00a78"
+    },
+    {
+      "row": "I",
+      "title": "The stack",
+      "source": "`../one-script/README.md`, the stack (rows 1\u201313)"
+    },
+    {
+      "row": "J",
+      "title": "Invariants",
+      "source": "`../../INVARIANTS.md` \u00a71\u2013\u00a712"
+    },
+    {
+      "row": "K",
+      "title": "Operator decisions",
+      "source": "`README.md` \u00a72 and \u00a715 (D1\u2013D12); `../one-script/next-pile.md`, constraints"
+    },
+    {
+      "row": "L",
+      "title": "One-box phases",
+      "source": "`README.md` \u00a73\u2013\u00a715"
+    },
+    {
+      "row": "M",
+      "title": "The ladder and the seven",
+      "source": "`../one-script/README.md` (resolve ladder); `../one-script/next-pile.md` (the seven)"
+    }
+  ],
+  "cells": [
+    {
+      "cell": "A1",
+      "label": "Honest state",
+      "file": "willows-grove/docs/design/one-box/README.md",
+      "pattern": "1\\. \\*\\*Honest state\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "A2",
+      "label": "Gates fail closed, loud",
+      "file": "willows-grove/docs/design/one-box/README.md",
+      "pattern": "1a\\. \\*\\*Every gate fails closed",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "A3",
+      "label": "Presence is a label; authority is a passkey",
+      "file": "willows-grove/docs/design/one-box/README.md",
+      "pattern": "1c\\. \\*\\*Presence is a label",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "A4",
+      "label": "Reading open, saving guarded",
+      "file": "willows-grove/docs/design/one-box/README.md",
+      "pattern": "1b\\. \\*\\*Reading is open; saving is guarded\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "A5",
+      "label": "Human seals, system proposes",
+      "file": "willows-grove/docs/design/one-box/README.md",
+      "pattern": "2\\. \\*\\*The human seals",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "A6",
+      "label": "Willow seat is where the human is",
+      "file": "willows-grove/docs/design/one-box/README.md",
+      "pattern": "3\\. \\*\\*The willow seat is wherever",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "A7",
+      "label": "Egress: three keys + click",
+      "file": "willows-grove/docs/design/one-box/README.md",
+      "pattern": "4\\. \\*\\*Egress takes three keys",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "A8",
+      "label": "Portless",
+      "file": "willows-grove/docs/design/one-box/README.md",
+      "pattern": "5\\. \\*\\*Portless\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "A9",
+      "label": "Hooks are doors",
+      "file": "willows-grove/docs/design/one-box/README.md",
+      "pattern": "6\\. \\*\\*Hooks are doors",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "A10",
+      "label": "Auto-merge is a standing grant",
+      "file": "willows-grove/docs/design/one-box/README.md",
+      "pattern": "\\*\\*Auto-merge\\*\\* \\(operator, 2026-10-01\\)",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "A11",
+      "label": "Template ships the box",
+      "file": "willows-grove/docs/design/one-box/README.md",
+      "pattern": "The workshop template ships the box, never a tree",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "A12",
+      "label": "Exceptions declared, never silent",
+      "file": "willows-grove/docs/design/one-box/README.md",
+      "pattern": "The box rule then reads",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "A13",
+      "label": "No front end is primary",
+      "file": "willows-grove/docs/design/one-box/README.md",
+      "pattern": "\\*\\*No front end is primary\\*\\*",
+      "mode": "sent",
+      "standing": "unattested"
+    },
+    {
+      "cell": "B1",
+      "label": "Model sees only its scope",
+      "file": "willows-grove/docs/design/one-script/README.md",
+      "pattern": "\\*\\*The core, as one row:\\*\\*",
+      "mode": "sent",
+      "standing": "unattested"
+    },
+    {
+      "cell": "B2",
+      "label": "Code fills, human seals",
+      "file": "willows-grove/docs/design/one-script/README.md",
+      "pattern": "Code fills out every box",
+      "mode": "sent",
+      "standing": "unattested"
+    },
+    {
+      "cell": "B3",
+      "label": "One hook: Read allow, Write ask",
+      "file": "willows-grove/docs/design/one-script/next-pile.md",
+      "pattern": "POLICY = \\{\"Read\": \"allow\", \"Write\": \"ask\"\\}",
+      "mode": "line",
+      "standing": "unattested"
+    },
+    {
+      "cell": "B4",
+      "label": "Cite outside the pool is `link_fail`",
+      "file": "willows-grove/docs/design/one-script/README.md",
+      "pattern": "\\| A cite outside the served pool is `link_fail`",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "B5",
+      "label": "Mosaic rule",
+      "file": "willows-grove/docs/design/one-script/README.md",
+      "pattern": "\\| Inference across boxes",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "B6",
+      "label": "Unguessable ids",
+      "file": "willows-grove/docs/design/one-script/README.md",
+      "pattern": "\\| Guessable hashes",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "B7",
+      "label": "Seal binds to one hash",
+      "file": "willows-grove/docs/design/one-script/README.md",
+      "pattern": "\\| Seal substitution",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "B8",
+      "label": "Serving code is the attack surface",
+      "file": "willows-grove/docs/design/one-script/README.md",
+      "pattern": "\\| The serving code",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "B9",
+      "label": "Injected text: the model has no hands",
+      "file": "willows-grove/docs/design/one-script/README.md",
+      "pattern": "\\| Injection in served text",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "B10",
+      "label": "Human reads the points, not just the sentence",
+      "file": "willows-grove/docs/design/one-script/README.md",
+      "pattern": "\\| The text going to the human",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "B11",
+      "label": "Only the seal ledger is shared",
+      "file": "willows-grove/docs/design/one-script/README.md",
+      "pattern": "the one shared thing left is the\\s+seal ledger",
+      "mode": "sent",
+      "standing": "unattested"
+    },
+    {
+      "cell": "B12",
+      "label": "Model gets only `{excerpts, joins[]}`",
+      "file": "willows-grove/docs/design/one-script/README.md",
+      "pattern": "\\| The model gets only `\\{excerpts, joins\\[\\]\\}`",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "B13",
+      "label": "Uncitable excerpt \u2192 flowering first",
+      "file": "willows-grove/docs/design/one-script/README.md",
+      "pattern": "\\| An act with any uncitable excerpt",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "C1",
+      "label": "Ask Nestor first",
+      "file": "willows-grove/docs/design/the-forge-shape.md",
+      "pattern": "1\\. \\*\\*Ask Nestor\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "C2",
+      "label": "Then look in the box",
+      "file": "willows-grove/docs/design/the-forge-shape.md",
+      "pattern": "2\\. \\*\\*Look in the box\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "C3",
+      "label": "Only then go remote",
+      "file": "willows-grove/docs/design/the-forge-shape.md",
+      "pattern": "3\\. \\*\\*Only then go remote\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "C4",
+      "label": "Silent corpus \u2260 absence",
+      "file": "willows-grove/docs/design/the-forge-shape.md",
+      "pattern": "\\*\\*A silent corpus is not proof of absence",
+      "mode": "sent",
+      "standing": "unattested"
+    },
+    {
+      "cell": "C5",
+      "label": "Name which tier answered",
+      "file": "willows-grove/docs/design/the-forge-shape.md",
+      "pattern": "naming which tier answered",
+      "mode": "sent",
+      "standing": "unattested"
+    },
+    {
+      "cell": "C6",
+      "label": "Record that the box was checked",
+      "file": "willows-grove/docs/design/the-forge-shape.md",
+      "pattern": "without recording that the box was checked",
+      "mode": "sent",
+      "standing": "unattested"
+    },
+    {
+      "cell": "C7",
+      "label": "A skipped step fails loud",
+      "file": "willows-grove/docs/design/the-forge-shape.md",
+      "pattern": "For the Forge this is a hook, not a habit",
+      "mode": "sent",
+      "standing": "unattested"
+    },
+    {
+      "cell": "C8",
+      "label": "Greenfield archive is in the box",
+      "file": "willows-grove/docs/design/the-forge-shape.md",
+      "pattern": "greenfield archive holds two dozen retired",
+      "mode": "sent",
+      "standing": "unattested"
+    },
+    {
+      "cell": "C9",
+      "label": "`superseded/` is in the box",
+      "file": "willows-grove/governance/architecture/superseded/README.md",
+      "pattern": "Archived, not deleted",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "C10",
+      "label": "Retired repos are a shelf",
+      "file": "willows-grove/docs/design/the-forge-shape.md",
+      "pattern": "Retired is not gone; it is a different shelf",
+      "mode": "sent",
+      "standing": "unattested"
+    },
+    {
+      "cell": "C11",
+      "label": "Refused \u2260 retired",
+      "file": "willows-grove/docs/design/the-forge-shape.md",
+      "pattern": "between \\*refused\\* and",
+      "mode": "sent",
+      "standing": "unattested"
+    },
+    {
+      "cell": "C12",
+      "label": "Rule 1: coverage is all of `~/github`",
+      "file": "willows-grove/docs/design/the-forge-shape.md",
+      "pattern": "### Rule 1 \u2014 coverage",
+      "mode": "line",
+      "standing": "unattested"
+    },
+    {
+      "cell": "C13",
+      "label": "Rule 2: the PR is the extraction event",
+      "file": "willows-grove/docs/design/the-forge-shape.md",
+      "pattern": "Not a nightly cron",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "D1",
+      "label": "`WILLOW_HOME`, else `WILLOW_VAULT_BOX`",
+      "file": "willow-bot/willow_bot/paths.py",
+      "pattern": "Root data directory for willow-bot state",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "D2",
+      "label": "Blank is unset; `~` expands",
+      "file": "willow-bot/willow_bot/paths.py",
+      "pattern": "A blank env is treated as unset",
+      "mode": "sent",
+      "standing": "unattested"
+    },
+    {
+      "cell": "D3",
+      "label": "Absolute path only",
+      "file": "willow-bot/willow_bot/paths.py",
+      "pattern": "A relative box moves with the working directory",
+      "mode": "line",
+      "standing": "unattested",
+      "span": 2
+    },
+    {
+      "cell": "D4",
+      "label": "Must already exist",
+      "file": "willow-bot/willow_bot/paths.py",
+      "pattern": "A named box that does not exist is refused too",
+      "mode": "sent",
+      "standing": "unattested"
+    },
+    {
+      "cell": "D5",
+      "label": "Made only by `provision.sh`",
+      "file": "willow-bot/willow_bot/paths.py",
+      "pattern": "is not an existing directory; the box is created by",
+      "mode": "line",
+      "standing": "unattested",
+      "span": 2
+    },
+    {
+      "cell": "D6",
+      "label": "Resolve, never create",
+      "file": "willow-bot/willow_bot/paths.py",
+      "pattern": "this function\\s+computes a path, it does not create one",
+      "mode": "sent",
+      "standing": "unattested"
+    },
+    {
+      "cell": "D7",
+      "label": "Steward state lives in the box",
+      "file": "willow-bot/tests/test_box_rule.py",
+      "pattern": "def test_state_path_is_in_the_box\\b",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "D8",
+      "label": "Script key path is in the box",
+      "file": "willow-bot/tests/test_box_rule.py",
+      "pattern": "def test_script_key_path_is_the_box_never_dot_willow",
+      "mode": "line",
+      "standing": "unattested"
+    },
+    {
+      "cell": "D9",
+      "label": "Counters live in the box, not `~/.willow`",
+      "file": "willow-bot/sigh.py",
+      "pattern": "The counter lives in the box",
+      "mode": "line",
+      "standing": "unattested",
+      "span": 2
+    },
+    {
+      "cell": "D10",
+      "label": "Carried-over counter keeps its mode",
+      "file": "willow-bot/tests/test_box_rule.py",
+      "pattern": "def test_a_carried_over_counter_has_the_mode_a_fresh_one_gets",
+      "mode": "line",
+      "standing": "unattested"
+    },
+    {
+      "cell": "D11",
+      "label": "Carry-over lock held for the whole copy",
+      "file": "willow-bot/tests/test_box_rule.py",
+      "pattern": "def test_the_lock_is_held_for_the_whole_copy",
+      "mode": "line",
+      "standing": "unattested"
+    },
+    {
+      "cell": "D12",
+      "label": "Unconfigured reads as \"not configured\"",
+      "file": "willow-bot/willow_bot/paths.py",
+      "pattern": "class BoxNotConfigured\\(RuntimeError\\)",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "D13",
+      "label": "Every resolver uses the one rule",
+      "file": "willow-bot/willow_bot/paths.py",
+      "pattern": "The one rule every box resolver in this\\s+repo uses",
+      "mode": "sent",
+      "standing": "unattested"
+    },
+    {
+      "cell": "E1",
+      "label": "Persistence",
+      "file": "willows-grove/docs/design/willow-bot-box-spec.md",
+      "pattern": "1\\. \\*\\*Persistence\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "E2",
+      "label": "Isolation",
+      "file": "willows-grove/docs/design/willow-bot-box-spec.md",
+      "pattern": "2\\. \\*\\*Isolation\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "E3",
+      "label": "Egress by request only",
+      "file": "willows-grove/docs/design/willow-bot-box-spec.md",
+      "pattern": "3\\. \\*\\*Egress\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "E4",
+      "label": "Auditability",
+      "file": "willows-grove/docs/design/willow-bot-box-spec.md",
+      "pattern": "4\\. \\*\\*Auditability\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "E5",
+      "label": "Reach unchanged",
+      "file": "willows-grove/docs/design/willow-bot-box-spec.md",
+      "pattern": "5\\. \\*\\*Reach unchanged\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "E6",
+      "label": "No runs from GitHub triggers",
+      "file": "willows-grove/docs/design/willow-bot-box-spec.md",
+      "pattern": "4\\. \\*\\*#69\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "E7",
+      "label": "No long-lived shells",
+      "file": "willows-grove/docs/design/willow-bot-box-spec.md",
+      "pattern": "- Long-lived interactive shells",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "E8",
+      "label": "No ambient current venv",
+      "file": "willows-grove/docs/design/willow-bot-box-spec.md",
+      "pattern": "- Ambient .current venv",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "E9",
+      "label": "No new MCP package or tools",
+      "file": "willows-grove/docs/design/willow-bot-box-spec.md",
+      "pattern": "- New MCP package or new",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "E10",
+      "label": "No webhook surface changes",
+      "file": "willows-grove/docs/design/willow-bot-box-spec.md",
+      "pattern": "- Changes to GitHub App webhook surface",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "E11",
+      "label": "No bot-held tokens (broker only)",
+      "file": "willows-grove/docs/design/willow-bot-box-spec.md",
+      "pattern": "- Bot-held GitHub tokens",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "E12",
+      "label": "Doesn't replace Kart for seats",
+      "file": "willows-grove/docs/design/willow-bot-box-spec.md",
+      "pattern": "- Replacing Kart for",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "E13",
+      "label": "Model weights stay out (for now)",
+      "file": "willows-grove/docs/design/willow-bot-box-spec.md",
+      "pattern": "- Moving Ollama weights into",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "F1",
+      "label": "The stamp",
+      "file": "willows-grove/docs/design/one-script/next-pile.md",
+      "pattern": "\\*\\*1\\. The stamp \\(operator\\)\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "F2",
+      "label": "Every proposal cites",
+      "file": "willows-grove/docs/design/one-script/next-pile.md",
+      "pattern": "\\*\\*2\\. Every proposal cites what it touches",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "F3",
+      "label": "Reverse re-checks",
+      "file": "willows-grove/docs/design/one-script/next-pile.md",
+      "pattern": "\\*\\*3\\. Reverse runs on three triggers\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "F4",
+      "label": "`view` draws the heading from the stamp",
+      "file": "willows-grove/docs/design/one-script/next-pile.md",
+      "pattern": "`view` draws the heading from the stamp",
+      "mode": "sent",
+      "standing": "unattested"
+    },
+    {
+      "cell": "F5",
+      "label": "The law = constitution + the user's half",
+      "file": "willows-grove/docs/design/one-script/next-pile.md",
+      "pattern": "\"The law\" is the fixed half",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "F6",
+      "label": "Code checks the cite's form; a witness checks it's true",
+      "file": "willows-grove/docs/design/one-script/next-pile.md",
+      "pattern": "Python checks that the citation exists",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "F7",
+      "label": "Unknown law is refused",
+      "file": "willows-grove/docs/design/one-script/next-pile.md",
+      "pattern": "Unknown law is refused",
+      "mode": "sent",
+      "standing": "unattested"
+    },
+    {
+      "cell": "F8",
+      "label": "Amends waits for the seal",
+      "file": "willows-grove/docs/design/one-script/next-pile.md",
+      "pattern": "Amends waits for the seal",
+      "mode": "sent",
+      "standing": "unattested"
+    },
+    {
+      "cell": "F9",
+      "label": "Egress without a grant writes a card",
+      "file": "willows-grove/docs/design/one-script/next-pile.md",
+      "pattern": "Egress without a grant writes a grant card",
+      "mode": "sent",
+      "standing": "unattested"
+    },
+    {
+      "cell": "F10",
+      "label": "Any internal error fails closed",
+      "file": "willows-grove/docs/design/one-script/next-pile.md",
+      "pattern": "Any internal error fails closed",
+      "mode": "sent",
+      "standing": "unattested"
+    },
+    {
+      "cell": "F11",
+      "label": "Agent proposals can't ratify themselves",
+      "file": "willows-grove/docs/design/one-script/next-pile.md",
+      "pattern": "\u00a70\\.2: the agent proposed all of this",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "F12",
+      "label": "Same box \u2192 same bytes",
+      "file": "willows-grove/docs/design/one-script/next-pile.md",
+      "pattern": "Same box \u2192 same bytes",
+      "mode": "sent",
+      "standing": "unattested"
+    },
+    {
+      "cell": "F13",
+      "label": "No clock but the enter key",
+      "file": "willows-grove/docs/design/one-script/next-pile.md",
+      "pattern": "the enter key is the only clock between",
+      "mode": "sent",
+      "standing": "unattested"
+    },
+    {
+      "cell": "G1",
+      "label": "willow-mcp ruleset",
+      "file": "willow-mcp/CONTRIBUTING.md",
+      "pattern": "`master` is protected by a \\*\\*no-bypass ruleset\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "G2",
+      "label": "Feature branch + PR",
+      "file": "willow-mcp/skills/worktree.md",
+      "pattern": "^Every change goes through a feature branch and a pull request\\.",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "G3",
+      "label": "No persona merges alone",
+      "file": "willows-grove/docs/INVARIANTS.md",
+      "pattern": "No fleet persona has unilateral",
+      "mode": "sent",
+      "standing": "unattested"
+    },
+    {
+      "cell": "G4",
+      "label": "Standing grant in first commit",
+      "file": "willows-grove/docs/INVARIANTS.md",
+      "pattern": "\\*\\*Standing authorizations\\*\\* may cover",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "G5",
+      "label": "Trailers: `Persona:`, `Ratified-by:`",
+      "file": "willows-grove/CLAUDE.md",
+      "pattern": "\\| 6 \\|",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "G6",
+      "label": "Session branch name",
+      "file": "",
+      "pattern": "",
+      "mode": "para",
+      "standing": "unattested",
+      "note": "no file in the repos holds this; it comes from the cloud session's harness."
+    },
+    {
+      "cell": "G7",
+      "label": "All commits on the feature branch",
+      "file": "willow-mcp/skills/worktree.md",
+      "pattern": "- All commits on the feature branch only",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "G8",
+      "label": "Reviewed shell work goes through Kart",
+      "file": "willow-mcp/skills/worktree.md",
+      "pattern": "- Shell mutations that need review",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "G9",
+      "label": "Read-only git is fine",
+      "file": "willow-mcp/skills/worktree.md",
+      "pattern": "- Read-only git/gh on the operator desk",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "G10",
+      "label": "`hotfix/`: same rule, faster name",
+      "file": "willow-mcp/skills/worktree.md",
+      "pattern": "- Urgent work gets a `hotfix/<slug>`",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "G11",
+      "label": "Merge commits are exempt",
+      "file": "willows-grove/docs/INVARIANTS.md",
+      "pattern": "Merge commits are exempt",
+      "mode": "sent",
+      "standing": "unattested"
+    },
+    {
+      "cell": "G12",
+      "label": "Release-please exempt on two conditions",
+      "file": "willows-grove/docs/INVARIANTS.md",
+      "pattern": "Both axes must match",
+      "mode": "sent",
+      "standing": "unattested"
+    },
+    {
+      "cell": "G13",
+      "label": "Code PRs add a CHANGELOG bullet",
+      "file": "willows-grove/docs/INVARIANTS.md",
+      "pattern": "Every code-changing PR appends a bullet",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "H1",
+      "label": "One tree, one soil",
+      "file": "willows-grove/docs/design/forge-convergence.md",
+      "pattern": "is the trunk",
+      "mode": "sent",
+      "standing": "unattested"
+    },
+    {
+      "cell": "H2",
+      "label": "Grafts splice on",
+      "file": "willows-grove/docs/design/forge-convergence.md",
+      "pattern": "\\*\\*Grafts\\*\\* are other repos",
+      "mode": "sent",
+      "standing": "unattested"
+    },
+    {
+      "cell": "H3",
+      "label": "Sapwood \u2192 heartwood on seal",
+      "file": "willows-grove/docs/design/forge-convergence.md",
+      "pattern": "Nothing crosses that boundary unsigned",
+      "mode": "sent",
+      "standing": "unattested"
+    },
+    {
+      "cell": "H4",
+      "label": "Growth before flowering",
+      "file": "willows-grove/docs/design/forge-convergence.md",
+      "pattern": "\\*\\*Growth before flowering\\.\\*\\* Collection pools",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "H5",
+      "label": "Model at a leaf",
+      "file": "willows-grove/docs/design/forge-convergence.md",
+      "pattern": "The model sits at a leaf, never at a branch",
+      "mode": "sent",
+      "standing": "unattested"
+    },
+    {
+      "cell": "H6",
+      "label": "Gate only narrows",
+      "file": "willows-grove/docs/design/forge-convergence.md",
+      "pattern": "\\*\\*The gate only narrows\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "H7",
+      "label": "Session and bite: one machine, two scales",
+      "file": "willows-grove/docs/design/forge-convergence.md",
+      "pattern": "A session and a Forge bite are the same machine at two scales",
+      "mode": "sent",
+      "standing": "unattested"
+    },
+    {
+      "cell": "H8",
+      "label": "Entry never refuses on orientation",
+      "file": "willows-grove/docs/design/forge-convergence.md",
+      "pattern": "\\*\\*Session entry never refuses on an orientation source",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "H9",
+      "label": "The Forge imports no fleet code",
+      "file": "willows-grove/docs/design/forge-convergence.md",
+      "pattern": "\\*\\*The Forge never imports willow-mcp or Grove",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "H10",
+      "label": "The flowchart is derived",
+      "file": "willows-grove/docs/design/forge-convergence.md",
+      "pattern": "\\*\\*The flowchart is derived\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "H11",
+      "label": "Cloud is pollination, not metabolism",
+      "file": "willows-grove/docs/design/forge-convergence.md",
+      "pattern": "optional pollination",
+      "mode": "sent",
+      "standing": "unattested"
+    },
+    {
+      "cell": "H12",
+      "label": "Pools collect; they aren't oracles",
+      "file": "willows-grove/docs/design/forge-convergence.md",
+      "pattern": "\\*\\*Collection pools \\(accumulators, not oracles\\)\\.\\*\\*",
+      "mode": "sent",
+      "standing": "unattested"
+    },
+    {
+      "cell": "H13",
+      "label": "One nutrient policy at the soil",
+      "file": "willows-grove/docs/design/forge-convergence.md",
+      "pattern": "^\\| 6 \\| One nutrient policy",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "I1",
+      "label": "Everything is a hash",
+      "file": "willows-grove/docs/design/one-script/README.md",
+      "pattern": "^\\| 1 \\| Every thing gets a hash",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "I2",
+      "label": "New cites older hashes",
+      "file": "willows-grove/docs/design/one-script/README.md",
+      "pattern": "^\\| 2 \\| New things cite older hashes",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "I3",
+      "label": "Pointers, not prose",
+      "file": "willows-grove/docs/design/one-script/README.md",
+      "pattern": "^\\| 3 \\| Pointers, not prose",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "I4",
+      "label": "Code first, model last",
+      "file": "willows-grove/docs/design/one-script/README.md",
+      "pattern": "^\\| 4 \\| Code first, model last",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "I5",
+      "label": "Only a human makes it true",
+      "file": "willows-grove/docs/design/one-script/README.md",
+      "pattern": "^\\| 5 \\| Only a human makes it true",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "I6",
+      "label": "Three states, never collapsed",
+      "file": "willows-grove/docs/design/one-script/README.md",
+      "pattern": "^\\| 6 \\| Three states, never collapsed",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "I7",
+      "label": "Pile it up; what stacks matters",
+      "file": "willows-grove/docs/design/one-script/README.md",
+      "pattern": "^\\| 7 \\| Pile it up",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "I8",
+      "label": "The model's job is connections",
+      "file": "willows-grove/docs/design/one-script/README.md",
+      "pattern": "^\\| 8 \\| The model's job is connections",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "I9",
+      "label": "Picture and compare",
+      "file": "willows-grove/docs/design/one-script/README.md",
+      "pattern": "^\\| 9 \\| Picture and compare",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "I10",
+      "label": "A pre-AI foundation",
+      "file": "willows-grove/docs/design/one-script/README.md",
+      "pattern": "^\\| 10 \\| A pre\\-AI foundation",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "I11",
+      "label": "The database builds itself",
+      "file": "willows-grove/docs/design/one-script/README.md",
+      "pattern": "^\\| 11 \\| The database builds itself",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "I12",
+      "label": "The 3 / 7 / 13 / 23 rollup",
+      "file": "willows-grove/docs/design/one-script/README.md",
+      "pattern": "^\\| 12 \\| The 3 / 7 / 13 / 23 rollup",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "I13",
+      "label": "Once / session / permanent",
+      "file": "willows-grove/docs/design/one-script/README.md",
+      "pattern": "^\\| 13 \\| Once / session / permanent",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "J1",
+      "label": "\u00a71 Three-state contract",
+      "file": "willows-grove/docs/INVARIANTS.md",
+      "pattern": "^## \u00a71 \u2014 ",
+      "mode": "head",
+      "standing": "unattested"
+    },
+    {
+      "cell": "J2",
+      "label": "\u00a72 Supersedes D7",
+      "file": "willows-grove/docs/INVARIANTS.md",
+      "pattern": "^## \u00a72 \u2014 ",
+      "mode": "head",
+      "standing": "unattested"
+    },
+    {
+      "cell": "J3",
+      "label": "\u00a73 Doc discipline",
+      "file": "willows-grove/docs/INVARIANTS.md",
+      "pattern": "^## \u00a73 \u2014 ",
+      "mode": "head",
+      "standing": "unattested"
+    },
+    {
+      "cell": "J4",
+      "label": "\u00a74 Reader/endpoint coverage",
+      "file": "willows-grove/docs/INVARIANTS.md",
+      "pattern": "^## \u00a74 \u2014 ",
+      "mode": "head",
+      "standing": "unattested"
+    },
+    {
+      "cell": "J5",
+      "label": "\u00a75 Trust order",
+      "file": "willows-grove/docs/INVARIANTS.md",
+      "pattern": "^## \u00a75 \u2014 ",
+      "mode": "head",
+      "standing": "unattested"
+    },
+    {
+      "cell": "J6",
+      "label": "\u00a76 Manifests describe code",
+      "file": "willows-grove/docs/INVARIANTS.md",
+      "pattern": "^## \u00a76 \u2014 ",
+      "mode": "head",
+      "standing": "unattested"
+    },
+    {
+      "cell": "J7",
+      "label": "\u00a77 Consent is real, not automatic",
+      "file": "willows-grove/docs/INVARIANTS.md",
+      "pattern": "^## \u00a77 \u2014 ",
+      "mode": "head",
+      "standing": "unattested"
+    },
+    {
+      "cell": "J8",
+      "label": "\u00a78 Panels read live endpoints",
+      "file": "willows-grove/docs/INVARIANTS.md",
+      "pattern": "^## \u00a78 \u2014 ",
+      "mode": "head",
+      "standing": "unattested"
+    },
+    {
+      "cell": "J9",
+      "label": "\u00a79 Seed reads real canon",
+      "file": "willows-grove/docs/INVARIANTS.md",
+      "pattern": "^## \u00a79 \u2014 ",
+      "mode": "head",
+      "standing": "unattested"
+    },
+    {
+      "cell": "J10",
+      "label": "\u00a710 CI proves the invariants",
+      "file": "willows-grove/docs/INVARIANTS.md",
+      "pattern": "^## \u00a710 \u2014 ",
+      "mode": "head",
+      "standing": "unattested"
+    },
+    {
+      "cell": "J11",
+      "label": "\u00a711 Persona provenance",
+      "file": "willows-grove/docs/INVARIANTS.md",
+      "pattern": "^## \u00a711 \u2014 ",
+      "mode": "head",
+      "standing": "unattested"
+    },
+    {
+      "cell": "J12",
+      "label": "\u00a712 Ratification",
+      "file": "willows-grove/docs/INVARIANTS.md",
+      "pattern": "^## \u00a712 \u2014 ",
+      "mode": "head",
+      "standing": "unattested"
+    },
+    {
+      "cell": "J13",
+      "label": "\u00a712 Grandfather (PRs 1\u201311)",
+      "file": "willows-grove/docs/INVARIANTS.md",
+      "pattern": "^### Grandfather",
+      "mode": "head",
+      "standing": "unattested"
+    },
+    {
+      "cell": "K1",
+      "label": "D1 Canonical runtime",
+      "file": "willows-grove/docs/design/one-box/README.md",
+      "pattern": "^\\| D1 \\| ",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "K2",
+      "label": "D2 Where the chain lives",
+      "file": "willows-grove/docs/design/one-box/README.md",
+      "pattern": "^\\| D2 \\| ",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "K3",
+      "label": "D3 Home of the socket standard",
+      "file": "willows-grove/docs/design/one-box/README.md",
+      "pattern": "^\\| D3 \\| ",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "K4",
+      "label": "D4 The browser door",
+      "file": "willows-grove/docs/design/one-box/README.md",
+      "pattern": "^\\| D4 \\| ",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "K5",
+      "label": "D5 The #101 sealed record",
+      "file": "willows-grove/docs/design/one-box/README.md",
+      "pattern": "^\\| D5 \\| ",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "K6",
+      "label": "D6 Friction ownership",
+      "file": "willows-grove/docs/design/one-box/README.md",
+      "pattern": "^\\| D6 \\| ",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "K7",
+      "label": "D7 Forge refusal without Nestor",
+      "file": "willows-grove/docs/design/one-box/README.md",
+      "pattern": "^\\| D7 \\| ",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "K8",
+      "label": "D8 u2u and the bridge",
+      "file": "willows-grove/docs/design/one-box/README.md",
+      "pattern": "^\\| D8 \\| ",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "K9",
+      "label": "D9 Second front end",
+      "file": "willows-grove/docs/design/one-box/README.md",
+      "pattern": "^\\| D9 \\| ",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "K10",
+      "label": "D10 Ingress: no tunnel by default",
+      "file": "willows-grove/docs/design/one-box/README.md",
+      "pattern": "^\\| D10 \\| ",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "K11",
+      "label": "D11 Grants away from the box",
+      "file": "willows-grove/docs/design/one-box/README.md",
+      "pattern": "^\\| D11 \\| ",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "K12",
+      "label": "D12 Helper commit persona",
+      "file": "willows-grove/docs/design/one-box/README.md",
+      "pattern": "^\\| D12 \\| ",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "K13",
+      "label": "Kaggle benchmark comes first",
+      "file": "willows-grove/docs/design/one-script/next-pile.md",
+      "pattern": "\\*\\*The Kaggle benchmark comes first\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "L1",
+      "label": "0 Close the holes",
+      "file": "willows-grove/docs/design/one-box/README.md",
+      "pattern": "^## \\d+\\. Phase 0 \u2014 ",
+      "mode": "head",
+      "standing": "unattested"
+    },
+    {
+      "cell": "L2",
+      "label": "1 The socket standard",
+      "file": "willows-grove/docs/design/one-box/README.md",
+      "pattern": "^## \\d+\\. Phase 1 \u2014 ",
+      "mode": "head",
+      "standing": "unattested"
+    },
+    {
+      "cell": "L3",
+      "label": "2 Rat gets a door",
+      "file": "willows-grove/docs/design/one-box/README.md",
+      "pattern": "^## \\d+\\. Phase 2 \u2014 ",
+      "mode": "head",
+      "standing": "unattested"
+    },
+    {
+      "cell": "L4",
+      "label": "3 Front ends: one contract",
+      "file": "willows-grove/docs/design/one-box/README.md",
+      "pattern": "^## \\d+\\. Phase 3 \u2014 ",
+      "mode": "head",
+      "standing": "unattested"
+    },
+    {
+      "cell": "L5",
+      "label": "4 The lifecycle behind Rat",
+      "file": "willows-grove/docs/design/one-box/README.md",
+      "pattern": "^## \\d+\\. Phase 4 \u2014 ",
+      "mode": "head",
+      "standing": "unattested"
+    },
+    {
+      "cell": "L6",
+      "label": "5 Nestor behind Rat",
+      "file": "willows-grove/docs/design/one-box/README.md",
+      "pattern": "^## \\d+\\. Phase 5 \u2014 ",
+      "mode": "head",
+      "standing": "unattested"
+    },
+    {
+      "cell": "L7",
+      "label": "6 Egress: click to grant",
+      "file": "willows-grove/docs/design/one-box/README.md",
+      "pattern": "^## \\d+\\. Phase 6 \u2014 ",
+      "mode": "head",
+      "standing": "unattested"
+    },
+    {
+      "cell": "L8",
+      "label": "7 Portless",
+      "file": "willows-grove/docs/design/one-box/README.md",
+      "pattern": "\\*\\*Done when:\\*\\* `ss -ltnp`",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "L9",
+      "label": "8 The surface grows per user",
+      "file": "willows-grove/docs/design/one-box/README.md",
+      "pattern": "^## \\d+\\. Phase 8 \u2014 ",
+      "mode": "head",
+      "standing": "unattested"
+    },
+    {
+      "cell": "L10",
+      "label": "9 The template ships the box",
+      "file": "willows-grove/docs/design/one-box/README.md",
+      "pattern": "^## \\d+\\. Phase 9 \u2014 ",
+      "mode": "head",
+      "standing": "unattested"
+    },
+    {
+      "cell": "L11",
+      "label": "Sequencing: what not to break",
+      "file": "willows-grove/docs/design/one-box/README.md",
+      "pattern": "^## 13\\. Sequencing",
+      "mode": "head",
+      "standing": "unattested"
+    },
+    {
+      "cell": "L12",
+      "label": "Gap pass",
+      "file": "willows-grove/docs/design/one-box/README.md",
+      "pattern": "^## 15\\. Gap pass",
+      "mode": "head",
+      "standing": "unattested"
+    },
+    {
+      "cell": "L13",
+      "label": "The first three bites",
+      "file": "willows-grove/docs/design/one-box/README.md",
+      "pattern": "^## 14\\. The first three bites",
+      "mode": "head",
+      "standing": "unattested"
+    },
+    {
+      "cell": "M1",
+      "label": "Rung 1: hash",
+      "file": "willows-grove/docs/design/one-script/README.md",
+      "pattern": "^\\| 1\\. Hash \\|",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "M2",
+      "label": "Rung 2: code",
+      "file": "willows-grove/docs/design/one-script/README.md",
+      "pattern": "^\\| 2\\. Code \\|",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "M3",
+      "label": "Rung 3: embedder",
+      "file": "willows-grove/docs/design/one-script/README.md",
+      "pattern": "^\\| 3\\. Embedder \\|",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "M4",
+      "label": "Rung 4: small model",
+      "file": "willows-grove/docs/design/one-script/README.md",
+      "pattern": "^\\| 4\\. Small model \\|",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "M5",
+      "label": "Rung 5: cloud",
+      "file": "willows-grove/docs/design/one-script/README.md",
+      "pattern": "^\\| 5\\. Cloud \\|",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "M6",
+      "label": "Rung 6: the human",
+      "file": "willows-grove/docs/design/one-script/README.md",
+      "pattern": "^\\| 6\\. The human \\|",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "M7",
+      "label": "boot",
+      "file": "willows-grove/docs/design/one-script/next-pile.md",
+      "pattern": "^\\| 1 \\| boot \\|",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "M8",
+      "label": "predict",
+      "file": "willows-grove/docs/design/one-script/next-pile.md",
+      "pattern": "^\\| 2 \\| predict \\|",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "M9",
+      "label": "record",
+      "file": "willows-grove/docs/design/one-script/next-pile.md",
+      "pattern": "^\\| 3 \\| record \\|",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "M10",
+      "label": "gate",
+      "file": "willows-grove/docs/design/one-script/next-pile.md",
+      "pattern": "^\\| 4 \\| gate \\|",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "M11",
+      "label": "resolve",
+      "file": "willows-grove/docs/design/one-script/next-pile.md",
+      "pattern": "^\\| 5 \\| resolve \\|",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "M12",
+      "label": "view",
+      "file": "willows-grove/docs/design/one-script/next-pile.md",
+      "pattern": "^\\| 6 \\| view \\|",
+      "mode": "row",
+      "standing": "unattested"
+    },
+    {
+      "cell": "M13",
+      "label": "reverse",
+      "file": "willows-grove/docs/design/one-script/next-pile.md",
+      "pattern": "^\\| 7 \\| reverse \\|",
+      "mode": "row",
+      "standing": "unattested"
+    }
+  ]
+}

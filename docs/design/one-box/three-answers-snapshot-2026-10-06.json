@@ -1,0 +1,85 @@
+{
+ "title": "Three answers, and what comes out of nowhere (2026-10-06)",
+ "cells": {
+  "HK1": {
+   "size": 133,
+   "sha256": "501d4bcc2746e6920d5dd3cbe1710a9c86e89ef6fefdaa7f33f49bdfd15664ca"
+  },
+  "HK2": {
+   "size": 112,
+   "sha256": "68c0381291b4fba61effc6d14f61dd62e834575a26a0fe4d9341b43225548ab8"
+  },
+  "HK3": {
+   "size": 179,
+   "sha256": "2ce184323e7457e82483e9bd6e6be510f042b4f7b5f020fb325a3ad6dd248149"
+  },
+  "HK4": {
+   "size": 132,
+   "sha256": "6b23472e22a64d38a1e89d536ba6e0e85cf6bc4e85eae92c08b3648d961839b0"
+  },
+  "HK5": {
+   "size": 0,
+   "sha256": ""
+  },
+  "HL1": {
+   "size": 185,
+   "sha256": "4d1a85fe50883fefc40a97c9964a100334d645a065d75aa1f8606fb1966e2278"
+  },
+  "HL2": {
+   "size": 204,
+   "sha256": "c19a835b760e9dfce8f1ea99577b35cbabec8cd38ddfc528322623c9ef66ee5b"
+  },
+  "HL3": {
+   "size": 196,
+   "sha256": "a1fea186536956087474373af1b30a93784cf456c909155590f92c81723fcfab"
+  },
+  "HL4": {
+   "size": 136,
+   "sha256": "33e884124e8b325f608dfa7e833c2ebfaaef83c9ffac2bcb3815be8db8e1aa66"
+  },
+  "HL5": {
+   "size": 179,
+   "sha256": "77a16b1fcb6bbb3fd673c08aa14ea470910f2aa70dfb30ac2bb1408dfbae82a6"
+  },
+  "HM1": {
+   "size": 54,
+   "sha256": "21203d027df86598cd09ff7dc8f05a3bf9a13553e09bc06ef56a16836b6d93fe"
+  },
+  "HM2": {
+   "size": 292,
+   "sha256": "0c3b9b6a362c49aeb3cb78e2cc1486afbcbce3f0590a74cc1029a0f81a6428cd"
+  },
+  "HM3": {
+   "size": 258,
+   "sha256": "c5caf868ae994ecdfbd828455018131e370cbf2e7597b06ab58f422a008fabe1"
+  },
+  "HM4": {
+   "size": 183,
+   "sha256": "7ff53d516d757625bb315762dddc0b00f0a966a990cdd933cd8e13d5cdb1df97"
+  },
+  "HM5": {
+   "size": 214,
+   "sha256": "9d3c405ad8ee3613fa8cd46673c1c5b481f8f2941c31c7f5dbb897b01a6d34b0"
+  },
+  "HN1": {
+   "size": 211,
+   "sha256": "bcfbb2199035a99a4cd52f1c8237c5b921e72642d942f105ca554309b9901467"
+  },
+  "HN2": {
+   "size": 157,
+   "sha256": "6eff90e4910d98c9ba1bfece14d8da31c9fb870f8c9c02aed78c543c44f3297b"
+  },
+  "HN3": {
+   "size": 245,
+   "sha256": "cd925a59809f4afd76d62ec4fb3aa480b94ed069de638c0f6a16d84e95a4d120"
+  },
+  "HN4": {
+   "size": 358,
+   "sha256": "c62a294c67f852be4c6fbc6a1c4c1667f7542f0b97af064db1e1771300c018ec"
+  },
+  "HN5": {
+   "size": 352,
+   "sha256": "84bd59251b047368c93c21ed317ba3e94cef6a714a50a62ecd405b3c3c1d5fd3"
+  }
+ }
+}

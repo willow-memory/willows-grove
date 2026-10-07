@@ -1,0 +1,278 @@
+{
+ "title": "Python archaeology, in the grid (2026-10-06)",
+ "root": "../../../..",
+ "rows": [
+  {
+   "row": "HO",
+   "title": "The ask",
+   "source": "the notes, section HO (operator's words verbatim; build and test figures measured in the session; the rest the agent's reading)"
+  },
+  {
+   "row": "HP",
+   "title": "1993 to 1994",
+   "source": "the notes, section HP (operator's words verbatim; build and test figures measured in the session; the rest the agent's reading)"
+  },
+  {
+   "row": "HQ",
+   "title": "2000 to 2008",
+   "source": "the notes, section HQ (operator's words verbatim; build and test figures measured in the session; the rest the agent's reading)"
+  },
+  {
+   "row": "HR",
+   "title": "2020 to 2026",
+   "source": "the notes, section HR (operator's words verbatim; build and test figures measured in the session; the rest the agent's reading)"
+  },
+  {
+   "row": "HS",
+   "title": "The pre-AI fix",
+   "source": "the notes, section HS (operator's words verbatim; build and test figures measured in the session; the rest the agent's reading)"
+  },
+  {
+   "row": "HT",
+   "title": "Where it went",
+   "source": "the notes, section HT (operator's words verbatim; build and test figures measured in the session; the rest the agent's reading)"
+  }
+ ],
+ "cells": [
+  {
+   "cell": "HO1",
+   "label": "Operator, the start",
+   "file": "willows-grove/docs/design/one-box/python-archaeology-2026-10-06.md",
+   "pattern": "^- \\*\\*Operator, the start\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HO2",
+   "label": "Operator, the steps",
+   "file": "willows-grove/docs/design/one-box/python-archaeology-2026-10-06.md",
+   "pattern": "^- \\*\\*Operator, the steps\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HO3",
+   "label": "Operator, the test",
+   "file": "willows-grove/docs/design/one-box/python-archaeology-2026-10-06.md",
+   "pattern": "^- \\*\\*Operator, the test\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HO4",
+   "label": "Operator, the modules",
+   "file": "willows-grove/docs/design/one-box/python-archaeology-2026-10-06.md",
+   "pattern": "^- \\*\\*Operator, the modules\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HO5",
+   "label": "Operator, where it goes",
+   "file": "willows-grove/docs/design/one-box/python-archaeology-2026-10-06.md",
+   "pattern": "^- \\*\\*Operator, where it goes\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HP1",
+   "label": "0.9.8, rebuilt",
+   "file": "willows-grove/docs/design/one-box/python-archaeology-2026-10-06.md",
+   "pattern": "^- \\*\\*0\\.9\\.8, rebuilt\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HP2",
+   "label": "The 64-bit bug in 0.9.8",
+   "file": "willows-grove/docs/design/one-box/python-archaeology-2026-10-06.md",
+   "pattern": "^- \\*\\*The 64\\-bit bug in 0\\.9\\.8\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HP3",
+   "label": "0.9.9, compared only",
+   "file": "willows-grove/docs/design/one-box/python-archaeology-2026-10-06.md",
+   "pattern": "^- \\*\\*0\\.9\\.9, compared only\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HP4",
+   "label": "1.0.0, cut mid-move",
+   "file": "willows-grove/docs/design/one-box/python-archaeology-2026-10-06.md",
+   "pattern": "^- \\*\\*1\\.0\\.0, cut mid\\-move\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HP5",
+   "label": "The bug that waited until 1.5",
+   "file": "willows-grove/docs/design/one-box/python-archaeology-2026-10-06.md",
+   "pattern": "^- \\*\\*The bug that waited until 1\\.5\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HQ1",
+   "label": "2.0",
+   "file": "willows-grove/docs/design/one-box/python-archaeology-2026-10-06.md",
+   "pattern": "^- \\*\\*2\\.0\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HQ2",
+   "label": "2.2, the first hmac",
+   "file": "willows-grove/docs/design/one-box/python-archaeology-2026-10-06.md",
+   "pattern": "^- \\*\\*2\\.2, the first hmac\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HQ3",
+   "label": "2.5, the first hashlib",
+   "file": "willows-grove/docs/design/one-box/python-archaeology-2026-10-06.md",
+   "pattern": "^- \\*\\*2\\.5, the first hashlib\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HQ4",
+   "label": "3.0",
+   "file": "willows-grove/docs/design/one-box/python-archaeology-2026-10-06.md",
+   "pattern": "^- \\*\\*3\\.0\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HQ5",
+   "label": "The same answer for 24 years",
+   "file": "willows-grove/docs/design/one-box/python-archaeology-2026-10-06.md",
+   "pattern": "^- \\*\\*The same answer for 24 years\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HR1",
+   "label": "3.9.0, the last before Copilot",
+   "file": "willows-grove/docs/design/one-box/python-archaeology-2026-10-06.md",
+   "pattern": "^- \\*\\*3\\.9\\.0, the last before Copilot\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HR2",
+   "label": "3.14.0",
+   "file": "willows-grove/docs/design/one-box/python-archaeology-2026-10-06.md",
+   "pattern": "^- \\*\\*3\\.14\\.0\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HR3",
+   "label": "3.15.0rc3",
+   "file": "willows-grove/docs/design/one-box/python-archaeology-2026-10-06.md",
+   "pattern": "^- \\*\\*3\\.15\\.0rc3\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HR4",
+   "label": "The trend",
+   "file": "willows-grove/docs/design/one-box/python-archaeology-2026-10-06.md",
+   "pattern": "^- \\*\\*The trend\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HR5",
+   "label": "What every failure turned out to be",
+   "file": "willows-grove/docs/design/one-box/python-archaeology-2026-10-06.md",
+   "pattern": "^- \\*\\*What every failure turned out to be\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HS1",
+   "label": "The constraint",
+   "file": "willows-grove/docs/design/one-box/python-archaeology-2026-10-06.md",
+   "pattern": "^- \\*\\*The constraint\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HS2",
+   "label": "The fix",
+   "file": "willows-grove/docs/design/one-box/python-archaeology-2026-10-06.md",
+   "pattern": "^- \\*\\*The fix\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HS3",
+   "label": "The gate",
+   "file": "willows-grove/docs/design/one-box/python-archaeology-2026-10-06.md",
+   "pattern": "^- \\*\\*The gate\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HS4",
+   "label": "The dropped guard",
+   "file": "willows-grove/docs/design/one-box/python-archaeology-2026-10-06.md",
+   "pattern": "^- \\*\\*The dropped guard\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HS5",
+   "label": "Still needed",
+   "file": "willows-grove/docs/design/one-box/python-archaeology-2026-10-06.md",
+   "pattern": "^- \\*\\*Still needed\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HT1",
+   "label": "The store",
+   "file": "willows-grove/docs/design/one-box/python-archaeology-2026-10-06.md",
+   "pattern": "^- \\*\\*The store\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HT2",
+   "label": "The playground",
+   "file": "willows-grove/docs/design/one-box/python-archaeology-2026-10-06.md",
+   "pattern": "^- \\*\\*The playground\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HT3",
+   "label": "Container only",
+   "file": "willows-grove/docs/design/one-box/python-archaeology-2026-10-06.md",
+   "pattern": "^- \\*\\*Container only\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HT4",
+   "label": "Reconstructed, not measured",
+   "file": "willows-grove/docs/design/one-box/python-archaeology-2026-10-06.md",
+   "pattern": "^- \\*\\*Reconstructed, not measured\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HT5",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "para",
+   "standing": "unattested"
+  }
+ ]
+}

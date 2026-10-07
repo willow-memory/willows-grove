@@ -1,0 +1,85 @@
+{
+ "title": "Session four: 113, G5 fix, relay initiation (2026-10-06)",
+ "cells": {
+  "IM1": {
+   "size": 314,
+   "sha256": "5f67287ddf3a6428fa90f1b250286a38c97c563c2dcd8bc095d9fbb391eb5bdd"
+  },
+  "IM2": {
+   "size": 289,
+   "sha256": "470cc5def9c30887bb2be19093f05f7cd06cb91f694375b9f84ddc2458f3396d"
+  },
+  "IM3": {
+   "size": 301,
+   "sha256": "23745f7e153c09ad5f6d839b8b15e37fa1b83519161a3bfc31e728e61dda5bfd"
+  },
+  "IM4": {
+   "size": 261,
+   "sha256": "fd747137baa21d9df973128e0c6d81fa48abc823ac59f085cac932a9147034ab"
+  },
+  "IM5": {
+   "size": 183,
+   "sha256": "1467239b8ecbe1b75ae23e45198f289a615d089ba2c3de1dd02f41e0f8430300"
+  },
+  "IN1": {
+   "size": 278,
+   "sha256": "3c31cf384f07c9d169ef681ba3c9b594bdbd839c57075a65c3500434737bf4dd"
+  },
+  "IN2": {
+   "size": 176,
+   "sha256": "28faed76eac262fdb5e70d61ed3e4e9351526a1f2a1843838a6cb487182a5a31"
+  },
+  "IN3": {
+   "size": 184,
+   "sha256": "b7d22dfb57b11d9fd1cbb01cc39740a6d1599a8b5819645a38c6e461a2499763"
+  },
+  "IN4": {
+   "size": 222,
+   "sha256": "705a8a2157769be9b9d8edff4df9a08269c6cd6dff87ecc240d6b9e6fd635d06"
+  },
+  "IN5": {
+   "size": 148,
+   "sha256": "4046ee4b99a4fce1f5dce3161621459821f012e6fc3984c364f4a0356a71b94e"
+  },
+  "IO1": {
+   "size": 206,
+   "sha256": "e43b739f5ab03b6ccf74d2cd1513abf5401b57e3991dadfc30991546d61f5b43"
+  },
+  "IO2": {
+   "size": 227,
+   "sha256": "bb94cacc4d3554e93e30db03bed06ab6c69f64646c42e7b74baf16e7a70f01b3"
+  },
+  "IO3": {
+   "size": 126,
+   "sha256": "12064d3728035bcf72101008a63a17924cf6626e1ce7881a3f23c90426ce3152"
+  },
+  "IO4": {
+   "size": 173,
+   "sha256": "f24be789ec6b06c37665ca1d863a670e456a361762846e0953e521e3e869b23a"
+  },
+  "IO5": {
+   "size": 152,
+   "sha256": "13b865b37548f6eb38cd14c68a58f009a65fc10fe6f0007c5dc246cd3b7fc9af"
+  },
+  "IP1": {
+   "size": 176,
+   "sha256": "bc8bfa37a9ec629ddbba846b022c9dc7f84f244f7cb91bb1ff76a1221ea4311b"
+  },
+  "IP2": {
+   "size": 181,
+   "sha256": "f3d180d0b72b6fdf1bf876f983a93c4f6edfd1ccfbcd8d90c896b588cb32faa1"
+  },
+  "IP3": {
+   "size": 210,
+   "sha256": "a41d000d6e40009f5766002631987abdc2554d99e7efc05647ff7c3ab47914a7"
+  },
+  "IP4": {
+   "size": 165,
+   "sha256": "c5fd5429e5ee6075432a7e143af912025a5b9e2a7277b46cd564ee24a47a9d6b"
+  },
+  "IP5": {
+   "size": 87,
+   "sha256": "fa90def1c5db9bed06001c591fad4c21a0ff47ac0fd6211c8ea910189b679c50"
+  }
+ }
+}

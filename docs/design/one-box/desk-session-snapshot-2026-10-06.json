@@ -1,0 +1,125 @@
+{
+ "title": "One hook, two hashes, Draft 0.9, and the instruction files, in the grid (2026-10-06)",
+ "cells": {
+  "IG1": {
+   "size": 225,
+   "sha256": "2e49003489cb01caadf83efd62337292ee97ed25096816c4ab3012b9d50be07a"
+  },
+  "IG2": {
+   "size": 190,
+   "sha256": "51104a5c8c207cb4b18fb371a1a1efad05c26b6e873004d07d87974ae4cf18a0"
+  },
+  "IG3": {
+   "size": 171,
+   "sha256": "a9976ffbdf8d91cbff0e9263c57a01d30ada3985d90a4b67dca5e174db7367c9"
+  },
+  "IG4": {
+   "size": 179,
+   "sha256": "493e1a92a1c8117c5bb447502fca30f7a63528569513f4c59d780d517f884c53"
+  },
+  "IG5": {
+   "size": 129,
+   "sha256": "b97dfc5b4c4635caea255ab1fc57f96e3f3b2af558fcb52f1ae62092ebd774dc"
+  },
+  "IH1": {
+   "size": 261,
+   "sha256": "a6d0177260d571dd816bc149dbbb9f16eb3068289b40349b204ce94bcec84e9d"
+  },
+  "IH2": {
+   "size": 257,
+   "sha256": "39a12d6f6f9c6ae655ff202c5362f35079512317778e75c3d98779bd94200288"
+  },
+  "IH3": {
+   "size": 168,
+   "sha256": "108cf4f4216e784a0547f92592c65fc27a94060e9d99a6c35c6a0e15917083b4"
+  },
+  "IH4": {
+   "size": 212,
+   "sha256": "a7e094d806225eea9b41445cf5cfeede9e5be91b718bb509891451b0a3d8c791"
+  },
+  "IH5": {
+   "size": 198,
+   "sha256": "d030b5617ac5ddf13593ae1712dd03b305855a747fcbda729e302ac821a406da"
+  },
+  "II1": {
+   "size": 141,
+   "sha256": "a9f5ccd45cad59a86c1ef26ec014f29dab8c1e28f05b5f927455dcecebe0e719"
+  },
+  "II2": {
+   "size": 205,
+   "sha256": "952a9bbebb98e81cd6c5222653d090eadfae8578e7fcfbb82db7a3b0b628147a"
+  },
+  "II3": {
+   "size": 191,
+   "sha256": "346e5a2de027e0a3b218d17e3fad073c00efd4e624f41e281d3273fbb2ef5b6a"
+  },
+  "II4": {
+   "size": 198,
+   "sha256": "80e671555aff7dde71520d7b7d1a3b06ecafcf9081d13a40996a5a9a9367aa57"
+  },
+  "II5": {
+   "size": 128,
+   "sha256": "27b971089f80a44cd2ee30d49366f21c35b8af85e8ac0e26df06321c1eb6193c"
+  },
+  "IJ1": {
+   "size": 191,
+   "sha256": "bde016ab512c2bcaa78a6fa460339de07bd0b900bf397ff3b46ff69590c35cca"
+  },
+  "IJ2": {
+   "size": 153,
+   "sha256": "1d537ba566cceceaacd6c530c41891a94c17fc0015bd2e16218f9898e8cf3ad8"
+  },
+  "IJ3": {
+   "size": 198,
+   "sha256": "33bbfee6215e75af190e2f384324463606a68f3f6acbca481e11e4be9be54c12"
+  },
+  "IJ4": {
+   "size": 230,
+   "sha256": "981c553be1310db6359cde6ece817aa41ce64765ca300d4ef850744beeb4aec9"
+  },
+  "IJ5": {
+   "size": 88,
+   "sha256": "1fc849844512c7399dbd4d2e60c6d5119b43eae5e421643f88ca23255bc3aaee"
+  },
+  "IK1": {
+   "size": 209,
+   "sha256": "b30a64fb869753f23e119016ce5d9f400015f230ee588c0ee8c9f5fec4d9d82e"
+  },
+  "IK2": {
+   "size": 93,
+   "sha256": "3df0a61d37047e0894ac2d6148921feea55b1c1a4759de15db087cec087e67a0"
+  },
+  "IK3": {
+   "size": 144,
+   "sha256": "db5e6d2c3881e2b7d8328759b0a21da533821179433896129e1555b62b0e3b74"
+  },
+  "IK4": {
+   "size": 143,
+   "sha256": "8c134a64b2ea26cbdaf6c35347a4f7761ec2181f32dfdb7738be6b6f83ccdf14"
+  },
+  "IK5": {
+   "size": 202,
+   "sha256": "7ec5c171eeac3759ef42da848cc486b6f0c691fd8507ad8956181d3432e0357a"
+  },
+  "IL1": {
+   "size": 112,
+   "sha256": "dc684d0f2cff8dce4e3c4a906c1548356e645f5a8bcd61431b66d91082b860ac"
+  },
+  "IL2": {
+   "size": 153,
+   "sha256": "7e5494da75af95d77b0d1aa112d4a3e6a9a6af0cf66a04b90ca94306709bd922"
+  },
+  "IL3": {
+   "size": 134,
+   "sha256": "40f7357d1fbfe02904f838beb97c7366755ba486be3485221ebdcf36afd842f5"
+  },
+  "IL4": {
+   "size": 177,
+   "sha256": "4be7a15208f2028ea6b007aae46e798204bcdf08de8ee4a8c9a18471ff6386f8"
+  },
+  "IL5": {
+   "size": 158,
+   "sha256": "611f80347894aeadd79e580a95d85dd50efc7efeb0b5b681865f1a57eae20a95"
+  }
+ }
+}

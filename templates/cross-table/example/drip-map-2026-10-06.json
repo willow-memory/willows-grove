@@ -1,0 +1,825 @@
+{
+ "title": "The fat, dripped (2026-10-06)",
+ "root": "../../../..",
+ "rows": [
+  {
+   "row": "R",
+   "title": "G5 Trailers: `Persona:`, `Ratified-by:`",
+   "source": "G5's passage (`willows-grove/CLAUDE.md`), cut into 6 clause(s)"
+  },
+  {
+   "row": "S",
+   "title": "K10 D10 Ingress: no tunnel by default",
+   "source": "K10's passage (`willows-grove/docs/design/one-box/README.md`), cut into 10 clause(s)"
+  },
+  {
+   "row": "T",
+   "title": "L6 5 Nestor behind Rat",
+   "source": "L6's passage (`willows-grove/docs/design/one-box/README.md`), cut into 6 clause(s)"
+  },
+  {
+   "row": "U",
+   "title": "J2 §2 Supersedes D7",
+   "source": "J2's passage (`willows-grove/docs/INVARIANTS.md`), cut into 2 clause(s)"
+  },
+  {
+   "row": "V",
+   "title": "J9 §9 Seed reads real canon",
+   "source": "J9's passage (`willows-grove/docs/INVARIANTS.md`), cut into 3 clause(s)"
+  },
+  {
+   "row": "W",
+   "title": "G4 Standing grant in first commit",
+   "source": "G4's passage (`willows-grove/docs/INVARIANTS.md`), cut into 2 clause(s)"
+  },
+  {
+   "row": "X",
+   "title": "J7 §7 Consent is real, not automatic",
+   "source": "J7's passage (`willows-grove/docs/INVARIANTS.md`), cut into 4 clause(s)"
+  },
+  {
+   "row": "Y",
+   "title": "B11 Only the seal ledger is shared",
+   "source": "B11's passage (`willows-grove/docs/design/one-script/README.md`), cut into 2 clause(s)"
+  },
+  {
+   "row": "Z",
+   "title": "P1 The shipping container",
+   "source": "P1's passage (`willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md`), cut into 5 clause(s)"
+  }
+ ],
+ "cells": [
+  {
+   "cell": "R1",
+   "label": "6. Persona provenance and ratification …",
+   "file": "willows-grove/CLAUDE.md",
+   "pattern": "6\\. \\*\\*Persona provenance and ratification are enforced, not a",
+   "mode": "clause",
+   "standing": "unattested"
+  },
+  {
+   "cell": "R2",
+   "label": "Every commit that changes tracked …",
+   "file": "willows-grove/CLAUDE.md",
+   "pattern": "Every commit that changes tracked code — including `\\.md`, wh",
+   "mode": "clause",
+   "standing": "unattested"
+  },
+  {
+   "cell": "R3",
+   "label": "Merge commits are exempt; release-please's …",
+   "file": "willows-grove/CLAUDE.md",
+   "pattern": "Merge commits are exempt; release\\-please's own release commi",
+   "mode": "clause",
+   "standing": "unattested"
+  },
+  {
+   "cell": "R4",
+   "label": "Every PR body ends with …",
+   "file": "willows-grove/CLAUDE.md",
+   "pattern": "Every PR body ends with `Ratified\\-by: <id> — \"<the operator'",
+   "mode": "clause",
+   "standing": "unattested"
+  },
+  {
+   "cell": "R5",
+   "label": "release-please's own release PR is …",
+   "file": "willows-grove/CLAUDE.md",
+   "pattern": "release\\-please's own release PR is exempt on the same shape ",
+   "mode": "clause",
+   "standing": "unattested"
+  },
+  {
+   "cell": "R6",
+   "label": "INVARIANTS.md §11 and §12; scripts/check_persona_provenance.py, …",
+   "file": "willows-grove/CLAUDE.md",
+   "pattern": "INVARIANTS\\.md §11 and §12; `scripts/check_persona_provenance",
+   "mode": "clause",
+   "standing": "unattested"
+  },
+  {
+   "cell": "R7",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "G5's passage has no more clauses"
+  },
+  {
+   "cell": "R8",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "G5's passage has no more clauses"
+  },
+  {
+   "cell": "R9",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "G5's passage has no more clauses"
+  },
+  {
+   "cell": "R10",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "G5's passage has no more clauses"
+  },
+  {
+   "cell": "S1",
+   "label": "D10",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "this clause can't be found again on its own"
+  },
+  {
+   "cell": "S2",
+   "label": "Ingress.",
+   "file": "willows-grove/docs/design/one-box/README.md",
+   "pattern": "\\*\\*Ingress\\.\\*\\*",
+   "mode": "clause",
+   "standing": "unattested"
+  },
+  {
+   "cell": "S3",
+   "label": "What may reach the box …",
+   "file": "willows-grove/docs/design/one-box/README.md",
+   "pattern": "What may reach the box from the public internet, and through",
+   "mode": "clause",
+   "standing": "unattested"
+  },
+  {
+   "cell": "S4",
+   "label": "No tunnel by default.",
+   "file": "willows-grove/docs/design/one-box/README.md",
+   "pattern": "\\*\\*No tunnel by default\\.\\*\\*",
+   "mode": "clause",
+   "standing": "unattested"
+  },
+  {
+   "cell": "S5",
+   "label": "willow-bot polls GitHub instead of …",
+   "file": "willows-grove/docs/design/one-box/README.md",
+   "pattern": "willow\\-bot \\*\\*polls\\*\\* GitHub instead of receiving webhooks\\.",
+   "mode": "clause",
+   "standing": "unattested"
+  },
+  {
+   "cell": "S6",
+   "label": "claude.ai remote MCP is opt-in, …",
+   "file": "willows-grove/docs/design/one-box/README.md",
+   "pattern": "claude\\.ai remote MCP is \\*\\*opt\\-in\\*\\*, opened by the operator o",
+   "mode": "clause",
+   "standing": "unattested"
+  },
+  {
+   "cell": "S7",
+   "label": "Excluded on the operator's criterion, …",
+   "file": "willows-grove/docs/design/one-box/README.md",
+   "pattern": "Excluded on the operator's criterion, unwillingness to depen",
+   "mode": "clause",
+   "standing": "unattested"
+  },
+  {
+   "cell": "S8",
+   "label": "Headscale (BSD-3) is acceptable for …",
+   "file": "willows-grove/docs/design/one-box/README.md",
+   "pattern": "Headscale \\(BSD\\-3\\) is acceptable for a private mesh but still",
+   "mode": "clause",
+   "standing": "unattested"
+  },
+  {
+   "cell": "S9",
+   "label": "Pangolin is AGPL-3 + FCL",
+   "file": "willows-grove/docs/design/one-box/README.md",
+   "pattern": "Pangolin is AGPL\\-3 \\+ FCL",
+   "mode": "clause",
+   "standing": "unattested"
+  },
+  {
+   "cell": "S10",
+   "label": "Phase 7",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "this clause can't be found again on its own"
+  },
+  {
+   "cell": "T1",
+   "label": "1. Relational read.",
+   "file": "willows-grove/docs/design/one-box/README.md",
+   "pattern": "1\\. \\*\\*Relational read\\.\\*\\*",
+   "mode": "clause",
+   "standing": "unattested"
+  },
+  {
+   "cell": "T2",
+   "label": "Add neighborhood(id, hops=2) to Nestor's …",
+   "file": "willows-grove/docs/design/one-box/README.md",
+   "pattern": "Add `neighborhood\\(id, hops=2\\)` to Nestor's Python API, with ",
+   "mode": "clause",
+   "standing": "unattested"
+  },
+  {
+   "cell": "T3",
+   "label": "It returns the pair, its …",
+   "file": "willows-grove/docs/design/one-box/README.md",
+   "pattern": "It returns the pair, its lineage, its edges, and each linked",
+   "mode": "clause",
+   "standing": "unattested"
+  },
+  {
+   "cell": "T4",
+   "label": "Today constraints_on goes one hop …",
+   "file": "willows-grove/docs/design/one-box/README.md",
+   "pattern": "Today `constraints_on` goes one hop and leaves out the neigh",
+   "mode": "clause",
+   "standing": "unattested"
+  },
+  {
+   "cell": "T5",
+   "label": "Rat puts the neighborhood into …",
+   "file": "willows-grove/docs/design/one-box/README.md",
+   "pattern": "Rat puts the neighborhood into the IN\\-door bundle\\.",
+   "mode": "clause",
+   "standing": "unattested"
+  },
+  {
+   "cell": "T6",
+   "label": "Neighbours come by edge only, …",
+   "file": "willows-grove/docs/design/one-box/README.md",
+   "pattern": "Neighbours come by edge only, never by similarity, so retrie",
+   "mode": "clause",
+   "standing": "unattested"
+  },
+  {
+   "cell": "T7",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "L6's passage has no more clauses"
+  },
+  {
+   "cell": "T8",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "L6's passage has no more clauses"
+  },
+  {
+   "cell": "T9",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "L6's passage has no more clauses"
+  },
+  {
+   "cell": "T10",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "L6's passage has no more clauses"
+  },
+  {
+   "cell": "U1",
+   "label": "docs/design/willow-grove-premise.md D7 sealed the phrase …",
+   "file": "willows-grove/docs/INVARIANTS.md",
+   "pattern": "`docs/design/willow\\-grove\\-premise\\.md` D7 sealed the phrase \\*",
+   "mode": "clause",
+   "standing": "unattested"
+  },
+  {
+   "cell": "U2",
+   "label": "That phrase was widely misread …",
+   "file": "willows-grove/docs/INVARIANTS.md",
+   "pattern": "That phrase was widely misread as \"empty\\-on\\-failure is fine\"",
+   "mode": "clause",
+   "standing": "unattested"
+  },
+  {
+   "cell": "U3",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "J2's passage has no more clauses"
+  },
+  {
+   "cell": "U4",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "J2's passage has no more clauses"
+  },
+  {
+   "cell": "U5",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "J2's passage has no more clauses"
+  },
+  {
+   "cell": "U6",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "J2's passage has no more clauses"
+  },
+  {
+   "cell": "U7",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "J2's passage has no more clauses"
+  },
+  {
+   "cell": "U8",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "J2's passage has no more clauses"
+  },
+  {
+   "cell": "U9",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "J2's passage has no more clauses"
+  },
+  {
+   "cell": "U10",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "J2's passage has no more clauses"
+  },
+  {
+   "cell": "V1",
+   "label": "The /seed/ route renders content …",
+   "file": "willows-grove/docs/INVARIANTS.md",
+   "pattern": "The `/seed/` route renders content from `governance/seed/can",
+   "mode": "clause",
+   "standing": "unattested"
+  },
+  {
+   "cell": "V2",
+   "label": "On absence the stub is …",
+   "file": "willows-grove/docs/INVARIANTS.md",
+   "pattern": "On absence the stub is served \\(C3 discipline\\)\\.",
+   "mode": "clause",
+   "standing": "unattested"
+  },
+  {
+   "cell": "V3",
+   "label": "No content is invented at …",
+   "file": "willows-grove/docs/INVARIANTS.md",
+   "pattern": "No content is invented at render time; the reader either quo",
+   "mode": "clause",
+   "standing": "unattested"
+  },
+  {
+   "cell": "V4",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "J9's passage has no more clauses"
+  },
+  {
+   "cell": "V5",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "J9's passage has no more clauses"
+  },
+  {
+   "cell": "V6",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "J9's passage has no more clauses"
+  },
+  {
+   "cell": "V7",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "J9's passage has no more clauses"
+  },
+  {
+   "cell": "V8",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "J9's passage has no more clauses"
+  },
+  {
+   "cell": "V9",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "J9's passage has no more clauses"
+  },
+  {
+   "cell": "V10",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "J9's passage has no more clauses"
+  },
+  {
+   "cell": "W1",
+   "label": "- Standing authorizations may cover …",
+   "file": "willows-grove/docs/INVARIANTS.md",
+   "pattern": "\\- \\*\\*Standing authorizations\\*\\* may cover a defined scope of w",
+   "mode": "clause",
+   "standing": "unattested"
+  },
+  {
+   "cell": "W2",
+   "label": "A standing authorization must be …",
+   "file": "willows-grove/docs/INVARIANTS.md",
+   "pattern": "A standing authorization must be recorded once in the branch",
+   "mode": "clause",
+   "standing": "unattested"
+  },
+  {
+   "cell": "W3",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "G4's passage has no more clauses"
+  },
+  {
+   "cell": "W4",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "G4's passage has no more clauses"
+  },
+  {
+   "cell": "W5",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "G4's passage has no more clauses"
+  },
+  {
+   "cell": "W6",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "G4's passage has no more clauses"
+  },
+  {
+   "cell": "W7",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "G4's passage has no more clauses"
+  },
+  {
+   "cell": "W8",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "G4's passage has no more clauses"
+  },
+  {
+   "cell": "W9",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "G4's passage has no more clauses"
+  },
+  {
+   "cell": "W10",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "G4's passage has no more clauses"
+  },
+  {
+   "cell": "X1",
+   "label": "OAuth authorization never auto-issues a …",
+   "file": "willows-grove/docs/INVARIANTS.md",
+   "pattern": "OAuth authorization never auto\\-issues a code\\.",
+   "mode": "clause",
+   "standing": "unattested"
+  },
+  {
+   "cell": "X2",
+   "label": "The operator approves via a …",
+   "file": "willows-grove/docs/INVARIANTS.md",
+   "pattern": "The operator approves via a loopback\\-only page\\.",
+   "mode": "clause",
+   "standing": "unattested"
+  },
+  {
+   "cell": "X3",
+   "label": "Access tokens have a bounded …",
+   "file": "willows-grove/docs/INVARIANTS.md",
+   "pattern": "Access tokens have a bounded TTL suitable for the operator s",
+   "mode": "clause",
+   "standing": "unattested"
+  },
+  {
+   "cell": "X4",
+   "label": "DNS-rebinding protection is on regardless …",
+   "file": "willows-grove/docs/INVARIANTS.md",
+   "pattern": "DNS\\-rebinding protection is on regardless of scheme; a publi",
+   "mode": "clause",
+   "standing": "unattested"
+  },
+  {
+   "cell": "X5",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "J7's passage has no more clauses"
+  },
+  {
+   "cell": "X6",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "J7's passage has no more clauses"
+  },
+  {
+   "cell": "X7",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "J7's passage has no more clauses"
+  },
+  {
+   "cell": "X8",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "J7's passage has no more clauses"
+  },
+  {
+   "cell": "X9",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "J7's passage has no more clauses"
+  },
+  {
+   "cell": "X10",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "J7's passage has no more clauses"
+  },
+  {
+   "cell": "Y1",
+   "label": "The operator, the same session: …",
+   "file": "willows-grove/docs/design/one-script/README.md",
+   "pattern": "The operator, the same session: \"I don't think were going to",
+   "mode": "clause",
+   "standing": "unattested"
+  },
+  {
+   "cell": "Y2",
+   "label": "The reading: each session's B1 …",
+   "file": "willows-grove/docs/design/one-script/README.md",
+   "pattern": "The reading: each session's B1 store holds its own record an",
+   "mode": "clause",
+   "standing": "unattested"
+  },
+  {
+   "cell": "Y3",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "B11's passage has no more clauses"
+  },
+  {
+   "cell": "Y4",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "B11's passage has no more clauses"
+  },
+  {
+   "cell": "Y5",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "B11's passage has no more clauses"
+  },
+  {
+   "cell": "Y6",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "B11's passage has no more clauses"
+  },
+  {
+   "cell": "Y7",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "B11's passage has no more clauses"
+  },
+  {
+   "cell": "Y8",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "B11's passage has no more clauses"
+  },
+  {
+   "cell": "Y9",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "B11's passage has no more clauses"
+  },
+  {
+   "cell": "Y10",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "B11's passage has no more clauses"
+  },
+  {
+   "cell": "Z1",
+   "label": "- The shipping container.",
+   "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
+   "pattern": "\\- \\*\\*The shipping container\\.\\*\\*",
+   "mode": "clause",
+   "standing": "unattested"
+  },
+  {
+   "cell": "Z2",
+   "label": "Malcom McLean's standard steel box …",
+   "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
+   "pattern": "Malcom McLean's standard steel box in the 1950s cut the cost",
+   "mode": "clause",
+   "standing": "unattested"
+  },
+  {
+   "cell": "Z3",
+   "label": "The box itself wasn't clever.",
+   "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
+   "pattern": "The box itself wasn't clever\\.",
+   "mode": "clause",
+   "standing": "unattested"
+  },
+  {
+   "cell": "Z4",
+   "label": "The point was that every …",
+   "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
+   "pattern": "The point was that every port, crane, truck and train agreed",
+   "mode": "clause",
+   "standing": "unattested"
+  },
+  {
+   "cell": "Z5",
+   "label": "Marc Levinson's The Box tells …",
+   "file": "willows-grove/docs/design/one-box/boxes-outside-2026-10-06.md",
+   "pattern": "Marc Levinson's \\*The Box\\* tells the story\\.",
+   "mode": "clause",
+   "standing": "unattested"
+  },
+  {
+   "cell": "Z6",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "P1's passage has no more clauses"
+  },
+  {
+   "cell": "Z7",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "P1's passage has no more clauses"
+  },
+  {
+   "cell": "Z8",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "P1's passage has no more clauses"
+  },
+  {
+   "cell": "Z9",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "P1's passage has no more clauses"
+  },
+  {
+   "cell": "Z10",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "clause",
+   "standing": "unattested",
+   "note": "P1's passage has no more clauses"
+  }
+ ]
+}

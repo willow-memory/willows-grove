@@ -1,0 +1,200 @@
+{
+ "title": "Gerald atoms to the main table (2026-10-06)",
+ "links": [
+  {
+   "from": "AA3",
+   "to": [
+    "G5",
+    "K10",
+    "L6",
+    "J2",
+    "J9",
+    "G4",
+    "J7",
+    "B11"
+   ],
+   "why": "Atom S03 names these boxes of the main table.",
+   "standing": "unattested"
+  },
+  {
+   "from": "AA5",
+   "to": [
+    "K10"
+   ],
+   "why": "Atom S05 names these boxes of the main table.",
+   "standing": "unattested"
+  },
+  {
+   "from": "AA6",
+   "to": [
+    "G5",
+    "K10",
+    "L6",
+    "J2",
+    "J9",
+    "G4",
+    "J7",
+    "B11"
+   ],
+   "why": "Atom S06 names these boxes of the main table.",
+   "standing": "unattested"
+  },
+  {
+   "from": "AA9",
+   "to": [
+    "G5"
+   ],
+   "why": "Atom S09 names these boxes of the main table.",
+   "standing": "unattested"
+  },
+  {
+   "from": "AA10",
+   "to": [
+    "G5"
+   ],
+   "why": "Atom S10 names these boxes of the main table.",
+   "standing": "unattested"
+  },
+  {
+   "from": "AA11",
+   "to": [
+    "K10"
+   ],
+   "why": "Atom S11 names these boxes of the main table.",
+   "standing": "unattested"
+  },
+  {
+   "from": "AA12",
+   "to": [
+    "K10"
+   ],
+   "why": "Atom S12 names these boxes of the main table.",
+   "standing": "unattested"
+  },
+  {
+   "from": "AA13",
+   "to": [
+    "L6"
+   ],
+   "why": "Atom S13 names these boxes of the main table.",
+   "standing": "unattested"
+  },
+  {
+   "from": "AB1",
+   "to": [
+    "J2"
+   ],
+   "why": "Atom S14 names these boxes of the main table.",
+   "standing": "unattested"
+  },
+  {
+   "from": "AB2",
+   "to": [
+    "J9"
+   ],
+   "why": "Atom S15 names these boxes of the main table.",
+   "standing": "unattested"
+  },
+  {
+   "from": "AB3",
+   "to": [
+    "G4"
+   ],
+   "why": "Atom S16 names these boxes of the main table.",
+   "standing": "unattested"
+  },
+  {
+   "from": "AB4",
+   "to": [
+    "J7"
+   ],
+   "why": "Atom S17 names these boxes of the main table.",
+   "standing": "unattested"
+  },
+  {
+   "from": "AB5",
+   "to": [
+    "B11"
+   ],
+   "why": "Atom S18 names these boxes of the main table.",
+   "standing": "unattested"
+  },
+  {
+   "from": "AB9",
+   "to": [
+    "G6",
+    "G5",
+    "E7",
+    "F7",
+    "F8",
+    "F10",
+    "F12",
+    "K10",
+    "L6",
+    "J2",
+    "J9"
+   ],
+   "why": "Atom S22 names these boxes of the main table.",
+   "standing": "unattested"
+  },
+  {
+   "from": "AC2",
+   "to": [
+    "C1",
+    "C2",
+    "C3",
+    "B6",
+    "I1",
+    "A1",
+    "J1"
+   ],
+   "why": "Atom S28 names these boxes of the main table.",
+   "standing": "unattested"
+  },
+  {
+   "from": "AC3",
+   "to": [
+    "A11",
+    "A7",
+    "A4",
+    "B1",
+    "F6",
+    "I3"
+   ],
+   "why": "Atom S29 names these boxes of the main table.",
+   "standing": "unattested"
+  },
+  {
+   "from": "AC4",
+   "to": [
+    "L2",
+    "A8",
+    "K3",
+    "E2",
+    "G8",
+    "I9",
+    "L11",
+    "I7",
+    "A11",
+    "L10"
+   ],
+   "why": "Atom S30 names these boxes of the main table.",
+   "standing": "unattested"
+  },
+  {
+   "from": "AC5",
+   "to": [
+    "G5",
+    "K10",
+    "L6",
+    "J2",
+    "J9",
+    "G4",
+    "J7",
+    "B11"
+   ],
+   "why": "Atom S31 names these boxes of the main table.",
+   "standing": "unattested"
+  }
+ ]
+}

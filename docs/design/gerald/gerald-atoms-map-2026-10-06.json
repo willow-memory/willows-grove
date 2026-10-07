@@ -1,0 +1,1338 @@
+{
+ "title": "Gerald session atoms (2026-10-06)",
+ "root": "../../../..",
+ "rows": [
+  {
+   "row": "AA",
+   "title": "S01–S13: this session (2026-10-06)",
+   "source": "`gerald-session-atoms-2026-10-06.md`, section S (Gerald project session, version 2; every atom proposed, none ratified)"
+  },
+  {
+   "row": "AB",
+   "title": "S14–S26: this session (2026-10-06)",
+   "source": "`gerald-session-atoms-2026-10-06.md`, section S (Gerald project session, version 2; every atom proposed, none ratified)"
+  },
+  {
+   "row": "AC",
+   "title": "S27–S39: this session (2026-10-06)",
+   "source": "`gerald-session-atoms-2026-10-06.md`, section S (Gerald project session, version 2; every atom proposed, none ratified)"
+  },
+  {
+   "row": "AD",
+   "title": "S40–S42: this session (2026-10-06)",
+   "source": "`gerald-session-atoms-2026-10-06.md`, section S (Gerald project session, version 2; every atom proposed, none ratified)"
+  },
+  {
+   "row": "AE",
+   "title": "G01–G13: Gerald canon, craft and dispatches",
+   "source": "`gerald-session-atoms-2026-10-06.md`, section G (Gerald project session, version 2; every atom proposed, none ratified)"
+  },
+  {
+   "row": "AF",
+   "title": "G14–G26: Gerald canon, craft and dispatches",
+   "source": "`gerald-session-atoms-2026-10-06.md`, section G (Gerald project session, version 2; every atom proposed, none ratified)"
+  },
+  {
+   "row": "AG",
+   "title": "G27–G39: Gerald canon, craft and dispatches",
+   "source": "`gerald-session-atoms-2026-10-06.md`, section G (Gerald project session, version 2; every atom proposed, none ratified)"
+  },
+  {
+   "row": "AH",
+   "title": "G40–G52: Gerald canon, craft and dispatches",
+   "source": "`gerald-session-atoms-2026-10-06.md`, section G (Gerald project session, version 2; every atom proposed, none ratified)"
+  },
+  {
+   "row": "AI",
+   "title": "G53–G65: Gerald canon, craft and dispatches",
+   "source": "`gerald-session-atoms-2026-10-06.md`, section G (Gerald project session, version 2; every atom proposed, none ratified)"
+  },
+  {
+   "row": "AJ",
+   "title": "G66–G78: Gerald canon, craft and dispatches",
+   "source": "`gerald-session-atoms-2026-10-06.md`, section G (Gerald project session, version 2; every atom proposed, none ratified)"
+  },
+  {
+   "row": "AK",
+   "title": "G79–G80: Gerald canon, craft and dispatches",
+   "source": "`gerald-session-atoms-2026-10-06.md`, section G (Gerald project session, version 2; every atom proposed, none ratified)"
+  },
+  {
+   "row": "AL",
+   "title": "P01–P12: Aionic governance and process",
+   "source": "`gerald-session-atoms-2026-10-06.md`, section P (Gerald project session, version 2; every atom proposed, none ratified)"
+  }
+ ],
+ "cells": [
+  {
+   "cell": "AA1",
+   "label": "S01 Witness note 2026-10-06, 2am. …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### S01  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AA2",
+   "label": "S02 The fat, dripped (2026-10-06): …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### S02  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AA3",
+   "label": "S03 Why these parents: the …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### S03  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AA4",
+   "label": "S04 How the drip cuts: …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### S04  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AA5",
+   "label": "S05 Silent cells: a clause …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### S05  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AA6",
+   "label": "S06 Rows R to Z …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### S06  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AA7",
+   "label": "S07 Where the dripping stops: …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### S07  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AA8",
+   "label": "S08 Grid three measure: 90 …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### S08  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AA9",
+   "label": "S09 Row R (G5): every …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### S09  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AA10",
+   "label": "S10 Row R (G5), PR …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### S10  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AA11",
+   "label": "S11 Row S (K10, D10), …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### S11  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AA12",
+   "label": "S12 Row S (K10), vendor …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### S12  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AA13",
+   "label": "S13 Row T (L6, Nestor …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### S13  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AB1",
+   "label": "S14 Row U (J2, section …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### S14  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AB2",
+   "label": "S15 Row V (J9, section …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### S15  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AB3",
+   "label": "S16 Row W (G4, standing …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### S16  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AB4",
+   "label": "S17 Row X (J7, section …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### S17  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AB5",
+   "label": "S18 Row Y (B11, only …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### S18  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AB6",
+   "label": "S19 Row Z (P1, the …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### S19  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AB7",
+   "label": "S20 Grid one, 'Rules cross …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### S20  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AB8",
+   "label": "S21 Grid one rows A …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### S21  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AB9",
+   "label": "S22 Grid one measure: 169 …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### S22  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AB10",
+   "label": "S23 Grid two, 'Boxes, from …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### S23  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AB11",
+   "label": "S24 Grid two is written …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### S24  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AB12",
+   "label": "S25 Grid two rows: N …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### S25  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AB13",
+   "label": "S26 Grid two measure: 20 …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### S26  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AC1",
+   "label": "S27 Crosswalk (2026-10-06), made at …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### S27  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AC2",
+   "label": "S28 Crosswalk links, part 1: …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### S28  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AC3",
+   "label": "S29 Crosswalk links, part 2: …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### S29  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AC4",
+   "label": "S30 Crosswalk links, part 3: …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### S30  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AC5",
+   "label": "S31 Crosswalk, O5 Nested boxes …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### S31  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AC6",
+   "label": "S32 Canon, 'The goo' (willows-grove/governance/seed/canon/04-the-language.md): …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### S32  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AC7",
+   "label": "S33 Canon, '## Gerald' (same …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### S33  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AC8",
+   "label": "S34 Desk session repos (2026-10-06): …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### S34  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AC9",
+   "label": "S35 Endpoints per the repos …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### S35  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AC10",
+   "label": "S36 Connector state (2026-10-06): in …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### S36  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AC11",
+   "label": "S37 willow-mcp tools: knowledge_ingest(app_id, content, …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### S37  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AC12",
+   "label": "S38 willow-mcp Grove tools: grove_send_message(app_id, …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### S38  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AC13",
+   "label": "S39 Unknowns as of 2026-10-06: …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### S39  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AD1",
+   "label": "S40 Grove MCP transport via …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### S40  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AD2",
+   "label": "S41 Files made in this …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### S41  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AD3",
+   "label": "S42 How the session ran: …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### S42  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AD4",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "head",
+   "standing": "unattested",
+   "note": "section S has no more atoms"
+  },
+  {
+   "cell": "AD5",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "head",
+   "standing": "unattested",
+   "note": "section S has no more atoms"
+  },
+  {
+   "cell": "AD6",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "head",
+   "standing": "unattested",
+   "note": "section S has no more atoms"
+  },
+  {
+   "cell": "AD7",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "head",
+   "standing": "unattested",
+   "note": "section S has no more atoms"
+  },
+  {
+   "cell": "AD8",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "head",
+   "standing": "unattested",
+   "note": "section S has no more atoms"
+  },
+  {
+   "cell": "AD9",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "head",
+   "standing": "unattested",
+   "note": "section S has no more atoms"
+  },
+  {
+   "cell": "AD10",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "head",
+   "standing": "unattested",
+   "note": "section S has no more atoms"
+  },
+  {
+   "cell": "AD11",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "head",
+   "standing": "unattested",
+   "note": "section S has no more atoms"
+  },
+  {
+   "cell": "AD12",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "head",
+   "standing": "unattested",
+   "note": "section S has no more atoms"
+  },
+  {
+   "cell": "AD13",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "head",
+   "standing": "unattested",
+   "note": "section S has no more atoms"
+  },
+  {
+   "cell": "AE1",
+   "label": "G01 Gerald: an enlightened rotisserie …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G01  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AE2",
+   "label": "G02 Gerald in the room: …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G02  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AE3",
+   "label": "G03 Voice formula: 70% chaos …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G03  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AE4",
+   "label": "G04 Dispatch form: a first-person …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G04  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AE5",
+   "label": "G05 Length guidance conflicts: handoff …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G05  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AE6",
+   "label": "G06 The Oakenscroll trap, named …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G06  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AE7",
+   "label": "G07 Process rules from Sean: …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G07  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AE8",
+   "label": "G08 Voice separation: Gerald, Regarding …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G08  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AE9",
+   "label": "G09 Style guide ('The Architecture …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G09  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AE10",
+   "label": "G10 Geraldine lexicon: grapes (the …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G10  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AE11",
+   "label": "G11 Dispatch devices: Oakenscroll-style footnotes …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G11  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AE12",
+   "label": "G12 Style guide's second statement …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G12  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AE13",
+   "label": "G13 Incidents the style guide …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G13  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AF1",
+   "label": "G14 Squeakdogs: 17 hotdogs that …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G14  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AF2",
+   "label": "G15 Squeakdog origin (February 2026 …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G15  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AF3",
+   "label": "G16 Conservation of Squeakdogs in …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G16  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AF4",
+   "label": "G17 The British queue is …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G17  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AF5",
+   "label": "G18 Fake physics, in proper …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G18  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AF6",
+   "label": "G19 Cosmology: Gerald Prime sundered …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G19  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AF7",
+   "label": "G20 Δ₀ Principle: all Δ-lineage …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G20  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AF8",
+   "label": "G21 Canon lock (handoff v1.1): …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G21  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AF9",
+   "label": "G22 Professor Oakenscroll: Gerald variant …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G22  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AF10",
+   "label": "G23 UTETY expands two ways …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G23  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AF11",
+   "label": "G24 Sentient Binder #442-A: adds …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G24  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AF12",
+   "label": "G25 The Mayor of London-ish …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G25  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AF13",
+   "label": "G26 The Vicar: Reverend Alistair …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G26  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AG1",
+   "label": "G27 Sir Paul McCartwheel (Paul …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G27  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AG2",
+   "label": "G28 Sir Ion MacEllyn (Ian …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G28  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AG3",
+   "label": "G29 Dispatch 9 (bus stop): …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G29  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AG4",
+   "label": "G30 Hanz Christain Anderthon (deliberately …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G30  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AG5",
+   "label": "G31 Dispatch 14, 'Gerald and …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G31  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AG6",
+   "label": "G32 Tivoli cosmology idea (January …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G32  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AG7",
+   "label": "G33 Dispatch 17 (Christmas): Adam …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G33  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AG8",
+   "label": "G34 Dispatch 16: the Locarno …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G34  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AG9",
+   "label": "G35 Dispatch 18, 'The Non-Refundable …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G35  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AG10",
+   "label": "G36 Dispatch 18, the road: …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G36  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AG11",
+   "label": "G37 Dispatch 11, 'Gerald and …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G37  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AG12",
+   "label": "G38 Dispatch 15, Hanks Guitars, …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G38  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AG13",
+   "label": "G39 Dispatch log, part 1 …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G39  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AH1",
+   "label": "G40 Dispatch log, part 2: …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G40  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AH2",
+   "label": "G41 Draft 'Gerald and the …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G41  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AH3",
+   "label": "G42 Draft 'Gerald and the …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G42  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AH4",
+   "label": "G43 Dispatch #20, 'Mostly Damp, …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G43  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AH5",
+   "label": "G44 Dispatch #20 frame: 10:13pm …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G44  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AH6",
+   "label": "G45 r/MoistReflections is a real …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G45  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AH7",
+   "label": "G46 AHS (AllHailSeizure, r/LLMPhysics moderator) …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G46  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AH8",
+   "label": "G47 Dispatch #20 early numbers: …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G47  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AH9",
+   "label": "G48 Posting: home r/DispatchesFromReality (also …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G48  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AH10",
+   "label": "G49 Stats thread protocol: brief, …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G49  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AH11",
+   "label": "G50 Dual-layer structure: every dispatch …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G50  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AH12",
+   "label": "G51 Spelling conflict: past sessions …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G51  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AH13",
+   "label": "G52 July 2026 build: gerald.db …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G52  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AI1",
+   "label": "G53 Open at the end …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G53  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AI2",
+   "label": "G54 'The Same Hand' (March …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G54  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AI3",
+   "label": "G55 'The Same Hand', the …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G55  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AI4",
+   "label": "G56 Shifts in Time anthology …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G56  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AI5",
+   "label": "G57 The King Chardles Assessment, …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G57  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AI6",
+   "label": "G58 Tool knowledge: Claude cannot …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G58  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AI7",
+   "label": "G59 Dispatch skeleton (handoff v1.1): …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G59  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AI8",
+   "label": "G60 Creation rules (handoff v1.1). …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G60  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AI9",
+   "label": "G61 The heart of Gerald …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G61  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AI10",
+   "label": "G62 Gerald and Regarding Jane …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G62  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AI11",
+   "label": "G63 Session start (handoff v1.1): …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G63  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AI12",
+   "label": "G64 Style guide, strategic intent: …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G64  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AI13",
+   "label": "G65 Style guide tonal pairs, …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G65  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AJ1",
+   "label": "G66 Style guide rhythms: the …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G66  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AJ2",
+   "label": "G67 Style guide dialogue: a …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G67  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AJ3",
+   "label": "G68 Style guide, registers and …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G68  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AJ4",
+   "label": "G69 Universal Three Pass Semantic …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G69  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AJ5",
+   "label": "G70 Performance tracking: Sean keeps …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G70  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AJ6",
+   "label": "G71 Working pattern: Sean signals …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G71  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AJ7",
+   "label": "G72 Gerald archive: C:\\Users\\Sean\\Documents\\GitHub\\die-namic-system\\docs\\creative_works\\gerald\\ holds …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G72  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AJ8",
+   "label": "G73 FRANK/willow-bot is a real …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G73  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AJ9",
+   "label": "G74 Fleet names differ by …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G74  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AJ10",
+   "label": "G75 Willow 2.0 (Sean's local-first …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G75  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AJ11",
+   "label": "G76 The one script (proposed …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G76  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AJ12",
+   "label": "G77 Sean's closed-loop framework: systems …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G77  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AJ13",
+   "label": "G78 Cold-instance context recovery: a …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G78  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AK1",
+   "label": "G79 Other writing on or …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G79  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AK2",
+   "label": "G80 Sean does not use …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### G80  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AK3",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "head",
+   "standing": "unattested",
+   "note": "section G has no more atoms"
+  },
+  {
+   "cell": "AK4",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "head",
+   "standing": "unattested",
+   "note": "section G has no more atoms"
+  },
+  {
+   "cell": "AK5",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "head",
+   "standing": "unattested",
+   "note": "section G has no more atoms"
+  },
+  {
+   "cell": "AK6",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "head",
+   "standing": "unattested",
+   "note": "section G has no more atoms"
+  },
+  {
+   "cell": "AK7",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "head",
+   "standing": "unattested",
+   "note": "section G has no more atoms"
+  },
+  {
+   "cell": "AK8",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "head",
+   "standing": "unattested",
+   "note": "section G has no more atoms"
+  },
+  {
+   "cell": "AK9",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "head",
+   "standing": "unattested",
+   "note": "section G has no more atoms"
+  },
+  {
+   "cell": "AK10",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "head",
+   "standing": "unattested",
+   "note": "section G has no more atoms"
+  },
+  {
+   "cell": "AK11",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "head",
+   "standing": "unattested",
+   "note": "section G has no more atoms"
+  },
+  {
+   "cell": "AK12",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "head",
+   "standing": "unattested",
+   "note": "section G has no more atoms"
+  },
+  {
+   "cell": "AK13",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "head",
+   "standing": "unattested",
+   "note": "section G has no more atoms"
+  },
+  {
+   "cell": "AL1",
+   "label": "P01 Dual Commit (Aionic Continuity …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### P01  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AL2",
+   "label": "P02 Aionic directives: Recursion Limit …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### P02  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AL3",
+   "label": "P03 Session-aware collaboration (Project Handoff …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### P03  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AL4",
+   "label": "P04 Aionic Bootstrap v1.1: Mode …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### P04  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AL5",
+   "label": "P05 SEED_PACKET v2.0 (2026-01-02): Gatekeeper …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### P05  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AL6",
+   "label": "P06 The Gerald Double-Drop Event: …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### P06  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AL7",
+   "label": "P07 Aionic behavioral defaults (Project …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### P07  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AL8",
+   "label": "P08 User authority and handoff …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### P08  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AL9",
+   "label": "P09 Recruitment flag and naming …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### P09  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AL10",
+   "label": "P10 Aionic stores and versions: …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### P10  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AL11",
+   "label": "P11 SEED_PACKET v2.0 record: thread …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### P11  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AL12",
+   "label": "P12 Bootstrap v1.1 framing: the …",
+   "file": "willows-grove/docs/design/gerald/gerald-session-atoms-2026-10-06.md",
+   "pattern": "^### P12  \\|",
+   "mode": "head",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AL13",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "head",
+   "standing": "unattested",
+   "note": "section P has no more atoms"
+  }
+ ]
+}

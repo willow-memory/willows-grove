@@ -1,0 +1,85 @@
+{
+ "title": "Boxes, from outside the system (2026-10-06)",
+ "cells": {
+  "N1": {
+   "size": 208,
+   "sha256": "96cb598492d7a69b9dfecb346856fc1706261d3cfbe79ba36cc138a902019b14"
+  },
+  "N2": {
+   "size": 169,
+   "sha256": "76db8016920ece2a01bd0168a6246b02c00dee8a8216a5e60ac0f46b8af4c087"
+  },
+  "N3": {
+   "size": 161,
+   "sha256": "599338c61c5744f76d50e92d4849379c1f2a178839fe16a5f2bdaf169cc6a1c6"
+  },
+  "N4": {
+   "size": 175,
+   "sha256": "4feabb1479bbf908127ea517d99380f69f0ceb18cdb23978aedb1db48e5a6127"
+  },
+  "N5": {
+   "size": 215,
+   "sha256": "e05519cf5085670ac3218d3ad22d4c03ffe1a1ba883deae1f7e29b6ac2d7c638"
+  },
+  "O1": {
+   "size": 249,
+   "sha256": "37d01bb311214665c09deb92ced5d7a41e19cb5a14f424a5695e12ea2cc64f7c"
+  },
+  "O2": {
+   "size": 187,
+   "sha256": "e6179849ee9f794debe60323364a3c54f5115238110b9e21a03feeafc89d63cf"
+  },
+  "O3": {
+   "size": 178,
+   "sha256": "6f3213aef150a8a7d141c14b98f206ca657f20937e3a471b6c1b233b10abc3e5"
+  },
+  "O4": {
+   "size": 207,
+   "sha256": "ee8f00380f0969a504da76d0a9a2cd3132e5dc5201c6825e9327cc02b7b0c713"
+  },
+  "O5": {
+   "size": 183,
+   "sha256": "2dfaa7dbd4be5fbdbec7e7c411d3654f967f726e8a1b01a9c49292e8e726e300"
+  },
+  "P1": {
+   "size": 269,
+   "sha256": "d409467d17165990f219449b9af9ce160f82c147bdddab4554d10933517fac88"
+  },
+  "P2": {
+   "size": 155,
+   "sha256": "7f5c04724783a13059adaf0b7d8f53133d0a79776779684894db5d34b6504d37"
+  },
+  "P3": {
+   "size": 128,
+   "sha256": "d962e75bf8445158020280e5f44c38f7d1647f3c0be1bbea0641f226f116fd8f"
+  },
+  "P4": {
+   "size": 173,
+   "sha256": "21b99282bbc7d4a7e9089ab463d889354bf4da1444926b5633dfcd34c980a0de"
+  },
+  "P5": {
+   "size": 148,
+   "sha256": "4eeba04887c8896f4791f24dbb3b93927e0c81634a9022d6ee43707cd63189fc"
+  },
+  "Q1": {
+   "size": 97,
+   "sha256": "612b17d52c08bccb7071ed98b7c1491b92ab12a11c90a6ba8539b5c5c0505185"
+  },
+  "Q2": {
+   "size": 156,
+   "sha256": "95aac78e0573d792860886cd01b48603014fbdfddb3dcd02258495af5b632893"
+  },
+  "Q3": {
+   "size": 151,
+   "sha256": "e161fde4aa8857bf38ef2c359f1fabea8d68284830864a6fc943f834a7acc371"
+  },
+  "Q4": {
+   "size": 97,
+   "sha256": "afe1a3714b8a4a3d2c5657a409122cb7174b990f655788485ca408b46ea7cfae"
+  },
+  "Q5": {
+   "size": 128,
+   "sha256": "3d8ef04aaa78191071c121ca880332565e95a5d8aefb18a209eee5cde7d148c7"
+  }
+ }
+}

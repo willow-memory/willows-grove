@@ -1,0 +1,33 @@
+{
+ "title": "Branches to the grids",
+ "links": [
+  {
+   "from": "AO8",
+   "to": [
+    "G5",
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6"
+   ],
+   "why": "Box AO8 names these boxes: a merge would leave them no longer found.",
+   "standing": "unattested"
+  },
+  {
+   "from": "AP8",
+   "to": [
+    "G5",
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6"
+   ],
+   "why": "Box AP8 names these boxes: a merge would leave them no longer found.",
+   "standing": "unattested"
+  }
+ ]
+}

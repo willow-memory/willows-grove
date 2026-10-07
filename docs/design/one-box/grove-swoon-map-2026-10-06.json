@@ -1,0 +1,278 @@
+{
+ "title": "The Grove, the field and the gates, in the grid (2026-10-06)",
+ "root": "../../../..",
+ "rows": [
+  {
+   "row": "IA",
+   "title": "The ask",
+   "source": "the notes, section IA (operator's words verbatim; counts and hashes measured in the session; the rest the agent's reading)"
+  },
+  {
+   "row": "IB",
+   "title": "The field and the seeds",
+   "source": "the notes, section IB (operator's words verbatim; counts and hashes measured in the session; the rest the agent's reading)"
+  },
+  {
+   "row": "IC",
+   "title": "Rules and branches",
+   "source": "the notes, section IC (operator's words verbatim; counts and hashes measured in the session; the rest the agent's reading)"
+  },
+  {
+   "row": "ID",
+   "title": "Two gates",
+   "source": "the notes, section ID (operator's words verbatim; counts and hashes measured in the session; the rest the agent's reading)"
+  },
+  {
+   "row": "IE",
+   "title": "The lesson and the unknown box",
+   "source": "the notes, section IE (operator's words verbatim; counts and hashes measured in the session; the rest the agent's reading)"
+  },
+  {
+   "row": "IF",
+   "title": "Readings and the 113 watch",
+   "source": "the notes, section IF (operator's words verbatim; counts and hashes measured in the session; the rest the agent's reading)"
+  }
+ ],
+ "cells": [
+  {
+   "cell": "IA1",
+   "label": "Operator, the start",
+   "file": "willows-grove/docs/design/one-box/grove-swoon-2026-10-06.md",
+   "pattern": "^- \\*\\*Operator, the start\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IA2",
+   "label": "Operator, the field",
+   "file": "willows-grove/docs/design/one-box/grove-swoon-2026-10-06.md",
+   "pattern": "^- \\*\\*Operator, the field\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IA3",
+   "label": "Operator, the rules",
+   "file": "willows-grove/docs/design/one-box/grove-swoon-2026-10-06.md",
+   "pattern": "^- \\*\\*Operator, the rules\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IA4",
+   "label": "Operator, the branches",
+   "file": "willows-grove/docs/design/one-box/grove-swoon-2026-10-06.md",
+   "pattern": "^- \\*\\*Operator, the branches\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IA5",
+   "label": "Operator, the gate",
+   "file": "willows-grove/docs/design/one-box/grove-swoon-2026-10-06.md",
+   "pattern": "^- \\*\\*Operator, the gate\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IB1",
+   "label": "The three beds",
+   "file": "willows-grove/docs/design/one-box/grove-swoon-2026-10-06.md",
+   "pattern": "^- \\*\\*The three beds\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IB2",
+   "label": "The bare lot",
+   "file": "willows-grove/docs/design/one-box/grove-swoon-2026-10-06.md",
+   "pattern": "^- \\*\\*The bare lot\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IB3",
+   "label": "The seed count",
+   "file": "willows-grove/docs/design/one-box/grove-swoon-2026-10-06.md",
+   "pattern": "^- \\*\\*The seed count\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IB4",
+   "label": "Three meanings, by file name only",
+   "file": "willows-grove/docs/design/one-box/grove-swoon-2026-10-06.md",
+   "pattern": "^- \\*\\*Three meanings, by file name only\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IB5",
+   "label": "Operator, on three",
+   "file": "willows-grove/docs/design/one-box/grove-swoon-2026-10-06.md",
+   "pattern": "^- \\*\\*Operator, on three\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IC1",
+   "label": "Read, when told",
+   "file": "willows-grove/docs/design/one-box/grove-swoon-2026-10-06.md",
+   "pattern": "^- \\*\\*Read, when told\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IC2",
+   "label": "The rule branches",
+   "file": "willows-grove/docs/design/one-box/grove-swoon-2026-10-06.md",
+   "pattern": "^- \\*\\*The rule branches\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IC3",
+   "label": "Brought in",
+   "file": "willows-grove/docs/design/one-box/grove-swoon-2026-10-06.md",
+   "pattern": "^- \\*\\*Brought in\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IC4",
+   "label": "Not brought in",
+   "file": "willows-grove/docs/design/one-box/grove-swoon-2026-10-06.md",
+   "pattern": "^- \\*\\*Not brought in\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IC5",
+   "label": "The rest, not applicable",
+   "file": "willows-grove/docs/design/one-box/grove-swoon-2026-10-06.md",
+   "pattern": "^- \\*\\*The rest, not applicable\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "ID1",
+   "label": "The stop hook",
+   "file": "willows-grove/docs/design/one-box/grove-swoon-2026-10-06.md",
+   "pattern": "^- \\*\\*The stop hook\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "ID2",
+   "label": "The classifier",
+   "file": "willows-grove/docs/design/one-box/grove-swoon-2026-10-06.md",
+   "pattern": "^- \\*\\*The classifier\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "ID3",
+   "label": "What passed",
+   "file": "willows-grove/docs/design/one-box/grove-swoon-2026-10-06.md",
+   "pattern": "^- \\*\\*What passed\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "ID4",
+   "label": "The difference, read",
+   "file": "willows-grove/docs/design/one-box/grove-swoon-2026-10-06.md",
+   "pattern": "^- \\*\\*The difference, read\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "ID5",
+   "label": "The asymmetry",
+   "file": "willows-grove/docs/design/one-box/grove-swoon-2026-10-06.md",
+   "pattern": "^- \\*\\*The asymmetry\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IE1",
+   "label": "Three views, unresolved",
+   "file": "willows-grove/docs/design/one-box/grove-swoon-2026-10-06.md",
+   "pattern": "^- \\*\\*Three views, unresolved\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IE2",
+   "label": "Operator, on the record",
+   "file": "willows-grove/docs/design/one-box/grove-swoon-2026-10-06.md",
+   "pattern": "^- \\*\\*Operator, on the record\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IE3",
+   "label": "The theme",
+   "file": "willows-grove/docs/design/one-box/grove-swoon-2026-10-06.md",
+   "pattern": "^- \\*\\*The theme\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IE4",
+   "label": "Operator, the unknown box",
+   "file": "willows-grove/docs/design/one-box/grove-swoon-2026-10-06.md",
+   "pattern": "^- \\*\\*Operator, the unknown box\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IE5",
+   "label": "The percentages",
+   "file": "willows-grove/docs/design/one-box/grove-swoon-2026-10-06.md",
+   "pattern": "^- \\*\\*The percentages\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IF1",
+   "label": "Rung 7",
+   "file": "willows-grove/docs/design/one-box/grove-swoon-2026-10-06.md",
+   "pattern": "^- \\*\\*Rung 7\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IF2",
+   "label": "The stinger",
+   "file": "willows-grove/docs/design/one-box/grove-swoon-2026-10-06.md",
+   "pattern": "^- \\*\\*The stinger\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IF3",
+   "label": "The 113 watch",
+   "file": "willows-grove/docs/design/one-box/grove-swoon-2026-10-06.md",
+   "pattern": "^- \\*\\*The 113 watch\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IF4",
+   "label": "Pushed",
+   "file": "willows-grove/docs/design/one-box/grove-swoon-2026-10-06.md",
+   "pattern": "^- \\*\\*Pushed\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "IF5",
+   "label": "Handed on",
+   "file": "willows-grove/docs/design/one-box/grove-swoon-2026-10-06.md",
+   "pattern": "^- \\*\\*Handed on\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  }
+ ]
+}

@@ -33,6 +33,34 @@ In the tables, **V** means I read the code, and **S** means it is inferred.
    - [`review-2026-10-01.md`](review-2026-10-01.md), for the #706 and #101
      findings that Phase 0 and Phase 4 fix
    - [`verify-2026-10-02.md`](verify-2026-10-02.md), Kart re-check of §1
+   - [`python-archaeology-2026-10-06.md`](python-archaeology-2026-10-06.md),
+     grid rows HO–HT: CPython 0.9.8 → 3.15.0rc3 rebuilt, hmac/hashlib, and a
+     fix built only from pre-AI lines (quick-stupids session)
+   - [`relay-2026-10-06.md`](relay-2026-10-06.md), **every session reads
+     this, adds its rows to the grid, appends a baton, pushes**
+   - [`desk-grids-2026-10-06.md`](desk-grids-2026-10-06.md), grid rows
+     HU–HZ: the desk session's grids A–HN, the cross-table template, the
+     coverage fix, what they found and proposed, and what's open
+   - [`grove-swoon-2026-10-06.md`](grove-swoon-2026-10-06.md), grid rows
+     IA–IF: the field and the seeds, rules and branches, the stop hook and
+     the classifier, the lesson three ways (Desk session, the Grove)
+   - [`desk-session-2026-10-06.md`](desk-session-2026-10-06.md), grid rows
+     IG–IL: one hook across 22 CLIs, two hashes and xref, Draft 0.9, how the
+     same CLIs load AGENTS.md and CLAUDE.md, and session three of 113
+   - [`session-four-113-2026-10-06.md`](session-four-113-2026-10-06.md),
+     grid rows IM–IP: G5 fix (pattern + root), CLAUDE.md cross-branch carry,
+     session-four prompt improvement, relay initiation
+   - [`vsock-fork-2026-10-06.md`](vsock-fork-2026-10-06.md), grid rows
+     IQ–IT: the VSOCK fix run on `main` on a Firecracker guest, the
+     reviewer points, the commit on the operator's fork, and the wall at
+     `python/cpython`
+   - [`hash-snapshot-2026-10-06.md`](hash-snapshot-2026-10-06.md), grid rows
+     IU–IY: hashing explained, the repos' hash chains, the Deep Thought
+     review, the one script as a snapshot, and a pre-AI foundation
+   - [`table-quorum-2026-10-06.md`](table-quorum-2026-10-06.md), grid rows
+     IZ–JD: 113 and its trigger, the table-only and percentage rules,
+     CLAUDE.md linked to Draft 0.9, a Gemini output verified, the quorum
+     ruling, and the session measured rather than estimated
 2. **Nothing here is ratified yet.** CLAUDE.md rule 4 still applies: propose
    a bite and wait for the operator's go. D1–D3 gate the spine (Phases 1–3);
    Phase 0 does not wait on them. **D11** (phone-seat grant) and **D12**

@@ -1,0 +1,426 @@
+{
+ "title": "Open branches (2026-10-06)",
+ "root": "../../../..",
+ "rows": [
+  {
+   "row": "AM",
+   "title": "`master`",
+   "source": "`branch-ledger-2026-10-06.md`, section master (generated from git)"
+  },
+  {
+   "row": "AN",
+   "title": "`ccr-392b8b73-v809qu`",
+   "source": "`branch-ledger-2026-10-06.md`, section ccr-392b8b73-v809qu (generated from git)"
+  },
+  {
+   "row": "AO",
+   "title": "`ccr-542b5884-0deee5`",
+   "source": "`branch-ledger-2026-10-06.md`, section ccr-542b5884-0deee5 (generated from git)"
+  },
+  {
+   "row": "AP",
+   "title": "`ccr-8a588c96-jf76ei`",
+   "source": "`branch-ledger-2026-10-06.md`, section ccr-8a588c96-jf76ei (generated from git)"
+  },
+  {
+   "row": "AQ",
+   "title": "`claude/agent-instruction-files`",
+   "source": "`branch-ledger-2026-10-06.md`, section claude/agent-instruction-files (generated from git)"
+  },
+  {
+   "row": "AR",
+   "title": "`claude/ai-model-smoothing-gentrification-alc5dm`",
+   "source": "`branch-ledger-2026-10-06.md`, section claude/ai-model-smoothing-gentrification-alc5dm (generated from git)"
+  }
+ ],
+ "cells": [
+  {
+   "cell": "AM1",
+   "label": "head",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `master` head:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AM2",
+   "label": "the base",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `master` is the base every other branch",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AM3",
+   "label": "commits held",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `master` holds \\d+ commits",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AM4",
+   "label": "latest commit",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `master` latest commit:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AM5",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "para",
+   "standing": "unattested",
+   "note": "master has no such fact: it is the base, not a branch off it"
+  },
+  {
+   "cell": "AM6",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "para",
+   "standing": "unattested",
+   "note": "master has no such fact: it is the base, not a branch off it"
+  },
+  {
+   "cell": "AM7",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "para",
+   "standing": "unattested",
+   "note": "master has no such fact: it is the base, not a branch off it"
+  },
+  {
+   "cell": "AM8",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "para",
+   "standing": "unattested",
+   "note": "master has no such fact: it is the base, not a branch off it"
+  },
+  {
+   "cell": "AN1",
+   "label": "head",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `ccr\\-392b8b73\\-v809qu` head:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AN2",
+   "label": "ahead / behind",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `ccr\\-392b8b73\\-v809qu` is \\d+ commits? ahead",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AN3",
+   "label": "dates",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `ccr\\-392b8b73\\-v809qu` commits run from",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AN4",
+   "label": "latest commit",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `ccr\\-392b8b73\\-v809qu` latest commit:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AN5",
+   "label": "files changed",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `ccr\\-392b8b73\\-v809qu` changes \\d+ files?:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AN6",
+   "label": "commits also on",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `ccr\\-392b8b73\\-v809qu` has every one of its commits also on:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AN7",
+   "label": "conflicts with",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `ccr\\-392b8b73\\-v809qu` merges with conflicts against:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AN8",
+   "label": "if merged here",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `ccr\\-392b8b73\\-v809qu` (merged into .*would leave the grids so:|is the branch the grids live on)",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AO1",
+   "label": "head",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `ccr\\-542b5884\\-0deee5` head:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AO2",
+   "label": "ahead / behind",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `ccr\\-542b5884\\-0deee5` is \\d+ commits? ahead",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AO3",
+   "label": "dates",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `ccr\\-542b5884\\-0deee5` commits run from",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AO4",
+   "label": "latest commit",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `ccr\\-542b5884\\-0deee5` latest commit:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AO5",
+   "label": "files changed",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `ccr\\-542b5884\\-0deee5` changes \\d+ files?:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AO6",
+   "label": "commits also on",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `ccr\\-542b5884\\-0deee5` has every one of its commits also on:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AO7",
+   "label": "conflicts with",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `ccr\\-542b5884\\-0deee5` merges with conflicts against:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AO8",
+   "label": "if merged here",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `ccr\\-542b5884\\-0deee5` (merged into .*would leave the grids so:|is the branch the grids live on)",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AP1",
+   "label": "head",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `ccr\\-8a588c96\\-jf76ei` head:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AP2",
+   "label": "ahead / behind",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `ccr\\-8a588c96\\-jf76ei` is \\d+ commits? ahead",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AP3",
+   "label": "dates",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `ccr\\-8a588c96\\-jf76ei` commits run from",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AP4",
+   "label": "latest commit",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `ccr\\-8a588c96\\-jf76ei` latest commit:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AP5",
+   "label": "files changed",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `ccr\\-8a588c96\\-jf76ei` changes \\d+ files?:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AP6",
+   "label": "commits also on",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `ccr\\-8a588c96\\-jf76ei` has every one of its commits also on:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AP7",
+   "label": "conflicts with",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `ccr\\-8a588c96\\-jf76ei` merges with conflicts against:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AP8",
+   "label": "if merged here",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `ccr\\-8a588c96\\-jf76ei` (merged into .*would leave the grids so:|is the branch the grids live on)",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AQ1",
+   "label": "head",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `claude/agent\\-instruction\\-files` head:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AQ2",
+   "label": "ahead / behind",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `claude/agent\\-instruction\\-files` is \\d+ commits? ahead",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AQ3",
+   "label": "dates",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `claude/agent\\-instruction\\-files` commits run from",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AQ4",
+   "label": "latest commit",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `claude/agent\\-instruction\\-files` latest commit:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AQ5",
+   "label": "files changed",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `claude/agent\\-instruction\\-files` changes \\d+ files?:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AQ6",
+   "label": "commits also on",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `claude/agent\\-instruction\\-files` has every one of its commits also on:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AQ7",
+   "label": "conflicts with",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `claude/agent\\-instruction\\-files` merges with conflicts against:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AQ8",
+   "label": "if merged here",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `claude/agent\\-instruction\\-files` (merged into .*would leave the grids so:|is the branch the grids live on)",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AR1",
+   "label": "head",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm` head:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AR2",
+   "label": "ahead / behind",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm` is \\d+ commits? ahead",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AR3",
+   "label": "dates",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm` commits run from",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AR4",
+   "label": "latest commit",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm` latest commit:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AR5",
+   "label": "files changed",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm` changes \\d+ files?:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AR6",
+   "label": "commits also on",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm` has every one of its commits also on:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AR7",
+   "label": "conflicts with",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm` merges with conflicts against:",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "AR8",
+   "label": "if merged here",
+   "file": "willows-grove/docs/design/branches/branch-ledger-2026-10-06.md",
+   "pattern": "^- `claude/ai\\-model\\-smoothing\\-gentrification\\-alc5dm` (merged into .*would leave the grids so:|is the branch the grids live on)",
+   "mode": "para",
+   "standing": "unattested"
+  }
+ ]
+}

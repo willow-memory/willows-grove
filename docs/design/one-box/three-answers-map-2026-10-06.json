@@ -1,0 +1,189 @@
+{
+ "title": "Three answers, and what comes out of nowhere (2026-10-06)",
+ "root": "../../../..",
+ "rows": [
+  {
+   "row": "HK",
+   "title": "The shape",
+   "source": "the notes, section HK (operator's words verbatim; the rest the agent's reading, unchecked)"
+  },
+  {
+   "row": "HL",
+   "title": "Scaling up",
+   "source": "the notes, section HL (operator's words verbatim; the rest the agent's reading, unchecked)"
+  },
+  {
+   "row": "HM",
+   "title": "Closed loops",
+   "source": "the notes, section HM (operator's words verbatim; the rest the agent's reading, unchecked)"
+  },
+  {
+   "row": "HN",
+   "title": "The smallest level",
+   "source": "the notes, section HN (operator's words verbatim; the rest the agent's reading, unchecked)"
+  }
+ ],
+ "cells": [
+  {
+   "cell": "HK1",
+   "label": "Operator, the shape",
+   "file": "willows-grove/docs/design/one-box/three-answers-2026-10-06.md",
+   "pattern": "^- \\*\\*Operator, the shape\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HK2",
+   "label": "The 3×3 face",
+   "file": "willows-grove/docs/design/one-box/three-answers-2026-10-06.md",
+   "pattern": "^- \\*\\*The 3×3 face\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HK3",
+   "label": "The 3×1 column",
+   "file": "willows-grove/docs/design/one-box/three-answers-2026-10-06.md",
+   "pattern": "^- \\*\\*The 3×1 column\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HK4",
+   "label": "The full block",
+   "file": "willows-grove/docs/design/one-box/three-answers-2026-10-06.md",
+   "pattern": "^- \\*\\*The full block\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HK5",
+   "label": "",
+   "file": "",
+   "pattern": "",
+   "mode": "para",
+   "standing": "unattested",
+   "note": "no more notes in this row"
+  },
+  {
+   "cell": "HL1",
+   "label": "Operator, scaling",
+   "file": "willows-grove/docs/design/one-box/three-answers-2026-10-06.md",
+   "pattern": "^- \\*\\*Operator, scaling\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HL2",
+   "label": "The die",
+   "file": "willows-grove/docs/design/one-box/three-answers-2026-10-06.md",
+   "pattern": "^- \\*\\*The die\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HL3",
+   "label": "The law of large numbers",
+   "file": "willows-grove/docs/design/one-box/three-answers-2026-10-06.md",
+   "pattern": "^- \\*\\*The law of large numbers\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HL4",
+   "label": "The central limit theorem",
+   "file": "willows-grove/docs/design/one-box/three-answers-2026-10-06.md",
+   "pattern": "^- \\*\\*The central limit theorem\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HL5",
+   "label": "Two caveats",
+   "file": "willows-grove/docs/design/one-box/three-answers-2026-10-06.md",
+   "pattern": "^- \\*\\*Two caveats\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HM1",
+   "label": "Operator, closure",
+   "file": "willows-grove/docs/design/one-box/three-answers-2026-10-06.md",
+   "pattern": "^- \\*\\*Operator, closure\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HM2",
+   "label": "Ergodicity",
+   "file": "willows-grove/docs/design/one-box/three-answers-2026-10-06.md",
+   "pattern": "^- \\*\\*Ergodicity\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HM3",
+   "label": "Multiplication stays, addition leaves",
+   "file": "willows-grove/docs/design/one-box/three-answers-2026-10-06.md",
+   "pattern": "^- \\*\\*Multiplication stays, addition leaves\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HM4",
+   "label": "The boundary is reached by small perturbations",
+   "file": "willows-grove/docs/design/one-box/three-answers-2026-10-06.md",
+   "pattern": "^- \\*\\*The boundary is reached by small perturbations\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HM5",
+   "label": "The standard names",
+   "file": "willows-grove/docs/design/one-box/three-answers-2026-10-06.md",
+   "pattern": "^- \\*\\*The standard names\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HN1",
+   "label": "Operator, the smallest level",
+   "file": "willows-grove/docs/design/one-box/three-answers-2026-10-06.md",
+   "pattern": "^- \\*\\*Operator, the smallest level\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HN2",
+   "label": "One box, one question, three answers",
+   "file": "willows-grove/docs/design/one-box/three-answers-2026-10-06.md",
+   "pattern": "^- \\*\\*One box, one question, three answers\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HN3",
+   "label": "Three-valued logic",
+   "file": "willows-grove/docs/design/one-box/three-answers-2026-10-06.md",
+   "pattern": "^- \\*\\*Three\\-valued logic\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HN4",
+   "label": "Why the triples recur",
+   "file": "willows-grove/docs/design/one-box/three-answers-2026-10-06.md",
+   "pattern": "^- \\*\\*Why the triples recur\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  },
+  {
+   "cell": "HN5",
+   "label": "What comes out of nowhere",
+   "file": "willows-grove/docs/design/one-box/three-answers-2026-10-06.md",
+   "pattern": "^- \\*\\*What comes out of nowhere\\.\\*\\*",
+   "mode": "para",
+   "standing": "unattested"
+  }
+ ]
+}
