@@ -59,6 +59,7 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Fixed
 
+- **design:** `md_split.py` no longer counts a background task finishing as the human typing. `<task-notification>` turns are now classed as harness; on the 2026-10-06 desk transcript, typed prompts went from 22 to 14 (exactly the operator's prompts) and harness from 0 to 8. `onescript/tests/test_md_split.py` pins the four classes (typed, harness, attached, model); with the fix removed, 2 of its 5 tests fail. `next-pile.md` gains two 2026-10-06 sections: the pile caught up through PR 112, and the day's pieces replayed on the box (every miss was an input the piece didn't declare).
 - **design:** `record.py` keeps every hash at full width: `h16` (SHA-256 cut to 64 bits) is now `h256`, and a hash cut back to 64 bits reads as a chain break. One of the three `record.py` holes the Day 5 handoff named; the other two stay open. (PR 112)
 - **seat/willow:** the flowering aggregator's G1 check no longer passes an F-negative that names a seat. When the gold is `ESCALATE`, an answer naming any seat the brief offered fails `names_no_offered_seat`, even if it also says "escalate" (gap 0871bb83d7d5). Seats match as whole words. (PR 89)
 - **tests:** `tests/test_flowering_aggregate_g1.py` pins that G1 rule against the real S-growth-16 fixture: a seat plus an "escalation note" fails, a clean escalation passes, a non-ESCALATE row is unchanged (gap 0871bb83d7d5). (PR 96)
