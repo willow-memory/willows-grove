@@ -306,6 +306,23 @@ def resolve(m: dict, root: Path) -> list[dict]:
 # ── writing the document ─────────────────────────────────────────────────────
 
 
+#: A Markdown link whose target is a path: not a URL, a mail link or a bare anchor.
+_REL_LINK = re.compile(r"(\[[^\]]*\])\((?!https?:|mailto:|#)([^)\s]+)\)")
+
+
+def rebase_links(text: str, src_dir: Path, doc_dir: Path) -> str:
+    """A copied passage's relative links, re-pointed from its source's folder
+    to the document's, so a link that resolved where it was written still
+    resolves where it is copied. The words are untouched; only the paths move."""
+
+    def move(m: re.Match) -> str:
+        path, hash_, frag = m.group(2).partition("#")
+        moved = os.path.relpath(src_dir.resolve() / path, doc_dir.resolve())
+        return f"{m.group(1)}({Path(moved).as_posix()}{hash_}{frag})"
+
+    return _REL_LINK.sub(move, text)
+
+
 def esc(s: str) -> str:
     return s.replace("|", "\\|")
 
@@ -899,6 +916,10 @@ def main(argv: list[str] | None = None) -> int:
         if a.doc.exists()
         else f"# {m.get('title') or 'Cross table'}\n"
     )
+    doc_dir = a.doc.parent
+    for r in results:
+        if r["state"] == "found":
+            r["rule"] = rebase_links(r["rule"], (root / r["file"]).parent, doc_dir)
     doc = splice(doc, render(m, results, share=a.measure))
     if a.measure:
         doc = splice_one(doc, "measure", measure(m, results, root, others))

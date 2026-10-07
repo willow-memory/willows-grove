@@ -43,7 +43,7 @@ def _cell(cell, **kw):
 def test_new_writes_a_blank_grid_and_never_overwrites(tmp_path):
     p = tmp_path / "m.json"
     assert ct.main(["new", str(p), "--rows", "3", "--cols", "4"]) == 0
-    m = json.loads(p.read_text())
+    m = json.loads(p.read_text(encoding="utf-8"))
     assert [c["cell"] for c in m["cells"]][:5] == ["A1", "A2", "A3", "A4", "B1"]
     assert len(m["cells"]) == 12 and all(
         c["standing"] == "unattested" for c in m["cells"]
@@ -127,9 +127,38 @@ def test_fill_writes_between_markers_and_is_deterministic(tmp_path):
         "| A2 | *source silent* | — | unattested |\n"
         "<!-- /cross-table:index -->\n"
     )
-    assert doc.read_text() == expected
+    assert doc.read_text(encoding="utf-8") == expected
     ct.main(["fill", str(p), str(doc)])
-    assert doc.read_text() == expected
+    assert doc.read_text(encoding="utf-8") == expected
+
+
+def test_a_copied_link_still_resolves_where_it_lands(tmp_path):
+    """A passage copied from the root into a doc two folders down keeps its
+    words; its relative links are re-pointed so they still reach their file."""
+    (tmp_path / "law.md").write_text("# Law\n")
+    (tmp_path / "src.md").write_text(
+        "- Rule one: see [the law](law.md#article-0), [a site](https://x.org),"
+        " [here](#top) and [mail](mailto:a@b.c).\n"
+    )
+    p = _map(tmp_path, [_cell("A1", file="src.md", pattern="Rule one")])
+    doc = tmp_path / "docs" / "design" / "out.md"
+    doc.parent.mkdir(parents=True)
+    ct.main(["fill", str(p), str(doc)])
+    row = next(
+        x
+        for x in doc.read_text(encoding="utf-8").splitlines()
+        if x.startswith("| A1 |")
+    )
+    assert "[the law](../../law.md#article-0)" in row
+    assert (doc.parent / "../../law.md").resolve().is_file()
+    assert "(https://x.org)" in row and "(#top)" in row and "(mailto:a@b.c)" in row
+
+
+def test_a_link_copied_into_its_own_folder_is_unchanged(tmp_path):
+    assert (
+        ct.rebase_links("[a](b.md) [c](../d.md#x)", tmp_path, tmp_path)
+        == "[a](b.md) [c](../d.md#x)"
+    )
 
 
 def test_the_script_never_raises_standing(tmp_path):
@@ -148,7 +177,9 @@ def test_a_new_grid_starts_where_the_last_one_stopped(tmp_path):
     first, second = tmp_path / "first.json", tmp_path / "second.json"
     ct.main(["new", str(first), "--rows", "13", "--cols", "2"])
     ct.main(["new", str(second), "--rows", "4", "--cols", "2", "--after", str(first)])
-    assert [r["row"] for r in json.loads(second.read_text())["rows"]] == [
+    assert [
+        r["row"] for r in json.loads(second.read_text(encoding="utf-8"))["rows"]
+    ] == [
         "N",
         "O",
         "P",
@@ -168,7 +199,7 @@ def test_link_checks_every_address_and_copies_labels(tmp_path):
     a, b = tmp_path / "a.json", tmp_path / "b.json"
     ct.main(["new", str(a), "--rows", "1", "--cols", "2"])
     ct.main(["new", str(b), "--rows", "1", "--cols", "1", "--after", str(a)])
-    m = json.loads(a.read_text())
+    m = json.loads(a.read_text(encoding="utf-8"))
     m["rows"][0]["title"] = "Rules"
     m["cells"][1]["label"] = "Two"
     a.write_text(json.dumps(m))
@@ -178,7 +209,7 @@ def test_link_checks_every_address_and_copies_labels(tmp_path):
     )
     doc = tmp_path / "x.md"
     ct.main(["link", str(links), str(doc), "--map", str(a), "--map", str(b)])
-    assert doc.read_text() == (
+    assert doc.read_text(encoding="utf-8") == (
         "# Crosswalk\n\n## Links\n\n<!-- cross-table:links -->\n"
         "| From | To | Where they touch | Standing |\n|---|---|---|---|\n"
         "| B1 | A row: Rules · A2 Two | w | unattested |\n"
@@ -263,7 +294,7 @@ def test_a_snapshot_names_exactly_which_boxes_changed(tmp_path):
         ct.main(["measure", str(p), "--snapshot", str(snap)])
     src.write_text("- one, longer\n- three\n")
     m = ct.load_map(p)
-    then = json.loads(snap.read_text())
+    then = json.loads(snap.read_text(encoding="utf-8"))
     report = ct.measure(m, ct.resolve(m, tmp_path), against=then).splitlines()
     assert report[-3:] == [
         "- **Changed:** A1 (+8).",
