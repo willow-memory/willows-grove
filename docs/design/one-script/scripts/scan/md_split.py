@@ -12,7 +12,12 @@ import sys
 from collections import Counter
 
 REMINDER = re.compile(r"<system-reminder>.*?</system-reminder>", re.S)
-HARNESS = ("Stop hook feedback", "Tool loaded.", "[Request interrupted")
+HARNESS = (
+    "Stop hook feedback",
+    "Tool loaded.",
+    "[Request interrupted",
+    "<task-notification>",  # a background task finishing, not the human
+)
 MD_ANY = [
     re.compile(r"^#{1,6}\s", re.M),  # heading
     re.compile(r"^\s*\|.+\|\s*$", re.M),  # table row

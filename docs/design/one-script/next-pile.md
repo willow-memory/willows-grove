@@ -1845,3 +1845,138 @@ not it leaves to an outside source"
     (COPPA)", still has zero code.
 
 *Not ratified as a build. The operator: "write it down".*
+
+## Catching the pile up: 10-05 and overnight into 10-06
+
+*Desk session 024cf297, 2026-10-06, early. The operator asked for it ("Please"),
+after the desk read the pile back and found nothing in it after 10-03. This
+section only points; the work lives in its own docs. Agent-reported, not
+ratified.*
+
+### What landed
+
+| When | PR | What | Where it lives |
+|---|---|---|---|
+| 10-05 | #106 | The security core: the model never sees the box. It's served only in-scope hashed points and returns only proposed rows. Code fills every box, and the human's seal is the only write. Comes with a leak table and the rule that a seal binds to one hash. | the one-script README; gap `f8680acc08e6` stays open while the operator reads the papers |
+| 10-05 | #107 (0.13.0) | **The bare hook.** `POLICY = {"Read": "allow", "Write": "ask"}`. Every other tool is denied, including ones that don't exist yet, and any exception exits 2, so it never fails open. No hashing, record or vault check: the vault's wall is that the agent's user can't read it. | `hook.py` (27 lines) |
+| 10-05 | #107 | **The two foundations.** The earlier record-lookup hook (`aea0c64`) ran on CPython 3.9.0 (signature-verified tag) and on 3.16.0a0 (`main`, pinned only by commit). The results: 2,293 identical hashes and identical `realpath` results. The 503 differences are all integers over 4,300 digits, and each fails safe toward ESCALATE. The bare hook's tests pass on both. | `foundation/README.md` |
+| 10-05 | #110 | Day 5 outline ("I graded my own system, and it came down to one hook"), with "the one key" | above, under the Day 4 outline; still a desk draft in the operator's register |
+| 10-06 | #111 | The README gains the four W's (only `write` rows carry `where`), the escalation ladder for fuzzy matching (exact hash → code → embedder → small model → cloud → human, each rung writing back by hash), who wrote it, the shared phrases, and the table-only rule. Three stdlib scan scripts come with it. | the one-script README; `four_ws.py`, `md_split.py`, `shared_phrases.py` |
+| 10-06 | #112 | **One hook across every CLI.** The pre-tool gate matrix covers 22 agent CLIs, each claim tagged by source tier. Only Claude Code was read at tier 1. | `../one-box/research-2026-10-06.md` |
+| 10-06 | #112 | `xref.py`, the cross-reference index. For each tracked file it keeps git's blob id, the same id recomputed from disk, and the system's own SHA-256; a mismatch is recorded and left out. The operator: "We get githubs hash, when it comes local, and then we get the systems hash". | `onescript/xref.py`, 12 tests |
+| 10-06 | #112 | Constitution Draft 0.9: the ten 10-02 amendments, the neutral-language merge, and the outside pass. None ratified; Article 0 and the Preamble are unchanged. | `constitution-proposal/` |
+
+### What the matrix says about the one hook (agent-reported, from §8–§9 there)
+
+- **Claude Code works as is.** Only the wiring is missing (managed settings,
+  `allowManagedHooksOnly`, matcher `"*"`).
+- **Factory droid, Qwen and Junie probably work.** Each needs one captured
+  payload to confirm.
+- **Codex is a trap.** A bare deny without a reason may be rejected as invalid
+  output, and then the tool runs. Reads never reach the hook, and `ask` runs
+  the tool. This is untested.
+- **The hook can't be the guarantee.** A timeout, or a hook that never starts,
+  lets the call through almost everywhere. The guarantee is each CLI's own
+  permission config plus a sandbox; the hook is the finer layer on top. That
+  makes this the gate's "fails closed and loud" (part 4), held up to every
+  front end, and it holds only where the floor holds.
+- **polyhook: reference only.** An ask becomes a silent allow, and it fails
+  open on unknown callers.
+
+### Where it meets the pile
+
+- **The one script, the one hook, the one key** (Day 5) are part 4 (gate)
+  reduced to its floor. `gate.py`'s capability card (once / session /
+  permanent) is the finer layer that `"Write": "ask"` stands in for until it
+  is wired.
+- **`xref.py`'s two hashes are "the hash is the first rung"**, applied to the
+  repos: GitHub's id coming in, the system's own id kept, and any mismatch
+  recorded rather than smoothed.
+- **The hooks table above** ("How hooks sit in the deterministic system")
+  now has its first real entry: PreToolUse → `hook.py`. The other five rows
+  are still unbuilt.
+
+### Open, added to the operator's list
+
+- **Q19:** reading is open for people, and the model reads only what's served.
+  Accept, change or reject. It gates **serve**, the handoff's next bite.
+- **Q9:** polyhook as a reference only (native adapters). The recommendation
+  is waiting for a seal.
+- **N6:** wire `hook.py` on Claude Code through managed settings. Wiring stays
+  the operator's.
+- **Next-bite candidates, each on a go:** N3 (capture one Factory, Qwen and
+  Junie payload each), N4 (test the Codex trap), N5 (Kiro's exit codes).
+- **Carried and unstarted:** willow-mcp's Bandit step without `pipefail`,
+  `deep_thought.py` reporting `unreachable` on 3.9, and the three `record.py`
+  holes.
+- **Moved:** "Redoing the constitution proposals against 0.8" in the Open list
+  above is superseded by Draft 0.9 (#112), which is still unratified.
+
+## The pieces, replayed on the box (2026-10-06)
+
+*Desk session 024cf297. The operator: "Copy it in, run that deterministically,
+and see what the box spits out the other side", then "lets keep up with the
+testing of the pieces on the latest branches on this box. See if the data it's
+supposed to produce does and is." The runs are Kart receipts; the reading is
+agent-reported.*
+
+Separate sessions built pieces that each fit one of the seven parts. Each was
+run on this box: `ccr-392b8b73` in the worktree `worktrees/box-grid` at
+`1383b42`, and master at `a111829`.
+
+| Part | Pieces (where) | Produces | Is what it says |
+|---|---|---|---|
+| 1 boot | instruction-files doc (agent-instruction-files); CLAUDE.md rules linked to clauses (542b5884) | docs only | not testable as data |
+| 2 predict | the 113 guesses and prediction check (542b5884) | docs only | not testable as data |
+| 3 record | `onescript/xref.py` (master) | `index.json` and `report.txt`, the same bytes twice | ✓; its reference check also finds real breaks, e.g. `CASEBOOK.md:457` cites line 201 of an 80-line file |
+| 3 record | cross-table snapshots (392b8b73) | a sha256 per box | ✓ the coverage grid matches its `06b` snapshot; the older `27c0f08` one predates the citation-spelling fix `98650c1` |
+| 4 gate | `hook.py`, `gate.py`, the 22-CLI matrix (master) | 97 onescript tests | ✓ |
+| 5 resolve | none | — | — |
+| 6 view | `cross_table.py fill` (392b8b73) | 9 grids, rows A–HJ, the same bytes twice, every cell found | cells ✓; the measure sections don't replay byte for byte (gap `b2f7f0d68e2c`) |
+| 7 reverse | `measure --against` (392b8b73) | "No box changed" in all 9 grids against their latest snapshots | ✓ |
+| 7 reverse | `const_coverage.py` (392b8b73) | 78 clauses | the count ✓; on this box it also counts every willow-mcp worktree copy (gap `08fb00d7c7ec`) |
+| 7 reverse | `four_ws.py`, `shared_phrases.py` (master) | the same bytes twice | ✗ at their own commit `34fc28d`: 267 tables, not 260; every fail-closed phrase +1 (gap `bb7af6bb1453`) |
+| 7 reverse | `md_split.py` (master) | the same bytes twice | ✗ task notifications counted as typed; fixed (one more harness opening, with a test) |
+| run | none | — | — |
+
+### What the replay found
+
+**Every piece is deterministic, and every miss had the same cause: a piece
+that didn't declare its inputs.**
+
+- **Root:** the grids address files as `willows-grove/…`, the cloud
+  container's folder layout. Without `--root` every cell said `unreachable`.
+  That's the right failure; it said so instead of guessing.
+- **Invocation:** the command that filled the committed tables (which
+  `--measure`, which `--with` set) is written nowhere.
+- **Self-exclusion:** the README that reports the scan numbers is one of the
+  documents the scans read. Writing the counts in added one more document
+  holding each phrase and seven more tables. `cross_table.py` already excludes
+  its own output; the scans don't.
+- **Source classes:** `md_split` took harness text for the human's, because
+  the harness list was missing one opening.
+- **Tree:** `const_coverage` walks the directory, so a box with worktrees
+  counts each copy. The cloud session had none.
+
+Each piece was right in the session that built it and drifted on another box.
+
+### What that asks of the one script
+
+The two parts nobody built today, **`run`** and **3 record**, are the fix
+(agent-reported, not ratified):
+
+- **Every run records its own invocation:** the command, the root, the flags,
+  what it excludes, and the hash of every input it read. Replaying is then
+  reading the row back and running it again.
+- **A difference names its input.** Same inputs, different bytes is a defect
+  in the piece. Different inputs is the N+1 check doing its job, and the row
+  says which input moved.
+- **Every scan excludes its own report**, as the cross table does, and reads
+  `git ls-files` at a commit rather than walking a directory.
+- **Harness, human and model stay separate classes** at the record, never
+  inferred later from wording.
+
+**The hook governs the model; the pieces are scripts.** Their door is the
+other half of `gate.py` (part 4): a script checked against the box's script
+index before it runs (same name, renamed copy, variant, similar, new), just
+as tool calls are checked before they run.
