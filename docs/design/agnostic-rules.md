@@ -75,4 +75,6 @@ vendor, repository or platform. The only distinction kept is who set it.
 - **Status:** written 2026-10-04 at the operator's request ("write that table
   to a file and commit it").
 - **Source wording:** the project-specific wording of rules H1–H10 stays in
-  `CLAUDE.md` (rules 1–10); this table is the generic view of it.
+  `CLAUDE.md`: H1–H6 are its rules 1–6, and H7–H10 are its rules 14–17 (they
+  were 7–10 until the clause-linked rewrite, PR 116, gave 7–13 to other
+  rules). This table is the generic view of it.
