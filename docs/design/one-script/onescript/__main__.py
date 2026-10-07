@@ -43,20 +43,69 @@ def _now() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
+class KeysExposed(Exception):
+    """A keys file anyone but the owner can read is refused, not used."""
+
+
 def _keys(path: Path) -> dict[str, bytes]:
     """The signing secrets live beside the box, never in it: the record's own
     three-way check flags any file in the box the run didn't write."""
     if not path.exists():
-        path.parent.mkdir(parents=True, exist_ok=True)
+        path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+        path.parent.chmod(0o700)
         fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
         with os.fdopen(fd, "w") as f:
             json.dump({DESK[0]: secrets.token_hex(32)}, f)
+    if path.stat().st_mode & 0o077:
+        raise KeysExposed(f"{path} is readable beyond its owner; chmod 600 it")
     return {k: bytes.fromhex(v) for k, v in json.loads(path.read_text()).items()}
 
 
 def _law(text: str) -> dict:
-    ids = sorted(set(re.findall(r"CONST-[IVXL]+(?:\.\d+)?", text)))
+    """Trace IDs as the constitution writes them: CONST-0, CONST-0-1, CONST-I-1."""
+    ids = sorted(set(re.findall(r"CONST-(?:0|[IVXL]+)(?:-\d+)*", text)))
     return {"trace_ids": ids, "grants": []}
+
+
+_STAMP = {"n", "kind", "who", "family", "standing", "version", "ts", "prev", "hash"}
+
+
+def _last_boot(rows: list[dict]) -> dict | None:
+    """The boot report as the record holds it. A hard close outlives the
+    invocation that found it: nothing in memory carries it to the next one."""
+    i = next(
+        (k for k in range(len(rows) - 1, -1, -1) if rows[k]["kind"] == "boot"), None
+    )
+    if i is None:
+        return None
+    b = rows[i]
+    reconciled = any(r["kind"] == "reconcile" for r in rows[:i])
+    return {
+        "hard_close": b["hard_close"],
+        "lines": b["lines"],
+        "options": boot.OPTIONS if b["hard_close"] else [],
+        "report": {"state": "current" if reconciled else "never"},
+        "probes": b.get("probes", []),
+        "gates": b.get("gates", []),
+        "egress": b.get("egress", []),
+    }
+
+
+def _from_record(run: Run) -> None:
+    """Grades, claims and acts back from the record, for a checkout that runs
+    in a different invocation from the turns that made them."""
+    rows = run.rec.rows()
+    run.graded = [
+        {k: v for k, v in r.items() if k not in _STAMP | {"turn"}}
+        for r in rows
+        if r["kind"] == "grade"
+    ]
+    run.claims = [c for r in rows if r["kind"] == "claims" for c in r["claims"]]
+    run.acts = [
+        {"kind": r["act_kind"], **{k: r[k] for k in ("verdict", "reason", "card")}}
+        for r in rows
+        if r["kind"] == "act"
+    ]
 
 
 def _in_venv(venv: Path):
@@ -74,14 +123,23 @@ def _in_venv(venv: Path):
     return version_of
 
 
+#: Set in the tests gate's child. A checkin started under it never runs the
+#: tests gate again: the gate runs the suite, the suite runs checkin, and an
+#: unguarded loop forked until the box ran out of memory (2026-10-06, Kart
+#: Z7X2TJQX, a mutant with the keys refusal removed).
+NESTED = "ONESCRIPT_IN_TESTS_GATE"
+
+
 def _gate_cfg(no_tests: bool, ci_text: str, venv: Path) -> dict:
     pin = re.search(r"ruff==([\d.]+)", ci_text)
     cfg: dict = {
         "pins": {"tools": {"ruff": pin.group(1)}} if pin else {},
         "version_of": _in_venv(venv),
+        "found_in": f"in {venv}",
         "repos": [str(ROOT)],
     }
-    if not no_tests:
+    if not no_tests and not os.environ.get(NESTED):
+        os.environ[NESTED] = "1"  # inherited by the suite the gate runs
         cfg["tests"] = [
             {
                 "name": "onescript",
@@ -138,7 +196,11 @@ def main(argv: list[str] | None = None) -> int:
     if args.keys.resolve().is_relative_to(args.box.resolve()):
         print("refused: the keys file can't live inside the box")
         return 2
-    keys = _keys(args.keys)
+    try:
+        keys = _keys(args.keys)
+    except KeysExposed as e:
+        print(f"refused: {e}")
+        return 2
     law = _law(law_text)
     run = Run(args.box, keys, law, clock)
     run.rec.append(
@@ -153,6 +215,9 @@ def main(argv: list[str] | None = None) -> int:
             "governance/CONSTITUTION.md": law_sha,
             ".github/workflows/tests.yml": ci_sha,
             "onescript": run.version,
+            "git_head": boot._git(str(ROOT), "rev-parse", "HEAD") or None,
+            "python": f"{sys.executable} {sys.version.split()[0]}",
+            "venv_ruff": _in_venv(args.venv)("ruff"),
         },
         trace_ids=len(law["trace_ids"]),
     )
@@ -166,14 +231,25 @@ def main(argv: list[str] | None = None) -> int:
         print(_checkin_screen(rep))
         return 1 if rep["hard_close"] else 0
 
+    last = _last_boot(run.rec.rows())
     if args.cmd == "turn":
+        if last is None or last["hard_close"]:
+            why = (
+                "no check-in on record"
+                if last is None
+                else "the last check-in hard-closed"
+            )
+            run.rec.append("refused", run.sys, at="turn", reason=why, bite=args.bite)
+            print(f"refused: {why}; nothing moves until a check-in opens")
+            return 1
         who, family = DESK
         ident = {"who": who, "family": family, "sig": gate.sign(keys[who], who, family)}
         out = run.turn(ident, args.bite)
         print(json.dumps(out, indent=1, sort_keys=True, default=str))
         return 0
 
-    _, screen = run.checkout()
+    _from_record(run)
+    _, screen = run.checkout(boot_report=last)
     print(screen)
     return 0
 
