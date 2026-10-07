@@ -251,7 +251,7 @@ reading points at, and isn't.
 | Piece | Who | Does | Status |
 |---|---|---|---|
 | One script | code | builds the tables from the record | skeleton in `onescript/` |
-| **Serve** | code | writes only the tables in scope to one file the model reads; a table out of scope isn't named, counted or marked | **first cut** in `onescript/serve.py` (2026-10-07); Q19 and the stack decided, see below |
+| **Serve** | code | writes only the tables in scope to one file the model reads; a table out of scope isn't named, counted or marked | **first cut** in `onescript/serve.py` (2026-10-07); Q19, the stack, the view and the key decided, see below |
 | One hook | the model | Reads; Writes only if the human allows (`hook.py`, PR 107) | built, not wired |
 | One key | the human | sets the scope and seals; nothing is true until then | the vault, handled separately |
 
@@ -311,18 +311,28 @@ the hook"):
 | **The scope is a stack.** Code proposes a stack of piles; the human seals its one hash | `piles(rows, *ws)` groups the record by any of the four W's (exact, nothing judged; a row missing a W is in no pile). A pile's receipt is its group key plus each row's number and hash, checked against the chain before anything is served. `propose(stack, **match)` makes the card: readable names for the human, and the `subject` to seal | `onescript/serve.py` |
 | **The hook is narrowed.** Read is allowed on the served file only | `hook.py` allows Read only when the path resolves to `ONESCRIPT_SERVED`; any other path, a link to another file, or no served file set is denied. Write still asks. Still built, not wired (N6) | `hook.py` |
 
+**Decided 2026-10-07, second pass** (the desk read the served file as the
+model receives it and found four leaks; the operator: "yes to all five"):
+
+| Decision | What it changes | Where |
+|---|---|---|
+| **The model reads a view, not the record** | Served rows carry the four W's and a named payload (`PAYLOAD`), nothing else. Row numbers, `hash`, `prev`, content digests, versions and the receipt stay on the record's side. Any full-width hash left in served text is withheld. That closes the four leaks: a gap in `n` counted the rows held back, `prev` named one, a plain content digest could be reversed, and `unreachable` printed plain table hashes (it now gives a count) | `serve.view`, `serve._scrub` |
+| **The card lists the joins** | `propose()` adds `joins`: every who, what, day and where that two or more piles in the stack share. Joining is the model's job, so these are the joins it will make; the human judges the combination before sealing (the mosaic rule) | `serve.joins` |
+| **One serve key per session** | `Run.checkin` makes a fresh key (`serve.session_key`). Ids hold for the session and can't be linked across sessions; before check-in serve is `empty`. The serve key makes ids and never signs authority | `run.py`, `serve.py` |
+| **Every record row says where** | `Record.append` stamps `where` on every row: the file for writes, the change's path for doors, the destination for acts, the subject for seals, `null` when the caller can't say. A served pile also says what its grouping can't hold, so absence isn't read as fact | `record.py`, `run.py`, `serve.CANNOT_HOLD` |
+| **A fixed return line** | Every served file carries `return`: rows of `{"cites": [served table id], "claim": text}`, nothing else. `check_cites` checks the cites | `serve.RETURN` |
+
 **Still open:**
 
-- **The mosaic rule:** scope judged on the combination. Not built; the
-  recommendation on file is that code lists what a stack joins on the card
-  and the human judges.
-- **The home.** D2 puts serve in willow-bot; it sits beside the skeleton here
-  until the operator moves it.
-- **The serve key** makes ids and never signs authority, so HMAC can stay.
-  The human's seal over the stack is the authority, and that's what becomes
-  the passkey when the one key lands. A recommendation, not decided.
-- **The where gap** limits the stack: only `write` rows carry a where, so a
-  where-pile holds only writes.
+- **The home.** D2 puts serve in willow-bot. It sits beside the skeleton here
+  until it runs on the operator's box, then moves with the whole skeleton in
+  one step (recommendation, not decided).
+- **The served path in the model's prompt.** The hook allows only
+  `ONESCRIPT_SERVED`; the same code that sets it must tell the model the
+  path. Not built.
+- **Rows written before `where`.** Records from before this change have no
+  `where` key on doors, acts and seals; they stay in no where-pile, as
+  `cannot_hold` says.
 
 ### How the tables group: who, what, when, where
 
@@ -349,7 +359,7 @@ where. A `door` row records the verdict on a change but not the change's
 path, an `act` row (a push) not where it went, and a `seal` row only its
 `subject`. Until every `append` carries a `where` (the change's path, the
 push's destination, the sealed subject), "who keeps touching this file"
-only sees the writes. One field on `Record.append`; not built.
+only sees the writes. One field on `Record.append`; not built. (Built 2026-10-07: see "Serve, first cut".)
 
 Grouping is a `GROUP BY` on fields that already exist. Each group's key is
 hashed, the 3/7/13/23 ladder counts inside it, and pairs of W's are the
@@ -662,7 +672,7 @@ decision.
 ## Running the tests
 
 ```bash
-cd onescript && python3 -m pytest -q tests   # 159 tests (24 capability door, 12 xref, 16 serve, 11 hook)
+cd onescript && python3 -m pytest -q tests   # 168 tests (24 capability door, 12 xref, 25 serve, 11 hook)
 ```
 
 The Grove's CI doesn't collect these (its `testpaths` is `tests/`). ruff lints

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -48,7 +49,7 @@ def test_only_the_scope_is_served_and_the_rest_is_never_named(tmp_path):
     raw = (tmp_path / serve.OUT).read_text()
     assert "PIN 4471" not in raw and "vault" not in raw
     assert serve.table_id(OUT) not in raw
-    assert set(json.loads(raw)) == {"state", "why", "tables"}  # no count of the rest
+    assert set(json.loads(raw)) == {"state", "why", "return", "tables"}  # no count
 
 
 def test_served_ids_are_keyed_never_the_content_hash(tmp_path):
@@ -63,7 +64,12 @@ def test_served_ids_are_keyed_never_the_content_hash(tmp_path):
 
 def test_no_scope_serves_nothing_and_says_why(tmp_path):
     doc = serve.serve(box(tmp_path), [IN], None, SERVE_KEY)
-    assert doc == {"state": "empty", "why": doc["why"], "tables": []}
+    assert doc == {
+        "state": "empty",
+        "why": doc["why"],
+        "return": serve.RETURN,
+        "tables": [],
+    }
     assert "no scope" in doc["why"]
 
 
@@ -106,8 +112,8 @@ def test_trust_comes_from_the_record_not_the_table(tmp_path):
     seal(rec, serve.table_id(ALSO))
     claims = {**IN, "trust": "human-sealed"}  # a table can't label itself
     doc = serve.serve(rec, [claims, ALSO], ids, SERVE_KEY)
-    trust = {t["source"]: t["trust"] for t in doc["tables"]}
-    assert trust == {IN["source"]: "untrusted", ALSO["source"]: "human-sealed"}
+    trust = {t["rows"][0]["who"]: t["trust"] for t in doc["tables"]}
+    assert trust == {"hanuman": "untrusted", "willow": "human-sealed"}
 
 
 def test_a_table_without_a_receipt_fails_the_whole_serve(tmp_path):
@@ -195,7 +201,7 @@ def test_a_proposal_that_matches_nothing_has_nothing_to_seal(tmp_path):
     rec = box(tmp_path)
     activity(rec)
     card = serve.propose(serve.piles(rec.rows(), "where"), where="docs/z.md")
-    assert card == {"subject": None, "ids": [], "stack": []}
+    assert card == {"subject": None, "ids": [], "stack": [], "joins": {}}
 
 
 def test_a_pile_whose_receipt_does_not_match_the_record_serves_nothing(tmp_path):
@@ -207,3 +213,110 @@ def test_a_pile_whose_receipt_does_not_match_the_record_serves_nothing(tmp_path)
     seal(rec, serve.scope_subject(ids))
     doc = serve.serve(rec, [forged], ids, SERVE_KEY)
     assert doc["state"] == "empty" and "receipt" in doc["why"]
+
+
+# ── what the model reads: the view, not the record ───────────────────────────
+HEX64 = re.compile(r"[0-9a-f]{64}")
+
+
+def served_where(tmp_path, where="docs/a.md"):
+    rec = box(tmp_path)
+    activity(rec)
+    rec.write_file(
+        gate.Verified("willow", "claude", gate.token()),
+        "docs/secret.md",
+        b"s",
+        provenance="authored",
+    )
+    stack = serve.piles(rec.rows(), "where")
+    card = serve.propose(stack, where=where)
+    seal(rec, card["subject"])
+    return rec, stack, card, serve.serve(rec, stack, card["ids"], SERVE_KEY)
+
+
+def test_the_model_cannot_count_name_or_reverse_the_rest(tmp_path):
+    _, _, _, doc = served_where(tmp_path)
+    raw = (tmp_path / serve.OUT).read_text()
+    for row in (r for t in doc["tables"] for r in t["rows"]):
+        assert not {"n", "hash", "prev", "sha", "version"} & set(row)
+    assert "source" not in doc["tables"][0]  # the receipt stays in the record
+    ids = {t["id"] for t in doc["tables"]}
+    assert set(HEX64.findall(raw)) == ids  # the only hashes are its own ids
+    assert "secret" not in raw
+
+
+def test_a_hash_inside_served_text_is_withheld(tmp_path):
+    rec = box(tmp_path)
+    who = gate.Verified("hanuman", "qwen", gate.token())
+    rec.append("door", who, where="docs/a.md", reason="cites " + "ab" * 32)
+    stack = serve.piles(rec.rows(), "where")
+    card = serve.propose(stack)
+    seal(rec, card["subject"])
+    doc = serve.serve(rec, stack, card["ids"], SERVE_KEY)
+    assert doc["tables"][0]["rows"][0]["reason"] == "cites " + serve.WITHHELD
+
+
+def test_unreachable_says_how_many_never_which(tmp_path):
+    rec = box(tmp_path)
+    ids = scoped(rec, IN, ALSO)
+    doc = serve.serve(rec, [IN], ids, SERVE_KEY)
+    assert doc["why"] == "1 sealed table(s) not found"
+    assert not HEX64.search((tmp_path / serve.OUT).read_text())
+
+
+def test_every_served_file_says_what_to_return(tmp_path):
+    _, _, _, doc = served_where(tmp_path)
+    assert doc["return"] == serve.RETURN
+    assert serve.serve(box(tmp_path / "b"), [], None, SERVE_KEY)["return"] == (
+        serve.RETURN
+    )
+
+
+def test_a_where_pile_says_what_it_cannot_hold(tmp_path):
+    _, _, _, doc = served_where(tmp_path)
+    assert doc["tables"][0]["cannot_hold"] == [serve.CANNOT_HOLD["where"]]
+
+
+def test_the_card_lists_the_joins_the_model_could_make(tmp_path):
+    rec = box(tmp_path)
+    activity(rec)
+    stack = serve.piles(rec.rows(), "where")
+    card = serve.propose(stack)  # both files: hanuman and willow, one day
+    assert card["joins"]["who"] == {"hanuman": ["where=docs/a.md", "where=docs/b.md"]}
+    assert list(card["joins"]["when"].values()) == [
+        ["where=docs/a.md", "where=docs/b.md"]
+    ]
+    one = serve.propose(stack, where="docs/b.md")
+    assert one["joins"] == {}  # one pile joins nothing
+
+
+# ── the serve key: one per session, never the seal key ───────────────────────
+def test_a_new_session_gives_the_same_table_a_different_id(tmp_path):
+    rec = box(tmp_path)
+    ids = scoped(rec, IN)
+    a = serve.serve(rec, [IN], ids, serve.session_key())["tables"][0]["id"]
+    b = serve.serve(rec, [IN], ids, serve.session_key())["tables"][0]["id"]
+    assert a != b
+
+
+def test_no_serve_key_serves_nothing(tmp_path):
+    rec = box(tmp_path)
+    ids = scoped(rec, IN)
+    doc = serve.serve(rec, [IN], ids, None)
+    assert doc["state"] == "empty" and "check-in" in doc["why"]
+
+
+# ── the where gap: every row says where, or says it can't ────────────────────
+def test_every_record_row_carries_where(tmp_path):
+    rec = box(tmp_path)
+    activity(rec)
+    seal(rec, "subject-x")
+    rows = rec.rows()
+    assert all("where" in r for r in rows)
+    assert [r["where"] for r in rows if r["kind"] == "write"] == [
+        "docs/a.md",
+        "docs/a.md",
+        "docs/b.md",
+    ]
+    assert [r["where"] for r in rows if r["kind"] == "door"] == [None]
+    assert rec.verify_chain() == []

@@ -105,7 +105,12 @@ class Record:
         verify_chain(), which every check-in runs first."""
         return self._read()[0]
 
-    def append(self, kind: str, who: Verified, **fields) -> dict:
+    def append(
+        self, kind: str, who: Verified, where: str | None = None, **fields
+    ) -> dict:
+        """Every row says where: the file written, the change judged, the act's
+        destination, the subject sealed. None when the caller can't say; the
+        record never guesses a place."""
         if not isinstance(who, Verified) or who._token is not self._token:
             raise PermissionError(
                 "record: unverified identity; the stamp comes from the gate"
@@ -122,6 +127,7 @@ class Record:
             "version": self.version,
             "ts": self.clock(),
             "prev": rows[-1]["hash"] if rows else GENESIS,
+            "where": where,
             **fields,
         }
         row["hash"] = h256(canon(row))
@@ -267,7 +273,9 @@ class Record:
         pile = self.pile()
         pile["items"] = [i for i in pile["items"] if i["where"] != rel] + [ptr]
         self._save_pile(pile)
-        return self.append("write", who, path=rel, sha=ptr["sha"], cites=cites or [])
+        return self.append(
+            "write", who, where=rel, path=rel, sha=ptr["sha"], cites=cites or []
+        )
 
 
 def tip_subject(tip: dict) -> str:

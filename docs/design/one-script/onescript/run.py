@@ -16,7 +16,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Callable
 
-from . import boot, gate, predict, record, resolve, reverse, view
+from . import boot, gate, predict, record, resolve, reverse, serve, view
 from .record import h256
 
 PKG = Path(__file__).resolve().parent
@@ -39,9 +39,11 @@ class Run:
         self.graded: list[dict] = []
         self.claims: list[dict] = []
         self.acts: list[dict] = []
+        self.serve_key: bytes | None = None  # made at check-in, never the seal key
 
     def checkin(self, gate_cfg: dict | None = None) -> dict:
         report = boot.boot(self.rec, self.keys, self.law, gate_cfg)
+        self.serve_key = serve.session_key()  # ids hold for this session only
         self.rec.append(
             "boot",
             self.sys,
@@ -87,6 +89,7 @@ class Run:
             row = self.rec.append(
                 "door",
                 who,
+                where=change.get("path") or change.get("where"),
                 turn=n,
                 verdict=d.verdict,
                 reason=d.reason,
@@ -149,6 +152,7 @@ class Run:
         self.rec.append(
             "act",
             self.sys,
+            where=act.get("where"),
             mandate=act.get("mandate"),
             act_kind=row["kind"],
             verdict=row["verdict"],
@@ -156,6 +160,11 @@ class Run:
             card=row["card"],
         )
         return row
+
+    def serve(self, tables: list[dict], scope: list[str] | None) -> dict:
+        """Write the one file the model reads. Before check-in there's no serve
+        key, and serve fails closed."""
+        return serve.serve(self.rec, tables, scope, self.serve_key)
 
     def say(self, text: str, facts: dict) -> list[dict]:
         """Layer 5: the claims in an output, checked before the human reads it.
@@ -172,7 +181,7 @@ class Run:
             return self.rec.append(
                 "refused", self.sys, at="seal", reason=str(e), subject=subject
             )
-        return self.rec.append("seal", hum, subject=subject)
+        return self.rec.append("seal", hum, where=subject, subject=subject)
 
     def seal_tip(self, proof: str, human_key: bytes) -> dict:
         """The human seals the record's tip; the anchor keeps it outside the box.
@@ -189,7 +198,7 @@ class Run:
                 "refused", self.sys, at="seal_tip", reason=str(e), subject=subject
             )
         self.rec.set_anchor(tip, proof)
-        return self.rec.append("seal", hum, subject=subject)
+        return self.rec.append("seal", hum, where=subject, subject=subject)
 
     def night(self, questions, models, budget: resolve.Budget, present) -> str:
         got, how = resolve.night_pool(list(questions), list(models), budget, present)
