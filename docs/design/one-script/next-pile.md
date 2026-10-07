@@ -1936,7 +1936,7 @@ run on this box: `ccr-392b8b73` in the worktree `worktrees/box-grid` at
 | 7 reverse | `measure --against` (392b8b73) | "No box changed" in all 9 grids against their latest snapshots | ✓ |
 | 7 reverse | `const_coverage.py` (392b8b73) | 78 clauses | the count ✓; on this box it also counts every willow-mcp worktree copy (gap `08fb00d7c7ec`) |
 | 7 reverse | `four_ws.py`, `shared_phrases.py` (master) | the same bytes twice | ✗ at their own commit `34fc28d`: 267 tables, not 260; every fail-closed phrase +1 (gap `bb7af6bb1453`) |
-| 7 reverse | `md_split.py` (master) | the same bytes twice | ✗ task notifications counted as typed; fixed on the desk (one more harness opening, uncommitted) |
+| 7 reverse | `md_split.py` (master) | the same bytes twice | ✗ task notifications counted as typed; fixed (one more harness opening, with a test) |
 | run | none | — | — |
 
 ### What the replay found

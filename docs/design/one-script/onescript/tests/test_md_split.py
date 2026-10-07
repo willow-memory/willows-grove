@@ -54,8 +54,13 @@ def test_only_the_operators_prompts_are_typed(tmp_path):
 
 
 def test_every_harness_opening_is_classed(tmp_path):
-    harness = [t for _, s, t in classes(tmp_path) if s == "harness"]
-    assert len(harness) == len(md_split.HARNESS)
+    harness = [t.split("\n")[0][:20] for _, s, t in classes(tmp_path) if s == "harness"]
+    assert harness == [
+        "<task-notification>",
+        "Tool loaded.",
+        "Stop hook feedback: ",
+        "[Request interrupted",
+    ]
 
 
 def test_reminders_and_meta_rows_are_dropped(tmp_path):
