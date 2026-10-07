@@ -251,7 +251,7 @@ reading points at, and isn't.
 | Piece | Who | Does | Status |
 |---|---|---|---|
 | One script | code | builds the tables from the record | skeleton in `onescript/` |
-| **Serve** | code | writes only the tables in scope to one file the model reads; a table out of scope isn't named, counted or marked | **not built** |
+| **Serve** | code | writes only the tables in scope to one file the model reads; a table out of scope isn't named, counted or marked | **first cut** in `onescript/serve.py` (2026-10-07), not sealed; see below |
 | One hook | the model | Reads; Writes only if the human allows (`hook.py`, PR 107) | built, not wired |
 | One key | the human | sets the scope and seals; nothing is true until then | the vault, handled separately |
 
@@ -281,6 +281,41 @@ reading points at, and isn't.
 - What no paper does is still the prior-art table's "Not found" rows: truth
   made only by a human seal, scope chosen by stacking piles, and a pre-AI
   foundation.
+
+### Serve, first cut
+
+*2026-10-07, desk session. The operator: "Let's start working on the serve
+chunk from the one script/one box". Agent-built; not sealed. CLAUDE.md
+rule 4: the operator ratifies what's below before it's built on.*
+
+`onescript/serve.py` writes one file, `served.json`, and a `serve` row in
+the record. What it holds the run to (each line is a test in
+`tests/test_serve.py`):
+
+| Rule | From | How |
+|---|---|---|
+| Only the tables in scope; the rest isn't named, counted or marked | the security core | the file holds `state`, `why` and the scoped tables, nothing else |
+| The scope is the human's seal over the exact set | Janus; "a seal binds to one hash" | the subject is `serve:` + one hash over the sorted table ids; a seal over a smaller set covers nothing wider |
+| Ids the model can't guess | the security core, guessable hashes | each served id is an HMAC of the table hash under the run's serve key |
+| A trust label on every table, with its receipt | four-pieces-join, what one-box adds 1 | `human-sealed` only when the record holds the human's seal over that table's hash, else `untrusted`; a table can't label itself; no receipt, nothing served |
+| Fail closed and loud; empty isn't unreachable | four-pieces-join 3; INVARIANTS §1 | no scope or no seal: `empty`, with why; a sealed table that's missing: `unreachable` |
+| Every serve is recorded with where | the where gap above | the `serve` row carries `where`, the scope subject, the served ids and the file's hash; the file gets its pile pointer |
+| A cite outside the served file is `link_fail` | flowering §13 | `check_cites` |
+
+**Still open:**
+
+- **Q19** (four-pieces-join): reading is open for people while the model
+  reads only what's served. Serve builds the model's half; the
+  question stays the operator's.
+- **Where the scope comes from.** Serve takes a list of table hashes and
+  checks its seal. Who proposes the list (the W groups above, a pile, the
+  operator by hand) isn't decided.
+- **What a table is.** Serve takes `{rows, source}`. A W group from the record
+  is one shape; nothing builds one yet.
+- **The mosaic rule:** scope judged on the combination. Not built.
+- **The home.** D2 puts serve in willow-bot; it sits beside the skeleton here
+  until the operator moves it.
+- The serve key is HMAC like the rest of the skeleton's keys, not a passkey.
 
 ### How the tables group: who, what, when, where
 
@@ -620,7 +655,7 @@ decision.
 ## Running the tests
 
 ```bash
-cd onescript && python3 -m pytest -q tests   # 97 tests (24 capability door, 12 xref)
+cd onescript && python3 -m pytest -q tests   # 108 tests (24 capability door, 12 xref, 11 serve)
 ```
 
 The Grove's CI doesn't collect these (its `testpaths` is `tests/`). ruff lints
