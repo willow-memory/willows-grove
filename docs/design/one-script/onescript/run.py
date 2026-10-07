@@ -38,7 +38,14 @@ class Run:
     def checkin(self, gate_cfg: dict | None = None) -> dict:
         report = boot.boot(self.rec, self.keys, self.law, gate_cfg)
         self.rec.append(
-            "boot", self.sys, hard_close=report["hard_close"], lines=report["lines"]
+            "boot",
+            self.sys,
+            hard_close=report["hard_close"],
+            lines=report["lines"],
+            options=report["options"],
+            probes=report["probes"],
+            gates=report["gates"],
+            egress=report["egress"],
         )
         return report
 
