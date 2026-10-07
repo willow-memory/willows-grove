@@ -139,3 +139,71 @@ def test_a_cite_outside_the_served_file_is_link_fail(tmp_path):
     fails = serve.check_cites(doc, [good, guessed, ids[0]])
     assert [f["cite"] for f in fails] == [guessed, ids[0]]
     assert {f["verdict"] for f in fails} == {"link_fail"}
+
+
+# ── the stack: piles from the record, proposed by code, sealed by the human ──
+def activity(rec):
+    hanuman = gate.Verified("hanuman", "qwen", gate.token())
+    willow = gate.Verified("willow", "claude", gate.token())
+    rec.write_file(hanuman, "docs/a.md", b"a", provenance="authored")
+    rec.write_file(willow, "docs/a.md", b"a2", provenance="authored")
+    rec.write_file(hanuman, "docs/b.md", b"b", provenance="authored")
+    rec.append("door", hanuman, verdict="pass")  # no where: in no where-pile
+
+
+def test_piles_group_the_record_by_the_ws_and_skip_what_has_no_where(tmp_path):
+    rec = box(tmp_path)
+    activity(rec)
+    got = {
+        serve.name(p): len(p["rows"]) for p in serve.piles(rec.rows(), "who", "where")
+    }
+    assert got == {
+        "who=hanuman · where=docs/a.md": 1,
+        "who=hanuman · where=docs/b.md": 1,
+        "who=willow · where=docs/a.md": 1,
+    }
+    by_what = {serve.name(p) for p in serve.piles(rec.rows(), "what")}
+    assert "what=door" in by_what
+
+
+def test_a_pile_receipt_is_its_group_and_each_rows_number_and_hash(tmp_path):
+    rec = box(tmp_path)
+    activity(rec)
+    pile = serve.piles(rec.rows(), "where")[0]
+    assert pile["source"]["group"] == {"where": "docs/a.md"}
+    assert pile["source"]["rows"] == [[r["n"], r["hash"]] for r in pile["rows"]]
+
+
+def test_code_proposes_the_stack_and_the_seal_makes_it_the_scope(tmp_path):
+    rec = box(tmp_path)
+    activity(rec)
+    stack = serve.piles(rec.rows(), "who", "where")
+    card = serve.propose(stack, where="docs/a.md")
+    assert [s["name"] for s in card["stack"]] == [
+        "who=hanuman · where=docs/a.md",
+        "who=willow · where=docs/a.md",
+    ]
+    assert serve.serve(rec, stack, card["ids"], SERVE_KEY)["state"] == "empty"
+    seal(rec, card["subject"])
+    doc = serve.serve(rec, stack, card["ids"], SERVE_KEY)
+    assert doc["state"] == "populated" and len(doc["tables"]) == 2
+    raw = (tmp_path / serve.OUT).read_text()
+    assert "docs/b.md" not in raw  # the pile out of the stack isn't there
+
+
+def test_a_proposal_that_matches_nothing_has_nothing_to_seal(tmp_path):
+    rec = box(tmp_path)
+    activity(rec)
+    card = serve.propose(serve.piles(rec.rows(), "where"), where="docs/z.md")
+    assert card == {"subject": None, "ids": [], "stack": []}
+
+
+def test_a_pile_whose_receipt_does_not_match_the_record_serves_nothing(tmp_path):
+    rec = box(tmp_path)
+    activity(rec)
+    pile = serve.piles(rec.rows(), "where")[0]
+    forged = {**pile, "rows": [{**pile["rows"][0], "who": "operator"}]}
+    ids = [serve.table_id(forged)]
+    seal(rec, serve.scope_subject(ids))
+    doc = serve.serve(rec, [forged], ids, SERVE_KEY)
+    assert doc["state"] == "empty" and "receipt" in doc["why"]

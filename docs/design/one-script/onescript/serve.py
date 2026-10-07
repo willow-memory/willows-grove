@@ -20,6 +20,12 @@ permission. Code fills out every field here; the model never sees a box.
           without a receipt: nothing is served, and the file says why. A sealed
           table the run can't find is `unreachable`, not `empty`.
 
+  stack   the scope is a stack of piles (the operator, 2026-10-07: "yes to the
+          stack"). A pile is one who/what/when/where group of record rows,
+          its receipt the group key plus each row's number and hash, checked
+          against the chain before anything is served. Code proposes the
+          stack; the human seals its one hash.
+
 Not here yet: the mosaic rule (judging scope on the combination), and the home.
 D2 (sealed) puts serve inside willow-bot; it sits beside the skeleton until the
 operator moves it.
@@ -33,6 +39,69 @@ from . import gate
 from .record import Record, canon, h256
 
 OUT = "served.json"
+WS = ("who", "what", "when", "where")
+
+
+def w_of(row: dict, w: str) -> str | None:
+    """The four W's code can know without judging. Only write rows say where."""
+    if w == "who":
+        return row.get("who")
+    if w == "what":
+        return row.get("kind")
+    if w == "when":
+        return (row.get("ts") or "")[:10] or None  # the day
+    if w == "where":
+        return row.get("where") or row.get("path")
+    raise ValueError(f"not a W: {w!r}")
+
+
+def piles(rows: list[dict], *ws: str) -> list[dict]:
+    """Group the record by the given W's: a GROUP BY, exact, nothing judged.
+    A row missing any of them isn't in a pile; code doesn't guess it."""
+    if not ws or any(w not in WS for w in ws):
+        raise ValueError(f"group by one or more of {WS}, got {ws}")
+    groups: dict[tuple, list[dict]] = {}
+    for r in rows:
+        key = tuple(w_of(r, w) for w in ws)
+        if None not in key:
+            groups.setdefault(key, []).append(r)
+    return [
+        {
+            "rows": grp,
+            "source": {
+                "group": dict(zip(ws, key)),
+                "rows": [[r["n"], r["hash"]] for r in grp],
+            },
+        }
+        for key, grp in sorted(groups.items())
+    ]
+
+
+def name(pile: dict) -> str:
+    """What the human reads on the card. The model never sees it."""
+    src = pile["source"]
+    group = src.get("group", {}) if isinstance(src, dict) else {}
+    return " · ".join(f"{k}={v}" for k, v in group.items()) or str(src)
+
+
+def propose(stack: list[dict], **match: str) -> dict:
+    """Code proposes the stack: every pile whose group matches. The card is for
+    the human; sealing `subject` is the only thing that makes it a scope."""
+    chosen = [
+        p
+        for p in stack
+        if isinstance(p["source"], dict)
+        and all(p["source"]["group"].get(k) == v for k, v in match.items())
+    ]
+    ids = [table_id(p) for p in chosen]
+    return {
+        "subject": scope_subject(ids) if ids else None,
+        "ids": ids,
+        "stack": [
+            {"name": name(p), "id": i, "rows": len(p["rows"])}
+            for p, i in zip(chosen, ids)
+        ],
+    }
 
 
 def table_id(table: dict) -> str:
@@ -102,8 +171,7 @@ def _serve(rows, tables, scope, serve_key) -> dict:
         )
     by_id = {}
     for t in tables:
-        if not (t.get("source") or "").strip():
-            raise gate.Refused("a table without a source receipt is never served")
+        _receipt(t, rows)
         by_id[table_id(t)] = t
     missing = sorted(set(scope) - set(by_id))
     if missing:  # in scope, so naming them is no leak
@@ -119,6 +187,23 @@ def _serve(rows, tables, scope, serve_key) -> dict:
     ]
     served.sort(key=lambda t: t["id"])
     return {"state": "populated", "why": "", "tables": served}
+
+
+def _receipt(table: dict, rows: list[dict]) -> None:
+    """A pile's receipt is checked against the chain; a string receipt names an
+    outside source, and is served as untrusted like everything unsealed."""
+    src = table.get("source")
+    if isinstance(src, str) and src.strip():
+        return
+    if not isinstance(src, dict) or not src.get("rows"):
+        raise gate.Refused("a table without a source receipt is never served")
+    at = {r["n"]: r for r in rows}
+    cited = [at.get(n) for n, _ in src["rows"]]
+    if (
+        any(r is None or r["hash"] != h for r, (_, h) in zip(cited, src["rows"]))
+        or cited != table["rows"]
+    ):
+        raise gate.Refused("a pile's receipt doesn't match the record; nothing served")
 
 
 def check_cites(doc: dict, cited: list[str]) -> list[dict]:

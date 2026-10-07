@@ -251,7 +251,7 @@ reading points at, and isn't.
 | Piece | Who | Does | Status |
 |---|---|---|---|
 | One script | code | builds the tables from the record | skeleton in `onescript/` |
-| **Serve** | code | writes only the tables in scope to one file the model reads; a table out of scope isn't named, counted or marked | **first cut** in `onescript/serve.py` (2026-10-07), not sealed; see below |
+| **Serve** | code | writes only the tables in scope to one file the model reads; a table out of scope isn't named, counted or marked | **first cut** in `onescript/serve.py` (2026-10-07); Q19 and the stack decided, see below |
 | One hook | the model | Reads; Writes only if the human allows (`hook.py`, PR 107) | built, not wired |
 | One key | the human | sets the scope and seals; nothing is true until then | the vault, handled separately |
 
@@ -302,20 +302,27 @@ the record. What it holds the run to (each line is a test in
 | Every serve is recorded with where | the where gap above | the `serve` row carries `where`, the scope subject, the served ids and the file's hash; the file gets its pile pointer |
 | A cite outside the served file is `link_fail` | flowering §13 | `check_cites` |
 
+**Decided 2026-10-07** (the operator: "Accept Q19, yes to the stack, narrow
+the hook"):
+
+| Decision | What it changes | Where |
+|---|---|---|
+| **Q19 accepted.** Reading is open for people; the model reads only what's served | The 10-01 rule ("There is nothing wrong with reading") is about people and the box; the 10-05 core is about what the model is shown. They don't collide | four-pieces-join, the contradiction |
+| **The scope is a stack.** Code proposes a stack of piles; the human seals its one hash | `piles(rows, *ws)` groups the record by any of the four W's (exact, nothing judged; a row missing a W is in no pile). A pile's receipt is its group key plus each row's number and hash, checked against the chain before anything is served. `propose(stack, **match)` makes the card: readable names for the human, and the `subject` to seal | `onescript/serve.py` |
+| **The hook is narrowed.** Read is allowed on the served file only | `hook.py` allows Read only when the path resolves to `ONESCRIPT_SERVED`; any other path, a link to another file, or no served file set is denied. Write still asks. Still built, not wired (N6) | `hook.py` |
+
 **Still open:**
 
-- **Q19** (four-pieces-join): reading is open for people while the model
-  reads only what's served. Serve builds the model's half; the
-  question stays the operator's.
-- **Where the scope comes from.** Serve takes a list of table hashes and
-  checks its seal. Who proposes the list (the W groups above, a pile, the
-  operator by hand) isn't decided.
-- **What a table is.** Serve takes `{rows, source}`. A W group from the record
-  is one shape; nothing builds one yet.
-- **The mosaic rule:** scope judged on the combination. Not built.
+- **The mosaic rule:** scope judged on the combination. Not built; the
+  recommendation on file is that code lists what a stack joins on the card
+  and the human judges.
 - **The home.** D2 puts serve in willow-bot; it sits beside the skeleton here
   until the operator moves it.
-- The serve key is HMAC like the rest of the skeleton's keys, not a passkey.
+- **The serve key** makes ids and never signs authority, so HMAC can stay.
+  The human's seal over the stack is the authority, and that's what becomes
+  the passkey when the one key lands. A recommendation, not decided.
+- **The where gap** limits the stack: only `write` rows carry a where, so a
+  where-pile holds only writes.
 
 ### How the tables group: who, what, when, where
 
@@ -655,7 +662,7 @@ decision.
 ## Running the tests
 
 ```bash
-cd onescript && python3 -m pytest -q tests   # 108 tests (24 capability door, 12 xref, 11 serve)
+cd onescript && python3 -m pytest -q tests   # 159 tests (24 capability door, 12 xref, 16 serve, 11 hook)
 ```
 
 The Grove's CI doesn't collect these (its `testpaths` is `tests/`). ruff lints

@@ -52,6 +52,11 @@ reading is open for people (the public repository; local material never
 needs a grant), and the model reads only what's served. **Q19, the
 operator's.**
 
+**Decided 2026-10-07.** The operator: "Accept Q19, yes to the stack, narrow
+the hook". The reading above holds: reading is open for people, and the model
+reads only what's served. The hook's Read is narrowed to the served file
+(`../one-script/README.md`, "Serve, first cut").
+
 ---
 
 ## What one-box adds to serve

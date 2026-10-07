@@ -1900,6 +1900,8 @@ ratified.*
 
 - **Q19:** reading is open for people, and the model reads only what's served.
   Accept, change or reject. It gates **serve**, the handoff's next bite.
+  **Accepted 2026-10-07** ("Accept Q19, yes to the stack, narrow the hook");
+  see the one-script README, "Serve, first cut".
 - **Q9:** polyhook as a reference only (native adapters). The recommendation
   is waiting for a seal.
 - **N6:** wire `hook.py` on Claude Code through managed settings. Wiring stays
