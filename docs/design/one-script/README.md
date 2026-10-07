@@ -1,5 +1,7 @@
 # The one script: proposals from session 2026-10-02
 
+**The code lives in willow-bot** ([`one-script/`](https://github.com/willow-memory/willow-bot/tree/main/one-script)) since 2026-10-07 (willow-bot PR 88, under D2). This directory keeps the design docs: the reasoning behind every part. Paths like `onescript/serve.py` or `hook.py` below are paths in willow-bot's `one-script/`.
+
 ## Start here: the one script, stripped down (2026-10-05)
 
 [`hashing-session-handoff-2026-10-05.md`](hashing-session-handoff-2026-10-05.md)
@@ -640,11 +642,11 @@ is in its own commit so it can be kept, edited or dropped on its own.
 |---|---|---|
 | 1 | [`workflow.md`](workflow.md), [`workflow-shape.mmd`](workflow-shape.mmd) | The workflow: data point 0, the truth rule, boot (B1–B3 and the hard close), every prompt as a bite, the repetition ladder (1 does it, 2 notices, 3 offers), the resolve ladder (the user's sources first, the model last), loops and the reverse pass, the 3B experiment, "the gate is the script", custom and chained gates |
 | 2 | [`next-pile.md`](next-pile.md) | The runtime as one script: seven parts by purpose plus `run`, citing the constitution upward. Also: the stamp (who and standing, stamped at the door, never by the model); every change cites what it touches; reverse's triggers; the script-match check; the four close-time pieces; the overnight pool and the morning screen; what the script can't solve and the one who can; **the four gates the close needed** (tests, toolchain, freshness, reachability), with push as a grant card; and **three more layers**: claims (every checkable statement checked against the record before the human reads it), boundaries (everything crossing an edge classed by provenance and carded) and mandate (every act traced to the human words that authorise it, before it runs) |
-| 3 | [`onescript/`](onescript/) | A runnable skeleton of #2: stdlib only, 53 tests. `record` (hash chain, stamp, open/close turns, pointers with provenance), `gate` (identity, citations, seals, grant cards, script match; **layer 5** claims, **layer 6** push cards by provenance, **layer 7** mandate), `resolve`, `predict`, `reverse` (three-way, four verdicts, witnesses by family), `boot` (probes and **the four gates**: tests, toolchain, freshness, reachability), `view` (the morning screen), `run` (`checkin`, `turn`, `act`, `say`, `checkout`). It uses [`scripts/scan/script_match.py`](scripts/scan/script_match.py) |
+| 3 | [`onescript/`](https://github.com/willow-memory/willow-bot/tree/main/one-script/onescript) | A runnable skeleton of #2: stdlib only, 53 tests. `record` (hash chain, stamp, open/close turns, pointers with provenance), `gate` (identity, citations, seals, grant cards, script match; **layer 5** claims, **layer 6** push cards by provenance, **layer 7** mandate), `resolve`, `predict`, `reverse` (three-way, four verdicts, witnesses by family), `boot` (probes and **the four gates**: tests, toolchain, freshness, reachability), `view` (the morning screen), `run` (`checkin`, `turn`, `act`, `say`, `checkout`). It uses [`scripts/scan/script_match.py`](https://github.com/willow-memory/willow-bot/blob/main/one-script/scripts/scan/script_match.py) |
 | — | [`day-3/`](day-3/) | Not a proposal: the source of the published **Day 2** DEV post (despite the folder name), the 55 PRs since Day 0, the post sources, and `predictions.json` (P1 and P2, both ungraded; the desk misread a late-night line as P2's grade, retracted 2026-10-02) |
 | — | [`posts/`](posts/) | The **Day 3** DEV post source ("The benchmark caught me too"), its cover prompt, and the Kaggle dataset metadata patch that was applied to `rudi193/escalation-benchmark` |
 | — | [`incoming/`](incoming/) | Three outside passes, kept by provenance: an Opus 5 session's six proposals against Draft 0.8 (reachability and staleness), a cold Haiku 4.5 session's three proposals, and a pointer to the operator's paper "Basins, Not Walls". Its README reconciles them with this PR, cross-checked against the record, and says what the one script took from each |
-| — | [`deep_thought.py`](deep_thought.py) | Read-only probe that carries the sealed Answer (D1, D2, D9, Q13) and measures the box against it. Prints the morning screen (NEEDS YOU → … → GRADES → CHOICES → QUIET). Stdlib only; needs `WILLOW_HOME`. See next-pile.md § "deep_thought.py". Three improvements after the first run: ledger-join seals, write-kind triage, GRADES |
+| — | [`deep_thought.py`](https://github.com/willow-memory/willow-bot/blob/main/one-script/deep_thought.py) | Read-only probe that carries the sealed Answer (D1, D2, D9, Q13) and measures the box against it. Prints the morning screen (NEEDS YOU → … → GRADES → CHOICES → QUIET). Stdlib only; needs `WILLOW_HOME`. See next-pile.md § "deep_thought.py". Three improvements after the first run: ledger-join seals, write-kind triage, GRADES |
 | 4 | [`constitution-proposal/`](constitution-proposal/) | Ten amendments and a neutral-language pass, built on Draft 0.7. **Brought into `governance/CONSTITUTION.md` as Draft 0.9 on 2026-10-06** with the Opus outside pass, renumbered where 0.8 had taken the number; unratified (see the folder's README) |
 
 **In the skeleton now:** the four gates and the three layers from #2, each
@@ -662,45 +664,24 @@ prose only. See [`incoming/README.md`](incoming/README.md).
 **Not yet:** `run.act` decides and cards; it never performs the act. Keys are
 HMAC rather than passkeys. There's no socket or peer check. Mandate rows are
 data the human supplies, never read out of their words by the model. It isn't
-in willow-bot yet, where D2 (sealed 2026-10-02) homes it.
+in willow-bot yet, where D2 (sealed 2026-10-02) homes it. (Moved 2026-10-07: willow-bot `one-script/`, PR 88.)
 
 **Kept local, not in this PR:** the session's map, marks and pile
 (`workflow.md` cites `session-flow.md` and `marks.json`). They're built from
 the session transcript and local memory, so publishing them is a separate
 decision.
 
-## Running the tests
+## Running it
+
+The code, its tests and its run instructions are in willow-bot:
+[`one-script/README.md`](https://github.com/willow-memory/willow-bot/blob/main/one-script/README.md). In short, from a willow-bot checkout
+with willows-grove beside it (the one script reads its law, this repo's
+constitution, from there):
 
 ```bash
-cd onescript && python3 -m pytest -q tests   # 168 tests (24 capability door, 12 xref, 25 serve, 11 hook)
+cd one-script
+python3 -m pytest -q onescript/tests        # the skeleton's tests; willow-bot's CI runs them on 3.10 to 3.14
+python3 -m onescript.xref index --repo ../../willows-grove --repo .. \
+    --repo ../../willow-mcp --out /tmp/xref  # xref; scope in ../one-box/research-2026-10-06.md §13
+WILLOW_HOME=… python3 deep_thought.py       # the morning screen, read only
 ```
-
-The Grove's CI doesn't collect these (its `testpaths` is `tests/`). ruff lints
-and formats them like everything else.
-
-## Running xref
-
-Two hashes per file on arrival (git's blob id, recomputed here from the bytes on
-disk, and the system's own SHA-256), then every id, link, `file:line` and commit
-SHA checked across the repos. Read-only; same repos at the same commits give the
-same bytes. Scope and first run: [`../one-box/research-2026-10-06.md`](../one-box/research-2026-10-06.md) §13.
-Serve's home under D2 is willow-bot; serve reads this index, it does not rebuild it.
-
-```bash
-python3 -m onescript.xref index --repo ../../../../willows-grove \
-    --repo ../../../../willow-bot --repo ../../../../willow-mcp \
-    --out /tmp/xref --cache /tmp/xref-cache [--record BOX]
-python3 -m onescript.xref slice --index /tmp/xref/index.json \
-    --repo ../../../../willows-grove --id Q19 --out q19.txt   # for people (Q19)
-```
-
-## Running deep_thought
-
-```bash
-WILLOW_HOME=… python3 docs/design/one-script/deep_thought.py        # screen
-WILLOW_HOME=… python3 docs/design/one-script/deep_thought.py --json  # rows
-```
-
-Read only. Without `WILLOW_HOME` the box probes report `unreachable` rather
-than guessing a path. D2 homes the one script in willow-bot; this file sits
-here until the operator moves it.
