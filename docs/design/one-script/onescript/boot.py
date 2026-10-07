@@ -113,8 +113,14 @@ def _tool_version(tool: str) -> str | None:
     return m.group(0) if m else last
 
 
-def toolchain_gate(pins: dict, version_of=_tool_version, py: str | None = None) -> list:
-    """Installed versions against the repo's pins, and whether a venv is active."""
+def toolchain_gate(
+    pins: dict,
+    version_of=_tool_version,
+    py: str | None = None,
+    found_in: str = "on PATH",
+) -> list:
+    """Installed versions against the repo's pins, and whether a venv is active.
+    `found_in` says where `version_of` looked, so the why names the right place."""
     out = []
     for tool, want in sorted(pins.get("tools", {}).items()):
         have = version_of(tool)
@@ -124,7 +130,7 @@ def toolchain_gate(pins: dict, version_of=_tool_version, py: str | None = None) 
             )
         elif have != want:
             out.append(
-                _row("toolchain", tool, "failing", f"{have} on PATH; pinned {want}")
+                _row("toolchain", tool, "failing", f"{have} {found_in}; pinned {want}")
             )
         else:
             out.append(_row("toolchain", tool, "satisfied"))
@@ -225,7 +231,10 @@ def gates(cfg: dict) -> list[dict]:
     return (
         tests_gate(cfg.get("tests", []), cfg.get("runner", _run))
         + toolchain_gate(
-            cfg.get("pins", {}), cfg.get("version_of", _tool_version), cfg.get("python")
+            cfg.get("pins", {}),
+            cfg.get("version_of", _tool_version),
+            cfg.get("python"),
+            cfg.get("found_in", "on PATH"),
         )
         + freshness_gate(
             cfg.get("repos", []),
