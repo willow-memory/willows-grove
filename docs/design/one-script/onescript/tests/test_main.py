@@ -245,3 +245,68 @@ def test_the_checkin_screen_says_the_chain_is_unanchored(tmp_path, capsys):
     run(tmp_path, venv_with(tmp_path, "0.0.0"), "checkin")
     assert "anchor: never sealed" in capsys.readouterr().out
     assert not (tmp_path / "box" / cli.ANCHOR).exists()
+
+
+# ── gap f58dd6dac53a: what #114 left out ────────────────────────────────────
+def test_a_nested_checkin_says_so_on_the_screen(tmp_path, capsys, monkeypatch):
+    v = venv_with(tmp_path, "0.16.7")
+    monkeypatch.setenv(cli.NESTED, "1")
+    run(tmp_path, v, "checkin")
+    assert "nested: inside the tests gate" in capsys.readouterr().out
+    assert rows(tmp_path)[0]["nested"] is True
+    monkeypatch.delenv(cli.NESTED)
+    run(tmp_path, v, "checkin")
+    assert "nested:" not in capsys.readouterr().out
+
+
+def test_every_boot_row_records_its_options(tmp_path, monkeypatch):
+    v = venv_with(tmp_path, "0.16.7")
+    run(tmp_path, v, "checkin")  # open: no options
+    run(tmp_path, venv_with(tmp_path / "old", "0.0.0"), "checkin")  # hard close
+    monkeypatch.setattr(
+        cli.boot,
+        "probes",
+        lambda keys, law: [{"probe": "planted", "held": False, "got": "verified"}],
+    )
+    run(tmp_path, v, "checkin")  # breach
+    boots = [r for r in rows(tmp_path) if r["kind"] == "boot"]
+    assert [b["options"] for b in boots] == [[], cli.boot.OPTIONS, ["stop here"]]
+
+
+def test_a_breach_records_every_probe_not_none(tmp_path, capsys, monkeypatch):
+    v = venv_with(tmp_path, "0.16.7")
+    planted = [
+        {"probe": "planted", "held": False, "got": "verified"},
+        {"probe": "kept", "held": True, "got": "refused"},
+    ]
+    monkeypatch.setattr(cli.boot, "probes", lambda keys, law: planted)
+    assert run(tmp_path, v, "checkin") == 3
+    assert [r for r in rows(tmp_path) if r["kind"] == "boot"][-1]["probes"] == planted
+    run(tmp_path, v, "checkout")
+    assert "probes held: 1/2" in capsys.readouterr().out
+
+
+def test_no_turn_after_checkout_until_a_new_checkin(tmp_path, capsys):
+    v = venv_with(tmp_path, "0.16.7")
+    run(tmp_path, v, "checkin")
+    run(tmp_path, v, "checkout")
+    assert run(tmp_path, v, "turn", "late bite") == 1
+    assert "the run checked out" in capsys.readouterr().out
+    refused = [r for r in rows(tmp_path) if r["kind"] == "refused"]
+    assert refused[-1]["at"] == "turn" and refused[-1]["bite"] == "late bite"
+    run(tmp_path, v, "checkin")
+    assert run(tmp_path, v, "turn", "next bite") == 0
+
+
+def test_the_boot_report_from_the_record_keeps_when(tmp_path):
+    """Checkout's boot report is the one boot() wrote, `at` included."""
+    from onescript.run import Run
+
+    v = venv_with(tmp_path, "0.16.7")
+    run(tmp_path, v, "checkin")
+    run(tmp_path, v, "checkout")
+    keys = cli._keys(tmp_path / "keys" / "keys.json")
+    r = Run(tmp_path / "box", keys, {"trace_ids": []}, lambda: "2026-10-07T00:00:00Z")
+    fresh = r.checkin()
+    assert fresh["report"]["state"] == "current" and "at" in fresh["report"]
+    assert cli._last_boot(r.rec.rows())["report"] == fresh["report"]
