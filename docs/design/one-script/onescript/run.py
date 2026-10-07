@@ -24,11 +24,16 @@ PKG = Path(__file__).resolve().parent
 
 class Run:
     def __init__(
-        self, box: Path, keys: dict[str, bytes], law: dict, clock: Callable[[], str]
+        self,
+        box: Path,
+        keys: dict[str, bytes],
+        law: dict,
+        clock: Callable[[], str],
+        anchor: Path | None = None,
     ):
         self.keys, self.law = keys, law
         self.version = record.version_of(PKG)
-        self.rec = record.Record(box, clock, self.version, gate.token())
+        self.rec = record.Record(box, clock, self.version, gate.token(), anchor)
         self.sys = gate.system()
         self.answers: list[dict] = []
         self.graded: list[dict] = []
@@ -46,6 +51,7 @@ class Run:
             probes=report["probes"],
             gates=report["gates"],
             egress=report["egress"],
+            anchor=report["anchor"],
         )
         return report
 
@@ -166,6 +172,23 @@ class Run:
             return self.rec.append(
                 "refused", self.sys, at="seal", reason=str(e), subject=subject
             )
+        return self.rec.append("seal", hum, subject=subject)
+
+    def seal_tip(self, proof: str, human_key: bytes) -> dict:
+        """The human seals the record's tip; the anchor keeps it outside the box.
+        A broken chain is never anchored: sealing it would bless the break."""
+        tip, breaks = self.rec.tip(), self.rec.verify_chain()
+        if tip is None or breaks:
+            why = "nothing to seal" if tip is None else f"the chain is broken: {breaks}"
+            return self.rec.append("refused", self.sys, at="seal_tip", reason=why)
+        subject = record.tip_subject(tip)
+        try:
+            hum = gate.human(subject, proof, human_key)
+        except gate.Refused as e:
+            return self.rec.append(
+                "refused", self.sys, at="seal_tip", reason=str(e), subject=subject
+            )
+        self.rec.set_anchor(tip, proof)
         return self.rec.append("seal", hum, subject=subject)
 
     def night(self, questions, models, budget: resolve.Budget, present) -> str:

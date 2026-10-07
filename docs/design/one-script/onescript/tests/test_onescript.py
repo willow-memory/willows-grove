@@ -186,6 +186,126 @@ def test_a_hash_cut_to_64_bits_is_a_chain_break(run):
     assert run.rec.verify_chain()
 
 
+# ── 3 record: the sealed tip, and lines that aren't rows ─────────────────────
+@pytest.fixture
+def anchored(tmp_path):
+    keys = {**KEYS, gate.HUMAN: HUMAN_KEY}  # where the human's key is present
+    return Run(tmp_path / "box", keys, LAW, clock(), anchor=tmp_path / "anchor.json")
+
+
+def seal_the_tip(run):
+    from onescript.record import tip_subject
+
+    tip = run.rec.tip()
+    return run.seal_tip(gate.sign(HUMAN_KEY, "seal", tip_subject(tip)), HUMAN_KEY)
+
+
+def rewrite(run, n, **change):
+    """What a forger with write access does: edit row n, rehash every row after."""
+    from onescript.record import GENESIS, canon, h256
+
+    rows, prev = run.rec.rows(), GENESIS
+    for r in rows:
+        if r["n"] == n:
+            r.update(change)
+        r["prev"] = prev
+        r["hash"] = h256(canon({k: v for k, v in r.items() if k != "hash"}))
+        prev = r["hash"]
+    run.rec.path.write_text("".join(canon(r) + "\n" for r in rows))
+
+
+def test_cutting_rows_the_human_sealed_is_a_hard_close(anchored):
+    anchored.turn(ident("hanuman"), "edit")
+    sealed = seal_the_tip(anchored)
+    assert sealed["standing"] == "sealed" and anchored.rec.anchor_state() == "sealed"
+    assert not anchored.checkin()["hard_close"]
+    lines = anchored.rec.path.read_text().splitlines()
+    cut = [x for x in lines if json.loads(x)["n"] < sealed["n"] - 1]
+    anchored.rec.path.write_text("\n".join(cut) + "\n")
+    assert anchored.rec.verify_chain() == []  # the chain alone can't see it
+    b = anchored.checkin()
+    assert b["hard_close"] and any("rows were cut" in x for x in b["lines"])
+
+
+def test_rehashing_rows_the_human_sealed_is_a_hard_close(anchored):
+    anchored.turn(ident("hanuman"), "edit")
+    seal_the_tip(anchored)
+    rewrite(anchored, 1, kind="FORGED")
+    assert anchored.rec.verify_chain() == []  # the chain alone can't see it
+    b = anchored.checkin()
+    assert b["hard_close"]
+    assert any("not the row the human sealed" in x for x in b["lines"])
+
+
+def test_a_forged_anchor_does_not_verify_where_the_key_is(anchored):
+    anchored.turn(ident("hanuman"), "edit")
+    seal_the_tip(anchored)
+    rewrite(anchored, 1, kind="FORGED")
+    anchored.rec.set_anchor(anchored.rec.tip(), "made-without-the-key")
+    b = anchored.checkin()
+    assert b["hard_close"] and "anchor: its seal proof does not verify" in b["lines"]
+
+
+def test_a_deleted_anchor_is_seen_from_the_seal_row(anchored):
+    anchored.turn(ident("hanuman"), "edit")
+    seal_the_tip(anchored)
+    anchored.rec.anchor_path.unlink()
+    b = anchored.checkin()
+    assert b["hard_close"] and any("anchor: missing" in x for x in b["lines"])
+
+
+def test_an_unreadable_anchor_is_a_hard_close_not_a_crash(anchored):
+    anchored.turn(ident("hanuman"), "edit")
+    seal_the_tip(anchored)
+    anchored.rec.anchor_path.write_text("{not json")
+    b = anchored.checkin()
+    assert b["hard_close"] and b["anchor"] == "unreadable"
+    assert any("anchor: unreadable" in x for x in b["lines"])
+
+
+def test_a_tip_is_sealed_only_by_the_humans_key(anchored):
+    anchored.turn(ident("hanuman"), "edit")
+    row = anchored.seal_tip("a-stolen-signature", HUMAN_KEY)
+    assert row["kind"] == "refused" and row["at"] == "seal_tip"
+    assert anchored.rec.anchor_state() == "never"
+
+
+def test_a_broken_chain_is_never_sealed(anchored):
+    anchored.turn(ident("hanuman"), "edit")
+    with anchored.rec.path.open("a") as f:
+        f.write("garbage\n")
+    row = seal_the_tip(anchored)
+    assert row["kind"] == "refused" and "chain is broken" in row["reason"]
+    assert anchored.rec.anchor_state() == "never"
+
+
+def test_nothing_sealed_says_never_and_does_not_close(run):
+    run.turn(ident("hanuman"), "edit")
+    b = run.checkin()
+    assert not b["hard_close"] and b["anchor"] == "never"
+
+
+def test_the_anchor_never_lives_in_the_box(tmp_path):
+    with pytest.raises(PermissionError):
+        Run(tmp_path / "box", KEYS, LAW, clock(), anchor=tmp_path / "box" / "a.json")
+
+
+@pytest.mark.parametrize(
+    "line", [b"{not json", b"[1, 2]", b'{"kind": "boot"}', b"\xff\xfe"]
+)
+def test_a_garbled_line_is_a_hard_close_not_a_crash(run, line):
+    run.turn(ident("hanuman"), "edit")
+    with run.rec.path.open("ab") as f:
+        f.write(line + b"\n")
+    n = len(run.rec.path.read_text(errors="replace").splitlines())
+    assert f"line {n}: garbled, not a record row" in run.rec.verify_chain()
+    b = run.checkin()
+    assert (
+        b["hard_close"]
+        and f"record: line {n}: garbled, not a record row" in (b["lines"])
+    )
+
+
 def test_every_write_adds_its_own_pointer_and_files_are_0644(run):
     run.turn(
         ident("hanuman"),

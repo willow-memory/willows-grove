@@ -228,3 +228,20 @@ def test_the_record_chain_holds_after_each_command(tmp_path, cmd):
 
     rec = record.Record(tmp_path / "box", lambda: "", "", gate.token())
     assert rec.verify_chain() == []
+
+
+def test_a_garbled_record_line_hard_closes_the_checkin(tmp_path, capsys):
+    v = venv_with(tmp_path, "0.0.0")
+    run(tmp_path, v, "checkin")
+    with (tmp_path / "box" / "record.jsonl").open("a") as f:
+        f.write("{half a row\n")
+    capsys.readouterr()
+    assert run(tmp_path, v, "checkin") == 1
+    out = capsys.readouterr().out
+    assert "garbled, not a record row" in out and "HARD CLOSE" in out
+
+
+def test_the_checkin_screen_says_the_chain_is_unanchored(tmp_path, capsys):
+    run(tmp_path, venv_with(tmp_path, "0.0.0"), "checkin")
+    assert "anchor: never sealed" in capsys.readouterr().out
+    assert not (tmp_path / "box" / cli.ANCHOR).exists()

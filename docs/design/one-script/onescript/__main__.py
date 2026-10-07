@@ -37,6 +37,7 @@ ROOT = PKG.parents[3]  # onescript -> one-script -> design -> docs -> repo
 CONSTITUTION = ROOT / "governance" / "CONSTITUTION.md"
 CI = ROOT / ".github" / "workflows" / "tests.yml"
 DESK = ("desk", "claude")
+ANCHOR = "anchor.json"  # the sealed tip, beside the keys: outside the box
 
 
 def _now() -> str:
@@ -88,6 +89,7 @@ def _last_boot(rows: list[dict]) -> dict | None:
         "probes": b.get("probes", []),
         "gates": b.get("gates", []),
         "egress": b.get("egress", []),
+        "anchor": b.get("anchor"),
     }
 
 
@@ -202,7 +204,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"refused: {e}")
         return 2
     law = _law(law_text)
-    run = Run(args.box, keys, law, clock)
+    run = Run(args.box, keys, law, clock, anchor=args.keys.parent / ANCHOR)
     run.rec.append(
         "invocation",
         run.sys,
@@ -238,6 +240,7 @@ def main(argv: list[str] | None = None) -> int:
                 probes=[],
                 gates=[],
                 egress=[],
+                anchor=run.rec.anchor_state(),
             )
             print(f"BOX WON'T OPEN: {e}")
             return 3
@@ -267,10 +270,18 @@ def main(argv: list[str] | None = None) -> int:
     return 0
 
 
+ANCHOR_SAYS = {
+    "never": "never sealed; a cut or a rewrite of the record can't be seen",
+    "sealed": "a tip is sealed; a break against it shows under HARD CLOSE",
+    "unreadable": "unreadable",
+}
+
+
 def _checkin_screen(rep: dict) -> str:
     L = ["CHECK-IN"]
     held = sum(p["held"] for p in rep["probes"])
     L.append(f"probes: {held}/{len(rep['probes'])} held")
+    L.append(f"anchor: {ANCHOR_SAYS.get(rep['anchor'], rep['anchor'])}")
     for g in rep["gates"]:
         why = f" — {g['why']}" if g["why"] else ""
         L.append(f"  {g['verdict']:12} {g['gate']}: {g['where']}{why}")

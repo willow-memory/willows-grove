@@ -252,6 +252,7 @@ def boot(rec, keys: dict, law: dict, gate_cfg: dict | None = None) -> dict:
 
     for b in rec.verify_chain():  # B1: the record holds?
         lines.append(f"record: {b}")
+    lines += rec.verify_anchor(keys.get(gate.HUMAN))  # ...and reaches the sealed tip?
     for t in reverse.open_turns(rows):  # a crash left a row
         intent = next(
             r["intent"] for r in rows if r["kind"] == "turn_open" and r["turn"] == t
@@ -287,4 +288,5 @@ def boot(rec, keys: dict, law: dict, gate_cfg: dict | None = None) -> dict:
         "options": OPTIONS if lines else [],
         "probes": held,
         "egress": egress,
+        "anchor": rec.anchor_state(),
     }

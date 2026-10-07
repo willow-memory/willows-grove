@@ -18,7 +18,12 @@ The same pass reviews the skeleton: the record chain can be truncated or
 rehashed undetected, `h16` keeps 64 bits, and one garbled line crashes boot.
 The desk checked those three against `onescript/record.py`, and they hold.
 (2026-10-06: the 64-bit hole is closed — `h16` is now `h256`, the full
-digest; the other two are still open.)
+digest. 2026-10-07: the other two are closed. The tip the human seals is kept
+outside the box, in the anchor beside the keys, and check-in hard-closes when
+the chain no longer reaches it: rows cut, or rewritten and rehashed. Rows after
+the last sealed tip are still open to both, and the CLI has no seal command
+yet, so on the box the anchor reads `never`. A garbled line is a break by line
+number, never a crash.)
 Agent-reported throughout; a proposal, not ratified as a build.
 
 ### The two steps already exist: file integrity checkers
