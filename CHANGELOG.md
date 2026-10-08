@@ -34,6 +34,7 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Changed
 
+- **docs:** `docs/design/one-script/envelope-panel-stream-v1.html`: the envelope panel as a box stream, with each grant's meter, expiry and attestation, the grant notes marked as the human's words, paths shown but never served, and no grant button (CONST-0-3); `box-stream-surfaces.md` §8. (PR 127)
 - **docs:** `docs/design/one-script/box-stream-surfaces.md`: which parts of the Grove UI can run as a box stream (six fit fully, five take boxes without narration, three not at all) and the order to take them; `dispatch-rail-stream-v1.html` sketches the dispatch rail as a box stream with Kart's real task fields. (PR 127)
 - **docs:** `docs/design/one-script/box-stream-v1.1.html`, the box stream v1.1: sentences that use only what the boxes hold, the human line drawn plain and the sentence labelled agent with its model, a fifth check (the human's words quoted exactly), check chips labelled as example results, and a time stamp per turn; v1 kept as it was. (PR 127)
 - **docs:** `docs/design/one-script/box-stream-v1.html`, the box stream v1: a clickable sketch of Grove chat for small local models, where served boxes stream from the pile into the chat, a small model says them in one sentence and code checks it; linked from `local-flow-and-ui.md` §5. A sketch, not Grove code. (PR 127)

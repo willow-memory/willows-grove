@@ -1,7 +1,7 @@
 <!-- b17: WGRV1  ΔΣ=42 -->
 # Which parts of the Grove can run as a box stream
 
-§1 Status · §2 The test · §3 Fits fully · §4 Boxes, but no narration · §5 Not this way · §6 Order · §7 The dispatch rail as a box stream
+§1 Status · §2 The test · §3 Fits fully · §4 Boxes, but no narration · §5 Not this way · §6 Order · §7 The dispatch rail as a box stream · §8 The envelope panel as a box stream
 
 ## §1 Status
 
@@ -75,3 +75,18 @@ Sketch: [`dispatch-rail-stream-v1.html`](dispatch-rail-stream-v1.html).
 | The sentence | Cites every box; counts come only from the summary box |
 | Human action | "Drain at L1–L4" and "Hold" on a task. The choice appears as the human's plain line; picking the drain tier is the human's act (C8). |
 | States | Populated; a task arriving; a sentence that invents a tier and is struck; the quiet queue ❦ (no model asked); Kart unreachable with its reason |
+
+## §8 The envelope panel as a box stream
+
+The operator: *"pick a third"*. The agent picked the envelope panel, next in
+§6's order. Sketch: [`envelope-panel-stream-v1.html`](envelope-panel-stream-v1.html).
+
+| Piece | In the sketch |
+|---|---|
+| The pile | Every envelope on record by attestation: attested, attestation missing, attestation invalid, retired |
+| Boxes | A summary box made by code (count by attestation), then one box per grant: grantee, kind and mode, attestation pill, a `used_count / max_count` meter, expiry as code computed it |
+| Who wrote it | A grant is an Operator Key act, so its `notes` are the human's words: marked "you wrote, at grant", and either "shown to you, not served" or "served, quoted exactly" |
+| Never served | `paths` are shown to the human but never served to the model |
+| The checker | "attested" is allowed only when the cited box holds it; a wrong one reads as a safe grant |
+| No grant button | Grove renders, never grants (CONST-0-3); renewing is the human's act in the charter |
+| States | On file; near a limit (the human's notes served and quoted); a sentence that calls a missing attestation "attested" and is struck; one file that won't parse, kept as its own box so it is counted, not lost; none on file, with no model asked |
