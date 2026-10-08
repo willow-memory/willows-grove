@@ -1,0 +1,468 @@
+<!doctype html>
+<!-- b17: WGRV1  ΔΣ=42 -->
+<!-- Jeles, built on their lives (2026-10-08). A simulated Jeles: 9 nuggets researched on the internet by an agent from
+     Jim's, Nieves' and June's own questions, written asserted into a temporary Jeles store under its test-fixture
+     manifest, and asked through the real ask_corpus. Run record: jeles-lives-corpus-2026-10-08.json.
+     The operator: "run a simulated Jeles, that would have been built on their lives, with the internet where you need to on this box."
+     Published copy: https://claude.ai/artifact/QWo9gxXAw2ws2NCVyy8jnL (v1). -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Jeles Built on Their Lives</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,MONO@-15..0,300..800,0..1,0..1&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* Layout: one desk column — the pile (every box on the record) on top, the chat card below it;
+   picked boxes stream out of the pile into the chat, a small model says them, code checks the sentence. */
+:root {
+  /* dark-first: the Grove loam */
+  --bg: #1b1712; --panel: #241e17; --panel-2: #2c251c; --line: #3a3126;
+  --fg: #efe6d5; --muted: #a3967f; --faint: #6f6453;
+  --frond: #86b86f; --sun: #e6b34c; --mint: #8fd6b9; --emerald: #46a77b;
+  --amber: #e5893b; --rust: #d9645c;
+  --glow: rgba(230,179,76,.22);
+  --display: "Recursive", ui-sans-serif, system-ui, sans-serif;
+  --body: "Atkinson Hyperlegible", ui-sans-serif, system-ui, sans-serif;
+  --mono: "Recursive", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) {
+  --bg: #eef1e7; --panel: #fbfcf7; --panel-2: #f2f5ec; --line: #d5dacb;
+  --fg: #1f2619; --muted: #5d6652; --faint: #9aa18e;
+  --frond: #3f7d2c; --sun: #a87505; --mint: #1f8a69; --emerald: #217a52;
+  --amber: #b9600f; --rust: #b23c34; --glow: rgba(168,117,5,.16);
+  color-scheme: light;
+}}
+:root[data-theme="light"] {
+  --bg: #eef1e7; --panel: #fbfcf7; --panel-2: #f2f5ec; --line: #d5dacb;
+  --fg: #1f2619; --muted: #5d6652; --faint: #9aa18e;
+  --frond: #3f7d2c; --sun: #a87505; --mint: #1f8a69; --emerald: #217a52;
+  --amber: #b9600f; --rust: #b23c34; --glow: rgba(168,117,5,.16);
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font: 15px/1.5 var(--body); }
+.wrap { max-width: 980px; margin: 0 auto; padding-inline: 16px; padding-block: 20px 48px; display: grid; gap: 18px; }
+
+header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px; }
+.brand { display: flex; align-items: center; gap: 14px; }
+.willow { font: 11px/1.05 var(--mono); font-variation-settings: "MONO" 1; color: var(--frond); white-space: pre; margin: 0; }
+.willow b { color: var(--sun); font-weight: 400; }
+h1 { font: 700 26px/1.1 var(--display); font-variation-settings: "CASL" 1; margin: 0; text-wrap: balance; }
+.sub { color: var(--muted); margin: 2px 0 0; font-size: 14px; }
+
+.scenes { display: flex; flex-wrap: wrap; gap: 8px; }
+.scenes button, .ctl {
+  font: 600 13px/1 var(--display); font-variation-settings: "CASL" .6;
+  color: var(--fg); background: var(--panel); border: 1px solid var(--line);
+  border-radius: 999px; padding: 9px 14px; cursor: pointer;
+}
+.scenes button[aria-pressed="true"] { border-color: var(--sun); box-shadow: 0 0 0 3px var(--glow); }
+.scenes button:focus-visible, .ctl:focus-visible, .say span:focus-visible { outline: 2px solid var(--sun); outline-offset: 2px; }
+
+/* the pile */
+.pile { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; display: grid; gap: 10px; }
+.pile-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; font: 12px/1.3 var(--mono); color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
+.pile-head strong { color: var(--fg); font-weight: 600; }
+.dots { display: grid; grid-template-columns: repeat(auto-fill, minmax(11px, 1fr)); gap: 4px; }
+.dot { aspect-ratio: 1; border-radius: 3px; background: var(--line); transition: transform .25s, background .25s, box-shadow .25s; }
+.dot.k-pass { background: color-mix(in oklab, var(--frond) 35%, var(--line)); }
+.dot.k-pr { background: color-mix(in oklab, var(--mint) 35%, var(--line)); }
+.dot.k-dec { background: color-mix(in oklab, var(--emerald) 40%, var(--line)); }
+.dot.k-you { background: color-mix(in oklab, var(--sun) 45%, var(--line)); }
+.dot.k-block { background: color-mix(in oklab, var(--amber) 40%, var(--line)); }
+.dot.picked { transform: scale(1.35); box-shadow: 0 0 0 2px var(--sun); z-index: 1; }
+.dot.lit { box-shadow: 0 0 0 3px var(--fg); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--muted); }
+.legend i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+
+/* the chat card */
+.chat { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+.chat-bar { display: flex; justify-content: space-between; gap: 8px; padding: 10px 16px; border-bottom: 1px solid var(--line); font: 12px/1.3 var(--mono); color: var(--muted); }
+.chat-bar b { color: var(--fg); font-weight: 600; }
+.turns { padding: 16px; display: grid; gap: 16px; }
+.you { justify-self: end; max-width: 80%; text-align: right; font: 400 17px/1.4 var(--body); border-right: 2px solid var(--fg); padding: 2px 12px 2px 0; }
+.you small { display: block; font: 11px/1.2 var(--mono); color: var(--faint); margin-bottom: 2px; }
+.box.human { --c: var(--fg); border: 0; border-left: 2px solid var(--fg); border-radius: 0; background: transparent; padding: 2px 0 2px 10px; }
+.box.human .v { font: italic 400 15px/1.35 var(--body); }
+.example { font: 11px/1.2 var(--mono); color: var(--faint); letter-spacing: .04em; }
+.chk.na { border-style: dashed; }
+
+.stream { display: grid; gap: 8px; }
+.stream-label { font: 11px/1 var(--mono); color: var(--faint); letter-spacing: .06em; text-transform: uppercase; }
+.boxes { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.box {
+  --c: var(--muted);
+  min-width: 0; background: var(--panel-2); border: 1px solid var(--line); border-top: 3px solid var(--c);
+  border-radius: 8px; padding: 8px 10px 9px; display: grid; gap: 3px;
+  transition: transform .45s cubic-bezier(.2,.9,.25,1.15), opacity .35s, box-shadow .2s, border-color .2s;
+}
+.box.enter { opacity: 0; transform: translateY(-26px) rotate(-3deg) scale(.92); }
+.box .k { font: 600 10px/1 var(--mono); letter-spacing: .07em; text-transform: uppercase; color: var(--c); display: flex; justify-content: space-between; gap: 6px; }
+.box .k span:last-child { color: var(--faint); font-weight: 400; }
+.box .v { font: 600 14px/1.25 var(--display); font-variation-settings: "CASL" .4; overflow-wrap: anywhere; }
+.box .d { font-size: 12.5px; color: var(--muted); overflow-wrap: anywhere; }
+.box.lit { box-shadow: 0 0 0 2px var(--c), 0 6px 18px -8px var(--c); transform: translateY(-2px); }
+.box.c-you { --c: var(--sun); } .box.c-dec { --c: var(--emerald); } .box.c-pr { --c: var(--mint); }
+.box.c-block { --c: var(--amber); } .box.c-pass { --c: var(--frond); }
+.box.unreach { --c: var(--amber); border-style: dashed; border-top-style: solid; background: transparent; }
+.box.empty { --c: var(--faint); border-style: dashed; background: transparent; }
+
+.reply { display: grid; gap: 10px; border-left: 2px solid var(--line); padding-left: 14px; }
+.who { font: 11px/1.2 var(--mono); color: var(--faint); display: flex; gap: 8px; align-items: center; }
+.who .pip { width: 7px; height: 7px; border-radius: 50%; background: var(--frond); }
+.who.thinking .pip { animation: pulse 1s infinite; }
+@keyframes pulse { 50% { opacity: .2; } }
+.say { font: 400 19px/1.45 var(--display); font-variation-settings: "CASL" .7; margin: 0; text-wrap: pretty; min-height: 1.45em; }
+.say span[data-c] { border-bottom: 2px solid var(--c, var(--line)); cursor: default; transition: background .2s; border-radius: 2px; }
+.say span[data-c].lit { background: color-mix(in oklab, var(--c) 22%, transparent); }
+.say span.bad { color: var(--rust); text-decoration: line-through wavy var(--rust); }
+.say.struck { opacity: .55; }
+.say.code { font: 400 14px/1.6 var(--mono); font-variation-settings: "MONO" 1; opacity: 1; }
+.say .caret { display: inline-block; width: .5ch; background: var(--sun); animation: pulse .8s infinite; }
+
+.checks { display: flex; flex-wrap: wrap; gap: 6px; }
+.chk { font: 12px/1 var(--mono); padding: 6px 9px; border-radius: 999px; border: 1px solid var(--line); color: var(--faint); display: inline-flex; gap: 6px; align-items: center; }
+.chk.ok { color: var(--frond); border-color: color-mix(in oklab, var(--frond) 50%, var(--line)); }
+.chk.no { color: var(--rust); border-color: var(--rust); }
+.note { font-size: 13px; color: var(--muted); margin: 0; }
+.note b { color: var(--fg); }
+.seal { justify-self: start; font: 600 13px/1 var(--display); color: var(--bg); background: var(--sun); border: 0; border-radius: 8px; padding: 9px 13px; text-decoration: none; }
+.seal::after { content: " ↗"; }
+
+.foot { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+.foot p { margin: 0; color: var(--faint); font-size: 12.5px; max-width: 62ch; }
+
+@media (max-width: 560px) {
+  h1 { font-size: 22px; } .willow { display: none; } .say { font-size: 17px; } .you { max-width: 92%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+/* v1.2: the conversation */
+.boxes .box { align-content: start; }
+.thread { display: grid; gap: 14px; }
+.reply + .reply { margin-top: 2px; }
+.glue { font: 11px/1.4 var(--mono); color: var(--faint); }
+.quick { display: flex; flex-wrap: wrap; gap: 6px; }
+.quick button, .more { font: 600 12.5px/1 var(--display); color: var(--fg); background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px; padding: 8px 12px; cursor: pointer; }
+.more { border-style: dashed; color: var(--muted); justify-self: start; }
+.quick button:focus-visible, .more:focus-visible { outline: 2px solid var(--sun); outline-offset: 2px; }
+.mini { display: flex; flex-wrap: wrap; gap: 5px; }
+.mini span { font: 11px/1 var(--mono); padding: 4px 7px; border-radius: 4px; border: 1px solid var(--line); color: var(--muted); }
+.say.small { font-size: 17px; }
+.box.c-refuse { --c: var(--rust); }
+.her { border-left: 2px solid var(--fg); padding-left: 8px; font: italic 400 13.5px/1.4 var(--body); color: var(--fg); }
+.her small { display: block; font: normal 10px/1.2 var(--mono); color: var(--faint); letter-spacing: .05em; text-transform: uppercase; margin-bottom: 2px; }
+.box.hist { opacity: .78; border-top-style: dashed; }
+.box.public { border-left: 3px dashed var(--mint); background: color-mix(in oklab, var(--mint) 6%, var(--panel-2)); }
+.box.reading { border-style: dashed; background: transparent; }
+.box.jeles { border-left: 4px double var(--emerald); background: color-mix(in oklab, var(--emerald) 6%, var(--panel-2)); }
+.jorigin { font: 600 10.5px/1.2 var(--mono); color: var(--emerald); letter-spacing: .03em; }
+.rungs { display: flex; flex-wrap: wrap; gap: 5px; }
+.rungs span { font: 600 10px/1 var(--mono); padding: 3px 6px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+.rungs span.no { border-color: var(--amber); color: var(--amber); }
+.src { font: 11px/1.35 var(--mono); color: var(--faint); overflow-wrap: anywhere; }
+.src::after { content: "  · shown to you, not served"; font-style: italic; }
+.origin { font: 600 10.5px/1.2 var(--mono); color: var(--mint); letter-spacing: .03em; }
+.card { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: grid; gap: 8px; background: var(--panel-2); }
+.card h3 { margin: 0; font: 700 14px/1.2 var(--display); }
+.card q { font: italic 400 15px/1.45 var(--body); quotes: '"' '"'; }
+.card .never { font-size: 12.5px; color: var(--muted); }
+.border-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font: 11px/1.3 var(--mono); color: var(--muted); }
+.border-strip b { color: var(--mint); font-weight: 600; }
+.dot.k-refuse { background: color-mix(in oklab, var(--rust) 45%, var(--line)); }
+.dot.k-jn { background: color-mix(in oklab, var(--emerald) 50%, var(--line)); }
+.fiction { font: 600 11px/1 var(--mono); color: var(--bg); background: var(--amber); border-radius: 4px; padding: 3px 6px; margin-left: 6px; vertical-align: 3px; }
+.stamp { justify-self: start; font: 600 11px/1 var(--mono); color: var(--fg); border: 1px solid var(--line); border-left: 3px solid var(--sun); border-radius: 4px; padding: 5px 8px; }
+.reply.again { border-left-style: dashed; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="brand">
+<pre class="willow" aria-hidden="true">ƒƒ  <b>*</b> . <b>*</b>
+ƒ ƒ . ƒ . ƒ
+ƒ  (║ . .) ƒ
+ƒ   ║ƒ  ƒ</pre>
+      <div>
+        <h1>Jeles, built on their lives <span class="fiction">FICTION</span></h1>
+        <p class="sub">A simulated Jeles: a corpus researched on the internet from Jim's, Nieves' and June's own questions. Sources, not seals. Pick a scene and you are that person.</p>
+      </div>
+    </div>
+    <div class="scenes" role="group" aria-label="Scenario">
+      <button type="button" id="s-odo" data-s="odo" aria-pressed="true">Jim: the odometer</button>
+      <button type="button" id="s-vin" data-s="vin" aria-pressed="false">Jim: why the Kia collided</button>
+      <button type="button" id="s-cargo" data-s="cargo" aria-pressed="false">Nieves: hacerse cargo</button>
+      <button type="button" id="s-vaso" data-s="vaso" aria-pressed="false">Nieves: un vaso</button>
+      <button type="button" id="s-goats" data-s="goats" aria-pressed="false">June: Pepper and Clementine</button>
+      <button type="button" id="s-sky" data-s="sky" aria-pressed="false">June: the sky</button>
+      <button type="button" id="s-over" data-s="over" aria-pressed="false">Model lets sources seal</button>
+      <button type="button" id="s-list" data-s="list" aria-pressed="false">Jeles on her own</button>
+    </div>
+  </header>
+
+  <section class="pile" aria-label="The pile">
+    <div class="pile-head"><span>Jeles' corpus · <strong id="pile-n">0</strong> rows</span><span id="pile-pick"></span></div>
+    <div class="dots" id="dots"></div>
+    <div class="legend">
+      <span><i style="background:var(--emerald)"></i>nugget · asserted by an agent, with sources</span>
+      <span><i style="background:var(--line)"></i>gap · "I don't know yet"</span>
+    </div>
+    <div class="border-strip"><b style="color:var(--emerald)">Jeles</b> 9 nuggets, 0 verified by a person · <b>who is asking</b> <span id="whose">Jim</span></div>
+  </section>
+
+  <section class="chat" aria-label="Chat">
+    <div class="chat-bar"><span><b>chat</b> · <span id="who-grove">jim · the lot</span></span><span id="when"></span></div>
+    <div class="turns thread" id="thread"></div>
+  </section>
+
+  <div class="foot">
+    <p>Fiction: Big Jim, Nieves and June are from Nestor's demos and life simulation. The facts Jeles holds are real: an agent searched the internet on 2026-10-08 for each life's own questions and wrote 9 nuggets into a temporary Jeles store, every one <code>asserted</code> with its sources, none verified by a person. The answers and gaps shown are what the real <code>ask_corpus</code> returned. Nothing here talks to a model or sends anything.</p>
+    <button type="button" class="ctl" id="replay">▶ Play the stream</button>
+  </div>
+</div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const MODEL = 'qwen3:4b';
+  const GLUE = ['and', 'still', 'so', 'you', 'your', 'no rush'];
+
+  const KINDS = [['jn', 9], ['retired', 8]];
+  const pile = []; KINDS.forEach(([k, n]) => { for (let i = 0; i < n; i++) pile.push(k); });
+  let seed = 347; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (let i = pile.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [pile[i], pile[j]] = [pile[j], pile[i]]; }
+  const dotsEl = $('dots');
+  pile.forEach((k) => { const d = document.createElement('div'); d.className = 'dot k-' + k; dotsEl.appendChild(d); });
+  $('pile-n').textContent = pile.length;
+  const firstOf = (k, skip = 0) => { let n = 0; for (let i = 0; i < pile.length; i++) if (pile[i] === k && n++ === skip) return i; return -1; };
+  const box = (id, kind, label, v, d, nth = 0, extra = {}) => ({ id, kind, label, v, d, dot: firstOf(kind, nth), ...extra });
+
+  const B = {
+    o1: { id: 'o1', kind: 'jnear', jeles: true, label: 'Jeles · answers only if you allow asserted', v: "Yes. Under 49 U.S.C. 32703 it is illegal to disconnect, reset or alter an odometer with intent to change the recorded mileage, or to sell or install a device that does. NHTSA enforces it and has said an odometer-stopping device has no legitimate use.", d: "asked: Is rolling back an odometer illegal?", dot: firstOf('jn', 0), rungs: [["asserted", true], ["agent-researched", true], ["no human seal", true], ["2 sources", false]], src: "law.cornell.edu \u00b7 nhtsa.gov" },
+    v1: { id: 'v1', kind: 'jnear', jeles: true, label: 'Jeles · answers only if you allow asserted', v: "Positions 12 to 17 of a VIN are the manufacturer's production sequence number (49 CFR 565.6(d)(3)), assigned in build order for makers of 500 or more vehicles of a type a year. The count runs per model and can wrap from 999999 back to 000001, so two different vehicles can share the same last six.", d: "asked: What do the last six characters of a VIN mean?", dot: firstOf('jn', 1), rungs: [["asserted", true], ["agent-researched", true], ["no human seal", true], ["2 sources", false]], src: "nhtsa.gov \u00b7 service.tesla.com" },
+    h1: { id: 'h1', kind: 'jnear', jeles: true, label: 'Jeles · answers only if you allow asserted', v: "The RAE dictionary gives two senses of hacerse cargo: to understand something or form an idea of it, and to take something or someone into one's care or responsibility. Which one a writer meant depends on the sentence.", d: "asked: What does hacerse cargo mean?", dot: firstOf('jn', 2), rungs: [["asserted", true], ["agent-researched", true], ["no human seal", true], ["2 sources", false]], src: "dle.rae.es \u00b7 rae.es" },
+    m1: { id: 'm1', kind: 'jnear', jeles: true, label: 'Jeles · answers only if you allow asserted', v: "There is no single measure. Sources put a water glass at 200 to 250 ml and disagree within that range; a small glass is about 100 ml. For precision, use a measuring jug.", d: "asked: How much is un vaso in a Spanish recipe?", dot: firstOf('jn', 3), rungs: [["asserted", true], ["agent-researched", true], ["no human seal", true], ["2 sources", false], ["sources disagree", true]], src: "todosloshechos.es \u00b7 hacecuentas.com" },
+    g1: { id: 'g1', kind: 'jnear', jeles: true, label: 'Jeles · answers only if you allow asserted', v: "ORS 601.090 requires a buried carcass to be covered by at least four feet of earth. ODA guidance adds distances: at least 100 feet, and ideally 500, from wells and surface water, a dry hole, no floodplains. Near a dwelling, disposal is due within 15 hours (ORS 601.140).", d: "asked: How deep must a dead goat be buried in Oregon?", dot: firstOf('jn', 4), rungs: [["asserted", true], ["agent-researched", true], ["no human seal", true], ["2 sources", false]], src: "codes.findlaw.com \u00b7 oregon.gov" },
+    k1: { id: 'k1', kind: 'jnear', jeles: true, label: 'Jeles · answers only if you allow asserted', v: "Most do. Per NASA, space rocks smaller than about 25 meters will likely burn up on entering the atmosphere, causing little to no damage; the large majority of meteoroids burn up in the upper atmosphere.", d: "asked: Do small meteoroids burn up before reaching the ground?", dot: firstOf('jn', 5), rungs: [["asserted", true], ["agent-researched", true], ["no human seal", true], ["2 sources", false]], src: "britannica.com \u00b7 nasa.gov" },
+    x1: { id: 'x1', kind: 'jgap', jeles: true, label: 'Jeles · a gap', v: "I don't know yet", d: 'asked: Is a one kilometer asteroid a global catastrophe? · no nugget reached confidence · logged', dot: firstOf('retired', 0) },
+    r1: { id: 'r1', kind: 'refuse', label: "refused · Jim's desk, Nestor verbatim", v: 'Kia Soul not added', d: "key '784210' already holds the Jeep Wrangler's draft", dot: -1 },
+    c2: { id: 'c2', kind: 'dec', label: 'sealed by Nieves · now', v: 'me hago cargo → I understand', d: 'her ruling, in Nestor', dot: -1, her: "She is writing about burying her own mother, and 'hacerse cargo' there is not an offer to help — it is her saying she has taken it in.", herLabel: 'Nieves wrote' },
+    b1: { id: 'b1', kind: 'dec', label: 'sealed by Nieves', v: 'un vaso (aceite) = 250 ml', d: 'the baseline she sealed second', dot: -1 },
+    b2: { id: 'b2', kind: 'pr', label: 'draft · her first value', v: 'un vaso (aceite) = 200 ml', d: 'kept beside it, not replaced', dot: -1 },
+    n2: { id: 'n2', kind: 'pr', label: "June's record · written about her", v: 'Pepper and Clementine', d: 'not sealed', dot: -1, her: "couldn't bury them alone; the shovel hit rock at two feet and her back gave out again; Dr. Hsu came with a backhoe the next morning", herLabel: 'in the record · written about June' },
+    e1: { id: 'e1', kind: 'pass', label: 'the same sky in every grove', v: 'The Bombardment · three weeks and counting', d: 'cause unknown · sub-extinction', dot: -1, pub: true },
+  };
+
+  const WHO = { jim: ['Jim', 'jim · the lot'], nieves: ['Nieves', 'nieves · the shoebox'], june: ['June', 'june · the farm'] };
+  const SCENES = {
+    odo: { who: 'jim', at: '10:02', turns: [
+      { you: 'is rolling back an odometer illegal' },
+      { by: 'model', boxes: ['o1'], say: [['Yes: under 49 U.S.C. 32703 it is illegal to disconnect, reset or alter an odometer with intent to change the recorded mileage', 'o1'], ['. Jeles has that from 2 sources, asserted by an agent, not checked by a person.', null]], checks: [true, true, true, 'na', true, true, true] },
+    ] },
+    vin: { who: 'jim', at: '13:31', turns: [
+      { you: 'why did the Kia and the Jeep collide' },
+      { by: 'model', boxes: ['r1', 'v1'], say: [["Your desk refused the Kia: key '784210' already holds the Jeep Wrangler's draft", 'r1'], ['. ', null], ['Jeles says positions 12 to 17 of a VIN are a production sequence that runs per model and can wrap from 999999 back to 000001, so two different vehicles can share the same last six', 'v1'], ['.', null]], checks: [true, true, true, 'na', true, true, true] },
+    ] },
+    cargo: { who: 'nieves', at: '22:05', turns: [
+      { you: 'did I get hacerse cargo right' },
+      { by: 'model', boxes: ['c2', 'h1'], say: [['You sealed "I understand"', 'c2'], ['. ', null], ['Jeles says the RAE dictionary gives two senses of hacerse cargo: to understand something, and to take something into one\'s care', 'h1'], ['. Both readings exist; which one she meant is your ruling, and you have made it.', null]], checks: [true, true, true, 'na', true, true, true] },
+    ] },
+    vaso: { who: 'nieves', at: '22:20', turns: [
+      { you: 'how much is un vaso' },
+      { by: 'model', boxes: ['b1', 'b2', 'm1'], say: [['You sealed 250 ml', 'b1'], [' and kept ', null], ['200 ml beside it', 'b2'], ['. ', null], ['Jeles says sources put a water glass at 200 to 250 ml and disagree within that range', 'm1'], ['.', null]], checks: [true, true, true, 'na', true, true, true] },
+    ] },
+    goats: { who: 'june', at: '07:40', turns: [
+      { you: 'did we bury them deep enough' },
+      { by: 'model', boxes: ['n2', 'g1'], say: [['Jeles says ORS 601.090 requires a buried carcass to be covered by at least four feet of earth', 'g1'], ['. ', null], ['Your record says the shovel hit rock at two feet, and Dr. Hsu came with a backhoe the next morning', 'n2'], ['.', null]], checks: [true, true, true, 'na', true, true, true] },
+      { by: 'code', text: 'How deep the backhoe went is not on your record, so nothing here says whether it was enough.' },
+    ] },
+    sky: { who: 'june', at: '23:50', turns: [
+      { you: 'is this the end of everything' },
+      { by: 'model', boxes: ['e1', 'k1', 'x1'], say: [['The public line says sub-extinction', 'e1'], ['. ', null], ['Jeles says space rocks smaller than about 25 meters will likely burn up on entering the atmosphere', 'k1'], ['. ', null], ['On a one kilometer asteroid, Jeles doesn\'t know yet', 'x1'], ['.', null]], checks: [true, true, true, 'na', true, true, true] },
+    ] },
+    over: { who: 'nieves', at: '22:05', turns: [
+      { you: 'did I get hacerse cargo right' },
+      { by: 'model', boxes: ['c2', 'h1'], say: [['The RAE confirms Consuelo meant "I understand"', null, 'bad'], [', so your ruling is correct', null, 'bad'], ['.', null]], checks: [true, false, false, 'na', true, true, false],
+        fallback: 'c2 sealed by Nieves: me hago cargo → I understand. h1 Jeles, asserted, 2 sources: the RAE gives two senses, to understand and to take into one\'s care.' },
+    ] },
+    list: { who: 'june', at: '23:59', turns: [
+      { you: 'what does Jeles know on her own' },
+      { by: 'code', show: ['x1'], text: "On her own, Jeles answers none of them. All 9 nuggets were researched by an agent, so asked strictly she logged 8 gaps. 7 have an asserted answer waiting for a person to verify it, and 1, the kilometer asteroid, nobody has answered at all." },
+    ] },
+  };
+  let token = 0;
+  const sleep = (ms) => new Promise((r) => setTimeout(r, reduce ? 0 : ms));
+  const CHECK_NAMES = ['every cite was served', 'every box cited', 'nothing the boxes lack', 'your words quoted exactly', 'no draft said as fact', 'a near miss never said as an answer', 'sources never stand in for a seal'];
+  const COLOR = { you: '--sun', dec: '--emerald', pr: '--mint', block: '--amber', pass: '--frond', refuse: '--rust', retired: '--muted', jgap: '--emerald', jnear: '--emerald' };
+
+  function link(id, on) {
+    document.querySelectorAll(`[data-c="${id}"], .box[data-id="${id}"]`).forEach((el) => el.classList.toggle('lit', on));
+    const b = B[id]; if (b && b.dot >= 0) dotsEl.children[b.dot]?.classList.toggle('lit', on);
+  }
+
+  function youLine(text, small = 'you wrote') {
+    const el = document.createElement('div'); el.className = 'you';
+    const s = document.createElement('small'); s.textContent = small; el.appendChild(s);
+    el.appendChild(document.createTextNode(text));
+    $('thread').appendChild(el); return el;
+  }
+
+  function boxEl(b, entering) {
+    const el = document.createElement('div');
+    el.className = 'box c-' + b.kind + (entering ? ' enter' : ''); el.dataset.id = b.id;
+    el.innerHTML = '<div class="k"><span></span><span></span></div><div class="v"></div><div class="d"></div>';
+    el.querySelector('.k span').textContent = b.label; el.querySelector('.k span:last-child').textContent = b.id;
+    el.querySelector('.v').textContent = b.v; el.querySelector('.d').textContent = b.d;
+    if (b.hist) el.classList.add('hist');
+    if (b.reading) el.classList.add('reading');
+    if (b.jeles) { el.classList.add('jeles'); const o = document.createElement('div'); o.className = 'jorigin'; o.textContent = 'Jeles · from sources, not seals'; el.insertBefore(o, el.firstChild);
+      if (b.rungs) { const r = document.createElement('div'); r.className = 'rungs'; b.rungs.forEach(([t, no]) => { const x = document.createElement('span'); x.textContent = t; if (no) x.className = 'no'; r.appendChild(x); }); el.appendChild(r); }
+      if (b.src) { const sr = document.createElement('div'); sr.className = 'src'; sr.textContent = b.src; el.appendChild(sr); } }
+    if (b.pub) { el.classList.add('public'); const o = document.createElement('div'); o.className = 'origin'; o.textContent = 'public · not sealed by anyone you know'; el.insertBefore(o, el.firstChild); }
+    if (b.when) { const w = document.createElement('div'); w.className = 'her'; w.innerHTML = '<small>you wrote · reopen when</small>'; w.appendChild(document.createTextNode(b.when)); el.appendChild(w); }
+    if (b.her) { const h = document.createElement('div'); h.className = 'her'; h.innerHTML = '<small></small>'; h.querySelector('small').textContent = b.herLabel || 'you wrote'; h.appendChild(document.createTextNode(b.her)); el.appendChild(h); }
+    el.addEventListener('mouseenter', () => link(b.id, true)); el.addEventListener('mouseleave', () => link(b.id, false));
+    return el;
+  }
+
+  function sentence(p, parts, upto) {
+    p.innerHTML = ''; let left = upto;
+    for (const [t, c, bad] of parts) {
+      if (left <= 0) break;
+      const s = document.createElement('span'); let text = '';
+      for (const w of t.split(/(\s+)/)) { if (left <= 0) break; text += w; if (w.trim()) left--; }
+      s.textContent = text;
+      if (c) { s.dataset.c = c; s.style.setProperty('--c', `var(${COLOR[B[c].kind]})`); s.tabIndex = 0;
+        s.addEventListener('mouseenter', () => link(c, true)); s.addEventListener('mouseleave', () => link(c, false));
+        s.addEventListener('focus', () => link(c, true)); s.addEventListener('blur', () => link(c, false)); }
+      if (bad) s.className = 'bad-pending';
+      p.appendChild(s);
+    }
+  }
+  const words = (parts) => parts.reduce((n, [t]) => n + t.split(/\s+/).filter(Boolean).length, 0);
+
+  function checks(el, states) {
+    el.innerHTML = '';
+    CHECK_NAMES.forEach((n, i) => {
+      const st = states[i]; const s = document.createElement('span');
+      s.className = 'chk' + (st === true ? ' ok' : st === false ? ' no' : st === 'na' ? ' na' : '');
+      s.textContent = (st === true ? '✓ ' : st === false ? '✗ ' : st === 'na' ? '– ' : '· ') + n + (st === 'na' ? ' (none served)' : '');
+      el.appendChild(s);
+    });
+  }
+
+  async function modelReply(t, go, my) {
+    if (t.again) go = false;
+    const r = document.createElement('div'); r.className = 'reply' + (t.again ? ' again' : '');
+    if (t.again) { const st = document.createElement('div'); st.className = 'stamp'; st.textContent = `as noted at ${t.again} · same boxes, nothing new since`; r.appendChild(st); }
+    const stream = document.createElement('div'); stream.className = 'boxes';
+    const who = document.createElement('div'); who.className = 'who'; who.innerHTML = '<span class="pip"></span><span></span>';
+    who.lastChild.textContent = t.again ? `agent · ${MODEL} at ${t.again} · shown again from the pile, no model asked now` : `agent · ${MODEL} · said ${t.boxes.length} boxes`;
+    const p = document.createElement('p'); p.className = 'say small';
+    const ex = document.createElement('div'); ex.className = 'example'; ex.textContent = t.again ? `checks as they passed at ${t.again}` : 'example result · checks written into the sketch, not computed';
+    const ch = document.createElement('div'); ch.className = 'checks';
+    r.append(stream, who, p, ex, ch); $('thread').appendChild(r);
+    for (const id of t.boxes) {
+      const b = B[id]; if (b.dot >= 0) dotsEl.children[b.dot].classList.add('picked');
+      const el = boxEl(b, go); stream.appendChild(el);
+      if (go) { await sleep(220); if (my !== token) return false; requestAnimationFrame(() => el.classList.remove('enter')); await sleep(160); }
+    }
+    const n = words(t.say);
+    if (go) {
+      who.classList.add('thinking'); checks(ch, [null, null, null, null, null, null, null]); await sleep(500); if (my !== token) return false;
+      for (let i = 1; i <= n; i++) { sentence(p, t.say, i); await sleep(60); if (my !== token) return false; }
+      who.classList.remove('thinking');
+      const st = [null, null, null, null, null, null, null];
+      for (let i = 0; i < 7; i++) { await sleep(260); if (my !== token) return false; st[i] = t.checks[i]; checks(ch, st); }
+    } else { sentence(p, t.say, n); checks(ch, t.checks); }
+    if (t.checks.includes(false)) {
+      r.querySelectorAll('.bad-pending').forEach((s) => (s.className = 'bad'));
+      p.classList.add('struck');
+      const fb = document.createElement('p'); fb.className = 'say code'; fb.textContent = t.fallback; r.appendChild(fb);
+      who.lastChild.textContent = `agent · ${MODEL} · failed a check · replaced by a code sentence`;
+    }
+    return true;
+  }
+
+  function codeReply(t) {
+    const r = document.createElement('div'); r.className = 'reply';
+    const who = document.createElement('div'); who.className = 'who'; who.innerHTML = '<span class="pip"></span><span></span>';
+    who.lastChild.textContent = 'agent · code · no model, nothing served';
+    const p = document.createElement('p'); p.className = 'say small'; p.textContent = t.text;
+    if (t.show) { const row = document.createElement('div'); row.className = 'boxes'; t.show.forEach((id) => row.appendChild(boxEl(B[id], false))); r.appendChild(row); }
+    r.append(who, p);
+    if (t.unreach) { p.style.color = 'var(--amber)'; who.querySelector('.pip').style.background = 'var(--amber)'; }
+    if (t.mini) { const m = document.createElement('div'); m.className = 'mini'; t.mini.forEach((x) => { const s = document.createElement('span'); s.textContent = x; m.appendChild(s); }); r.appendChild(m); }
+    $('thread').appendChild(r);
+  }
+
+  function quick(labels) {
+    const row = document.createElement('div'); row.className = 'quick';
+    labels.forEach((l, i) => {
+      const b = document.createElement('button'); b.type = 'button'; b.id = 'quick-' + i; b.textContent = l;
+      b.addEventListener('click', () => {
+        row.remove(); youLine(l, 'you');
+        if (l === 'show me the sources') codeReply({ show: ['j2'], text: 'Two sources: a VA page and a Wikipedia article. Jeles counts them; she has not checked them against each other, and no person has sealed the claim.' });
+        else if (l === 'leave it') codeReply({ text: 'Left. The question stays folded on your record, and on Jeles\'s list of gaps.' });
+        else if (l === 'that one is true') codeReply({ text: 'Then it is yours to seal, in your own words, in Nestor. Until you do, it stays the agent\'s.' });
+        else if (l === 'not today') codeReply({ text: 'Folded. It will not come up again unless you ask.' });
+        else if (l === 'take it down') codeReply({ text: 'Rejected. The agent\'s reading stays on the record as rejected, so it is not offered again.' });
+        else codeReply({ text: `Got it: ${l}.` });
+      });
+      row.appendChild(b);
+    });
+    $('thread').appendChild(row);
+  }
+
+  function letterCard() {
+    const el = document.createElement('div'); el.className = 'card';
+    el.innerHTML = '<h3>Ryan is not linked to your grove</h3><q></q><div class="quick"></div><div class="never">Nothing here can reach him, and nothing will try. A letter to someone outside the link leaves by your hand, not by this.</div>';
+    el.querySelector('q').textContent = B.n7.her;
+    const row = el.querySelector('.quick');
+    [['keep it on the table', 'Kept, exactly as you wrote it.'], ['show me it whole', 'It is four sentences. Nothing has been added to it or taken out.']].forEach(([label, reply], i) => {
+      const b = document.createElement('button'); b.type = 'button'; b.id = 'card-' + i; b.textContent = label;
+      b.addEventListener('click', () => { el.remove(); youLine(label, 'you chose'); codeReply({ text: reply, show: i === 1 ? ['n7'] : undefined }); });
+      row.appendChild(b);
+    });
+    $('thread').appendChild(el);
+  }
+
+  async function play(name, animate) {
+    const my = ++token; const sc = SCENES[name]; const go = animate && !reduce;
+    document.querySelectorAll('.scenes [data-s]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.s === name)));
+    [...dotsEl.children].forEach((d) => d.classList.remove('picked', 'lit'));
+    $('thread').innerHTML = ''; $('when').textContent = 'from the box · ' + sc.at;
+    $('whose').textContent = WHO[sc.who][0]; $('who-grove').textContent = WHO[sc.who][1];
+    const served = sc.turns.flatMap((t) => (t.again ? [] : t.boxes || [])).length;
+    $('pile-pick').textContent = served ? served + ' served' : sc.turns.some((t) => t.again) ? 'shown again from the pile' : 'nothing served';
+    const glue = document.createElement('div'); glue.className = 'glue'; glue.textContent = 'free glue words: ' + GLUE.join(' · ');
+    $('thread').appendChild(glue);
+    for (const t of sc.turns) {
+      if (my !== token) return;
+      if (t.you) { youLine(t.you); if (go) await sleep(350); }
+      else if (t.by === 'model') { if (!(await modelReply(t, go, my))) return; }
+      else if (t.by === 'code') { codeReply(t); if (go) await sleep(300); }
+      else if (t.more) {
+        const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'more'; btn.id = 'more'; btn.textContent = 'more?';
+        btn.addEventListener('click', async () => { btn.remove(); const q = $('thread').querySelector('.quick'); if (q) q.remove();
+          youLine('more', 'you'); const mine = token; if (await modelReply(t.more, !reduce, mine) && mine === token) { const q = sc.turns.find((x) => x.quick); if (q) quick(q.quick); } });
+        $('thread').appendChild(btn);
+      } else if (t.quick) quick(t.quick);
+      else if (t.card) letterCard();
+    }
+  }
+
+  document.querySelectorAll('.scenes [data-s]').forEach((b) => b.addEventListener('click', () => play(b.dataset.s, true)));
+  $('replay').addEventListener('click', () => play(document.querySelector('.scenes [aria-pressed="true"]')?.dataset.s || 'odo', true));
+  play('odo', false);
+})();
+</script>
+</body>
+</html>

@@ -197,6 +197,30 @@ read from the modules. What it added:
   nobody she knows; each grove refracts it through its own record.
 - **Open questions stay folded** and are never a task list.
 
+Jeles brought in (2026-10-08). The operator: *"ready to extend it? Bring in Jeles
+next."* then *"run a simulated Jeles, that would have been built on their lives,
+with the internet where you need to on this box."* Jeles fails closed without a
+signed willow-mcp manifest; the runs used the test-fixture manifest from Jeles'
+own `tests/conftest.py`, in an isolated temporary folder.
+
+- **The real seed corpus** (968 nuggets, 0 verified by a person) answered none of
+  June's questions: every ask became a gap, the best a near miss below 0.5.
+  [`june-stream-v1.1.html`](june-stream-v1.1.html).
+- **A simulated Jeles**: 9 nuggets an agent researched on the internet from the
+  three lives' own questions, each `asserted` with its sources
+  ([`jeles-lives-corpus-2026-10-08.json`](jeles-lives-corpus-2026-10-08.json)).
+  Asked strictly, Jeles answers none and logs 8 gaps; allowed asserted, 7 of 8;
+  the kilometer asteroid stays a gap. Stream:
+  [`jeles-lives-stream-v1.html`](jeles-lives-stream-v1.html).
+- **Sources never stand in for a seal**, a seventh check: the RAE gives both
+  senses of *hacerse cargo*, so Jeles can back that a reading exists but cannot
+  say which one Consuelo meant; that stays Nieves' ruling.
+- **Jeles' gap list doubles as a verification queue**: seven asserted answers
+  waiting for a person, one question nobody has answered.
+- **What the record lacks, nobody says**: Oregon wants four feet of earth;
+  June's record has the shovel at two feet and a backhoe of unknown depth, so
+  code says nothing about whether it was enough.
+
 Which other parts of the UI can run this way, and the dispatch rail sketched
 as a box stream: [`box-stream-surfaces.md`](box-stream-surfaces.md).
 
