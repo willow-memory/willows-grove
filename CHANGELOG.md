@@ -34,6 +34,7 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Changed
 
+- **docs:** one-box grid rows JE–JI, `docs/design/one-box/ui-apk-review-2026-10-08.md` with its map and snapshot: the UI and APK review run checks first, the phone only proposes, the one script's box flow and willow-mcp PR 712, and chat for small models as five served boxes said in one sentence; relay Baton 9, next free row JJ. Agent-reported; every box unattested. (PR 127)
 - **docs:** `CLAUDE.md` rule 14 (was 7): search local documents before the internet; a document the operator asks for exists, so find it locally first. (PR 118)
 - **docs:** `CLAUDE.md` rule 15 (was 8): no leading questions at the end of an output; end on the result. (PR 118)
 - **docs:** `CLAUDE.md` rule 16 (was 9): output is a README-style Markdown document with numbered sections and a contents line at the top; questions and comments go at the bottom. (PR 118)
