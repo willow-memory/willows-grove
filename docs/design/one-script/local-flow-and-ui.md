@@ -102,6 +102,26 @@ fails and an unreachable record. Example content, no model behind it.
 This gives the components the 2026-10-08 review found mounted but unused
 (`grove-card`, `grove-cast-chip`) a job, and leaves `grove-lens-switch` out.
 
+### Who wrote it: human or agent (noted 2026-10-08)
+
+The operator: *"Agents can read. But they must say written by human user or
+agent. Pretty much everything in this box should have that seperation."* and
+*"If everything the agent puts out is in a box, then it's real easy to see the
+human lines. and they are already recorded in the json in the one script, or
+the side bar at least."* and *"just note it for now. Dont need to dig. It's
+there."*
+
+- Everything an agent writes is a box; a line that is not a box is the
+  human's. The form shows who wrote it.
+- Agents may read human text. It stays verbatim and is served as data.
+- The human's lines are already kept: `turn_open.intent` and `bite.bite` in the
+  one script's record, and the side bar. Those rows are stamped with who
+  recorded them (`desk · claude`, `run · python`), not who wrote the words, so
+  the box builder reads them as human text, never as a box.
+- The narration checks belong in the one script's layer 5 (`Run.say`,
+  `gate.check_claims`, willow-bot `one-script/onescript/run.py`), which already
+  checks what an agent says before the human reads it.
+
 ## §6 The phone
 
 Unchanged from the phone-only-proposes record: `served.json` goes to the phone
@@ -120,6 +140,7 @@ and, with an in-process model rung, needs no `INTERNET` permission.
 
 ## §8 Open
 
+- Whether code (`run · python` rows) is labelled agent or gets its own label.
 - PR 712 gap `bac79269f74b`: a `rat_turn` refused at argument validation still
   leaves the last run's rows.
 - Where Grove finds the box: willow-bot's `.flow/onescript/` by default; a
