@@ -94,6 +94,11 @@ What the page does not do:
   `grove_reader.py` stays read-only (rule 3).
 - Seal. The scope and proposal panels show the subject and link to Nestor.
 
+A clickable sketch of the chat side, v1: [`box-stream-v1.html`](box-stream-v1.html).
+Boxes stream from the pile into the chat, a small model says them in one
+sentence, and the three checks run; five cases, including a sentence that
+fails and an unreachable record. Example content, no model behind it.
+
 This gives the components the 2026-10-08 review found mounted but unused
 (`grove-card`, `grove-cast-chip`) a job, and leaves `grove-lens-switch` out.
 
