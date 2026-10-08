@@ -1,0 +1,233 @@
+{
+  "title": "The UI and APK review, the phone proposes, and chat from boxes (2026-10-08)",
+  "root": "../../../..",
+  "rows": [
+    {
+      "row": "JE",
+      "title": "The review, checks first",
+      "source": "the notes, section JE (operator words verbatim where quoted; the rest the agent's reading)"
+    },
+    {
+      "row": "JF",
+      "title": "The APK as found",
+      "source": "the notes, section JF (operator words verbatim where quoted; the rest the agent's reading)"
+    },
+    {
+      "row": "JG",
+      "title": "The phone only proposes",
+      "source": "the notes, section JG (operator words verbatim where quoted; the rest the agent's reading)"
+    },
+    {
+      "row": "JH",
+      "title": "The one script, local first",
+      "source": "the notes, section JH (operator words verbatim where quoted; the rest the agent's reading)"
+    },
+    {
+      "row": "JI",
+      "title": "Chat from boxes",
+      "source": "the notes, section JI (operator words verbatim where quoted; the rest the agent's reading)"
+    }
+  ],
+  "cells": [
+    {
+      "cell": "JE1",
+      "label": "The ask",
+      "file": "willows-grove/docs/design/one-box/ui-apk-review-2026-10-08.md",
+      "pattern": "^- \\*\\*The ask\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "JE2",
+      "label": "The stale branch",
+      "file": "willows-grove/docs/design/one-box/ui-apk-review-2026-10-08.md",
+      "pattern": "^- \\*\\*The stale branch\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "JE3",
+      "label": "The Grove suites",
+      "file": "willows-grove/docs/design/one-box/ui-apk-review-2026-10-08.md",
+      "pattern": "^- \\*\\*The Grove suites\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "JE4",
+      "label": "The page as served",
+      "file": "willows-grove/docs/design/one-box/ui-apk-review-2026-10-08.md",
+      "pattern": "^- \\*\\*The page as served\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "JE5",
+      "label": "The APK tests blocked",
+      "file": "willows-grove/docs/design/one-box/ui-apk-review-2026-10-08.md",
+      "pattern": "^- \\*\\*The APK tests blocked\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "JF1",
+      "label": "Last touched",
+      "file": "willows-grove/docs/design/one-box/ui-apk-review-2026-10-08.md",
+      "pattern": "^- \\*\\*Last touched\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "JF2",
+      "label": "Backup",
+      "file": "willows-grove/docs/design/one-box/ui-apk-review-2026-10-08.md",
+      "pattern": "^- \\*\\*Backup\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "JF3",
+      "label": "Key in the WebView",
+      "file": "willows-grove/docs/design/one-box/ui-apk-review-2026-10-08.md",
+      "pattern": "^- \\*\\*Key in the WebView\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "JF4",
+      "label": "The port policy",
+      "file": "willows-grove/docs/design/one-box/ui-apk-review-2026-10-08.md",
+      "pattern": "^- \\*\\*The port policy\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "JF5",
+      "label": "The simplification",
+      "file": "willows-grove/docs/design/one-box/ui-apk-review-2026-10-08.md",
+      "pattern": "^- \\*\\*The simplification\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "JG1",
+      "label": "The safest shape asked for",
+      "file": "willows-grove/docs/design/one-box/ui-apk-review-2026-10-08.md",
+      "pattern": "^- \\*\\*The safest shape asked for\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "JG2",
+      "label": "What the code needs",
+      "file": "willows-grove/docs/design/one-box/ui-apk-review-2026-10-08.md",
+      "pattern": "^- \\*\\*What the code needs\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "JG3",
+      "label": "The proposed shape",
+      "file": "willows-grove/docs/design/one-box/ui-apk-review-2026-10-08.md",
+      "pattern": "^- \\*\\*The proposed shape\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "JG4",
+      "label": "The decision",
+      "file": "willows-grove/docs/design/one-box/ui-apk-review-2026-10-08.md",
+      "pattern": "^- \\*\\*The decision\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "JG5",
+      "label": "Where it was written",
+      "file": "willows-grove/docs/design/one-box/ui-apk-review-2026-10-08.md",
+      "pattern": "^- \\*\\*Where it was written\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "JH1",
+      "label": "Local first",
+      "file": "willows-grove/docs/design/one-box/ui-apk-review-2026-10-08.md",
+      "pattern": "^- \\*\\*Local first\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "JH2",
+      "label": "The box walk",
+      "file": "willows-grove/docs/design/one-box/ui-apk-review-2026-10-08.md",
+      "pattern": "^- \\*\\*The box walk\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "JH3",
+      "label": "PR 712 pulled in",
+      "file": "willows-grove/docs/design/one-box/ui-apk-review-2026-10-08.md",
+      "pattern": "^- \\*\\*PR 712 pulled in\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "JH4",
+      "label": "The write-up",
+      "file": "willows-grove/docs/design/one-box/ui-apk-review-2026-10-08.md",
+      "pattern": "^- \\*\\*The write-up\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "JH5",
+      "label": "The PRs",
+      "file": "willows-grove/docs/design/one-box/ui-apk-review-2026-10-08.md",
+      "pattern": "^- \\*\\*The PRs\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "JI1",
+      "label": "Small models don't chat",
+      "file": "willows-grove/docs/design/one-box/ui-apk-review-2026-10-08.md",
+      "pattern": "^- \\*\\*Small models don't chat\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "JI2",
+      "label": "The hash line",
+      "file": "willows-grove/docs/design/one-box/ui-apk-review-2026-10-08.md",
+      "pattern": "^- \\*\\*The hash line\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "JI3",
+      "label": "Which five",
+      "file": "willows-grove/docs/design/one-box/ui-apk-review-2026-10-08.md",
+      "pattern": "^- \\*\\*Which five\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "JI4",
+      "label": "Keeping the sentence honest",
+      "file": "willows-grove/docs/design/one-box/ui-apk-review-2026-10-08.md",
+      "pattern": "^- \\*\\*Keeping the sentence honest\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    },
+    {
+      "cell": "JI5",
+      "label": "Why the sessions run in boxes",
+      "file": "willows-grove/docs/design/one-box/ui-apk-review-2026-10-08.md",
+      "pattern": "^- \\*\\*Why the sessions run in boxes\\.\\*\\*",
+      "mode": "para",
+      "standing": "unattested"
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+{
+ "title": "The UI and APK review, the phone proposes, and chat from boxes (2026-10-08)",
+ "cells": {
+  "JE1": {
+   "size": 258,
+   "sha256": "fa6c4bbcacb47ce31f9de75f617932d3c89f30edcac7ccbf584fab266147e71b"
+  },
+  "JE2": {
+   "size": 182,
+   "sha256": "ac032d55f23c2829f0d7b69260aac37966eb9cfea70f9f242ef5b32b9ae19a73"
+  },
+  "JE3": {
+   "size": 201,
+   "sha256": "418f8a89511f55e82c4e8d5a07d77a8eb5687f2ec06cb15b9d0276b4803b7641"
+  },
+  "JE4": {
+   "size": 262,
+   "sha256": "5a0d0ede8051863f074a69bfa5309af64929238462de95f2684ce45ecf014b31"
+  },
+  "JE5": {
+   "size": 170,
+   "sha256": "13044d877a99fbe9be3b8c2a426878e5d8a6df9ed4d33c22539add029a6a862c"
+  },
+  "JF1": {
+   "size": 118,
+   "sha256": "05fcc1de59cc0e9e35f65c41f536d28ecd26738ec9b91030ca18023743d74483"
+  },
+  "JF2": {
+   "size": 125,
+   "sha256": "74c217d04ca34538c5ebc17879d3d102845097b31a21e20b5ba911a5c07fd651"
+  },
+  "JF3": {
+   "size": 98,
+   "sha256": "4759a996624109a4533235e6aff5600d3e6a23334cf9e50fe6c9be8cd58c8e77"
+  },
+  "JF4": {
+   "size": 205,
+   "sha256": "63fe84e2562047fefee9d20457507cb7a521196ebdf330fc6839bf21f062b744"
+  },
+  "JF5": {
+   "size": 263,
+   "sha256": "66aeec678d9a5067154a9ce05a55884ac0c41ba6360401414c1e9e2318383f7e"
+  },
+  "JG1": {
+   "size": 311,
+   "sha256": "1b4dd105235b597d6cda8e8cbd09df0739cd1434bd3ecb9f3fa05bdf14e6b01c"
+  },
+  "JG2": {
+   "size": 189,
+   "sha256": "015efe5db54857a9fc6703105693b2e119bcce109ca1ff49d50e5e1a34069b4a"
+  },
+  "JG3": {
+   "size": 210,
+   "sha256": "c2250697eed1d8172cf71ff6e8eeb3f15aff17d20c9fcebd05566690e288df10"
+  },
+  "JG4": {
+   "size": 158,
+   "sha256": "6afc66bedd5896ec55ba3291dfbff3fbd86499cadfc19aba23aa90e45894922b"
+  },
+  "JG5": {
+   "size": 143,
+   "sha256": "1d5cbc0d5153992cba949595fafc5cbdf83cf5c0988aa932344a2d7a1355edb9"
+  },
+  "JH1": {
+   "size": 137,
+   "sha256": "7404e24a8806611de3deb42be38db788448de574c12c686d2a827d17bef4cec0"
+  },
+  "JH2": {
+   "size": 251,
+   "sha256": "11a4064f5f027ee1d6cd6581fd934c7a4babfad74349f8b0c571a2709e516d52"
+  },
+  "JH3": {
+   "size": 265,
+   "sha256": "e3d85f96d7c58ece1afabe7d3e6b25b535f6013a94cc0c489d50dae28f46cfcf"
+  },
+  "JH4": {
+   "size": 245,
+   "sha256": "beee641fbaadeeaf4e8b841340ab4cac692a5acbf784e00f5f0e3f3a11344937"
+  },
+  "JH5": {
+   "size": 96,
+   "sha256": "a72c77c9eb40dd4cc96b7870b4118c942af38639ff01f79dd1bbed2b6a5098d6"
+  },
+  "JI1": {
+   "size": 262,
+   "sha256": "b5ecf347364da691e62ae3f5c6adb8aff1a44b2b96468c94a9d17475f3b525a5"
+  },
+  "JI2": {
+   "size": 248,
+   "sha256": "9ed65df30afc713ef1c988f0f45a236e82d890d923c5e6feb9dbab2207fd11d5"
+  },
+  "JI3": {
+   "size": 271,
+   "sha256": "a02b638646f73d536b3b0b7c1a5feb815eb2ad98bffd4dbc8ab534c25c64a2fa"
+  },
+  "JI4": {
+   "size": 246,
+   "sha256": "a7552522b5a20027ad5108faf67913a59585f6a199687c6d16f0cfbac19d63da"
+  },
+  "JI5": {
+   "size": 265,
+   "sha256": "dda573e428083e677faa3a20038d735cbecdc9ff201a2b55777850aee315cf9b"
+  }
+ }
+}

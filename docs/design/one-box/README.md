@@ -61,6 +61,10 @@ In the tables, **V** means I read the code, and **S** means it is inferred.
      IZ–JD: 113 and its trigger, the table-only and percentage rules,
      CLAUDE.md linked to Draft 0.9, a Gemini output verified, the quorum
      ruling, and the session measured rather than estimated
+   - [`ui-apk-review-2026-10-08.md`](ui-apk-review-2026-10-08.md), grid rows
+     JE–JI: the UI and APK review run checks first, the phone only
+     proposes, the one script's box flow and willow-mcp PR 712, and chat
+     for small models as five served boxes said in one sentence
 2. **Nothing here is ratified yet.** CLAUDE.md rule 4 still applies: propose
    a bite and wait for the operator's go. D1–D3 gate the spine (Phases 1–3);
    Phase 0 does not wait on them. **D11** (phone-seat grant) and **D12**
