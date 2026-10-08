@@ -441,6 +441,45 @@ The operator's observations, recorded as data:
   stories); that thread is marked conversational and flagged (T145–T153) as
   not part of the work.
 
+### Proposed structure (pending attestation)
+
+*Folded 2026-10-08 from `incoming/haiku-2026-10-02/proposal-heartbeat-and-loops.md`
+— a local-model (Haiku) draft, **agent-reported and unattested.** This records
+the drafted shape as a candidate; it does not resolve the OPEN decisions above,
+which stay the operator's call (truth rule).*
+
+**The beat is one complete loop of work,** counted from the record, not the
+clock: `1 ask → 2 noticed → 3 escalate`, then `3 drafts → 7 refine → 13 stable
+→ 23 loop complete`, then peak → reverse → next bite → back to 1.
+
+**Prime polyrhythm — each part keeps its own count:**
+
+| Part | Prime | Counts |
+|---|---|---|
+| ask | 3 | repetition; escalate / offer-to-make-standing at the 3rd |
+| draft | 7 | refinement milestone |
+| stability | 13 | convergence, the stable point |
+| loop | 23 | full cycle; peak, then the reverse pass fires |
+| 17 | 17 | observed in `b17:` headers; role still OPEN |
+
+3, 7, 13 and 23 coincide once every 6,279 beats, so the parts phrase against
+each other instead of marching in lockstep.
+
+**Deterministic counter (sketch, from the proposal):** a `WorkBeat` holds
+`ask / draft / stability / loop` counts off the record; `record_ask` returns
+`escalate` at every 3rd, `record_question` returns `loop_complete` at the 23rd
+(peak → reverse), `new_beat` resets the counts. No model is called: the counts
+are a scan of the ledger for events of each type.
+
+**On 17 (candidate, not a fill):** the draft offers 17 as a "reflection point"
+between stable-13 and complete-23, then stops — the answer stays the operator's
+(still OPEN above).
+
+**Open decisions the draft hands back (operator's call):** are 3/7/13/23 the
+right numbers; what 17 is; how a "question" is counted for the 23; whether the
+beat is shown to the operator or stays internal; whether 23 auto-triggers the
+reverse pass.
+
 ---
 
 ## 5. Marks on this session's map
@@ -589,3 +628,45 @@ re-checked on receipt", whose enforcing code was never found or built.
   chain matched the declared layout.
 - **The difference here:** the gate config is the user's, and the final
   authority is a human attestation, not a company policy server.
+
+### Proposed structure (pending attestation)
+
+*Folded 2026-10-08 from `incoming/haiku-2026-10-02/proposal-packet-stamp-chain.md`
+— a local-model (Haiku) draft, **agent-reported and unattested.** This records
+the drafted shape as a candidate; it does not resolve the OPEN decisions it
+raises, which stay the operator's call (truth rule).*
+
+**A chain of gates, one per layer; each gate verifies the previous gate's stamp
+and appends its own.** A packet carries `[payload] | [intent] | [signature
+chain]`, with intent = `{who, what, where, action}`.
+
+**The stamp (each gate's record):**
+
+| Field | Content | Who sets |
+|---|---|---|
+| hash | SHA-256(payload + intent) | this gate |
+| intent | {who, what, where, action} | sender (gate 0), inherited |
+| timestamp | recorded at this gate | this gate |
+| nonce | unique per packet, same through the chain | gate 0 |
+| prior_hash | hash of the previous gate's stamp (gate 0 = 0) | this gate |
+| key_id | the signing key's id | this gate |
+
+**Gate behavior:** gate 0 creates, stamps and signs. Each later gate verifies
+the prior stamp, recomputes the hash of the payload **as received**, and either
+appends a fresh stamp (match) or, on a difference, **declares the change** (amend
+the intent — `compressed` / `encrypted` / `filtered` — and sign) or **rejects.**
+The receiver verifies the whole chain backward and fails loud, naming the break.
+
+**Amend, don't hide:** a legitimate transform is its own declared, signed gate;
+the intent grows as the packet flows. **Fail loud both ways:** a mismatch issues
+a rejection stamp to sender *and* receiver and records the break in the Ledger
+(CONST-VI). Replay is blocked by a time-windowed bloom filter of nonces; the
+final stamp lands as a `packet_transit` Ledger entry.
+
+**Prior art:** in-toto (Apache-2.0, CNCF); the difference here is per-user gate
+config and human attestation as the final authority.
+
+**Open decisions the draft hands back (operator's call):** mandatory for all
+packets or only law-carrying ones; internal (same box) vs cross-network only;
+timestamp drift tolerance; per-gate bloom filter vs a central nonce registry;
+whether non-law data may opt out.
