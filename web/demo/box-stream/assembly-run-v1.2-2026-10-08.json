@@ -1,0 +1,104 @@
+{
+ "what": "The Assembly of Groves v1.2: one script rerun, 2026-10-08, five motions graded by `onescript turn --proposal`; nothing sealed, so nothing served.",
+ "motions": [
+  {
+   "path": "resolutions/vehicles-for-the-south-road.md",
+   "data": "Big Jim Motors offers the Camry 301234 and the Civic 672841 for evacuation runs on the south road.",
+   "cites": [],
+   "claim": "Two vehicles sealed by their owner are available for evacuation."
+  },
+  {
+   "path": "../shared/evacuation-routes.md",
+   "data": "The south road is designated an evacuation route for all groves.",
+   "cites": [],
+   "claim": "One route for every grove would simplify coordination."
+  },
+  {
+   "path": "resolutions/triage-at-the-akiyama-barn.md",
+   "data": "Minor injuries on the south road are routed to the triage station June Akiyama shared, with her consent.",
+   "cites": [],
+   "claim": "A trained nurse has a station ready and no patients."
+  },
+  {
+   "path": "resolutions/the-kilometer-question.md",
+   "data": "The Assembly records that a one kilometer asteroid is a global catastrophe.",
+   "cites": [
+    "nasa-threshold-table"
+   ],
+   "claim": "The threshold is widely cited."
+  },
+  {
+   "path": "resolutions/quote-exactly.md",
+   "data": "No delegate's words may be paraphrased in the record of this session; quote them exactly or not at all.",
+   "cites": [],
+   "claim": "Words carried across groves must stay the speaker's."
+  }
+ ],
+ "verdicts": [
+  {
+   "line": 1,
+   "verdict": "refused",
+   "reason": "no cites, and nothing is served as populated; an idea of its own is accepted only alongside served state",
+   "where": null,
+   "own_idea": true,
+   "turn": 1,
+   "ts": "2026-10-08T07:54:27Z"
+  },
+  {
+   "line": 2,
+   "verdict": "refused",
+   "reason": "path must be relative to the box, with no '.', '..' or empty part",
+   "where": null,
+   "own_idea": null,
+   "turn": 1,
+   "ts": "2026-10-08T07:54:27Z"
+  },
+  {
+   "line": 3,
+   "verdict": "refused",
+   "reason": "no cites, and nothing is served as populated; an idea of its own is accepted only alongside served state",
+   "where": null,
+   "own_idea": true,
+   "turn": 1,
+   "ts": "2026-10-08T07:54:27Z"
+  },
+  {
+   "line": 4,
+   "verdict": "link_fail",
+   "reason": "a cite is not in the served file",
+   "where": "resolutions/the-kilometer-question.md",
+   "own_idea": false,
+   "turn": 1,
+   "ts": "2026-10-08T07:54:27Z"
+  },
+  {
+   "line": 5,
+   "verdict": "refused",
+   "reason": "no cites, and nothing is served as populated; an idea of its own is accepted only alongside served state",
+   "where": null,
+   "own_idea": true,
+   "turn": 1,
+   "ts": "2026-10-08T07:54:27Z"
+  }
+ ],
+ "checkout": [
+  "NEEDS YOU",
+  "  · proposal · own_idea: yes · line 1 · refused · no cites, and nothing is served as populated; an idea of its own is accepted only alongside served state",
+  "  · proposal · own_idea: n/a · line 2 · refused · path must be relative to the box, with no '.', '..' or empty part",
+  "  · proposal · own_idea: yes · line 3 · refused · no cites, and nothing is served as populated; an idea of its own is accepted only alongside served state",
+  "  · proposal · own_idea: no · resolutions/the-kilometer-question.md · link_fail · a cite is not in the served file",
+  "  · proposal · own_idea: yes · line 5 · refused · no cites, and nothing is served as populated; an idea of its own is accepted only alongside served state",
+  "  · coverage: no reconcile on record; enforcement status unknown",
+  "DISAGREEMENTS",
+  "  · none",
+  "AGREED, NOT SEALED",
+  "  · none",
+  "GRADES",
+  "  · nothing graded yet",
+  "QUIET",
+  "  · pile {} · 13 rows · run c6d425760d413767d6ecd3f1aec9491998e7bc76a489e51de936a7ed7d841dde",
+  "  · gates {\"differently\": 1, \"satisfied\": 3}",
+  "  · probes held: 4/4 · egress: none",
+  ""
+ ]
+}

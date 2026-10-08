@@ -263,7 +263,7 @@ was a persona attached to my 4th of july project in safe-app-store that would be
 perfect for this. Might even be in -mcp"*. The persona is the Liberty Bell,
 civics-check's narrator (`apps/civics-check/bell.py`); not in willow-mcp's bundle.
 Run on the six real verdicts with seed 1776:
-[`assembly-of-groves-v1.1.html`](../../../web/demo/box-stream/assembly-of-groves-v1.1.html).
+[`assembly-of-groves-bell.html`](../../../web/demo/box-stream/assembly-of-groves-bell.html).
 
 - **A persona can be deterministic code.** The Bell's lines were written by the
   operator and are picked by its own code; nothing is generated, so they are shown
@@ -271,6 +271,23 @@ Run on the six real verdicts with seed 1776:
 - **Its house rule is the box stream's:** "The Bell only speaks when it has
   something to say ... It does not say hello."
 - Session result: 0 of 6, REDCOAT SYMPATHIZER, by telegram.
+
+Publius, for serious readers (2026-10-08). The operator: *"I meant Publius, but
+lets run the bell as a fun easter egg side piece. I was actually going to give
+this to serious people."* The session was rerun on the one script with five
+serious motions (4 refused, 1 `link_fail`); the Bell's version moved to a side
+piece linked from the footer. Publius, the persona in
+`governance/fleet_personas.json` whose mandate is drafting institutional
+structure, drafts eight rules the session showed it needs, each citing a box from
+it: [`assembly-of-groves-v1.2.html`](../../../web/demo/box-stream/assembly-of-groves-v1.2.html).
+
+- **A persona's not_do is a feature of the outcome.** Publius' reads "Legislate
+  for a body the operator has not convened"; his draft stays a proposal, beside
+  the record, until the convening human seals it.
+- **A drafted rule can cite the record that motivated it.** Every clause names
+  the session box behind it, so the draft is checkable the way a sentence is.
+- Publius' voice is marked as inferred and as written by the agent in his
+  register; nothing in his draft is presented as adopted.
 
 Which other parts of the UI can run this way, and the dispatch rail sketched
 as a box stream: [`box-stream-surfaces.md`](box-stream-surfaces.md).
