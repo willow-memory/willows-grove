@@ -1,0 +1,31 @@
+{
+ "seed": 1776,
+ "verdicts": [
+  "refused",
+  "refused",
+  "refused",
+  "link_fail",
+  "refused",
+  "refused"
+ ],
+ "per_motion": [
+  "THE BELL: No. Try reading a pamphlet sometime.",
+  "THE BELL: No. Try reading a pamphlet sometime.",
+  "THE BELL: Wrong. I'd crack again if I could.",
+  "THE BELL: That's not it. I've been broken longer and I'm still more right than that.",
+  "THE BELL: No. I've heard worse, but not by much.",
+  "THE BELL: Incorrect. Bold guess, though."
+ ],
+ "medal": "REDCOAT SYMPATHIZER",
+ "telegram": [
+  "********* TELEGRAM *********",
+  "RESULT MODE ASSEMBLY STOP",
+  "SCORE 0 OF 6 STOP",
+  "STATUS KEEP STUDYING STOP",
+  "MEDAL REDCOAT SYMPATHIZER STOP",
+  "THE BELL SENDS REGARDS STOP GRUDGINGLY STOP",
+  "*****************************"
+ ],
+ "ticker": "The only thing we have to fear is fear itself. -- Franklin D. Roosevelt",
+ "aside": "// the Bell has opinions about November but the Bell keeps them to itself."
+}

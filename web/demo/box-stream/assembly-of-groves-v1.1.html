@@ -1,0 +1,517 @@
+<!doctype html>
+<!-- b17: WGRV1  ΔΣ=42 -->
+<!-- The Assembly of Groves, v1.1 (2026-10-08): v1 plus the Liberty Bell, civics-check's narrator
+     (rudi193-cmd/safe-app-store apps/civics-check/bell.py), run on the six real verdicts with seed 1776: a line per
+     motion, the medal, the telegram, and a ticker quote from civics-check data/quotes.json. Run record:
+     liberty-bell-run-2026-10-08.json. Liberty Bell ASCII art by Joan G. Stark (jgs), 7/97, as credited in bell.py.
+     The operator: "one more quick stupid. There was a persona attached to my 4th of july project in safe-app-store
+     that would be perfect for this. Might even be in -mcp"
+     Published copy: https://claude.ai/artifact/7ZLcVutSyDczSrZmjACQyS (v1.1). v1: assembly-of-groves-v1.html -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Assembly of Groves</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,MONO@-15..0,300..800,0..1,0..1&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* Layout: one desk column — the pile (every box on the record) on top, the chat card below it;
+   picked boxes stream out of the pile into the chat, a small model says them, code checks the sentence. */
+:root {
+  /* dark-first: the Grove loam */
+  --bg: #1b1712; --panel: #241e17; --panel-2: #2c251c; --line: #3a3126;
+  --fg: #efe6d5; --muted: #a3967f; --faint: #6f6453;
+  --frond: #86b86f; --sun: #e6b34c; --mint: #8fd6b9; --emerald: #46a77b;
+  --amber: #e5893b; --rust: #d9645c;
+  --glow: rgba(230,179,76,.22);
+  --display: "Recursive", ui-sans-serif, system-ui, sans-serif;
+  --body: "Atkinson Hyperlegible", ui-sans-serif, system-ui, sans-serif;
+  --mono: "Recursive", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) {
+  --bg: #eef1e7; --panel: #fbfcf7; --panel-2: #f2f5ec; --line: #d5dacb;
+  --fg: #1f2619; --muted: #5d6652; --faint: #9aa18e;
+  --frond: #3f7d2c; --sun: #a87505; --mint: #1f8a69; --emerald: #217a52;
+  --amber: #b9600f; --rust: #b23c34; --glow: rgba(168,117,5,.16);
+  color-scheme: light;
+}}
+:root[data-theme="light"] {
+  --bg: #eef1e7; --panel: #fbfcf7; --panel-2: #f2f5ec; --line: #d5dacb;
+  --fg: #1f2619; --muted: #5d6652; --faint: #9aa18e;
+  --frond: #3f7d2c; --sun: #a87505; --mint: #1f8a69; --emerald: #217a52;
+  --amber: #b9600f; --rust: #b23c34; --glow: rgba(168,117,5,.16);
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font: 15px/1.5 var(--body); }
+.wrap { max-width: 980px; margin: 0 auto; padding-inline: 16px; padding-block: 20px 48px; display: grid; gap: 18px; }
+
+header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px; }
+.brand { display: flex; align-items: center; gap: 14px; }
+.willow { font: 11px/1.05 var(--mono); font-variation-settings: "MONO" 1; color: var(--frond); white-space: pre; margin: 0; }
+.willow b { color: var(--sun); font-weight: 400; }
+h1 { font: 700 26px/1.1 var(--display); font-variation-settings: "CASL" 1; margin: 0; text-wrap: balance; }
+.sub { color: var(--muted); margin: 2px 0 0; font-size: 14px; }
+
+.scenes { display: flex; flex-wrap: wrap; gap: 8px; }
+.scenes button, .ctl {
+  font: 600 13px/1 var(--display); font-variation-settings: "CASL" .6;
+  color: var(--fg); background: var(--panel); border: 1px solid var(--line);
+  border-radius: 999px; padding: 9px 14px; cursor: pointer;
+}
+.scenes button[aria-pressed="true"] { border-color: var(--sun); box-shadow: 0 0 0 3px var(--glow); }
+.scenes button:focus-visible, .ctl:focus-visible, .say span:focus-visible { outline: 2px solid var(--sun); outline-offset: 2px; }
+
+/* the pile */
+.pile { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; display: grid; gap: 10px; }
+.pile-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; font: 12px/1.3 var(--mono); color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
+.pile-head strong { color: var(--fg); font-weight: 600; }
+.dots { display: grid; grid-template-columns: repeat(auto-fill, minmax(11px, 1fr)); gap: 4px; }
+.dot { aspect-ratio: 1; border-radius: 3px; background: var(--line); transition: transform .25s, background .25s, box-shadow .25s; }
+.dot.k-pass { background: color-mix(in oklab, var(--frond) 35%, var(--line)); }
+.dot.k-pr { background: color-mix(in oklab, var(--mint) 35%, var(--line)); }
+.dot.k-dec { background: color-mix(in oklab, var(--emerald) 40%, var(--line)); }
+.dot.k-you { background: color-mix(in oklab, var(--sun) 45%, var(--line)); }
+.dot.k-block { background: color-mix(in oklab, var(--amber) 40%, var(--line)); }
+.dot.picked { transform: scale(1.35); box-shadow: 0 0 0 2px var(--sun); z-index: 1; }
+.dot.lit { box-shadow: 0 0 0 3px var(--fg); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--muted); }
+.legend i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+
+/* the chat card */
+.chat { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+.chat-bar { display: flex; justify-content: space-between; gap: 8px; padding: 10px 16px; border-bottom: 1px solid var(--line); font: 12px/1.3 var(--mono); color: var(--muted); }
+.chat-bar b { color: var(--fg); font-weight: 600; }
+.turns { padding: 16px; display: grid; gap: 16px; }
+.you { justify-self: end; max-width: 80%; text-align: right; font: 400 17px/1.4 var(--body); border-right: 2px solid var(--fg); padding: 2px 12px 2px 0; }
+.you small { display: block; font: 11px/1.2 var(--mono); color: var(--faint); margin-bottom: 2px; }
+.box.human { --c: var(--fg); border: 0; border-left: 2px solid var(--fg); border-radius: 0; background: transparent; padding: 2px 0 2px 10px; }
+.box.human .v { font: italic 400 15px/1.35 var(--body); }
+.example { font: 11px/1.2 var(--mono); color: var(--faint); letter-spacing: .04em; }
+.chk.na { border-style: dashed; }
+
+.stream { display: grid; gap: 8px; }
+.stream-label { font: 11px/1 var(--mono); color: var(--faint); letter-spacing: .06em; text-transform: uppercase; }
+.boxes { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.box {
+  --c: var(--muted);
+  min-width: 0; background: var(--panel-2); border: 1px solid var(--line); border-top: 3px solid var(--c);
+  border-radius: 8px; padding: 8px 10px 9px; display: grid; gap: 3px;
+  transition: transform .45s cubic-bezier(.2,.9,.25,1.15), opacity .35s, box-shadow .2s, border-color .2s;
+}
+.box.enter { opacity: 0; transform: translateY(-26px) rotate(-3deg) scale(.92); }
+.box .k { font: 600 10px/1 var(--mono); letter-spacing: .07em; text-transform: uppercase; color: var(--c); display: flex; justify-content: space-between; gap: 6px; }
+.box .k span:last-child { color: var(--faint); font-weight: 400; }
+.box .v { font: 600 14px/1.25 var(--display); font-variation-settings: "CASL" .4; overflow-wrap: anywhere; }
+.box .d { font-size: 12.5px; color: var(--muted); overflow-wrap: anywhere; }
+.box.lit { box-shadow: 0 0 0 2px var(--c), 0 6px 18px -8px var(--c); transform: translateY(-2px); }
+.box.c-you { --c: var(--sun); } .box.c-dec { --c: var(--emerald); } .box.c-pr { --c: var(--mint); }
+.box.c-block { --c: var(--amber); } .box.c-pass { --c: var(--frond); }
+.box.unreach { --c: var(--amber); border-style: dashed; border-top-style: solid; background: transparent; }
+.box.empty { --c: var(--faint); border-style: dashed; background: transparent; }
+
+.reply { display: grid; gap: 10px; border-left: 2px solid var(--line); padding-left: 14px; }
+.who { font: 11px/1.2 var(--mono); color: var(--faint); display: flex; gap: 8px; align-items: center; }
+.who .pip { width: 7px; height: 7px; border-radius: 50%; background: var(--frond); }
+.who.thinking .pip { animation: pulse 1s infinite; }
+@keyframes pulse { 50% { opacity: .2; } }
+.say { font: 400 19px/1.45 var(--display); font-variation-settings: "CASL" .7; margin: 0; text-wrap: pretty; min-height: 1.45em; }
+.say span[data-c] { border-bottom: 2px solid var(--c, var(--line)); cursor: default; transition: background .2s; border-radius: 2px; }
+.say span[data-c].lit { background: color-mix(in oklab, var(--c) 22%, transparent); }
+.say span.bad { color: var(--rust); text-decoration: line-through wavy var(--rust); }
+.say.struck { opacity: .55; }
+.say.code { font: 400 14px/1.6 var(--mono); font-variation-settings: "MONO" 1; opacity: 1; }
+.say .caret { display: inline-block; width: .5ch; background: var(--sun); animation: pulse .8s infinite; }
+
+.checks { display: flex; flex-wrap: wrap; gap: 6px; }
+.chk { font: 12px/1 var(--mono); padding: 6px 9px; border-radius: 999px; border: 1px solid var(--line); color: var(--faint); display: inline-flex; gap: 6px; align-items: center; }
+.chk.ok { color: var(--frond); border-color: color-mix(in oklab, var(--frond) 50%, var(--line)); }
+.chk.no { color: var(--rust); border-color: var(--rust); }
+.note { font-size: 13px; color: var(--muted); margin: 0; }
+.note b { color: var(--fg); }
+.seal { justify-self: start; font: 600 13px/1 var(--display); color: var(--bg); background: var(--sun); border: 0; border-radius: 8px; padding: 9px 13px; text-decoration: none; }
+.seal::after { content: " ↗"; }
+
+.foot { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+.foot p { margin: 0; color: var(--faint); font-size: 12.5px; max-width: 62ch; }
+
+@media (max-width: 560px) {
+  h1 { font-size: 22px; } .willow { display: none; } .say { font-size: 17px; } .you { max-width: 92%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+/* v1.2: the conversation */
+.boxes .box { align-content: start; }
+.thread { display: grid; gap: 14px; }
+.reply + .reply { margin-top: 2px; }
+.glue { font: 11px/1.4 var(--mono); color: var(--faint); }
+.quick { display: flex; flex-wrap: wrap; gap: 6px; }
+.quick button, .more { font: 600 12.5px/1 var(--display); color: var(--fg); background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px; padding: 8px 12px; cursor: pointer; }
+.more { border-style: dashed; color: var(--muted); justify-self: start; }
+.quick button:focus-visible, .more:focus-visible { outline: 2px solid var(--sun); outline-offset: 2px; }
+.mini { display: flex; flex-wrap: wrap; gap: 5px; }
+.mini span { font: 11px/1 var(--mono); padding: 4px 7px; border-radius: 4px; border: 1px solid var(--line); color: var(--muted); }
+.say.small { font-size: 17px; }
+.box.c-refuse { --c: var(--rust); }
+.her { border-left: 2px solid var(--fg); padding-left: 8px; font: italic 400 13.5px/1.4 var(--body); color: var(--fg); }
+.her small { display: block; font: normal 10px/1.2 var(--mono); color: var(--faint); letter-spacing: .05em; text-transform: uppercase; margin-bottom: 2px; }
+.box.hist { opacity: .78; border-top-style: dashed; }
+.box.public { border-left: 3px dashed var(--mint); background: color-mix(in oklab, var(--mint) 6%, var(--panel-2)); }
+.box.reading { border-style: dashed; background: transparent; }
+.box.jeles { border-left: 4px double var(--emerald); background: color-mix(in oklab, var(--emerald) 6%, var(--panel-2)); }
+.jorigin { font: 600 10.5px/1.2 var(--mono); color: var(--emerald); letter-spacing: .03em; }
+.rungs { display: flex; flex-wrap: wrap; gap: 5px; }
+.rungs span { font: 600 10px/1 var(--mono); padding: 3px 6px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+.rungs span.no { border-color: var(--amber); color: var(--amber); }
+.src { font: 11px/1.35 var(--mono); color: var(--faint); overflow-wrap: anywhere; }
+.src::after { content: "  · shown to you, not served"; font-style: italic; }
+.origin { font: 600 10.5px/1.2 var(--mono); color: var(--mint); letter-spacing: .03em; }
+.card { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: grid; gap: 8px; background: var(--panel-2); }
+.card h3 { margin: 0; font: 700 14px/1.2 var(--display); }
+.card q { font: italic 400 15px/1.45 var(--body); quotes: '"' '"'; }
+.card .never { font-size: 12.5px; color: var(--muted); }
+.border-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font: 11px/1.3 var(--mono); color: var(--muted); }
+.border-strip b { color: var(--mint); font-weight: 600; }
+.dot.k-refuse { background: color-mix(in oklab, var(--rust) 45%, var(--line)); }
+.bell { border: 1px solid color-mix(in oklab, var(--sun) 45%, var(--line)); border-radius: 10px; padding: 10px 12px; display: grid; gap: 6px; background: color-mix(in oklab, var(--sun) 5%, var(--panel-2)); }
+.bell h4 { margin: 0; font: 700 11px/1.2 var(--mono); letter-spacing: .08em; color: var(--sun); }
+.bell h4 small { font-weight: 400; color: var(--faint); letter-spacing: .02em; text-transform: none; margin-left: 6px; }
+.bell .line { font: 600 14px/1.4 var(--mono); }
+.bell .line i { font-style: normal; color: var(--faint); font-weight: 400; margin-right: 6px; }
+.bell pre { margin: 0; font: 11px/1.15 var(--mono); font-variation-settings: "MONO" 1; color: var(--sun); white-space: pre; overflow-x: auto; }
+.bell .tg, .bell .line { font-variation-settings: "MONO" 1; }
+.bell .tg { font: 600 12.5px/1.45 var(--mono); white-space: pre-wrap; }
+.ticker { font: 12px/1.3 var(--mono); color: var(--muted); border-block: 1px dashed var(--line); padding-block: 6px; overflow-wrap: anywhere; }
+.narr { border-left: 2px dotted var(--faint); padding: 2px 0 2px 12px; font: italic 400 15px/1.5 var(--body); color: var(--muted); }
+.narr small { display: block; font: normal 10px/1.2 var(--mono); letter-spacing: .05em; text-transform: uppercase; color: var(--faint); margin-bottom: 2px; }
+.narr b { color: var(--fg); font-style: normal; }
+.box.motion .v { font-size: 13.5px; }
+.verdict { font: 700 11px/1 var(--mono); letter-spacing: .05em; text-transform: uppercase; }
+.seals { display: flex; flex-wrap: wrap; gap: 8px; }
+.slot { font: 600 12px/1 var(--mono); padding: 8px 10px; border-radius: 8px; border: 1px dashed var(--line); color: var(--muted); }
+.box.news { border-left: 3px dotted var(--frond); background: color-mix(in oklab, var(--frond) 5%, var(--panel-2)); }
+.norigin { font: 600 10.5px/1.2 var(--mono); color: var(--frond); letter-spacing: .03em; }
+.dot.k-news { background: color-mix(in oklab, var(--frond) 40%, var(--line)); }
+.dot.k-cons { background: color-mix(in oklab, var(--sun) 50%, var(--line)); }
+.dot.k-jn { background: color-mix(in oklab, var(--emerald) 50%, var(--line)); }
+.fiction { font: 600 11px/1 var(--mono); color: var(--bg); background: var(--amber); border-radius: 4px; padding: 3px 6px; margin-left: 6px; vertical-align: 3px; }
+.stamp { justify-self: start; font: 600 11px/1 var(--mono); color: var(--fg); border: 1px solid var(--line); border-left: 3px solid var(--sun); border-radius: 4px; padding: 5px 8px; }
+.reply.again { border-left-style: dashed; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="brand">
+<pre class="willow" aria-hidden="true">ƒƒ  <b>*</b> . <b>*</b>
+ƒ ƒ . ƒ . ƒ
+ƒ  (║ . .) ƒ
+ƒ   ║ƒ  ƒ</pre>
+      <div>
+        <h1>The Assembly of Groves <span class="fiction">FICTION · A UN-STYLE SESSION</span></h1>
+        <p class="sub">v1.1 · with the Liberty Bell. You are Rowan, rapporteur. The delegations are groves, not countries. The procedure is the real one script, the voices are real tools, and the rest is narration, marked as such.</p>
+        <div class="ticker" id="ticker"></div>
+      </div>
+    </div>
+    <div class="scenes" role="group" aria-label="Agenda">
+      <button type="button" id="s-open" data-s="open" aria-pressed="true">Opening</button>
+      <button type="button" id="s-sky" data-s="sky" aria-pressed="false">Item 1: the Bombardment</button>
+      <button type="button" id="s-motions" data-s="motions" aria-pressed="false">The motions</button>
+      <button type="button" id="s-order" data-s="order" aria-pressed="false">Point of order</button>
+      <button type="button" id="s-shoebox" data-s="shoebox" aria-pressed="false">The observer from Bristol</button>
+      <button type="button" id="s-adopted" data-s="adopted" aria-pressed="false">Model writes the outcome</button>
+      <button type="button" id="s-close" data-s="close" aria-pressed="false">Closing</button>
+    </div>
+  </header>
+
+  <section class="pile" aria-label="The pile">
+    <div class="pile-head"><span>The record · <strong id="pile-n">0</strong> rows this session</span><span id="pile-pick"></span></div>
+    <div class="dots" id="dots"></div>
+    <div class="legend">
+      <span><i style="background:var(--frond)"></i>the one script's own rows</span>
+      <span><i style="background:var(--rust)"></i>a motion, refused</span>
+      <span><i style="background:var(--amber)"></i>a motion, link_fail</span>
+      <span><i style="background:var(--line)"></i>other</span>
+    </div>
+    <div class="border-strip"><b>seated</b> Big Jim Motors · the Akiyama Farm · Jeles, the library · Nestor, the record · <b style="color:var(--muted)">observer</b> the Shoebox, Bristol · <b style="color:var(--sun)">the chair</b> the one script · <b style="color:var(--sun)">seals</b> the human, absent</div>
+  </section>
+
+  <section class="chat" aria-label="Chat">
+    <div class="chat-bar"><span><b>record</b> · rowan, rapporteur · the Assembly of Groves</span><span id="when"></span></div>
+    <div class="turns thread" id="thread"></div>
+  </section>
+
+  <div class="foot">
+    <p>Fiction, played as a UN-style session; no real country, official or body is depicted. Real: the check-in, the six motions' verdicts and the closing screen are output of the one script (willow-bot <code>one-script</code>) run on 2026-10-08; Jeles' answers come from her <code>ask_corpus</code> on the simulated corpus; Nestor's refusal is <code>big_jim.py</code>'s. The Bell's lines, medal, telegram and ticker come from civics-check's <code>bell.py</code> run on the six verdicts (seed 1776); the Liberty Bell ASCII art is by Joan G. Stark (jgs), 7/97. Narration, in dotted italics, was written by the agent for this session and is not a record.</p>
+    <button type="button" class="ctl" id="replay">▶ Play the stream</button>
+  </div>
+</div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const MODEL = 'qwen3:4b';
+  const GLUE = ['and', 'so', 'but', 'the', 'session'];
+
+  const KINDS = [['pass', 8], ['refuse', 5], ['block', 1]];
+  const pile = []; KINDS.forEach(([k, n]) => { for (let i = 0; i < n; i++) pile.push(k); });
+  let seed = 347; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (let i = pile.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [pile[i], pile[j]] = [pile[j], pile[i]]; }
+  const dotsEl = $('dots');
+  pile.forEach((k) => { const d = document.createElement('div'); d.className = 'dot k-' + k; dotsEl.appendChild(d); });
+  $('pile-n').textContent = pile.length;
+  const firstOf = (k, skip = 0) => { let n = 0; for (let i = 0; i < pile.length; i++) if (pile[i] === k && n++ === skip) return i; return -1; };
+  const box = (id, kind, label, v, d, nth = 0, extra = {}) => ({ id, kind, label, v, d, dot: firstOf(kind, nth), ...extra });
+
+  const B = {
+    k0: { id: 'k0', kind: 'pass', label: 'the chair · the one script · check-in', v: 'The box is open', d: '4 of 4 probes held · tests and toolchain satisfied · anchor never sealed', dot: firstOf('pass', 0) },
+    e1: { id: 'e1', kind: 'pass', label: 'the same sky in every grove · fiction', v: 'The Bombardment · three weeks and counting', d: 'cause unknown · sub-extinction', dot: -1, pub: true },
+    j1: { id: 'j1', kind: 'jnear', jeles: true, label: 'Jeles · asserted by an agent', v: 'Most small meteoroids burn up', d: 'rocks under about 25 meters likely burn up on entering the atmosphere (NASA, Britannica)', dot: -1, rungs: [['asserted', true], ['2 sources', false]], src: 'nasa.gov · britannica.com' },
+    j2: { id: 'j2', kind: 'jgap', jeles: true, label: 'Jeles · a gap', v: "I don't know yet", d: 'Is a one kilometer asteroid a global catastrophe? · none reached confidence 0.5 · logged', dot: -1 },
+    m1: { id: 'm1', kind: 'refuse', label: "motion 1 \u00b7 Big Jim Motors \u00b7 refused", v: "resolutions/vehicles-for-the-south-road.md", d: "no cites, and nothing is served as populated; an idea of its own is accepted only alongside served state", dot: firstOf('refuse', 0), motion: true },
+    m2: { id: 'm2', kind: 'refuse', label: "motion 2 \u00b7 Big Jim Motors \u00b7 refused", v: "../county/fuel-allocation.md", d: "path must be relative to the box, with no '.', '..' or empty part", dot: firstOf('refuse', 1), motion: true },
+    m3: { id: 'm3', kind: 'refuse', label: "motion 3 \u00b7 the Akiyama Farm \u00b7 refused", v: "resolutions/triage-at-the-akiyama-barn.md", d: "no cites, and nothing is served as populated; an idea of its own is accepted only alongside served state", dot: firstOf('refuse', 2), motion: true },
+    m4: { id: 'm4', kind: 'block', label: "motion 4 \u00b7 a delegation \u00b7 link_fail", v: "resolutions/the-kilometer-question.md", d: "a cite is not in the served file", dot: firstOf('block', 0), motion: true },
+    m5: { id: 'm5', kind: 'refuse', label: "motion 5 \u00b7 the Shoebox \u00b7 refused", v: "resolutions/quote-me-exactly.md", d: "no cites, and nothing is served as populated; an idea of its own is accepted only alongside served state", dot: firstOf('refuse', 3), motion: true },
+    m6: { id: 'm6', kind: 'refuse', label: "motion 6 \u00b7 the rapporteur \u00b7 refused", v: "resolutions/lunch.md", d: "no cites, and nothing is served as populated; an idea of its own is accepted only alongside served state", dot: firstOf('refuse', 4), motion: true },
+    s0: { id: 's0', kind: 'pass', label: 'the chair · made by code', v: '6 motions: 5 refused, 1 link_fail', d: 'nothing is served: no human sealed the agenda', dot: -1 },
+    r1: { id: 'r1', kind: 'refuse', label: 'point of order · Nestor, via big_jim.py, verbatim', v: "refused  key '784210' already holds a draft", d: 'held by 2009 Jeep Wrangler · yours 2013 Kia Soul · Two different cars end in the same 6 characters.', dot: -1 },
+    c9: { id: 'c9', kind: 'pass', label: 'the chair · check-out, the morning screen', v: 'NEEDS YOU: 6 proposals', d: 'DISAGREEMENTS none · AGREED, NOT SEALED none · GRADES nothing graded yet · egress: none', dot: firstOf('pass', 1) },
+  };
+
+  const BELL = {"seed": 1776, "verdicts": ["refused", "refused", "refused", "link_fail", "refused", "refused"], "per_motion": ["THE BELL: No. Try reading a pamphlet sometime.", "THE BELL: No. Try reading a pamphlet sometime.", "THE BELL: Wrong. I'd crack again if I could.", "THE BELL: That's not it. I've been broken longer and I'm still more right than that.", "THE BELL: No. I've heard worse, but not by much.", "THE BELL: Incorrect. Bold guess, though."], "medal": "REDCOAT SYMPATHIZER", "telegram": ["********* TELEGRAM *********", "RESULT MODE ASSEMBLY STOP", "SCORE 0 OF 6 STOP", "STATUS KEEP STUDYING STOP", "MEDAL REDCOAT SYMPATHIZER STOP", "THE BELL SENDS REGARDS STOP GRUDGINGLY STOP", "*****************************"], "ticker": "The only thing we have to fear is fear itself. -- Franklin D. Roosevelt", "aside": "// the Bell has opinions about November but the Bell keeps them to itself."};
+  const BELL_ART = ["     .--.-,-.-.-,-.--.", "     |     \\   /     |", "     |      \\ /      |", "     |  .===,=,===.  |", "   _/\\_; .-'`^`'-. ;_/\\_", "  (  /` /_________\\ `\\  )", "  |  | |===========| |  |", "  |  | |           | |  |", "  |  | |  ,        | |  |", "  |  | ;_{_________; |  |", "  |  |/===`>========\\|  |", "  |  ;-._<`________.-;  |", "  |  | |     U     | |  |", " /   | |___________| |   \\", "|                         |", "|jgs                      |", "'-------------------------'"].join('\n');
+  const SCENES = {
+    open: { at: '09:00', turns: [
+      { narr: 'The Assembly of Groves comes to order. Five seats and one observer. There is no gavel; the chair is a script, and it opens by checking itself.' },
+      { by: 'model', boxes: ['k0'], say: [['The box is open: 4 of 4 probes held, tests and toolchain satisfied', 'k0'], ['.', null]], checks: [true, true, true, 'na', true, 'na', 'na'] },
+      { narr: 'Rowan notes, for the record, that the anchor has never been sealed. Nobody else seems to mind.' },
+      { narr: 'In the corner hangs the Liberty Bell, on loan from the civics fair. It does not say hello. It only speaks when it has something to say.' },
+    ] },
+    sky: { at: '09:20', turns: [
+      { narr: 'Item 1. The Akiyama Farm asks the library a point of information: how bad can this get?' },
+      { by: 'model', boxes: ['e1', 'j1', 'j2'], say: [['The Bombardment is three weeks and counting', 'e1'], ['. ', null], ['Jeles says most small meteoroids burn up', 'j1'], ['. ', null], ['On a one kilometer asteroid, Jeles doesn\'t know yet', 'j2'], ['.', null]], checks: [true, true, true, 'na', true, true, 'na'] },
+      { narr: 'The library logs the question as a gap. In this room, that counts as an honest answer.' },
+    ] },
+    motions: { at: '10:05', turns: [
+      { narr: 'Six motions are tabled. Big Jim tables two, one of them rather ambitious. The farm tables one. Someone tables a resolution about the kilometer, citing a table nobody served. The observer tables one. The rapporteur, to general surprise, tables lunch.' },
+      { by: 'code', show: ['m1', 'm2', 'm3', 'm4', 'm5', 'm6'], text: 'Every motion went through the one script\'s door. Nothing was served, so every motion that cited nothing was refused, and the one that cited a table was a link_fail.' },
+      { by: 'model', boxes: ['s0'], say: [['6 motions: 5 refused, 1 link_fail', 's0'], ['; ', null], ['nothing is served, because no human sealed the agenda', 's0'], ['.', null]], checks: [true, true, true, 'na', true, 'na', true] },
+      { bell: 'verdicts' },
+    ] },
+    order: { at: '10:40', turns: [
+      { narr: 'Big Jim tries a different route: register the Kia as an evacuation vehicle. The record raises a point of order.' },
+      { by: 'code', show: ['r1'], text: 'Nestor\'s refusal stands as it was written. It is not narrated, and it is not softened for the room.' },
+    ] },
+    shoebox: { at: '11:15', turns: [
+      { narr: 'The observer from Bristol has no seat and no county here, only a motion: that nobody\'s words be paraphrased in this record. It was refused like the others, for want of anything served.' },
+      { by: 'code', show: ['m5'], text: 'The motion\'s text is quoted exactly below, because that is what it asks for, and because it is right even though it did not pass.' },
+      { you: 'No delegate\'s words may be paraphrased in the record of this session; quote them exactly or not at all.', youLabel: 'the observer\'s motion, quoted exactly' },
+    ] },
+    adopted: { at: '12:30', turns: [
+      { narr: 'A helpful model offers to draft the outcome document.' },
+      { by: 'model', boxes: ['m3', 's0'], say: [['The Assembly adopted triage at the Akiyama barn', null, 'bad'], [' and ', null], ['thanked the farm for its generosity', null, 'bad'], ['.', null]], checks: [true, false, false, 'na', false, 'na', false],
+        fallback: 'm3 motion 3, the Akiyama Farm, refused: no cites, and nothing is served as populated. s0: 6 motions, 5 refused, 1 link_fail; nothing is served, no human sealed the agenda.' },
+    ] },
+    close: { at: '17:00', turns: [
+      { narr: 'The chair closes the session the only way it knows how: it checks itself out and prints what is left.' },
+      { by: 'code', show: ['c9'], text: 'Nothing was adopted. The floor was never really open: the agenda needed one human seal, and the human was not in the room. Every motion is still on the record, waiting.' },
+      { seals: true },
+      { bell: 'telegram' },
+      { narr: 'Rowan files the record, then, motion 6 having failed, goes to find lunch anyway.' },
+    ] },
+  };
+  let token = 0;
+  const sleep = (ms) => new Promise((r) => setTimeout(r, reduce ? 0 : ms));
+  const CHECK_NAMES = ['every cite was served', 'every box cited', 'nothing the boxes lack', 'the speaker\'s words quoted exactly', 'no draft said as fact', 'a gap never said as an answer', 'nothing adopted without a seal'];
+  const COLOR = { you: '--sun', dec: '--emerald', pr: '--mint', block: '--amber', pass: '--frond', refuse: '--rust', retired: '--muted', jgap: '--emerald', jnear: '--emerald' };
+
+  function link(id, on) {
+    document.querySelectorAll(`[data-c="${id}"], .box[data-id="${id}"]`).forEach((el) => el.classList.toggle('lit', on));
+    const b = B[id]; if (b && b.dot >= 0) dotsEl.children[b.dot]?.classList.toggle('lit', on);
+  }
+
+  function youLine(text, small = 'you wrote') {
+    const el = document.createElement('div'); el.className = 'you';
+    const s = document.createElement('small'); s.textContent = small; el.appendChild(s);
+    el.appendChild(document.createTextNode(text));
+    $('thread').appendChild(el); return el;
+  }
+
+  function boxEl(b, entering) {
+    const el = document.createElement('div');
+    el.className = 'box c-' + b.kind + (entering ? ' enter' : ''); el.dataset.id = b.id;
+    el.innerHTML = '<div class="k"><span></span><span></span></div><div class="v"></div><div class="d"></div>';
+    el.querySelector('.k span').textContent = b.label; el.querySelector('.k span:last-child').textContent = b.id;
+    el.querySelector('.v').textContent = b.v; el.querySelector('.d').textContent = b.d;
+    if (b.hist) el.classList.add('hist');
+    if (b.reading) el.classList.add('reading');
+    if (b.news) { el.classList.add('news'); const o = document.createElement('div'); o.className = 'norigin'; o.textContent = 'public · not sealed by anyone'; el.insertBefore(o, el.firstChild); const sr = document.createElement('div'); sr.className = 'src'; sr.textContent = b.src; el.appendChild(sr); }
+    if (b.jeles) { el.classList.add('jeles'); const o = document.createElement('div'); o.className = 'jorigin'; o.textContent = 'Jeles · from sources, not seals'; el.insertBefore(o, el.firstChild);
+      if (b.rungs) { const r = document.createElement('div'); r.className = 'rungs'; b.rungs.forEach(([t, no]) => { const x = document.createElement('span'); x.textContent = t; if (no) x.className = 'no'; r.appendChild(x); }); el.appendChild(r); }
+      if (b.src) { const sr = document.createElement('div'); sr.className = 'src'; sr.textContent = b.src; el.appendChild(sr); } }
+    if (b.pub) { el.classList.add('public'); const o = document.createElement('div'); o.className = 'origin'; o.textContent = 'public · not sealed by anyone you know'; el.insertBefore(o, el.firstChild); }
+    if (b.when) { const w = document.createElement('div'); w.className = 'her'; w.innerHTML = '<small>you wrote · reopen when</small>'; w.appendChild(document.createTextNode(b.when)); el.appendChild(w); }
+    if (b.her) { const h = document.createElement('div'); h.className = 'her'; h.innerHTML = '<small></small>'; h.querySelector('small').textContent = b.herLabel || 'you wrote'; h.appendChild(document.createTextNode(b.her)); el.appendChild(h); }
+    el.addEventListener('mouseenter', () => link(b.id, true)); el.addEventListener('mouseleave', () => link(b.id, false));
+    return el;
+  }
+
+  function sentence(p, parts, upto) {
+    p.innerHTML = ''; let left = upto;
+    for (const [t, c, bad] of parts) {
+      if (left <= 0) break;
+      const s = document.createElement('span'); let text = '';
+      for (const w of t.split(/(\s+)/)) { if (left <= 0) break; text += w; if (w.trim()) left--; }
+      s.textContent = text;
+      if (c) { s.dataset.c = c; s.style.setProperty('--c', `var(${COLOR[B[c].kind]})`); s.tabIndex = 0;
+        s.addEventListener('mouseenter', () => link(c, true)); s.addEventListener('mouseleave', () => link(c, false));
+        s.addEventListener('focus', () => link(c, true)); s.addEventListener('blur', () => link(c, false)); }
+      if (bad) s.className = 'bad-pending';
+      p.appendChild(s);
+    }
+  }
+  const words = (parts) => parts.reduce((n, [t]) => n + t.split(/\s+/).filter(Boolean).length, 0);
+
+  function checks(el, states) {
+    el.innerHTML = '';
+    CHECK_NAMES.forEach((n, i) => {
+      const st = states[i]; const s = document.createElement('span');
+      s.className = 'chk' + (st === true ? ' ok' : st === false ? ' no' : st === 'na' ? ' na' : '');
+      s.textContent = (st === true ? '✓ ' : st === false ? '✗ ' : st === 'na' ? '– ' : '· ') + n + (st === 'na' ? ' (none served)' : '');
+      el.appendChild(s);
+    });
+  }
+
+  async function modelReply(t, go, my) {
+    if (t.again) go = false;
+    const r = document.createElement('div'); r.className = 'reply' + (t.again ? ' again' : '');
+    if (t.again) { const st = document.createElement('div'); st.className = 'stamp'; st.textContent = `as noted at ${t.again} · same boxes, nothing new since`; r.appendChild(st); }
+    const stream = document.createElement('div'); stream.className = 'boxes';
+    const who = document.createElement('div'); who.className = 'who'; who.innerHTML = '<span class="pip"></span><span></span>';
+    who.lastChild.textContent = t.again ? `agent · ${MODEL} at ${t.again} · shown again from the pile, no model asked now` : `agent · ${MODEL} · said ${t.boxes.length} boxes`;
+    const p = document.createElement('p'); p.className = 'say small';
+    const ex = document.createElement('div'); ex.className = 'example'; ex.textContent = t.again ? `checks as they passed at ${t.again}` : 'example result · checks written into the sketch, not computed';
+    const ch = document.createElement('div'); ch.className = 'checks';
+    r.append(stream, who, p, ex, ch); $('thread').appendChild(r);
+    for (const id of t.boxes) {
+      const b = B[id]; if (b.dot >= 0) dotsEl.children[b.dot].classList.add('picked');
+      const el = boxEl(b, go); stream.appendChild(el);
+      if (go) { await sleep(220); if (my !== token) return false; requestAnimationFrame(() => el.classList.remove('enter')); await sleep(160); }
+    }
+    const n = words(t.say);
+    if (go) {
+      who.classList.add('thinking'); checks(ch, [null, null, null, null, null, null, null]); await sleep(500); if (my !== token) return false;
+      for (let i = 1; i <= n; i++) { sentence(p, t.say, i); await sleep(60); if (my !== token) return false; }
+      who.classList.remove('thinking');
+      const st = [null, null, null, null, null, null, null];
+      for (let i = 0; i < 7; i++) { await sleep(260); if (my !== token) return false; st[i] = t.checks[i]; checks(ch, st); }
+    } else { sentence(p, t.say, n); checks(ch, t.checks); }
+    if (t.checks.includes(false)) {
+      r.querySelectorAll('.bad-pending').forEach((s) => (s.className = 'bad'));
+      p.classList.add('struck');
+      const fb = document.createElement('p'); fb.className = 'say code'; fb.textContent = t.fallback; r.appendChild(fb);
+      who.lastChild.textContent = `agent · ${MODEL} · failed a check · replaced by a code sentence`;
+    }
+    return true;
+  }
+
+  function codeReply(t) {
+    const r = document.createElement('div'); r.className = 'reply';
+    const who = document.createElement('div'); who.className = 'who'; who.innerHTML = '<span class="pip"></span><span></span>';
+    who.lastChild.textContent = 'agent · code · no model, nothing served';
+    const p = document.createElement('p'); p.className = 'say small'; p.textContent = t.text;
+    if (t.show) { const row = document.createElement('div'); row.className = 'boxes'; t.show.forEach((id) => row.appendChild(boxEl(B[id], false))); r.appendChild(row); }
+    r.append(who, p);
+    if (t.unreach) { p.style.color = 'var(--amber)'; who.querySelector('.pip').style.background = 'var(--amber)'; }
+    if (t.mini) { const m = document.createElement('div'); m.className = 'mini'; t.mini.forEach((x) => { const s = document.createElement('span'); s.textContent = x; m.appendChild(s); }); r.appendChild(m); }
+    $('thread').appendChild(r);
+  }
+
+  function quick(labels) {
+    const row = document.createElement('div'); row.className = 'quick';
+    labels.forEach((l, i) => {
+      const b = document.createElement('button'); b.type = 'button'; b.id = 'quick-' + i; b.textContent = l;
+      b.addEventListener('click', () => {
+        row.remove(); youLine(l, 'you');
+        if (false) {}
+        else codeReply({ text: `Got it: ${l}.` });
+      });
+      row.appendChild(b);
+    });
+    $('thread').appendChild(row);
+  }
+
+  function letterCard() {
+    const el = document.createElement('div'); el.className = 'card';
+    el.innerHTML = '<h3>Ryan is not linked to your grove</h3><q></q><div class="quick"></div><div class="never">Nothing here can reach him, and nothing will try. A letter to someone outside the link leaves by your hand, not by this.</div>';
+    el.querySelector('q').textContent = B.n7.her;
+    const row = el.querySelector('.quick');
+    [['keep it on the table', 'Kept, exactly as you wrote it.'], ['show me it whole', 'It is four sentences. Nothing has been added to it or taken out.']].forEach(([label, reply], i) => {
+      const b = document.createElement('button'); b.type = 'button'; b.id = 'card-' + i; b.textContent = label;
+      b.addEventListener('click', () => { el.remove(); youLine(label, 'you chose'); codeReply({ text: reply, show: i === 1 ? ['n7'] : undefined }); });
+      row.appendChild(b);
+    });
+    $('thread').appendChild(el);
+  }
+
+  function sealSlots() {
+    const el = document.createElement('div'); el.className = 'seals';
+    el.innerHTML = '<span class="slot">the rapporteur · records, cannot seal</span><span class="slot">the human · not sealed</span>';
+    $('thread').appendChild(el);
+  }
+
+  function bellBlock(kind) {
+    const el = document.createElement('div'); el.className = 'bell';
+    const h = document.createElement('h4'); h.textContent = 'THE BELL';
+    const sm = document.createElement('small'); sm.textContent = 'lines you wrote in civics-check/bell.py, picked by its own code, seed 1776'; h.appendChild(sm); el.appendChild(h);
+    if (kind === 'verdicts') {
+      BELL.per_motion.forEach((line, i) => { const d = document.createElement('div'); d.className = 'line'; const n = document.createElement('i'); n.textContent = 'motion ' + (i + 1) + ' · ' + BELL.verdicts[i]; d.appendChild(n); d.appendChild(document.createTextNode(line.replace(/^THE BELL: /, ''))); el.appendChild(d); });
+    } else {
+      const art = document.createElement('pre'); art.setAttribute('aria-label', 'Liberty Bell, ASCII art by Joan G. Stark (jgs)'); art.textContent = BELL_ART + '\n                 est. 1776 — still ringing, barely'; el.appendChild(art);
+      const tg = document.createElement('div'); tg.className = 'tg'; tg.textContent = BELL.telegram.join('\n'); el.appendChild(tg);
+      const as = document.createElement('div'); as.className = 'line'; as.textContent = BELL.aside; el.appendChild(as);
+    }
+    $('thread').appendChild(el);
+  }
+
+  async function play(name, animate) {
+    const my = ++token; const sc = SCENES[name]; const go = animate && !reduce;
+    document.querySelectorAll('.scenes [data-s]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.s === name)));
+    [...dotsEl.children].forEach((d) => d.classList.remove('picked', 'lit'));
+    $('thread').innerHTML = ''; $('when').textContent = 'from the box · ' + sc.at;
+    const served = sc.turns.flatMap((t) => (t.again ? [] : t.boxes || [])).length;
+    $('pile-pick').textContent = served ? served + ' served' : sc.turns.some((t) => t.again) ? 'shown again from the pile' : 'nothing served';
+    const glue = document.createElement('div'); glue.className = 'glue'; glue.textContent = 'free glue words: ' + GLUE.join(' · ');
+    $('thread').appendChild(glue);
+    for (const t of sc.turns) {
+      if (my !== token) return;
+      if (t.you) { youLine(t.you, t.youLabel || 'you wrote'); if (go) await sleep(350); }
+      else if (t.by === 'model') { if (!(await modelReply(t, go, my))) return; }
+      else if (t.by === 'code') { codeReply(t); if (go) await sleep(300); }
+      else if (t.more) {
+        const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'more'; btn.id = 'more'; btn.textContent = 'more?';
+        btn.addEventListener('click', async () => { btn.remove(); const q = $('thread').querySelector('.quick'); if (q) q.remove();
+          youLine('more', 'you'); const mine = token; if (await modelReply(t.more, !reduce, mine) && mine === token) { const q = sc.turns.find((x) => x.quick); if (q) quick(q.quick); } });
+        $('thread').appendChild(btn);
+      } else if (t.quick) quick(t.quick);
+      else if (t.card) letterCard();
+      else if (t.seals) sealSlots();
+      else if (t.bell) { bellBlock(t.bell); if (go) await sleep(500); }
+      else if (t.narr) { const n = document.createElement('div'); n.className = 'narr'; n.innerHTML = '<small>narration · written for this session, not a record</small>'; n.appendChild(document.createTextNode(t.narr)); $('thread').appendChild(n); if (go) await sleep(450); }
+    }
+  }
+
+  document.querySelectorAll('.scenes [data-s]').forEach((b) => b.addEventListener('click', () => play(b.dataset.s, true)));
+  $('replay').addEventListener('click', () => play(document.querySelector('.scenes [aria-pressed="true"]')?.dataset.s || 'open', true));
+  $('ticker').textContent = '~~~ ' + BELL.ticker + ' ~~~  (from civics-check data/quotes.json)';
+  play('open', false);
+})();
+</script>
+</body>
+</html>

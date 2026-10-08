@@ -258,6 +258,20 @@ UN."* A UN-style session with groves as delegations, played on the real one scri
 - **Narration is its own kind of line**, neither a person's nor a box: dotted,
   italic, labelled as written for the session and not a record.
 
+The Liberty Bell joins (2026-10-08). The operator: *"one more quick stupid. There
+was a persona attached to my 4th of july project in safe-app-store that would be
+perfect for this. Might even be in -mcp"*. The persona is the Liberty Bell,
+civics-check's narrator (`apps/civics-check/bell.py`); not in willow-mcp's bundle.
+Run on the six real verdicts with seed 1776:
+[`assembly-of-groves-v1.1.html`](../../../web/demo/box-stream/assembly-of-groves-v1.1.html).
+
+- **A persona can be deterministic code.** The Bell's lines were written by the
+  operator and are picked by its own code; nothing is generated, so they are shown
+  as the operator's words, attributed to `bell.py`.
+- **Its house rule is the box stream's:** "The Bell only speaks when it has
+  something to say ... It does not say hello."
+- Session result: 0 of 6, REDCOAT SYMPATHIZER, by telegram.
+
 Which other parts of the UI can run this way, and the dispatch rail sketched
 as a box stream: [`box-stream-surfaces.md`](box-stream-surfaces.md).
 

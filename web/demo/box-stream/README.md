@@ -20,4 +20,4 @@ design they illustrate is in
 | `linked-groves-stream-v1.html` | Two groves linked (theory) |
 | `jeles-lives-stream-v1.html`, `jeles-lives-corpus-2026-10-08.json` | A simulated Jeles researched on the internet, and its run record |
 | `intern-desk-stream-v1.html` | A county intern with real early-October 2026 headlines |
-| `assembly-of-groves-v1.html`, `assembly-run-2026-10-08.json` | A UN-style session played on the real one script, and its run record |
+| `assembly-of-groves-v1.html`, `assembly-of-groves-v1.1.html`, `assembly-run-2026-10-08.json`, `liberty-bell-run-2026-10-08.json` | A UN-style session played on the real one script; v1.1 adds civics-check's Liberty Bell; and their run records |
