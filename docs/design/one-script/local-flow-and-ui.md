@@ -135,6 +135,25 @@ What it added:
 - `big_jim.py draft` shows that refusal as a raw traceback; filed as a
   separate task.
 
+Tested on a character with depth (2026-10-08). The operator: *"lets do one
+more for one of the demo characters with more depth."* Nestor's fictional
+shoebox (`Nestor/demo/shoebox.py`): Nieves, the only person holding a key to
+her grandmother's letters. Its real store fed the stream:
+[`shoebox-stream-v1.html`](shoebox-stream-v1.html). What it added:
+
+- The human's words are the substance here, not a side field. Every sealed
+  phrase carries her reason, and check 5 (her words quoted exactly) is the
+  one that catches a model retelling "She meant the damage." as "she meant
+  the destruction she caused".
+- The stream can show what Nestor's own review views do not yet (IDEAS
+  §6.35): a changed mind, with the March reading kept beside the current
+  one, and a "not yet" with its reopen condition in her words.
+- For one person's archive, a draft is not always a task. Two drafts she
+  chose to leave ("Whose face. Leaving it.") should not rise as "needs you";
+  the picker has to respect a human's leave-it, and the voice stays quiet.
+- A known store gap (two men called Pepe, the first overwritten, IDEAS §6.37)
+  is said by code in one line, never narrated by a model.
+
 Which other parts of the UI can run this way, and the dispatch rail sketched
 as a box stream: [`box-stream-surfaces.md`](box-stream-surfaces.md).
 
