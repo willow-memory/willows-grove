@@ -8,8 +8,8 @@
 **Proposal.** Written 2026-10-08. The operator: *"What other sections of the
 UI can run this way now?"* then *"write them all down, and sketch the dispatch
 rail as a box stream"*. Built on [`local-flow-and-ui.md`](local-flow-and-ui.md)
-§5 and the box stream sketches ([v1](box-stream-v1.html),
-[v1.1](box-stream-v1.1.html)). Fit percentages are the agent's reading.
+§5 and the box stream sketches ([v1](../../../web/demo/box-stream/box-stream-v1.html),
+[v1.1](../../../web/demo/box-stream/box-stream-v1.1.html)). Fit percentages are the agent's reading.
 
 ## §2 The test
 
@@ -65,7 +65,7 @@ sketch") and the readers in `grove/`.
 
 ## §7 The dispatch rail as a box stream
 
-Sketch: [`dispatch-rail-stream-v1.html`](dispatch-rail-stream-v1.html).
+Sketch: [`dispatch-rail-stream-v1.html`](../../../web/demo/box-stream/dispatch-rail-stream-v1.html).
 
 | Piece | In the sketch |
 |---|---|
@@ -79,7 +79,7 @@ Sketch: [`dispatch-rail-stream-v1.html`](dispatch-rail-stream-v1.html).
 ## §8 The envelope panel as a box stream
 
 The operator: *"pick a third"*. The agent picked the envelope panel, next in
-§6's order. Sketch: [`envelope-panel-stream-v1.html`](envelope-panel-stream-v1.html).
+§6's order. Sketch: [`envelope-panel-stream-v1.html`](../../../web/demo/box-stream/envelope-panel-stream-v1.html).
 
 | Piece | In the sketch |
 |---|---|

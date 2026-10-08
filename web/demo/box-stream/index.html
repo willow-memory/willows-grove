@@ -1,0 +1,120 @@
+<!doctype html>
+<!-- b17: WGRV1  ΔΣ=42 -->
+<!-- The box stream demo (2026-10-08): every sketch from the UI session, in one place, served by Grove at
+     /web/demo/box-stream/index.html. Sketches, not Grove code: no model runs and nothing is sent.
+     The operator: "lets split those off into a demo for the ui" -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Box Stream Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,MONO@-15..0,300..800,0..1,0..1&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* Layout: one desk column — the pile (every box on the record) on top, the chat card below it;
+   picked boxes stream out of the pile into the chat, a small model says them, code checks the sentence. */
+:root {
+  /* dark-first: the Grove loam */
+  --bg: #1b1712; --panel: #241e17; --panel-2: #2c251c; --line: #3a3126;
+  --fg: #efe6d5; --muted: #a3967f; --faint: #6f6453;
+  --frond: #86b86f; --sun: #e6b34c; --mint: #8fd6b9; --emerald: #46a77b;
+  --amber: #e5893b; --rust: #d9645c;
+  --glow: rgba(230,179,76,.22);
+  --display: "Recursive", ui-sans-serif, system-ui, sans-serif;
+  --body: "Atkinson Hyperlegible", ui-sans-serif, system-ui, sans-serif;
+  --mono: "Recursive", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) {
+  --bg: #eef1e7; --panel: #fbfcf7; --panel-2: #f2f5ec; --line: #d5dacb;
+  --fg: #1f2619; --muted: #5d6652; --faint: #9aa18e;
+  --frond: #3f7d2c; --sun: #a87505; --mint: #1f8a69; --emerald: #217a52;
+  --amber: #b9600f; --rust: #b23c34; --glow: rgba(168,117,5,.16);
+  color-scheme: light;
+}}
+:root[data-theme="light"] {
+  --bg: #eef1e7; --panel: #fbfcf7; --panel-2: #f2f5ec; --line: #d5dacb;
+  --fg: #1f2619; --muted: #5d6652; --faint: #9aa18e;
+  --frond: #3f7d2c; --sun: #a87505; --mint: #1f8a69; --emerald: #217a52;
+  --amber: #b9600f; --rust: #b23c34; --glow: rgba(168,117,5,.16);
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font: 15px/1.5 var(--body); margin: 0; }
+.wrap { max-width: 980px; margin: 0 auto; padding-inline: 16px; padding-block: 24px 56px; display: grid; gap: 26px; }
+header { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.willow { font: 11px/1.05 var(--mono); color: var(--frond); white-space: pre; margin: 0; }
+.willow b { color: var(--sun); font-weight: 400; }
+h1 { font: 700 28px/1.1 var(--display); margin: 0; text-wrap: balance; }
+.lede { color: var(--muted); margin: 4px 0 0; max-width: 64ch; }
+h2 { font: 600 12px/1.2 var(--mono); letter-spacing: .07em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+a.card { display: grid; gap: 4px; align-content: start; text-decoration: none; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-top: 3px solid var(--c, var(--line)); border-radius: 10px; padding: 12px 14px; transition: transform .15s, box-shadow .15s; min-width: 0; }
+a.card:hover, a.card:focus-visible { transform: translateY(-2px); box-shadow: 0 0 0 2px var(--c, var(--line)); outline: none; }
+a.card b { font: 600 15px/1.25 var(--display); }
+a.card span { font-size: 13px; color: var(--muted); }
+a.card small { font: 11px/1.2 var(--mono); color: var(--faint); }
+.rules { background: var(--panel); border: 1px dashed var(--line); border-radius: 10px; padding: 12px 14px; display: grid; gap: 6px; font-size: 13.5px; color: var(--muted); }
+.rules b { color: var(--fg); }
+@media (prefers-reduced-motion: reduce) { a.card { transition: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+<pre class="willow" aria-hidden="true">ƒƒ  <b>*</b> . <b>*</b>
+ƒ ƒ . ƒ . ƒ
+ƒ  (║ . .) ƒ
+ƒ   ║ƒ  ƒ</pre>
+    <div>
+      <h1>The box stream</h1>
+      <p class="lede">Code picks the boxes, a small local model says them in one sentence, and code checks the sentence. Everything an agent writes is a box; a line that isn't a box is a person's. These are sketches with example and fictional content: no model runs and nothing is sent.</p>
+    </div>
+  </header>
+
+  <section>
+    <h2>The chat</h2>
+    <div class="grid">
+      <a class="card" style="--c:var(--frond)" href="box-stream-v1.3.html"><b>Box stream v1.3</b><span>The current chat: conversational, one thing at a time, and a question asked again shown again with when it was first said.</span><small>latest</small></a>
+      <a class="card" style="--c:var(--line)" href="box-stream-v1.2.html"><b>v1.2</b><span>The same boxes said like a conversation; "more?", reply chips, small talk answered by code.</span><small>kept</small></a>
+      <a class="card" style="--c:var(--line)" href="box-stream-v1.1.html"><b>v1.1</b><span>Human and agent visibly apart; a fifth check for the person's words quoted exactly.</span><small>kept</small></a>
+      <a class="card" style="--c:var(--line)" href="box-stream-v1.html"><b>v1</b><span>The first sketch: boxes stream from the pile into the chat.</span><small>kept</small></a>
+    </div>
+  </section>
+
+  <section>
+    <h2>Parts of the Grove</h2>
+    <div class="grid">
+      <a class="card" style="--c:var(--sun)" href="dispatch-rail-stream-v1.html"><b>The dispatch stream</b><span>Kart's queue as boxes, with real task fields; you pick the drain tier.</span><small>dispatch rail</small></a>
+      <a class="card" style="--c:var(--sun)" href="envelope-panel-stream-v1.html"><b>The envelope stream</b><span>Grants with their meters and attestation. Grove renders, never grants.</span><small>envelope panel</small></a>
+    </div>
+  </section>
+
+  <section>
+    <h2>Lives (fiction from Nestor's demos)</h2>
+    <div class="grid">
+      <a class="card" style="--c:var(--amber)" href="big-jim-stream-v1.html"><b>Big Jim Motors</b><span>A used-car lot, five drafts, a refused Kia. No draft said as fact.</span><small>demo/big_jim.py</small></a>
+      <a class="card" style="--c:var(--emerald)" href="shoebox-stream-v1.html"><b>The shoebox</b><span>Nieves and her grandmother's letters: her words quoted exactly, her changes of mind kept in view.</span><small>demo/shoebox.py</small></a>
+      <a class="card" style="--c:var(--mint)" href="june-stream-v1.html"><b>June, after the sky</b><span>Three weeks into the Bombardment. An agent's reading of her is a proposal, never a fact.</span><small>capability-probe lives</small></a>
+      <a class="card" style="--c:var(--mint)" href="june-stream-v1.1.html"><b>June, with Jeles</b><span>The real Jeles seed corpus asked her questions: every one a gap or a near miss.</span><small>v1.1</small></a>
+    </div>
+  </section>
+
+  <section>
+    <h2>Across groves</h2>
+    <div class="grid">
+      <a class="card" style="--c:var(--sun)" href="linked-groves-stream-v1.html"><b>Two groves, one car</b><span>Nieves buys from Jim. Boxes cross, records don't merge, Jim's seal stays Jim's. Theory.</span><small>linked groves</small></a>
+      <a class="card" style="--c:var(--emerald)" href="jeles-lives-stream-v1.html"><b>Jeles, built on their lives</b><span>A simulated Jeles researched on the internet from all three lives' questions. Sources, not seals.</span><small>with <code>jeles-lives-corpus-2026-10-08.json</code></small></a>
+      <a class="card" style="--c:var(--rust)" href="intern-desk-stream-v1.html"><b>The intern's desk</b><span>A county intern coordinating all of it, with real early-October 2026 headlines. Propose, never seal; see only what people shared.</span><small>over the top</small></a>
+    </div>
+  </section>
+
+  <section class="rules">
+    <b>The checks every sentence passes, or is struck and replaced by code:</b>
+    <span>every cite was served · every box cited · nothing the boxes lack · the person's words quoted exactly · no draft said as fact · a near miss never said as an answer · sources never stand in for a seal · a headline never said as confirmed · another grove's seal kept as theirs · an intern proposes, never seals</span>
+    <span>In these sketches the checks are written in, not computed. Design: <code>docs/design/one-script/local-flow-and-ui.md</code> §5 and <code>box-stream-surfaces.md</code>.</span>
+  </section>
+</div>
+</body>
+</html>
