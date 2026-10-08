@@ -118,6 +118,23 @@ as noted with the timestamp"*. A repeated question shows the same boxes and the
 same sentence again, from the pile with no model asked, stamped "as noted at"
 the time it was first said. Sketch v1.3: [`box-stream-v1.3.html`](box-stream-v1.3.html).
 
+Tested on a human data set (2026-10-08). The operator: *"Next is to test it on a
+random, more human data set. They are many fictional characters in the demos.
+How about the car salesman"*. Nestor's fictional Big Jim Motors desk
+(`Nestor/demo/big_jim.py`) was stocked with five machine drafts; nothing was
+sealed. Its real output fed the stream: [`big-jim-stream-v1.html`](big-jim-stream-v1.html).
+What it added:
+
+- A check the first three do not cover: **no draft said as fact**. "The Civic
+  runs great, one owner, 142,000 miles" uses only words the boxes hold and
+  still has to fail, because the box says nobody has checked it.
+- A refusal is shown verbatim and never narrated: the Kia shares the Jeep's
+  last 6 (`784210`), Nestor refused the draft, and code says so in one line.
+- Prose with no VIN ("the blue Civic") matched nothing (0.000), by design;
+  the human's words are quoted back exactly and code asks for the last 6.
+- `big_jim.py draft` shows that refusal as a raw traceback; filed as a
+  separate task.
+
 Which other parts of the UI can run this way, and the dispatch rail sketched
 as a box stream: [`box-stream-surfaces.md`](box-stream-surfaces.md).
 
