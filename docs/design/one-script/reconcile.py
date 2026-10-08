@@ -24,6 +24,7 @@ Per-row state:
   reconciled  -- outcome present; lined up against the prediction
   escalate    -- no outcome: escalate to the human (never to a model for a grade)
 """
+
 from __future__ import annotations
 
 import json
