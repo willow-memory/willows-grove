@@ -154,6 +154,26 @@ her grandmother's letters. Its real store fed the stream:
 - A known store gap (two men called Pepe, the first overwritten, IDEAS §6.37)
   is said by code in one line, never narrated by a model.
 
+Theory: two groves linked (2026-10-08). The operator: *"This next one might be
+pushing it a bit. So, and it's theory right now. I'll give you the scope."*,
+*"Say Nieves wanted to buy a car from Big Jim, and their groves linked up."* and
+*"sketch it as a box stream"*. Not built:
+[`linked-groves-stream-v1.html`](linked-groves-stream-v1.html). The shape:
+
+- Records never merge; boxes cross, each marked with the grove it came from.
+  "Who wrote it" doubles: you, your agent, the other human, their agent.
+- A seal from the other grove is that person's word, never yours, and a sixth
+  check holds it there. A seal that will not verify against their enrolled key
+  arrives as a draft, the way Nestor's bundle import already demotes one.
+- The human's words leave only through the disclosure card (once, this
+  session, always, never); some things are set to never and not asked about.
+- When the two records disagree, both stand, marked unresolved (the quorum
+  ruling), until a neutral third both accept. An offer is one subject that
+  needs a seal from each grove; neither can write the other's half.
+- Matching across groves uses shared keys (a VIN), never people's names.
+- Open: enrolling the other grove's key in person, contents on u2u's
+  plaintext wire before Gate 6, and revoking a key after the sale.
+
 Which other parts of the UI can run this way, and the dispatch rail sketched
 as a box stream: [`box-stream-surfaces.md`](box-stream-surfaces.md).
 
