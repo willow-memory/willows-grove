@@ -112,6 +112,12 @@ line, small talk answered by code with no model, a repeated question answered
 from the pile, and a short fixed list of free glue words that carry no facts.
 Sketch v1.2: [`box-stream-v1.2.html`](box-stream-v1.2.html).
 
+Asked again, answered again (2026-10-08). The operator: *"one big thing I
+would change is the asked/answered. It should show the information again, just
+as noted with the timestamp"*. A repeated question shows the same boxes and the
+same sentence again, from the pile with no model asked, stamped "as noted at"
+the time it was first said. Sketch v1.3: [`box-stream-v1.3.html`](box-stream-v1.3.html).
+
 Which other parts of the UI can run this way, and the dispatch rail sketched
 as a box stream: [`box-stream-surfaces.md`](box-stream-surfaces.md).
 
