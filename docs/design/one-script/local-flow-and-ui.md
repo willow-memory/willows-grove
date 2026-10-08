@@ -103,6 +103,9 @@ what the boxes hold, the human line drawn plain and the sentence labelled agent,
 a fifth check (the human's words quoted exactly), check chips labelled as
 example results, and a time stamp on every turn.
 
+Which other parts of the UI can run this way, and the dispatch rail sketched
+as a box stream: [`box-stream-surfaces.md`](box-stream-surfaces.md).
+
 This gives the components the 2026-10-08 review found mounted but unused
 (`grove-card`, `grove-cast-chip`) a job, and leaves `grove-lens-switch` out.
 
