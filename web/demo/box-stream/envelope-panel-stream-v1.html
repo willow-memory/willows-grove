@@ -1,0 +1,432 @@
+<!doctype html>
+<!-- b17: WGRV1  ΔΣ=42 -->
+<!-- The envelope stream, v1 (2026-10-08). The envelope panel as a box stream: each grant an agent box with its
+     meter, expiry and attestation; the grant notes marked as the human's words; paths shown but never served;
+     no grant button (CONST-0-3). The operator: "pick a third". Context: box-stream-surfaces.md §8.
+     Published copy: https://claude.ai/artifact/P7oCJdii5HafBX86cmEEy6 (v1).
+     A sketch, not Grove code. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Grove Envelope Stream</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,MONO@-15..0,300..800,0..1,0..1&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* Layout: one desk column — the pile (every box on the record) on top, the chat card below it;
+   picked boxes stream out of the pile into the chat, a small model says them, code checks the sentence. */
+:root {
+  /* dark-first: the Grove loam */
+  --bg: #1b1712; --panel: #241e17; --panel-2: #2c251c; --line: #3a3126;
+  --fg: #efe6d5; --muted: #a3967f; --faint: #6f6453;
+  --frond: #86b86f; --sun: #e6b34c; --mint: #8fd6b9; --emerald: #46a77b;
+  --amber: #e5893b; --rust: #d9645c;
+  --glow: rgba(230,179,76,.22);
+  --display: "Recursive", ui-sans-serif, system-ui, sans-serif;
+  --body: "Atkinson Hyperlegible", ui-sans-serif, system-ui, sans-serif;
+  --mono: "Recursive", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) {
+  --bg: #eef1e7; --panel: #fbfcf7; --panel-2: #f2f5ec; --line: #d5dacb;
+  --fg: #1f2619; --muted: #5d6652; --faint: #9aa18e;
+  --frond: #3f7d2c; --sun: #a87505; --mint: #1f8a69; --emerald: #217a52;
+  --amber: #b9600f; --rust: #b23c34; --glow: rgba(168,117,5,.16);
+  color-scheme: light;
+}}
+:root[data-theme="light"] {
+  --bg: #eef1e7; --panel: #fbfcf7; --panel-2: #f2f5ec; --line: #d5dacb;
+  --fg: #1f2619; --muted: #5d6652; --faint: #9aa18e;
+  --frond: #3f7d2c; --sun: #a87505; --mint: #1f8a69; --emerald: #217a52;
+  --amber: #b9600f; --rust: #b23c34; --glow: rgba(168,117,5,.16);
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font: 15px/1.5 var(--body); }
+.wrap { max-width: 980px; margin: 0 auto; padding-inline: 16px; padding-block: 20px 48px; display: grid; gap: 18px; }
+
+header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px; }
+.brand { display: flex; align-items: center; gap: 14px; }
+.willow { font: 11px/1.05 var(--mono); font-variation-settings: "MONO" 1; color: var(--frond); white-space: pre; margin: 0; }
+.willow b { color: var(--sun); font-weight: 400; }
+h1 { font: 700 26px/1.1 var(--display); font-variation-settings: "CASL" 1; margin: 0; text-wrap: balance; }
+.sub { color: var(--muted); margin: 2px 0 0; font-size: 14px; }
+
+.scenes { display: flex; flex-wrap: wrap; gap: 8px; }
+.scenes button, .ctl {
+  font: 600 13px/1 var(--display); font-variation-settings: "CASL" .6;
+  color: var(--fg); background: var(--panel); border: 1px solid var(--line);
+  border-radius: 999px; padding: 9px 14px; cursor: pointer;
+}
+.scenes button[aria-pressed="true"] { border-color: var(--sun); box-shadow: 0 0 0 3px var(--glow); }
+.scenes button:focus-visible, .ctl:focus-visible, .say span:focus-visible { outline: 2px solid var(--sun); outline-offset: 2px; }
+
+/* the pile */
+.pile { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; display: grid; gap: 10px; }
+.pile-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; font: 12px/1.3 var(--mono); color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
+.pile-head strong { color: var(--fg); font-weight: 600; }
+.dots { display: grid; grid-template-columns: repeat(auto-fill, minmax(11px, 1fr)); gap: 4px; }
+.dot { aspect-ratio: 1; border-radius: 3px; background: var(--line); transition: transform .25s, background .25s, box-shadow .25s; }
+.dot.k-pass { background: color-mix(in oklab, var(--frond) 35%, var(--line)); }
+.dot.k-pr { background: color-mix(in oklab, var(--mint) 35%, var(--line)); }
+.dot.k-dec { background: color-mix(in oklab, var(--emerald) 40%, var(--line)); }
+.dot.k-you { background: color-mix(in oklab, var(--sun) 45%, var(--line)); }
+.dot.k-block { background: color-mix(in oklab, var(--amber) 40%, var(--line)); }
+.dot.picked { transform: scale(1.35); box-shadow: 0 0 0 2px var(--sun); z-index: 1; }
+.dot.lit { box-shadow: 0 0 0 3px var(--fg); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--muted); }
+.legend i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+
+/* the chat card */
+.chat { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+.chat-bar { display: flex; justify-content: space-between; gap: 8px; padding: 10px 16px; border-bottom: 1px solid var(--line); font: 12px/1.3 var(--mono); color: var(--muted); }
+.chat-bar b { color: var(--fg); font-weight: 600; }
+.turns { padding: 16px; display: grid; gap: 16px; }
+.you { justify-self: end; max-width: 80%; text-align: right; font: 400 17px/1.4 var(--body); border-right: 2px solid var(--fg); padding: 2px 12px 2px 0; }
+.you small { display: block; font: 11px/1.2 var(--mono); color: var(--faint); margin-bottom: 2px; }
+.box.human { --c: var(--fg); border: 0; border-left: 2px solid var(--fg); border-radius: 0; background: transparent; padding: 2px 0 2px 10px; }
+.box.human .v { font: italic 400 15px/1.35 var(--body); }
+.example { font: 11px/1.2 var(--mono); color: var(--faint); letter-spacing: .04em; }
+.chk.na { border-style: dashed; }
+
+.stream { display: grid; gap: 8px; }
+.stream-label { font: 11px/1 var(--mono); color: var(--faint); letter-spacing: .06em; text-transform: uppercase; }
+.boxes { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.box {
+  --c: var(--muted);
+  min-width: 0; background: var(--panel-2); border: 1px solid var(--line); border-top: 3px solid var(--c);
+  border-radius: 8px; padding: 8px 10px 9px; display: grid; gap: 3px;
+  transition: transform .45s cubic-bezier(.2,.9,.25,1.15), opacity .35s, box-shadow .2s, border-color .2s;
+}
+.box.enter { opacity: 0; transform: translateY(-26px) rotate(-3deg) scale(.92); }
+.box .k { font: 600 10px/1 var(--mono); letter-spacing: .07em; text-transform: uppercase; color: var(--c); display: flex; justify-content: space-between; gap: 6px; }
+.box .k span:last-child { color: var(--faint); font-weight: 400; }
+.box .v { font: 600 14px/1.25 var(--display); font-variation-settings: "CASL" .4; overflow-wrap: anywhere; }
+.box .d { font-size: 12.5px; color: var(--muted); overflow-wrap: anywhere; }
+.box.lit { box-shadow: 0 0 0 2px var(--c), 0 6px 18px -8px var(--c); transform: translateY(-2px); }
+.box.c-you { --c: var(--sun); } .box.c-dec { --c: var(--emerald); } .box.c-pr { --c: var(--mint); }
+.box.c-block { --c: var(--amber); } .box.c-pass { --c: var(--frond); }
+.box.unreach { --c: var(--amber); border-style: dashed; border-top-style: solid; background: transparent; }
+.box.empty { --c: var(--faint); border-style: dashed; background: transparent; }
+
+.reply { display: grid; gap: 10px; border-left: 2px solid var(--line); padding-left: 14px; }
+.who { font: 11px/1.2 var(--mono); color: var(--faint); display: flex; gap: 8px; align-items: center; }
+.who .pip { width: 7px; height: 7px; border-radius: 50%; background: var(--frond); }
+.who.thinking .pip { animation: pulse 1s infinite; }
+@keyframes pulse { 50% { opacity: .2; } }
+.say { font: 400 19px/1.45 var(--display); font-variation-settings: "CASL" .7; margin: 0; text-wrap: pretty; min-height: 1.45em; }
+.say span[data-c] { border-bottom: 2px solid var(--c, var(--line)); cursor: default; transition: background .2s; border-radius: 2px; }
+.say span[data-c].lit { background: color-mix(in oklab, var(--c) 22%, transparent); }
+.say span.bad { color: var(--rust); text-decoration: line-through wavy var(--rust); }
+.say.struck { opacity: .55; }
+.say.code { font: 400 14px/1.6 var(--mono); font-variation-settings: "MONO" 1; opacity: 1; }
+.say .caret { display: inline-block; width: .5ch; background: var(--sun); animation: pulse .8s infinite; }
+
+.checks { display: flex; flex-wrap: wrap; gap: 6px; }
+.chk { font: 12px/1 var(--mono); padding: 6px 9px; border-radius: 999px; border: 1px solid var(--line); color: var(--faint); display: inline-flex; gap: 6px; align-items: center; }
+.chk.ok { color: var(--frond); border-color: color-mix(in oklab, var(--frond) 50%, var(--line)); }
+.chk.no { color: var(--rust); border-color: var(--rust); }
+.note { font-size: 13px; color: var(--muted); margin: 0; }
+.note b { color: var(--fg); }
+.seal { justify-self: start; font: 600 13px/1 var(--display); color: var(--bg); background: var(--sun); border: 0; border-radius: 8px; padding: 9px 13px; text-decoration: none; }
+.seal::after { content: " ↗"; }
+
+.foot { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+.foot p { margin: 0; color: var(--faint); font-size: 12.5px; max-width: 62ch; }
+
+@media (max-width: 560px) {
+  h1 { font-size: 22px; } .willow { display: none; } .say { font-size: 17px; } .you { max-width: 92%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+/* envelope additions */
+.boxes .box { align-content: start; }
+.box .meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font: 11px/1 var(--mono); color: var(--muted); }
+.who-chip { display: inline-flex; align-items: center; gap: 5px; font: 600 12px/1 var(--display); color: var(--fg); }
+.who-chip i { width: 9px; height: 9px; border-radius: 50%; background: var(--pc, var(--muted)); }
+.pill { font: 600 10px/1 var(--mono); padding: 3px 6px; border-radius: 999px; border: 1px solid var(--line); color: var(--fg); }
+.att-ok { border-color: var(--frond); color: var(--frond); }
+.att-missing { border-color: var(--amber); color: var(--amber); border-style: dashed; }
+.att-invalid { border-color: var(--rust); color: var(--rust); }
+.meter { display: grid; gap: 3px; }
+.meter .bar { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.meter .bar b { display: block; height: 100%; background: var(--c); }
+.meter span { font: 11px/1 var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.path { font: 11px/1.3 var(--mono); color: var(--faint); overflow-wrap: anywhere; }
+.path::after { content: "  · shown to you, not served"; color: var(--faint); font-style: italic; }
+.granted { border-left: 2px solid var(--fg); padding-left: 8px; font: italic 400 13px/1.35 var(--body); }
+.granted small { display: block; font: normal 10px/1.2 var(--mono); color: var(--faint); letter-spacing: .05em; text-transform: uppercase; }
+.box.c-sum { --c: var(--frond); }
+.box.c-skip { --c: var(--amber); border-style: dashed; background: transparent; }
+.dot.k-attested { background: color-mix(in oklab, var(--frond) 45%, var(--line)); }
+.dot.k-missing { background: color-mix(in oklab, var(--amber) 45%, var(--line)); }
+.dot.k-invalid { background: color-mix(in oklab, var(--rust) 45%, var(--line)); }
+.dot.k-retired { background: var(--line); }
+.quiet { font: italic 400 15px/1.4 var(--body); color: var(--muted); }
+.rule { font-size: 12.5px; color: var(--muted); border: 1px dashed var(--line); border-radius: 8px; padding: 8px 10px; }
+.rule b { color: var(--fg); }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="brand">
+<pre class="willow" aria-hidden="true">ƒƒ  <b>*</b> . <b>*</b>
+ƒ ƒ . ƒ . ƒ
+ƒ  (║ . .) ƒ
+ƒ   ║ƒ  ƒ</pre>
+      <div>
+        <h1>The envelope stream</h1>
+        <p class="sub">v1 · Your grants as boxes. A small model says them. Grove never grants.</p>
+      </div>
+    </div>
+    <div class="scenes" role="group" aria-label="Scenario">
+      <button type="button" id="s-file" data-s="file" aria-pressed="true">On file</button>
+      <button type="button" id="s-limit" data-s="limit" aria-pressed="false">Near a limit</button>
+      <button type="button" id="s-invent" data-s="invent" aria-pressed="false">Model invents</button>
+      <button type="button" id="s-skip" data-s="skip" aria-pressed="false">A file won't parse</button>
+      <button type="button" id="s-none" data-s="none" aria-pressed="false">None on file</button>
+    </div>
+  </header>
+
+  <section class="pile" aria-label="Every envelope">
+    <div class="pile-head"><span>Envelopes · <strong id="pile-n">0</strong> on record, live and retired</span><span id="pile-pick"></span></div>
+    <div class="dots" id="dots"></div>
+    <div class="legend">
+      <span><i style="background:var(--frond)"></i>attested</span>
+      <span><i style="background:var(--amber)"></i>attestation missing</span>
+      <span><i style="background:var(--rust)"></i>attestation invalid</span>
+      <span><i style="background:var(--line)"></i>retired</span>
+    </div>
+  </section>
+
+  <section class="chat" aria-label="Envelopes">
+    <div class="chat-bar"><span><b>envelopes</b> · grants · willow</span><span id="when"></span></div>
+    <div class="turns">
+      <div class="stream">
+        <div class="stream-label" id="stream-label"></div>
+        <div class="boxes" id="boxes"></div>
+      </div>
+      <div class="reply" id="reply">
+        <div class="who" id="who"><span class="pip"></span><span id="who-t"></span></div>
+        <p class="say" id="say"></p>
+        <div class="example" id="example" hidden>example result · these checks are written into the sketch, not computed</div>
+        <div class="checks" id="checks"></div>
+        <div id="extra"></div>
+        <p class="note" id="note" hidden></p>
+      </div>
+      <p class="rule"><b>Grove renders, never grants.</b> Opening or renewing an envelope is an Operator Key act in the charter (CONST-0-3). No box here has a grant button.</p>
+    </div>
+  </section>
+
+  <div class="foot">
+    <p>Prototype using the envelopes in <code>web/fixtures/envelopes.json</code>, as of 2026-10-08. Fields are the real ones: grantee, kind, mode, paths, max_count, used_count, expires_at, attestation, notes. Paths are shown to you but never served to the model. A grant's notes are your words, so they stay marked as yours.</p>
+    <button type="button" class="ctl" id="replay">▶ Play the stream</button>
+  </div>
+</div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const MODEL = 'qwen3:4b';
+  const PERSONA = { loki: '--rust', kart: '--sun', vishwakarma: '--amber', jeles: '--emerald' };
+
+  const KINDS = [['retired', 9], ['attested', 6], ['missing', 2], ['invalid', 2]];
+  const pile = []; KINDS.forEach(([k, n]) => { for (let i = 0; i < n; i++) pile.push(k); });
+  let seed = 303; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (let i = pile.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [pile[i], pile[j]] = [pile[j], pile[i]]; }
+  const dotsEl = $('dots');
+  pile.forEach((k) => { const d = document.createElement('div'); d.className = 'dot k-' + k; dotsEl.appendChild(d); });
+  $('pile-n').textContent = pile.length;
+  const dotOf = (k, n) => pile.map((x, i) => (x === k ? i : -1)).filter((i) => i >= 0)[n];
+
+  const env = (id, o) => ({ id, kind: 'env', ...o });
+  const E = {
+    e1: env('e1', { grantee: 'Kart', what: 'filesystem · rw', path: '~/.willow', used: 0, max: null, expires: 'no expiry', att: 'attested', notes: 'Fleet home — handoffs, SOIL overlay.', dot: dotOf('attested', 0) }),
+    e2: env('e2', { grantee: 'Loki', what: 'network · read', path: 'api.github.com/repos/rudi193-cmd/*', used: 173, max: 500, expires: 'expired 37 days ago', att: 'missing', notes: 'Fleet accountant — read-only PR + issue polls.', dot: dotOf('missing', 0) }),
+    e3: env('e3', { grantee: 'Vishwakarma', what: 'filesystem · w', path: '~/.willow/outbox', used: 42, max: null, expires: 'expired 49 days ago', att: 'invalid', notes: 'Build lane outputs.', dot: dotOf('invalid', 0) }),
+    e4: env('e4', { grantee: 'Jeles', what: 'network · read', path: 'api.crossref.org/works', used: 481, max: 500, expires: 'expires in 3 days', att: 'attested', notes: 'Citation checks for the corpus.', dot: dotOf('attested', 1), needs: true }),
+  };
+  const sum = (id, v, d) => ({ id, kind: 'sum', label: 'envelopes · made by code', v, d, dot: -1 });
+  const ATT = { attested: ['attested', 'att-ok'], missing: ['attestation missing', 'att-missing'], invalid: ['attestation invalid', 'att-invalid'] };
+
+  const SCENES = {
+    file: {
+      at: '09:14', label: 'agent boxes served to the model · a summary from code, then each grant',
+      boxes: [sum('q', '3 grants on file', '1 attested · 1 attestation missing · 1 attestation invalid'), E.e1, E.e2, E.e3],
+      say: [['3 grants on file', 'q'], ['; '], ["Kart's filesystem rw grant is attested with no expiry", 'e1'], ['; '], ["Loki's network read grant is at 173 of 500, expired 37 days ago, attestation missing", 'e2'], ['; '], ["Vishwakarma's filesystem w grant expired 49 days ago, attestation invalid", 'e3'], ['.']],
+      checks: [true, true, true, 'na'],
+      note: 'Every number is in a box. The paths are on screen but were never served, so the model could not name them.',
+    },
+    limit: {
+      at: '09:20', label: 'what needs you · a grant near its limit',
+      boxes: [sum('q', '1 grant near its limit', '481 of 500 used · expires in 3 days'), E.e4],
+      say: [['1 grant near its limit', 'q'], [': '], ["Jeles's network read grant is at 481 of 500 and expires in 3 days", 'e4'], ['; '], ['you wrote "Citation checks for the corpus."', 'e4']],
+      checks: [true, true, true, true], notesServed: true,
+      note: 'Your grant notes were served, so they are quoted exactly and marked as yours. Renewing is yours to do in the charter.',
+    },
+    invent: {
+      at: '09:14', label: 'agent boxes served to the model · the same four',
+      boxes: null,
+      say: [['3 grants on file', 'q'], ['; '], ["Kart's filesystem rw grant is attested with no expiry", 'e1'], ['; '], ["Loki's network read grant is at 173 of 500 and ", 'e2'], ['attested', null, 'bad'], ['; '], ["Vishwakarma's filesystem w grant expired 49 days ago, attestation invalid", 'e3'], ['.']],
+      checks: [true, true, false, 'na'],
+      fallback: "q: 3 grants on file. e1 Kart, filesystem rw: attested, no expiry. e2 Loki, network read: 173 of 500, expired 37 days ago, attestation missing. e3 Vishwakarma, filesystem w: expired 49 days ago, attestation invalid.",
+      note: 'Loki\'s box says <b>attestation missing</b>. "Attested" is a word the checker only allows when the cited box holds it, because a wrong one reads as a grant that is safe.',
+    },
+    skip: {
+      at: '09:31', label: 'agent boxes · one file could not be read',
+      boxes: [sum('q', '2 grants on file', '1 file skipped'), { id: 's1', kind: 'skip', label: 'skipped · made by code', v: '1 file skipped', d: 'did not parse as JSON · the others still show', dot: -1 }, E.e1, E.e2],
+      say: [['2 grants on file', 'q'], [' and '], ['1 file skipped', 's1'], ['; '], ["Kart's filesystem rw grant is attested with no expiry", 'e1'], ['; '], ["Loki's network read grant is at 173 of 500, expired 37 days ago, attestation missing", 'e2'], ['.']],
+      checks: [true, true, true, 'na'],
+      note: 'One bad file never hides the rest. The skipped file is its own box, so it is counted, not lost.',
+    },
+    none: { at: '09:50', label: 'serve', boxes: [], quiet: true, note: 'No envelope directory holds a file. Absence is a state (D7), so no model is asked.' },
+  };
+  SCENES.invent.boxes = SCENES.file.boxes;
+
+  let token = 0;
+  const sleep = (ms) => new Promise((r) => setTimeout(r, reduce ? 0 : ms));
+  const CHECK_NAMES = ['every cite was served', 'every box cited', 'nothing the boxes lack', 'your words quoted exactly'];
+
+  function link(id, on) {
+    const base = id.replace(/n$/, '');
+    document.querySelectorAll(`[data-c="${id}"], [data-c="${base}"], .box[data-id="${base}"]`).forEach((el) => el.classList.toggle('lit', on));
+    const b = document.querySelector(`.box[data-id="${base}"]`);
+    if (b && b.dataset.dot >= 0) dotsEl.children[b.dataset.dot]?.classList.toggle('lit', on);
+  }
+
+  function boxEl(b, entering, notesServed) {
+    const el = document.createElement('div');
+    el.dataset.id = b.id; el.dataset.dot = b.dot;
+    el.addEventListener('mouseenter', () => link(b.id, true));
+    el.addEventListener('mouseleave', () => link(b.id, false));
+    if (b.kind === 'sum' || b.kind === 'skip') {
+      el.className = 'box ' + (b.kind === 'sum' ? 'c-sum' : 'c-skip') + (entering ? ' enter' : '');
+      el.innerHTML = '<div class="k"><span></span><span></span></div><div class="v"></div><div class="d"></div>';
+      el.querySelector('.k span').textContent = b.label;
+      el.querySelector('.k span:last-child').textContent = b.id;
+      el.querySelector('.v').textContent = b.v; el.querySelector('.d').textContent = b.d;
+      return el;
+    }
+    el.className = 'box ' + (b.needs ? 'c-you' : b.att === 'attested' ? 'c-pass' : 'c-block') + (entering ? ' enter' : '');
+    el.innerHTML = '<div class="k"><span class="who-chip"><i></i><span></span></span><span></span></div><div class="meta"></div><div class="d exp"></div><div class="path"></div><div class="granted"><small>you wrote, at grant</small><span></span></div>';
+    el.querySelector('.who-chip i').style.setProperty('--pc', `var(${PERSONA[b.grantee.toLowerCase()] || '--muted'})`);
+    el.querySelector('.who-chip span').textContent = b.grantee;
+    el.querySelector('.k > span:last-child').textContent = b.id;
+    const meta = el.querySelector('.meta');
+    const what = document.createElement('span'); what.textContent = b.what; meta.appendChild(what);
+    const att = document.createElement('span'); att.className = 'pill ' + ATT[b.att][1]; att.textContent = ATT[b.att][0]; meta.appendChild(att);
+    if (b.max) {
+      const m = document.createElement('div'); m.className = 'meter';
+      m.innerHTML = '<div class="bar"><b></b></div><span></span>';
+      m.querySelector('b').style.width = Math.round((b.used / b.max) * 100) + '%';
+      m.querySelector('span').textContent = `${b.used} of ${b.max} used`;
+      el.insertBefore(m, el.querySelector('.exp'));
+    } else {
+      const m = document.createElement('div'); m.className = 'meter';
+      m.innerHTML = '<span></span>'; m.querySelector('span').textContent = `${b.used} used · no limit`;
+      el.insertBefore(m, el.querySelector('.exp'));
+    }
+    el.querySelector('.exp').textContent = b.expires;
+    el.querySelector('.path').textContent = b.path;
+    el.querySelector('.granted span').textContent = b.notes;
+    el.querySelector('.granted small').textContent = 'you wrote, at grant · ' + (notesServed ? 'served, quoted exactly' : 'shown to you, not served');
+    return el;
+  }
+
+  function colorOf(id, sc) {
+    if (/n$/.test(id)) return 'var(--fg)';
+    const b = (sc.boxes || []).find((x) => x.id === id);
+    if (!b) return 'var(--line)';
+    if (b.kind === 'sum') return 'var(--frond)';
+    if (b.kind === 'skip') return 'var(--amber)';
+    return b.needs ? 'var(--sun)' : b.att === 'attested' ? 'var(--frond)' : 'var(--amber)';
+  }
+
+  function sayEl(sc, upto) {
+    const p = $('say'); p.className = 'say'; p.innerHTML = '';
+    let left = upto;
+    for (const [t, c, bad] of sc.say) {
+      if (left <= 0) break;
+      const s = document.createElement('span'); let text = '';
+      for (const w of t.split(/(\s+)/)) { if (left <= 0) break; text += w; if (w.trim()) left--; }
+      s.textContent = text;
+      if (c) { s.dataset.c = c; s.style.setProperty('--c', colorOf(c, sc)); s.tabIndex = 0;
+        s.addEventListener('mouseenter', () => link(c, true)); s.addEventListener('mouseleave', () => link(c, false));
+        s.addEventListener('focus', () => link(c, true)); s.addEventListener('blur', () => link(c, false)); }
+      if (bad) s.className = 'bad-pending';
+      p.appendChild(s);
+    }
+  }
+  const wordCount = (sc) => sc.say.reduce((n, [t]) => n + t.split(/\s+/).filter(Boolean).length, 0);
+
+  function checksEl(states) {
+    const el = $('checks'); el.innerHTML = '';
+    CHECK_NAMES.forEach((n, i) => {
+      const st = states[i]; const s = document.createElement('span');
+      s.className = 'chk' + (st === true ? ' ok' : st === false ? ' no' : st === 'na' ? ' na' : '');
+      s.textContent = (st === true ? '✓ ' : st === false ? '✗ ' : st === 'na' ? '– ' : '· ') + n + (st === 'na' ? ' (none served)' : '');
+      el.appendChild(s);
+    });
+  }
+
+  function finish(sc) {
+    if (sc.say && sc.checks.includes(false)) {
+      document.querySelectorAll('.bad-pending').forEach((s) => (s.className = 'bad'));
+      $('say').classList.add('struck');
+      const fb = document.createElement('p'); fb.className = 'say code'; fb.textContent = sc.fallback;
+      $('extra').appendChild(fb);
+      $('who-t').textContent = `agent · ${MODEL} · sentence failed a check · replaced by a code sentence`;
+    }
+    $('note').innerHTML = sc.note; $('note').hidden = false;
+  }
+
+  async function play(name, animate) {
+    const my = ++token; const sc = SCENES[name]; const go = animate && !reduce;
+    document.querySelectorAll('.scenes [data-s]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.s === name)));
+    [...dotsEl.children].forEach((d) => d.classList.remove('picked', 'lit'));
+    $('boxes').innerHTML = ''; $('say').innerHTML = ''; $('say').className = 'say';
+    $('checks').innerHTML = ''; $('extra').innerHTML = ''; $('note').hidden = true;
+    $('when').textContent = 'from the box · ' + sc.at;
+    $('stream-label').textContent = sc.label;
+    $('example').hidden = !sc.say;
+    $('who').classList.remove('thinking');
+    const envs = (sc.boxes || []).filter((b) => b.kind === 'env');
+    $('pile-pick').textContent = envs.length + ' served from the pile';
+    $('who-t').textContent = sc.say ? `agent · ${MODEL} · narrated from ${sc.boxes.length} served` : 'agent · nothing to narrate';
+
+    if (sc.quiet) { const q = document.createElement('div'); q.className = 'quiet'; q.textContent = 'no envelopes on file.'; $('boxes').appendChild(q); finish(sc); return; }
+
+    for (const b of sc.boxes) {
+      if (b.dot >= 0) dotsEl.children[b.dot].classList.add('picked');
+      const el = boxEl(b, go, !!sc.notesServed); $('boxes').appendChild(el);
+      if (go) { await sleep(260); if (my !== token) return; requestAnimationFrame(() => el.classList.remove('enter')); await sleep(220); }
+    }
+    if (my !== token) return;
+    const total = wordCount(sc);
+    if (go) {
+      $('who').classList.add('thinking'); checksEl([null, null, null, null]);
+      await sleep(700); if (my !== token) return;
+      for (let i = 1; i <= total; i++) {
+        sayEl(sc, i); const caret = document.createElement('span'); caret.className = 'caret'; caret.innerHTML = '&nbsp;'; $('say').appendChild(caret);
+        await sleep(60); if (my !== token) return;
+      }
+      $('who').classList.remove('thinking'); sayEl(sc, total);
+      const st = [null, null, null, null];
+      for (let i = 0; i < 4; i++) { await sleep(360); if (my !== token) return; st[i] = sc.checks[i]; checksEl(st); }
+      await sleep(250); if (my !== token) return;
+    } else { sayEl(sc, total); checksEl(sc.checks); }
+    finish(sc);
+  }
+
+  document.querySelectorAll('.scenes [data-s]').forEach((b) => b.addEventListener('click', () => play(b.dataset.s, true)));
+  $('replay').addEventListener('click', () => play(document.querySelector('.scenes [aria-pressed="true"]')?.dataset.s || 'file', true));
+  play('file', false);
+})();
+</script>
+</body>
+</html>

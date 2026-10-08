@@ -1,0 +1,170 @@
+{
+ "puts": {
+  "What do the last six characters of a VIN mean?": {
+   "id": "ba9f00c1",
+   "action": "created",
+   "verification_kind": "asserted"
+  },
+  "Is rolling back an odometer illegal?": {
+   "id": "7d5279b0",
+   "action": "created",
+   "verification_kind": "asserted"
+  },
+  "Does a used car dealer have to post a Buyers Guide?": {
+   "id": "76bda69a",
+   "action": "created",
+   "verification_kind": "asserted"
+  },
+  "What does hacerse cargo mean?": {
+   "id": "db3bc962",
+   "action": "created",
+   "verification_kind": "asserted"
+  },
+  "How much is un vaso in a Spanish recipe?": {
+   "id": "7a424965",
+   "action": "created",
+   "verification_kind": "asserted"
+  },
+  "What does a punto de nieve mean in cooking?": {
+   "id": "9a3b5ced",
+   "action": "created",
+   "verification_kind": "asserted"
+  },
+  "How deep must a dead goat be buried in Oregon?": {
+   "id": "dc847a77",
+   "action": "created",
+   "verification_kind": "asserted"
+  },
+  "Do small meteoroids burn up before reaching the ground?": {
+   "id": "7462adfa",
+   "action": "created",
+   "verification_kind": "asserted"
+  },
+  "Can a retired Navy veteran get VA care for a knee?": {
+   "id": "99c80a47",
+   "action": "created",
+   "verification_kind": "asserted"
+  }
+ },
+ "asks": {
+  "Is rolling back an odometer illegal?": {
+   "life": "jim",
+   "strict_found": false,
+   "strict_detail": "searched ask_jeles_corpus: 2 candidate(s) shared vocabulary with the question, none reached confidence >= 0.5",
+   "loose_found": true,
+   "answer": "Yes. Under 49 U.S.C. 32703 it is illegal to disconnect, reset or alter an odometer with intent to change the recorded mileage, or to sell or install a device that does. NHTSA enforces it and has said an odometer-stopping device has no legitimate use.",
+   "sources": [
+    "https://www.law.cornell.edu/uscode/text/49/32703",
+    "https://www.nhtsa.gov/node/136371"
+   ],
+   "kind": "asserted",
+   "verified_by": "agent:claude (web research, 2026-10-08)",
+   "detail": null
+  },
+  "What do the last six characters of a VIN mean?": {
+   "life": "jim",
+   "strict_found": false,
+   "strict_detail": "searched ask_jeles_corpus: 3 candidate(s) shared vocabulary with the question, none reached confidence >= 0.5",
+   "loose_found": true,
+   "answer": "Positions 12 to 17 of a VIN are the manufacturer's production sequence number (49 CFR 565.6(d)(3)), assigned in build order for makers of 500 or more vehicles of a type a year. The count runs per model and can wrap from 999999 back to 000001, so two different vehicles can share the same last six.",
+   "sources": [
+    "https://www.nhtsa.gov/node/45776",
+    "https://service.tesla.com/docs/ModelS/ServiceManual/Palladium/en-us/GUID-C79EB66B-D6DB-4439-BFC4-6AB53FB19E2C.html"
+   ],
+   "kind": "asserted",
+   "verified_by": "agent:claude (web research, 2026-10-08)",
+   "detail": null
+  },
+  "What does hacerse cargo mean?": {
+   "life": "nieves",
+   "strict_found": false,
+   "strict_detail": "searched ask_jeles_corpus: 3 candidate(s) shared vocabulary with the question, none reached confidence >= 0.5",
+   "loose_found": true,
+   "answer": "The RAE dictionary gives two senses of hacerse cargo: to understand something or form an idea of it, and to take something or someone into one's care or responsibility. Which one a writer meant depends on the sentence.",
+   "sources": [
+    "https://dle.rae.es/cargo",
+    "https://www.rae.es/diccionario-estudiante/cargo"
+   ],
+   "kind": "asserted",
+   "verified_by": "agent:claude (web research, 2026-10-08)",
+   "detail": null
+  },
+  "How much is un vaso in a Spanish recipe?": {
+   "life": "nieves",
+   "strict_found": false,
+   "strict_detail": "searched ask_jeles_corpus: 3 candidate(s) shared vocabulary with the question, none reached confidence >= 0.5",
+   "loose_found": true,
+   "answer": "There is no single measure. Sources put a water glass at 200 to 250 ml and disagree within that range; a small glass is about 100 ml. For precision, use a measuring jug.",
+   "sources": [
+    "https://todosloshechos.es/como-saber-la-medida-de-un-vaso",
+    "https://hacecuentas.com/conversion-cucharadas-cucharaditas-ml"
+   ],
+   "kind": "asserted",
+   "verified_by": "agent:claude (web research, 2026-10-08)",
+   "detail": null
+  },
+  "How deep must a dead goat be buried in Oregon?": {
+   "life": "june",
+   "strict_found": false,
+   "strict_detail": "searched ask_jeles_corpus: 1 candidate(s) shared vocabulary with the question, none reached confidence >= 0.5",
+   "loose_found": true,
+   "answer": "ORS 601.090 requires a buried carcass to be covered by at least four feet of earth. ODA guidance adds distances: at least 100 feet, and ideally 500, from wells and surface water, a dry hole, no floodplains. Near a dwelling, disposal is due within 15 hours (ORS 601.140).",
+   "sources": [
+    "https://codes.findlaw.com/or/title-48-animals/or-rev-st-sect-601-090/",
+    "https://oregon.gov/oda/Documents/Publications/naturalresources/LivestockMortalityGuide.pdf"
+   ],
+   "kind": "asserted",
+   "verified_by": "agent:claude (web research, 2026-10-08)",
+   "detail": null
+  },
+  "Do small meteoroids burn up before reaching the ground?": {
+   "life": "june",
+   "strict_found": false,
+   "strict_detail": "searched ask_jeles_corpus: 2 candidate(s) shared vocabulary with the question, none reached confidence >= 0.5",
+   "loose_found": true,
+   "answer": "Most do. Per NASA, space rocks smaller than about 25 meters will likely burn up on entering the atmosphere, causing little to no damage; the large majority of meteoroids burn up in the upper atmosphere.",
+   "sources": [
+    "https://www.britannica.com/topic/meteor",
+    "https://www.nasa.gov/?p=771121"
+   ],
+   "kind": "asserted",
+   "verified_by": "agent:claude (web research, 2026-10-08)",
+   "detail": null
+  },
+  "Is a one kilometer asteroid a global catastrophe?": {
+   "life": "june",
+   "strict_found": false,
+   "strict_detail": "searched ask_jeles_corpus: 2 candidate(s) shared vocabulary with the question, none reached confidence >= 0.5",
+   "loose_found": false,
+   "answer": null,
+   "sources": null,
+   "kind": null,
+   "verified_by": null,
+   "detail": "searched ask_jeles_corpus: 2 candidate(s) shared vocabulary with the question, none reached confidence >= 0.5"
+  },
+  "Can a retired Navy veteran get VA care for a knee?": {
+   "life": "june",
+   "strict_found": false,
+   "strict_detail": "searched ask_jeles_corpus: 2 candidate(s) shared vocabulary with the question, none reached confidence >= 0.5",
+   "loose_found": true,
+   "answer": "It depends mainly on whether the knee condition is service-connected and on VA enrollment priority, discharge, length of service and income. A service-connected condition can be treated without full enrollment. Retirees may also have TRICARE, which was not verified here.",
+   "sources": [
+    "https://www.va.gov/HEALTHBENEFITS/resources/publications/hbco/hbco_basic_eligibility.asp",
+    "https://vaclaimsinsider.com/va-disability-for-knee-replacement"
+   ],
+   "kind": "asserted",
+   "verified_by": "agent:claude (web research, 2026-10-08)",
+   "detail": null
+  }
+ },
+ "gaps": [
+  "Can a retired Navy veteran get VA care for a knee?",
+  "Is a one kilometer asteroid a global catastrophe?",
+  "Do small meteoroids burn up before reaching the ground?",
+  "How deep must a dead goat be buried in Oregon?",
+  "How much is un vaso in a Spanish recipe?",
+  "What does hacerse cargo mean?",
+  "What do the last six characters of a VIN mean?",
+  "Is rolling back an odometer illegal?"
+ ]
+}

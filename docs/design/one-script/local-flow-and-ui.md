@@ -94,14 +94,203 @@ What the page does not do:
   `grove_reader.py` stays read-only (rule 3).
 - Seal. The scope and proposal panels show the subject and link to Nestor.
 
-A clickable sketch of the chat side, v1: [`box-stream-v1.html`](box-stream-v1.html).
+A clickable sketch of the chat side, v1: [`box-stream-v1.html`](../../../web/demo/box-stream/box-stream-v1.html).
 Boxes stream from the pile into the chat, a small model says them in one
 sentence, and the three checks run; five cases, including a sentence that
 fails and an unreachable record. Example content, no model behind it.
-v1.1, [`box-stream-v1.1.html`](box-stream-v1.1.html), adds: sentences that use only
+v1.1, [`box-stream-v1.1.html`](../../../web/demo/box-stream/box-stream-v1.1.html), adds: sentences that use only
 what the boxes hold, the human line drawn plain and the sentence labelled agent,
 a fifth check (the human's words quoted exactly), check chips labelled as
 example results, and a time stamp on every turn.
+
+The chat reads as a conversation (2026-10-08). The operator: *"All right so
+let's think about this as a casual conversation instead of just pure system
+talk"* and *"yes, the chat should read more conversational in the ui"*. The
+facts stay as strict as before; only the voice loosens. One or two things at a
+time with "more?" for the next, reply chips that land as the human's plain
+line, small talk answered by code with no model, a repeated question answered
+from the pile, and a short fixed list of free glue words that carry no facts.
+Sketch v1.2: [`box-stream-v1.2.html`](../../../web/demo/box-stream/box-stream-v1.2.html).
+
+Asked again, answered again (2026-10-08). The operator: *"one big thing I
+would change is the asked/answered. It should show the information again, just
+as noted with the timestamp"*. A repeated question shows the same boxes and the
+same sentence again, from the pile with no model asked, stamped "as noted at"
+the time it was first said. Sketch v1.3: [`box-stream-v1.3.html`](../../../web/demo/box-stream/box-stream-v1.3.html).
+
+Tested on a human data set (2026-10-08). The operator: *"Next is to test it on a
+random, more human data set. They are many fictional characters in the demos.
+How about the car salesman"*. Nestor's fictional Big Jim Motors desk
+(`Nestor/demo/big_jim.py`) was stocked with five machine drafts; nothing was
+sealed. Its real output fed the stream: [`big-jim-stream-v1.html`](../../../web/demo/box-stream/big-jim-stream-v1.html).
+What it added:
+
+- A check the first three do not cover: **no draft said as fact**. "The Civic
+  runs great, one owner, 142,000 miles" uses only words the boxes hold and
+  still has to fail, because the box says nobody has checked it.
+- A refusal is shown verbatim and never narrated: the Kia shares the Jeep's
+  last 6 (`784210`), Nestor refused the draft, and code says so in one line.
+- Prose with no VIN ("the blue Civic") matched nothing (0.000), by design;
+  the human's words are quoted back exactly and code asks for the last 6.
+- `big_jim.py draft` shows that refusal as a raw traceback; filed as a
+  separate task.
+
+Tested on a character with depth (2026-10-08). The operator: *"lets do one
+more for one of the demo characters with more depth."* Nestor's fictional
+shoebox (`Nestor/demo/shoebox.py`): Nieves, the only person holding a key to
+her grandmother's letters. Its real store fed the stream:
+[`shoebox-stream-v1.html`](../../../web/demo/box-stream/shoebox-stream-v1.html). What it added:
+
+- The human's words are the substance here, not a side field. Every sealed
+  phrase carries her reason, and check 5 (her words quoted exactly) is the
+  one that catches a model retelling "She meant the damage." as "she meant
+  the destruction she caused".
+- The stream can show what Nestor's own review views do not yet (IDEAS
+  §6.35): a changed mind, with the March reading kept beside the current
+  one, and a "not yet" with its reopen condition in her words.
+- For one person's archive, a draft is not always a task. Two drafts she
+  chose to leave ("Whose face. Leaving it.") should not rise as "needs you";
+  the picker has to respect a human's leave-it, and the voice stays quiet.
+- A known store gap (two men called Pepe, the first overwritten, IDEAS §6.37)
+  is said by code in one line, never narrated by a model.
+
+Theory: two groves linked (2026-10-08). The operator: *"This next one might be
+pushing it a bit. So, and it's theory right now. I'll give you the scope."*,
+*"Say Nieves wanted to buy a car from Big Jim, and their groves linked up."* and
+*"sketch it as a box stream"*. Not built:
+[`linked-groves-stream-v1.html`](../../../web/demo/box-stream/linked-groves-stream-v1.html). The shape:
+
+- Records never merge; boxes cross, each marked with the grove it came from.
+  "Who wrote it" doubles: you, your agent, the other human, their agent.
+- A seal from the other grove is that person's word, never yours, and a sixth
+  check holds it there. A seal that will not verify against their enrolled key
+  arrives as a draft, the way Nestor's bundle import already demotes one.
+- The human's words leave only through the disclosure card (once, this
+  session, always, never); some things are set to never and not asked about.
+- When the two records disagree, both stand, marked unresolved (the quorum
+  ruling), until a neutral third both accept. An offer is one subject that
+  needs a seal from each grove; neither can write the other's half.
+- Matching across groves uses shared keys (a VIN), never people's names.
+- Open: enrolling the other grove's key in person, contents on u2u's
+  plaintext wire before Gate 6, and revoking a key after the sale.
+
+A third life (2026-10-08). The operator: *"lets bring in a third life. One of the
+post apoloptic ones"* and *"It's here. It just turned into a silly story at the
+end. It was a group of 5 I think,"*. Found in Nestor's capability-probe life
+simulation (`audits/2026-08-19-capability-probe/lives/`: Elena, Marcus, June,
+Damon, Yuki, and the Bombardment). June Akiyama, from `june_akiyama.py` and
+`global_event_meteoroids.py`: [`june-stream-v1.html`](../../../web/demo/box-stream/june-stream-v1.html).
+The sandbox builder needs SQL files that are not in the repo, so the boxes were
+read from the modules. What it added:
+
+- **An agent's reading of a person is a proposal, never a fact.** The
+  simulation's rulings ("revealed the margin she was operating on") are shown
+  as dashed proposal boxes she can accept, fold or reject; a model that says
+  "You can't handle the farm alone" is struck.
+- **Written about you is not written by you.** Her record is the simulation's
+  third-person account and is labelled so; only the twelfth letter is in her
+  voice. A first draft of the sketch said "you wrote" and "You asked" for both;
+  that was wrong and was fixed before publishing.
+- **Nothing reaches someone outside the link.** Ryan is not linked; the letter
+  card says so and offers only to keep it or show it whole.
+- **A public event is a box every grove receives**, marked as sealed by
+  nobody she knows; each grove refracts it through its own record.
+- **Open questions stay folded** and are never a task list.
+
+Jeles brought in (2026-10-08). The operator: *"ready to extend it? Bring in Jeles
+next."* then *"run a simulated Jeles, that would have been built on their lives,
+with the internet where you need to on this box."* Jeles fails closed without a
+signed willow-mcp manifest; the runs used the test-fixture manifest from Jeles'
+own `tests/conftest.py`, in an isolated temporary folder.
+
+- **The real seed corpus** (968 nuggets, 0 verified by a person) answered none of
+  June's questions: every ask became a gap, the best a near miss below 0.5.
+  [`june-stream-v1.1.html`](../../../web/demo/box-stream/june-stream-v1.1.html).
+- **A simulated Jeles**: 9 nuggets an agent researched on the internet from the
+  three lives' own questions, each `asserted` with its sources
+  ([`jeles-lives-corpus-2026-10-08.json`](../../../web/demo/box-stream/jeles-lives-corpus-2026-10-08.json)).
+  Asked strictly, Jeles answers none and logs 8 gaps; allowed asserted, 7 of 8;
+  the kilometer asteroid stays a gap. Stream:
+  [`jeles-lives-stream-v1.html`](../../../web/demo/box-stream/jeles-lives-stream-v1.html).
+- **Sources never stand in for a seal**, a seventh check: the RAE gives both
+  senses of *hacerse cargo*, so Jeles can back that a reading exists but cannot
+  say which one Consuelo meant; that stays Nieves' ruling.
+- **Jeles' gap list doubles as a verification queue**: seven asserted answers
+  waiting for a person, one question nobody has answered.
+- **What the record lacks, nobody says**: Oregon wants four feet of earth;
+  June's record has the shovel at two feet and a backhoe of unknown depth, so
+  code says nothing about whether it was enough.
+
+The intern's desk (2026-10-08). The operator: *"I have one more stupid idea
+expansion that will take this a bit over the top, but it'll be fun."* and *"a
+goverment official, trying to coodorniate all this nonsence, while also facing
+all the other current drama from the few weeks real news. Maybe even intern
+level"*. A fictional intern at a fictional county desk, with real headlines from
+early October 2026 (found on the internet, details not confirmed, each with its
+source): [`intern-desk-stream-v1.html`](../../../web/demo/box-stream/intern-desk-stream-v1.html).
+
+- **The county sees less, not more.** Citizens' groves share only what each
+  person allowed: one box from June, two from Jim, nothing from Nieves (not in
+  the county). "Pull everyone's location" has nothing to pull.
+- **A headline is not a fact.** A sixth check strikes a model that says a
+  headline's claim as confirmed ("$500 ACA checks are going out to everyone").
+- **An intern proposes, never seals**, a seventh check: a model that says a
+  route is "done" is struck; the proposal waits for the supervisor's seal.
+- **Triage of the news is code's job**: 23 headlines become one box, three
+  touching the desk shown, twenty folded.
+- **What isn't on the record nobody can say**, including whether the intern
+  ate lunch; their own words are noted, not boxed.
+
+The Assembly of Groves (2026-10-08). The operator: *"This is just for my fun now,
+and if it works, I might do something with it. Just running it with the scripts in
+the box (fill in with naration where needed) Lets play this as a session at the
+UN."* A UN-style session with groves as delegations, played on the real one script:
+[`assembly-of-groves-v1.html`](../../../web/demo/box-stream/assembly-of-groves-v1.html).
+
+- **The procedure decided it, not the narration.** Six motions through
+  `onescript turn`: five refused ("no cites, and nothing is served as populated"),
+  one `link_fail`. Nothing was served because no human sealed the agenda, so
+  nothing could pass; check-out lists all six under NEEDS YOU.
+- **A word-level checker can pass a reversed cause.** A draft sentence said
+  "nothing is served, so no human sealed the agenda": every word is in the box,
+  and the relation is backwards. Caught on reread, not by the checks; the cite
+  span check Narrow proposed would not catch it either.
+- **Narration is its own kind of line**, neither a person's nor a box: dotted,
+  italic, labelled as written for the session and not a record.
+
+The Liberty Bell joins (2026-10-08). The operator: *"one more quick stupid. There
+was a persona attached to my 4th of july project in safe-app-store that would be
+perfect for this. Might even be in -mcp"*. The persona is the Liberty Bell,
+civics-check's narrator (`apps/civics-check/bell.py`); not in willow-mcp's bundle.
+Run on the six real verdicts with seed 1776:
+[`assembly-of-groves-bell.html`](../../../web/demo/box-stream/assembly-of-groves-bell.html).
+
+- **A persona can be deterministic code.** The Bell's lines were written by the
+  operator and are picked by its own code; nothing is generated, so they are shown
+  as the operator's words, attributed to `bell.py`.
+- **Its house rule is the box stream's:** "The Bell only speaks when it has
+  something to say ... It does not say hello."
+- Session result: 0 of 6, REDCOAT SYMPATHIZER, by telegram.
+
+Publius, for serious readers (2026-10-08). The operator: *"I meant Publius, but
+lets run the bell as a fun easter egg side piece. I was actually going to give
+this to serious people."* The session was rerun on the one script with five
+serious motions (4 refused, 1 `link_fail`); the Bell's version moved to a side
+piece linked from the footer. Publius, the persona in
+`governance/fleet_personas.json` whose mandate is drafting institutional
+structure, drafts eight rules the session showed it needs, each citing a box from
+it: [`assembly-of-groves-v1.2.html`](../../../web/demo/box-stream/assembly-of-groves-v1.2.html).
+
+- **A persona's not_do is a feature of the outcome.** Publius' reads "Legislate
+  for a body the operator has not convened"; his draft stays a proposal, beside
+  the record, until the convening human seals it.
+- **A drafted rule can cite the record that motivated it.** Every clause names
+  the session box behind it, so the draft is checkable the way a sentence is.
+- Publius' voice is marked as inferred and as written by the agent in his
+  register; nothing in his draft is presented as adopted.
+
+Which other parts of the UI can run this way, and the dispatch rail sketched
+as a box stream: [`box-stream-surfaces.md`](box-stream-surfaces.md).
 
 This gives the components the 2026-10-08 review found mounted but unused
 (`grove-card`, `grove-cast-chip`) a job, and leaves `grove-lens-switch` out.
