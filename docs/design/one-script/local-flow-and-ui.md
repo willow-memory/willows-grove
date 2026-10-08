@@ -221,6 +221,26 @@ own `tests/conftest.py`, in an isolated temporary folder.
   June's record has the shovel at two feet and a backhoe of unknown depth, so
   code says nothing about whether it was enough.
 
+The intern's desk (2026-10-08). The operator: *"I have one more stupid idea
+expansion that will take this a bit over the top, but it'll be fun."* and *"a
+goverment official, trying to coodorniate all this nonsence, while also facing
+all the other current drama from the few weeks real news. Maybe even intern
+level"*. A fictional intern at a fictional county desk, with real headlines from
+early October 2026 (found on the internet, details not confirmed, each with its
+source): [`intern-desk-stream-v1.html`](intern-desk-stream-v1.html).
+
+- **The county sees less, not more.** Citizens' groves share only what each
+  person allowed: one box from June, two from Jim, nothing from Nieves (not in
+  the county). "Pull everyone's location" has nothing to pull.
+- **A headline is not a fact.** A sixth check strikes a model that says a
+  headline's claim as confirmed ("$500 ACA checks are going out to everyone").
+- **An intern proposes, never seals**, a seventh check: a model that says a
+  route is "done" is struck; the proposal waits for the supervisor's seal.
+- **Triage of the news is code's job**: 23 headlines become one box, three
+  touching the desk shown, twenty folded.
+- **What isn't on the record nobody can say**, including whether the intern
+  ate lunch; their own words are noted, not boxed.
+
 Which other parts of the UI can run this way, and the dispatch rail sketched
 as a box stream: [`box-stream-surfaces.md`](box-stream-surfaces.md).
 
