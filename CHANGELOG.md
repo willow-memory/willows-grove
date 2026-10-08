@@ -2,6 +2,12 @@
 
 All notable changes land here per INVARIANTS.md §3. Format follows Keep a Changelog v1.1.0.
 
+## [Unreleased]
+
+### Added
+
+- **one-script:** deterministic P1 reconcile grader + test, and the 2026-10-08 Haiku fold ([#130](https://github.com/willow-memory/willows-grove/pull/130))
+
 ## [0.14.0](https://github.com/willow-memory/willows-grove/compare/v0.13.1...v0.14.0) (2026-10-08)
 
 
