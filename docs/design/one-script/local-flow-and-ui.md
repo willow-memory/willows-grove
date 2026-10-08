@@ -241,6 +241,23 @@ source): [`intern-desk-stream-v1.html`](../../../web/demo/box-stream/intern-desk
 - **What isn't on the record nobody can say**, including whether the intern
   ate lunch; their own words are noted, not boxed.
 
+The Assembly of Groves (2026-10-08). The operator: *"This is just for my fun now,
+and if it works, I might do something with it. Just running it with the scripts in
+the box (fill in with naration where needed) Lets play this as a session at the
+UN."* A UN-style session with groves as delegations, played on the real one script:
+[`assembly-of-groves-v1.html`](../../../web/demo/box-stream/assembly-of-groves-v1.html).
+
+- **The procedure decided it, not the narration.** Six motions through
+  `onescript turn`: five refused ("no cites, and nothing is served as populated"),
+  one `link_fail`. Nothing was served because no human sealed the agenda, so
+  nothing could pass; check-out lists all six under NEEDS YOU.
+- **A word-level checker can pass a reversed cause.** A draft sentence said
+  "nothing is served, so no human sealed the agenda": every word is in the box,
+  and the relation is backwards. Caught on reread, not by the checks; the cite
+  span check Narrow proposed would not catch it either.
+- **Narration is its own kind of line**, neither a person's nor a box: dotted,
+  italic, labelled as written for the session and not a record.
+
 Which other parts of the UI can run this way, and the dispatch rail sketched
 as a box stream: [`box-stream-surfaces.md`](box-stream-surfaces.md).
 
