@@ -98,6 +98,10 @@ A clickable sketch of the chat side, v1: [`box-stream-v1.html`](box-stream-v1.ht
 Boxes stream from the pile into the chat, a small model says them in one
 sentence, and the three checks run; five cases, including a sentence that
 fails and an unreachable record. Example content, no model behind it.
+v1.1, [`box-stream-v1.1.html`](box-stream-v1.1.html), adds: sentences that use only
+what the boxes hold, the human line drawn plain and the sentence labelled agent,
+a fifth check (the human's words quoted exactly), check chips labelled as
+example results, and a time stamp on every turn.
 
 This gives the components the 2026-10-08 review found mounted but unused
 (`grove-card`, `grove-cast-chip`) a job, and leaves `grove-lens-switch` out.

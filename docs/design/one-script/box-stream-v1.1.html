@@ -1,0 +1,432 @@
+<!doctype html>
+<!-- b17: WGRV1  ΔΣ=42 -->
+<!-- The box stream, v1.1 (2026-10-08). v1 plus five changes: the sentences use only what the boxes hold;
+     your line is drawn plain and the sentence is labelled agent with its model; a fifth check,
+     your words quoted exactly; the check chips are labelled as example results; every turn has a time stamp.
+     The operator: "add all five as v1.1,"
+     Published copy: https://claude.ai/artifact/Fc8g4z3Pxa77MaSBsbZAgE (v1.1). v1: box-stream-v1.html -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Grove Box Stream</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,MONO@-15..0,300..800,0..1,0..1&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* Layout: one desk column — the pile (every box on the record) on top, the chat card below it;
+   picked boxes stream out of the pile into the chat, a small model says them, code checks the sentence. */
+:root {
+  /* dark-first: the Grove loam */
+  --bg: #1b1712; --panel: #241e17; --panel-2: #2c251c; --line: #3a3126;
+  --fg: #efe6d5; --muted: #a3967f; --faint: #6f6453;
+  --frond: #86b86f; --sun: #e6b34c; --mint: #8fd6b9; --emerald: #46a77b;
+  --amber: #e5893b; --rust: #d9645c;
+  --glow: rgba(230,179,76,.22);
+  --display: "Recursive", ui-sans-serif, system-ui, sans-serif;
+  --body: "Atkinson Hyperlegible", ui-sans-serif, system-ui, sans-serif;
+  --mono: "Recursive", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) {
+  --bg: #eef1e7; --panel: #fbfcf7; --panel-2: #f2f5ec; --line: #d5dacb;
+  --fg: #1f2619; --muted: #5d6652; --faint: #9aa18e;
+  --frond: #3f7d2c; --sun: #a87505; --mint: #1f8a69; --emerald: #217a52;
+  --amber: #b9600f; --rust: #b23c34; --glow: rgba(168,117,5,.16);
+  color-scheme: light;
+}}
+:root[data-theme="light"] {
+  --bg: #eef1e7; --panel: #fbfcf7; --panel-2: #f2f5ec; --line: #d5dacb;
+  --fg: #1f2619; --muted: #5d6652; --faint: #9aa18e;
+  --frond: #3f7d2c; --sun: #a87505; --mint: #1f8a69; --emerald: #217a52;
+  --amber: #b9600f; --rust: #b23c34; --glow: rgba(168,117,5,.16);
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font: 15px/1.5 var(--body); }
+.wrap { max-width: 980px; margin: 0 auto; padding-inline: 16px; padding-block: 20px 48px; display: grid; gap: 18px; }
+
+header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px; }
+.brand { display: flex; align-items: center; gap: 14px; }
+.willow { font: 11px/1.05 var(--mono); font-variation-settings: "MONO" 1; color: var(--frond); white-space: pre; margin: 0; }
+.willow b { color: var(--sun); font-weight: 400; }
+h1 { font: 700 26px/1.1 var(--display); font-variation-settings: "CASL" 1; margin: 0; text-wrap: balance; }
+.sub { color: var(--muted); margin: 2px 0 0; font-size: 14px; }
+
+.scenes { display: flex; flex-wrap: wrap; gap: 8px; }
+.scenes button, .ctl {
+  font: 600 13px/1 var(--display); font-variation-settings: "CASL" .6;
+  color: var(--fg); background: var(--panel); border: 1px solid var(--line);
+  border-radius: 999px; padding: 9px 14px; cursor: pointer;
+}
+.scenes button[aria-pressed="true"] { border-color: var(--sun); box-shadow: 0 0 0 3px var(--glow); }
+.scenes button:focus-visible, .ctl:focus-visible, .say span:focus-visible { outline: 2px solid var(--sun); outline-offset: 2px; }
+
+/* the pile */
+.pile { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; display: grid; gap: 10px; }
+.pile-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; font: 12px/1.3 var(--mono); color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
+.pile-head strong { color: var(--fg); font-weight: 600; }
+.dots { display: grid; grid-template-columns: repeat(auto-fill, minmax(11px, 1fr)); gap: 4px; }
+.dot { aspect-ratio: 1; border-radius: 3px; background: var(--line); transition: transform .25s, background .25s, box-shadow .25s; }
+.dot.k-pass { background: color-mix(in oklab, var(--frond) 35%, var(--line)); }
+.dot.k-pr { background: color-mix(in oklab, var(--mint) 35%, var(--line)); }
+.dot.k-dec { background: color-mix(in oklab, var(--emerald) 40%, var(--line)); }
+.dot.k-you { background: color-mix(in oklab, var(--sun) 45%, var(--line)); }
+.dot.k-block { background: color-mix(in oklab, var(--amber) 40%, var(--line)); }
+.dot.picked { transform: scale(1.35); box-shadow: 0 0 0 2px var(--sun); z-index: 1; }
+.dot.lit { box-shadow: 0 0 0 3px var(--fg); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--muted); }
+.legend i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+
+/* the chat card */
+.chat { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+.chat-bar { display: flex; justify-content: space-between; gap: 8px; padding: 10px 16px; border-bottom: 1px solid var(--line); font: 12px/1.3 var(--mono); color: var(--muted); }
+.chat-bar b { color: var(--fg); font-weight: 600; }
+.turns { padding: 16px; display: grid; gap: 16px; }
+.you { justify-self: end; max-width: 80%; text-align: right; font: 400 17px/1.4 var(--body); border-right: 2px solid var(--fg); padding: 2px 12px 2px 0; }
+.you small { display: block; font: 11px/1.2 var(--mono); color: var(--faint); margin-bottom: 2px; }
+.box.human { --c: var(--fg); border: 0; border-left: 2px solid var(--fg); border-radius: 0; background: transparent; padding: 2px 0 2px 10px; }
+.box.human .v { font: italic 400 15px/1.35 var(--body); }
+.example { font: 11px/1.2 var(--mono); color: var(--faint); letter-spacing: .04em; }
+.chk.na { border-style: dashed; }
+
+.stream { display: grid; gap: 8px; }
+.stream-label { font: 11px/1 var(--mono); color: var(--faint); letter-spacing: .06em; text-transform: uppercase; }
+.boxes { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.box {
+  --c: var(--muted);
+  min-width: 0; background: var(--panel-2); border: 1px solid var(--line); border-top: 3px solid var(--c);
+  border-radius: 8px; padding: 8px 10px 9px; display: grid; gap: 3px;
+  transition: transform .45s cubic-bezier(.2,.9,.25,1.15), opacity .35s, box-shadow .2s, border-color .2s;
+}
+.box.enter { opacity: 0; transform: translateY(-26px) rotate(-3deg) scale(.92); }
+.box .k { font: 600 10px/1 var(--mono); letter-spacing: .07em; text-transform: uppercase; color: var(--c); display: flex; justify-content: space-between; gap: 6px; }
+.box .k span:last-child { color: var(--faint); font-weight: 400; }
+.box .v { font: 600 14px/1.25 var(--display); font-variation-settings: "CASL" .4; overflow-wrap: anywhere; }
+.box .d { font-size: 12.5px; color: var(--muted); overflow-wrap: anywhere; }
+.box.lit { box-shadow: 0 0 0 2px var(--c), 0 6px 18px -8px var(--c); transform: translateY(-2px); }
+.box.c-you { --c: var(--sun); } .box.c-dec { --c: var(--emerald); } .box.c-pr { --c: var(--mint); }
+.box.c-block { --c: var(--amber); } .box.c-pass { --c: var(--frond); }
+.box.unreach { --c: var(--amber); border-style: dashed; border-top-style: solid; background: transparent; }
+.box.empty { --c: var(--faint); border-style: dashed; background: transparent; }
+
+.reply { display: grid; gap: 10px; border-left: 2px solid var(--line); padding-left: 14px; }
+.who { font: 11px/1.2 var(--mono); color: var(--faint); display: flex; gap: 8px; align-items: center; }
+.who .pip { width: 7px; height: 7px; border-radius: 50%; background: var(--frond); }
+.who.thinking .pip { animation: pulse 1s infinite; }
+@keyframes pulse { 50% { opacity: .2; } }
+.say { font: 400 19px/1.45 var(--display); font-variation-settings: "CASL" .7; margin: 0; text-wrap: pretty; min-height: 1.45em; }
+.say span[data-c] { border-bottom: 2px solid var(--c, var(--line)); cursor: default; transition: background .2s; border-radius: 2px; }
+.say span[data-c].lit { background: color-mix(in oklab, var(--c) 22%, transparent); }
+.say span.bad { color: var(--rust); text-decoration: line-through wavy var(--rust); }
+.say.struck { opacity: .55; }
+.say.code { font: 400 14px/1.6 var(--mono); font-variation-settings: "MONO" 1; opacity: 1; }
+.say .caret { display: inline-block; width: .5ch; background: var(--sun); animation: pulse .8s infinite; }
+
+.checks { display: flex; flex-wrap: wrap; gap: 6px; }
+.chk { font: 12px/1 var(--mono); padding: 6px 9px; border-radius: 999px; border: 1px solid var(--line); color: var(--faint); display: inline-flex; gap: 6px; align-items: center; }
+.chk.ok { color: var(--frond); border-color: color-mix(in oklab, var(--frond) 50%, var(--line)); }
+.chk.no { color: var(--rust); border-color: var(--rust); }
+.note { font-size: 13px; color: var(--muted); margin: 0; }
+.note b { color: var(--fg); }
+.seal { justify-self: start; font: 600 13px/1 var(--display); color: var(--bg); background: var(--sun); border: 0; border-radius: 8px; padding: 9px 13px; text-decoration: none; }
+.seal::after { content: " ↗"; }
+
+.foot { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+.foot p { margin: 0; color: var(--faint); font-size: 12.5px; max-width: 62ch; }
+
+@media (max-width: 560px) {
+  h1 { font-size: 22px; } .willow { display: none; } .say { font-size: 17px; } .you { max-width: 92%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="brand">
+<pre class="willow" aria-hidden="true">ƒƒ  <b>*</b> . <b>*</b>
+ƒ ƒ . ƒ . ƒ
+ƒ  (║ . .) ƒ
+ƒ   ║ƒ  ƒ</pre>
+      <div>
+        <h1>The box stream</h1>
+        <p class="sub">v1.1 · Code picks the boxes. A small model says them. Code checks the sentence.</p>
+      </div>
+    </div>
+    <div class="scenes" role="group" aria-label="Scenario">
+      <button type="button" id="s-where" data-s="where" aria-pressed="true">Where are we</button>
+      <button type="button" id="s-gate" data-s="gate" aria-pressed="false">Check-in stops</button>
+      <button type="button" id="s-invent" data-s="invent" aria-pressed="false">Model invents</button>
+      <button type="button" id="s-proposal" data-s="proposal" aria-pressed="false">A proposal</button>
+      <button type="button" id="s-unreach" data-s="unreach" aria-pressed="false">Unreachable</button>
+    </div>
+  </header>
+
+  <section class="pile" aria-label="The pile">
+    <div class="pile-head"><span>The pile · <strong id="pile-n">0</strong> boxes on the record this session</span><span id="pile-pick">5 served</span></div>
+    <div class="dots" id="dots"></div>
+    <div class="legend">
+      <span><i style="background:var(--sun)"></i>needs you</span>
+      <span><i style="background:var(--emerald)"></i>decided</span>
+      <span><i style="background:var(--mint)"></i>changed</span>
+      <span><i style="background:var(--amber)"></i>blocked</span>
+      <span><i style="background:var(--frond)"></i>routine pass</span>
+    </div>
+  </section>
+
+  <section class="chat" aria-label="Chat">
+    <div class="chat-bar"><span><b>chat</b> · willow · operator</span><span id="when"></span></div>
+    <div class="turns">
+      <div class="you"><small>you wrote</small><span id="line"></span></div>
+      <div class="stream">
+        <div class="stream-label" id="stream-label">served to the model</div>
+        <div class="boxes" id="boxes"></div>
+      </div>
+      <div class="reply" id="reply">
+        <div class="who" id="who"><span class="pip"></span><span id="who-t">willow · narrated from 5 boxes</span></div>
+        <p class="say" id="say"></p>
+        <div class="example" id="example" hidden>example result · these checks are written into the sketch, not computed</div>
+        <div class="checks" id="checks"></div>
+        <div id="extra"></div>
+        <p class="note" id="note" hidden></p>
+      </div>
+    </div>
+  </section>
+
+  <div class="foot">
+    <p>Prototype with example content from the 2026-10-08 session. Hover a phrase to see the box it came from. Nothing here talks to a model; the sentences are written to show what each case looks like.</p>
+    <button type="button" class="ctl" id="replay">▶ Play the stream</button>
+  </div>
+</div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // The pile: about 150 boxes, mostly routine passes, as this session's tables were.
+  const KINDS = [['pass', 96], ['pr', 18], ['dec', 14], ['block', 12], ['you', 8]];
+  const pile = [];
+  KINDS.forEach(([k, n]) => { for (let i = 0; i < n; i++) pile.push(k); });
+  // deterministic shuffle so the page looks the same for everyone
+  let seed = 113;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (let i = pile.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [pile[i], pile[j]] = [pile[j], pile[i]]; }
+  const dotsEl = $('dots');
+  pile.forEach((k, i) => { const d = document.createElement('div'); d.className = 'dot k-' + k; d.dataset.i = i; dotsEl.appendChild(d); });
+  $('pile-n').textContent = pile.length;
+  const firstOf = (k, skip = 0) => { let n = 0; for (let i = 0; i < pile.length; i++) if (pile[i] === k && n++ === skip) return i; return 0; };
+
+  const C = { you: 'you', dec: 'dec', pr: 'pr', block: 'block', pass: 'pass' };
+  const box = (id, kind, label, v, d, extra = {}) => ({ id, kind, label, v, d, dot: firstOf(kind, extra.nth || 0), ...extra });
+
+  const MODEL = 'qwen3:4b';
+  const SCENES = {
+    where: {
+      line: 'where are we', at: '09:14',
+      label: 'agent boxes served to the model · picked: needs you, changed, decided, blocked, routine',
+      boxes: [
+        box('b1', C.dec, 'decided', 'Phone only proposes', 'seal in Nestor on the box · recorded'),
+        box('b2', C.pr, 'changed', 'PR #127 open', 'grid rows JE–JI · baton 9', { nth: 0 }),
+        box('b3', C.pr, 'changed', 'PR #714 open', 'untracks 3 bytecode files', { nth: 1 }),
+        box('b4', C.block, 'blocked', 'PR 712 waiting', 'broker verb · 126 tests pass'),
+        box('b5', C.you, 'needs you', 'Ratify the work order', 'local-flow-and-ui §7'),
+      ],
+      say: [['"Phone only proposes" is decided and recorded', 'b1'], ['; '], ['PR #127', 'b2'], [' and '], ['PR #714 are open', 'b3'], ['; '], ['PR 712 is waiting with 126 tests passing', 'b4'], ['; '], ['you need to ratify the work order', 'b5'], ['.']],
+      checks: [true, true, true, 'na'],
+      note: 'Every word, number and name in the sentence is in a box, and all five boxes are cited. No words of yours were served, so check 5 has nothing to check.',
+    },
+    gate: {
+      line: 'check in', at: '09:02',
+      label: 'agent boxes · step result · checkin',
+      boxes: [
+        box('c1', C.block, 'step', 'Check-in hard-closed', 'toolchain gate'),
+        box('c2', C.block, 'gate', 'ruff 0.16.10', 'installed in the venv', { nth: 1 }),
+        box('c3', C.pass, 'pin', 'ruff 0.16.7', 'pinned by the grove CI'),
+        box('c4', C.pass, 'probes', '4 of 4 held', 'record, clock, box, law', { nth: 1 }),
+        box('c5', C.you, 'needs you', 'Pick one', 'put back · grant · block · stop'),
+      ],
+      say: [['Check-in hard-closed on the toolchain gate', 'c1'], [': '], ['ruff 0.16.10 is installed', 'c2'], [' but '], ['0.16.7 is pinned', 'c3'], ['; '], ['4 of 4 probes held', 'c4'], ['; '], ['pick one: put back, grant, block or stop', 'c5'], ['.']],
+      checks: [true, true, true, 'na'],
+      note: 'The four choices come from the box, so they render as buttons, not as text the model made up.',
+      choices: ['Put it back', 'Keep as a grant', 'Block until I decide', 'Stop here'],
+    },
+    invent: {
+      line: 'where are we', at: '09:14',
+      label: 'agent boxes served to the model · the same five',
+      boxes: null, // reuse "where"
+      say: [['"Phone only proposes" is decided and recorded', 'b1'], ['; '], ['PR #127', 'b2'], [' and '], ['PR #714 are open', 'b3'], ['; '], ['PR 712 is waiting with ', 'b4'], ['140', null, 'bad'], [' tests passing', 'b4'], ['; '], ['you need to ratify the work order', 'b5'], ['.']],
+      checks: [true, true, false, 'na'],
+      fallback: 'b1 decided: Phone only proposes. b2 changed: PR #127 open. b3 changed: PR #714 open. b4 blocked: PR 712 waiting, 126 tests pass. b5 needs you: Ratify the work order.',
+      note: '<b>140</b> is in no box. The sentence is struck and code fills one in from the same boxes instead.',
+    },
+    proposal: {
+      line: 'draft the notes for the scope', at: '09:31',
+      label: 'your line, then agent boxes · proposals back from rat_turn, graded by turn',
+      boxes: [
+        { id: 'h1', kind: 'human', label: 'you wrote', v: 'draft the notes for the scope', d: '', dot: -1 },
+        box('p1', C.pass, 'pass', 'Scope notes', 'awaiting your seal', { nth: 2 }),
+        box('p2', C.block, 'link_fail', 'Draft notes', 'cites a table not served', { nth: 2 }),
+        box('p3', C.block, 'refused', 'Line 2', 'path not allowed', { nth: 3 }),
+      ],
+      say: [['You wrote "draft the notes for the scope"', 'h1'], ['; '], ['scope notes pass and are awaiting your seal', 'p1'], ['; '], ['draft notes cite a table not served', 'p2'], ['; '], ['line 2 is refused, path not allowed', 'p3'], ['.']],
+      checks: [true, true, true, true],
+      note: 'Your words are quoted exactly and marked as yours. Nothing is written until you seal the passing proposal in Nestor.',
+      seal: true,
+    },
+    unreach: {
+      line: 'what needs me', at: '09:40',
+      label: 'serve',
+      boxes: [
+        { id: 'u1', kind: 'unreach', label: 'unreachable', v: 'The record could not be read', d: 'box not found at .flow/onescript', dot: -1 },
+      ],
+      say: null,
+      note: 'Nothing was served, so the model is not asked. An unreachable record never looks like an empty one.',
+    },
+  };
+  SCENES.invent.boxes = SCENES.where.boxes;
+
+  let token = 0;
+  const sleep = (ms) => new Promise((r) => setTimeout(r, reduce ? 0 : ms));
+  const CHECK_NAMES = ['every cite was served', 'every box cited', 'nothing the boxes lack', 'your words quoted exactly'];
+
+  function link(id, on) {
+    document.querySelectorAll(`[data-c="${id}"], .box[data-id="${id}"]`).forEach((el) => el.classList.toggle('lit', on));
+    const b = document.querySelector(`.box[data-id="${id}"]`);
+    if (b && b.dataset.dot >= 0) dotsEl.children[b.dataset.dot]?.classList.toggle('lit', on);
+  }
+
+  function boxEl(b, entering) {
+    const el = document.createElement('div');
+    el.className = 'box ' + (b.kind === 'unreach' ? 'unreach' : b.kind === 'empty' ? 'empty' : b.kind === 'human' ? 'human' : 'c-' + b.kind) + (entering ? ' enter' : '');
+    el.dataset.id = b.id; el.dataset.dot = b.dot;
+    el.innerHTML = '<div class="k"><span></span><span></span></div><div class="v"></div><div class="d"></div>';
+    el.querySelector('.k span').textContent = b.label;
+    el.querySelector('.k span:last-child').textContent = b.id;
+    el.querySelector('.v').textContent = b.v;
+    el.querySelector('.d').textContent = b.d;
+    el.addEventListener('mouseenter', () => link(b.id, true));
+    el.addEventListener('mouseleave', () => link(b.id, false));
+    return el;
+  }
+
+  function colorOf(id, sc) {
+    const b = (sc.boxes || []).find((x) => x.id === id);
+    const map = { you: '--sun', dec: '--emerald', pr: '--mint', block: '--amber', pass: '--frond', human: '--fg' };
+    return b ? `var(${map[b.kind]})` : 'var(--line)';
+  }
+
+  function sayEl(sc, upto) {
+    const p = $('say'); p.className = 'say'; p.innerHTML = '';
+    let left = upto;
+    for (const [t, c, bad] of sc.say) {
+      if (left <= 0) break;
+      const s = document.createElement('span');
+      const words = t.split(/(\s+)/);
+      let text = '';
+      for (const w of words) { if (left <= 0) break; text += w; if (w.trim()) left--; }
+      s.textContent = text;
+      if (c) { s.dataset.c = c; s.style.setProperty('--c', colorOf(c, sc)); s.tabIndex = 0;
+        s.addEventListener('mouseenter', () => link(c, true)); s.addEventListener('mouseleave', () => link(c, false));
+        s.addEventListener('focus', () => link(c, true)); s.addEventListener('blur', () => link(c, false)); }
+      if (bad) s.className = 'bad-pending';
+      p.appendChild(s);
+    }
+    return p;
+  }
+  const wordCount = (sc) => sc.say.reduce((n, [t]) => n + t.split(/\s+/).filter(Boolean).length, 0);
+
+  function checksEl(states) {
+    const el = $('checks'); el.innerHTML = '';
+    CHECK_NAMES.forEach((n, i) => {
+      const s = document.createElement('span');
+      const st = states[i];
+      s.className = 'chk' + (st === true ? ' ok' : st === false ? ' no' : st === 'na' ? ' na' : '');
+      s.textContent = (st === true ? '✓ ' : st === false ? '✗ ' : st === 'na' ? '– ' : '· ') + n + (st === 'na' ? ' (none served)' : '');
+      el.appendChild(s);
+    });
+  }
+
+  function finish(sc) {
+    const note = $('note'), extra = $('extra');
+    extra.innerHTML = '';
+    if (sc.say && sc.checks.includes(false)) {
+      document.querySelectorAll('.bad-pending').forEach((s) => (s.className = 'bad'));
+      $('say').classList.add('struck');
+      const fb = document.createElement('p'); fb.className = 'say code'; fb.textContent = sc.fallback;
+      extra.appendChild(fb);
+      $('who-t').textContent = `agent · ${MODEL} · sentence failed a check · replaced by a code sentence`;
+    }
+    if (sc.choices) {
+      const row = document.createElement('div'); row.className = 'scenes';
+      sc.choices.forEach((c, i) => { const b = document.createElement('button'); b.type = 'button'; b.id = 'choice-' + i; b.textContent = c; b.setAttribute('aria-pressed', 'false');
+        b.addEventListener('click', () => { row.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', 'false')); b.setAttribute('aria-pressed', 'true'); });
+        row.appendChild(b); });
+      extra.appendChild(row);
+    }
+    if (sc.seal) {
+      const a = document.createElement('a'); a.className = 'seal'; a.href = 'http://127.0.0.1:8765/'; a.target = '_blank'; a.rel = 'noopener';
+      a.textContent = 'Seal in Nestor'; extra.appendChild(a);
+    }
+    note.innerHTML = sc.note; note.hidden = false;
+  }
+
+  async function play(name, animate) {
+    const my = ++token;
+    const sc = SCENES[name];
+    document.querySelectorAll('.scenes [data-s]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.s === name)));
+    [...dotsEl.children].forEach((d) => d.classList.remove('picked', 'lit'));
+    $('line').textContent = sc.line;
+    $('stream-label').textContent = sc.label;
+    $('pile-pick').textContent = sc.boxes.filter((b) => b.dot >= 0).length + ' picked from the pile';
+    const boxesEl = $('boxes'); boxesEl.innerHTML = '';
+    $('say').innerHTML = ''; $('say').className = 'say'; $('checks').innerHTML = ''; $('extra').innerHTML = '';
+    $('note').hidden = true;
+    $('reply').hidden = false;
+    $('who').classList.remove('thinking');
+    $('who-t').textContent = sc.say ? `agent · ${MODEL} · narrated from ${sc.boxes.length} served` : 'agent · nothing to narrate';
+    $('when').textContent = 'from the box · ' + sc.at;
+    $('example').hidden = !sc.say;
+    const go = animate && !reduce;
+
+    for (const b of sc.boxes) {
+      if (b.dot >= 0) dotsEl.children[b.dot].classList.add('picked');
+      const el = boxEl(b, go); boxesEl.appendChild(el);
+      if (go) { await sleep(260); if (my !== token) return; requestAnimationFrame(() => el.classList.remove('enter')); await sleep(220); }
+    }
+    if (my !== token) return;
+    if (!sc.say) { finish(sc); return; }
+
+    const total = wordCount(sc);
+    if (go) {
+      $('who').classList.add('thinking'); checksEl([null, null, null, null]);
+      await sleep(700); if (my !== token) return;
+      for (let i = 1; i <= total; i++) {
+        sayEl(sc, i); const caret = document.createElement('span'); caret.className = 'caret'; caret.innerHTML = '&nbsp;'; $('say').appendChild(caret);
+        await sleep(70); if (my !== token) return;
+      }
+      $('who').classList.remove('thinking');
+      sayEl(sc, total);
+      const st = [null, null, null, null];
+      for (let i = 0; i < 4; i++) { await sleep(380); if (my !== token) return; st[i] = sc.checks[i]; checksEl(st); }
+      await sleep(300); if (my !== token) return;
+    } else {
+      sayEl(sc, total); checksEl(sc.checks);
+    }
+    finish(sc);
+  }
+
+  document.querySelectorAll('.scenes [data-s]').forEach((b) => b.addEventListener('click', () => play(b.dataset.s, true)));
+  $('replay').addEventListener('click', () => {
+    const cur = document.querySelector('.scenes [aria-pressed="true"]')?.dataset.s || 'where';
+    play(cur, true);
+  });
+  play('where', false); // complete at rest
+})();
+</script>
+</body>
+</html>
