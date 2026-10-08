@@ -174,6 +174,29 @@ pushing it a bit. So, and it's theory right now. I'll give you the scope."*,
 - Open: enrolling the other grove's key in person, contents on u2u's
   plaintext wire before Gate 6, and revoking a key after the sale.
 
+A third life (2026-10-08). The operator: *"lets bring in a third life. One of the
+post apoloptic ones"* and *"It's here. It just turned into a silly story at the
+end. It was a group of 5 I think,"*. Found in Nestor's capability-probe life
+simulation (`audits/2026-08-19-capability-probe/lives/`: Elena, Marcus, June,
+Damon, Yuki, and the Bombardment). June Akiyama, from `june_akiyama.py` and
+`global_event_meteoroids.py`: [`june-stream-v1.html`](june-stream-v1.html).
+The sandbox builder needs SQL files that are not in the repo, so the boxes were
+read from the modules. What it added:
+
+- **An agent's reading of a person is a proposal, never a fact.** The
+  simulation's rulings ("revealed the margin she was operating on") are shown
+  as dashed proposal boxes she can accept, fold or reject; a model that says
+  "You can't handle the farm alone" is struck.
+- **Written about you is not written by you.** Her record is the simulation's
+  third-person account and is labelled so; only the twelfth letter is in her
+  voice. A first draft of the sketch said "you wrote" and "You asked" for both;
+  that was wrong and was fixed before publishing.
+- **Nothing reaches someone outside the link.** Ryan is not linked; the letter
+  card says so and offers only to keep it or show it whole.
+- **A public event is a box every grove receives**, marked as sealed by
+  nobody she knows; each grove refracts it through its own record.
+- **Open questions stay folded** and are never a task list.
+
 Which other parts of the UI can run this way, and the dispatch rail sketched
 as a box stream: [`box-stream-surfaces.md`](box-stream-surfaces.md).
 
