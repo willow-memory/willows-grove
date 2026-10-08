@@ -103,6 +103,15 @@ what the boxes hold, the human line drawn plain and the sentence labelled agent,
 a fifth check (the human's words quoted exactly), check chips labelled as
 example results, and a time stamp on every turn.
 
+The chat reads as a conversation (2026-10-08). The operator: *"All right so
+let's think about this as a casual conversation instead of just pure system
+talk"* and *"yes, the chat should read more conversational in the ui"*. The
+facts stay as strict as before; only the voice loosens. One or two things at a
+time with "more?" for the next, reply chips that land as the human's plain
+line, small talk answered by code with no model, a repeated question answered
+from the pile, and a short fixed list of free glue words that carry no facts.
+Sketch v1.2: [`box-stream-v1.2.html`](box-stream-v1.2.html).
+
 Which other parts of the UI can run this way, and the dispatch rail sketched
 as a box stream: [`box-stream-surfaces.md`](box-stream-surfaces.md).
 
