@@ -2,6 +2,17 @@
 
 All notable changes land here per INVARIANTS.md §3. Format follows Keep a Changelog v1.1.0.
 
+## [0.14.0](https://github.com/willow-memory/willows-grove/compare/v0.13.1...v0.14.0) (2026-10-08)
+
+
+### Added
+
+* **demo:** split the box stream sketches into a demo Grove serves ([ed10c54](https://github.com/willow-memory/willows-grove/commit/ed10c54582ceb7f6134908123aa51bef07ca42ba))
+* **demo:** the Assembly for serious readers, with Publius; the Bell a side piece ([698b7f4](https://github.com/willow-memory/willows-grove/commit/698b7f41faae6e6f54e6580295a4a1143a622a7c))
+* **demo:** the Assembly of Groves, a UN-style session on the real one script ([f7ff5e5](https://github.com/willow-memory/willows-grove/commit/f7ff5e5209a4e200e5b876f1eee31c70e79f75ca))
+* **demo:** the box stream demo, from chat to three lives, Jeles and the intern's desk ([#128](https://github.com/willow-memory/willows-grove/issues/128)) ([9e164f5](https://github.com/willow-memory/willows-grove/commit/9e164f5d50c3b28a793e632209996d23d4f9088d))
+* **demo:** the Liberty Bell rings, grudgingly, at the Assembly of Groves ([02ace97](https://github.com/willow-memory/willows-grove/commit/02ace970653fa8616d97e6b420545a115cfd2cc0))
+
 ## [0.13.1](https://github.com/willow-memory/willows-grove/compare/v0.13.0...v0.13.1) (2026-10-07)
 
 
