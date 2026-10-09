@@ -2,6 +2,14 @@
 
 All notable changes land here per INVARIANTS.md §3. Format follows Keep a Changelog v1.1.0.
 
+## [0.16.0](https://github.com/willow-memory/willows-grove/compare/v0.15.0...v0.16.0) (2026-10-09)
+
+
+### Added
+
+* **seat:** the seat pools and deposits, it never seals ([944cfa1](https://github.com/willow-memory/willows-grove/commit/944cfa1a5af60579668a901e9e9a7f1dbecc2843))
+* **seat:** the seat pools and deposits, it never seals ([#133](https://github.com/willow-memory/willows-grove/issues/133)) ([fbc114c](https://github.com/willow-memory/willows-grove/commit/fbc114c6a35a80be4aa0740e0f84048ee88824b6))
+
 ## [0.15.0](https://github.com/willow-memory/willows-grove/compare/v0.14.0...v0.15.0) (2026-10-09)
 
 
