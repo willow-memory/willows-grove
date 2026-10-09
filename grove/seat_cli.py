@@ -12,15 +12,21 @@ writes nothing but a scratch file per cloud turn.
 The stages, in order, each shown in the prompt (``scope ▶``):
 
     checkin    api.checkin: the record, the probes, the four gates
-    scope      api.scope proposes a stack; the human seals its subject
-    served     api.serve writes the one file the model reads (three states)
+    scope      api.scope proposes a stack and names its subject; no prompt
+    served     api.serve is the silent start-check: it serves only a scope a
+               past human seal already covers (three states, never collapsed)
     chain      api.escalate: D0 code, then the hash record, then a local rung
     flowering  for a piece the chain left, one cloud turn on the human's yes:
                ``ratatosk --onescript --class flowering`` (the ladder picks
                the provider), its rows judged by api.take_proposals
-    proposals  each pass shown; the human seals it (api.seal_proposal) or
-               leaves it
-    checkout   api.checkout, on exit, EOF or Ctrl-C alike
+    proposals  each pass shown and left pooled; nothing is sealed here
+    checkout   api.checkout, on exit, EOF or Ctrl-C alike; then the pool is
+               deposited into Nestor as drafts (willow-mcp's
+               ``onescript_deposit``, injectable) and ONE ``seal ↗`` offer
+               points at the Nestor UI, the only place a seal is made
+
+The seat never seals: no prompt asks for one, it holds no key, and the deposit
+only proposes.
 
 The operator, 2026-10-09: "The deterministic chain runs, esclates to local
 models if need be, then to the cloud models"; "It should live in the grove,
@@ -51,6 +57,8 @@ ESCALATE_PATH = "ESCALATE"
 NO_FLOWER = frozenset({"cap", "empty_scope"})
 DEFAULT_MAX_CHARS = 48_000
 FLOWER_TIMEOUT = 300.0
+NESTOR_UI = "http://127.0.0.1:8765"
+NO_DEPOSIT = "deposit unavailable here: willow-mcp not on the path"
 
 
 class SeatUnavailable(Exception):
@@ -149,6 +157,36 @@ def ratatosk_flowering(
     return flower
 
 
+# --- the deposit ---------------------------------------------------------------
+
+
+def pool_state(pool: dict) -> dict:
+    """``api.pooled``'s answer in the state shape ``onescript_deposit`` reads."""
+    if "refused" in pool:
+        return {"state": "unreachable", "reason": str(pool["refused"])}
+    items = pool.get("pooled") or []
+    if not items:
+        return {"state": "empty", "reason": "the pool is empty"}
+    return {"state": "populated", "stdout_json": {"pooled": items}}
+
+
+def willow_mcp_deposit(app_id: str = "willow") -> Callable[[dict], dict]:
+    """The default deposit: willow-mcp's ``onescript_deposit.deposit`` over the
+    pool ``api.pooled`` read. It proposes drafts into Nestor and seals nothing.
+    willow-mcp is imported here, on first use, so this module loads without it;
+    where it isn't importable the answer is ``unreachable``, never ``empty``."""
+
+    def deposit(pool: dict) -> dict:
+        try:
+            from willow_mcp.db import Store
+            from willow_mcp.onescript_deposit import deposit as put
+        except ImportError as e:
+            return {"state": "unreachable", "reason": f"{NO_DEPOSIT} ({e})"}
+        return put(app_id, store=Store(), read_pool=lambda: pool_state(pool))
+
+    return deposit
+
+
 # --- the seat ------------------------------------------------------------------
 
 
@@ -167,14 +205,16 @@ class Seat:
         cfg: Any,
         *,
         flower: Callable[[dict, str], dict] | None = None,
+        deposit: Callable[[dict], dict] | None = None,
         read: Callable[[str], str] = input,
         write: Callable[[str], None] = print,
     ):
         self.bot, self.api, self.cfg = bot, bot.api, cfg
         self.flower = flower or ratatosk_flowering()
+        self.deposit = deposit or willow_mcp_deposit()
         self.read, self.write = read, write
         self.doc: dict | None = None
-        self.pending: list[dict] = []  # proposals that passed, not yet sealed
+        self.pending: list[dict] = []  # passes not yet shown; the pool keeps them
 
     def ask(self, stage: str, prompt: str = "") -> str:
         return self.read(f"{stage} ▶ {prompt}").strip()
@@ -208,32 +248,13 @@ class Seat:
         if self.refused(res):
             return False
         if not res.get("ids"):
-            self.write("  empty — no table matches; nothing to seal")
+            self.write("  empty — no table matches; nothing to serve")
             return False
         for t in res.get("stack", []):
             self.write(f"  {t['name']}  {t['rows']} rows  {t['id'][:12]}")
+        self.write(f"  subject: {res['subject']}")
         self.spec = res["spec"]
-        return self.seal(res["subject"], self.api.seal_scope, what="scope")
-
-    def seal(self, subject: str, fn: Callable, *, what: str) -> bool:
-        """The human's seal: a Nestor pair found by subject, or a proof typed in.
-        The seat never holds a key."""
-        self.write(f"  subject: {subject}")
-        while True:
-            got = self.ask("seal", f"{what}: [s]eal (Nestor) / p <proof> / [n]o: ")
-            if got in ("n", "no", ""):
-                self.write(f"  {what} left unsealed")
-                return False
-            proof = got[2:].strip() if got.startswith("p ") else None
-            if proof is None and got not in ("s", "seal"):
-                continue
-            res = fn(self.cfg, subject, proof=proof)
-            if self.refused(res):
-                return False
-            if res.get("sealed"):
-                self.write(f"  sealed {subject[:24]}…")
-                return True
-            self.write(f"  not sealed: {res.get('row', {}).get('reason', '?')}")
+        return True
 
     def served(self) -> bool:
         raw = self.ask("served", f"cap in characters [{DEFAULT_MAX_CHARS}]: ")
@@ -301,6 +322,8 @@ class Seat:
                             self.write(f"  {p.get('verdict')}: {p.get('reason')}")
 
     def proposals(self) -> None:
+        """Show each pass and leave it pooled: the rows are already on record
+        (the chain and ``take_proposals`` wrote them); nothing is sealed here."""
         while self.pending:
             p = self.pending.pop(0)
             subject = p.get("subject") or self.bot.subject(
@@ -309,12 +332,40 @@ class Seat:
             self.write(f"  {p['path']}  cites {len(p['cites'])}  — {p['claim']}")
             data = p["data"] if len(p["data"]) <= 400 else p["data"][:399] + "…"
             self.write("    " + data.replace("\n", "\n    "))
-            self.seal(subject, self.api.seal_proposal, what="proposal")
+            self.write(f"    pooled: {subject}")
 
     def checkout(self) -> None:
         res = self.api.checkout(self.cfg)
         if not self.refused(res):
             self.write(res.get("screen", ""))
+        self.close_out()
+
+    def close_out(self) -> None:
+        """Deposit the pool as Nestor drafts, then make the one seal offer."""
+        pool = self.api.pooled(self.cfg)
+        items = [p for p in pool.get("pooled") or [] if isinstance(p, dict)]
+        if "refused" in pool:
+            self.write(f"  pool: unreachable — {pool['refused']}")
+            return
+        try:
+            got = self.deposit(pool)
+        except Exception as e:  # noqa: BLE001 - the close-out must not raise
+            got = {"state": "unreachable", "reason": f"{type(e).__name__}: {e}"}
+        state = got.get("state")
+        if state != "populated":
+            self.write(f"  deposit: {three_state(state, got.get('reason', ''))}")
+            if state != "empty":  # nothing went in; show what is pooled
+                for p in items:
+                    self.write(f"    pooled, not deposited: {p.get('subject')}")
+            return
+        drafts = got.get("deposited") or []
+        self.write(f"  deposit: populated — {len(drafts)} in Nestor as drafts")
+        for d in drafts:
+            if d.get("status") == "error":
+                self.write(f"    {d.get('subject')}  ERROR: {d.get('error')}")
+            else:
+                self.write(f"    {d.get('subject')}  {d.get('status')}")
+        self.write(f"  seal ↗ {NESTOR_UI}  (the only place a seal is made)")
 
     def run(self) -> int:
         try:
