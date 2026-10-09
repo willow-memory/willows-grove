@@ -25,6 +25,7 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 - **one-script:** deterministic P1 reconcile grader + test, and the 2026-10-08 Haiku fold (PR 130)
 - **seat:** the desk's CLI seat (`scripts/grove-seat`, `grove/seat_cli.py`): the one script at a terminal beside the web and APK; flowering turns go through Rat's ladder (`ratatosk --onescript --class flowering`, willow-memory/ratatosk#85) (PR 131)
 - **seat:** the CLI seat pools its proposals and deposits them at close-out (ProposeOnly), with no inline seal (`grove/seat_cli.py`, `tests/test_seat_cli.py`) (PR 133)
+- **seat:** the CLI seat prints the deterministic box stream, mirroring `box-stream-v1.3`: box cards, the pile header, three states never collapsed, who-wrote-it, `more?`, chips and asked-again, plain ASCII under `NO_COLOR` or a non-tty; a raising `api.pooled` at close-out is now `unreachable`, not a traceback (`grove/seat_boxes.py`, `grove/seat_cli.py`, `tests/test_seat_cli.py`) (PR 135)
 
 ## [0.14.0](https://github.com/willow-memory/willows-grove/compare/v0.13.1...v0.14.0) (2026-10-08)
 
