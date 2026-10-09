@@ -2,6 +2,14 @@
 
 All notable changes land here per INVARIANTS.md §3. Format follows Keep a Changelog v1.1.0.
 
+## [0.17.0](https://github.com/willow-memory/willows-grove/compare/v0.16.0...v0.17.0) (2026-10-09)
+
+
+### Added
+
+* **seat:** the seat prints the deterministic box stream ([c49a33f](https://github.com/willow-memory/willows-grove/commit/c49a33f858f48a3b4ccdc0377ee95d9435627238))
+* **seat:** the seat prints the deterministic box stream ([#135](https://github.com/willow-memory/willows-grove/issues/135)) ([83a3226](https://github.com/willow-memory/willows-grove/commit/83a3226570d100d1fdeb0b45c6b51574ebb2562e))
+
 ## [0.16.0](https://github.com/willow-memory/willows-grove/compare/v0.15.0...v0.16.0) (2026-10-09)
 
 
