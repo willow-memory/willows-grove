@@ -29,13 +29,19 @@ The seat never seals: no prompt asks for one, it holds no key, and the deposit
 only proposes.
 
 What the seat prints is the box stream (``grove/seat_boxes.py``, after
-``web/demo/box-stream/box-stream-v1.3.html``), composed by code with no model:
-everything the agent says is a box card or a reply made of cards, a line that
-is not one is the human's, and a sentence is built from box facts plus fixed
-glue. A chain turn shows two boxes at a time (``more?``), small talk is
-answered by code, and a task asked again is shown again from the pile, stamped
-with when it was first said. Under ``NO_COLOR`` or a non-tty the cards are
-plain ASCII with no escape codes.
+``web/demo/box-stream/box-stream-v1.3.html``): everything the agent says is a
+box card or a reply made of cards, a line that is not one is the human's. A
+reply's one sentence is said by a local model (``qwen3:4b`` on the Ollama
+loopback, the injected ``say``; ``grove/seat_say.py``) and then checked by code
+against the boxes: every cite served, every box cited, nothing the boxes lack,
+the human's words quoted exactly. A sentence that fails a check is shown
+struck and replaced by the sentence code composes from box facts plus fixed
+glue, which is also what stands when the model can't be reached (an
+``unreachable`` card, never a crash). With no ``say`` the seat is code only.
+A chain turn shows two boxes at a time (``more?``), small talk is answered by
+code, and a task asked again is shown again from the pile, stamped with when it
+was first said. Under ``NO_COLOR`` or a non-tty the cards are plain ASCII with
+no escape codes.
 
 The operator, 2026-10-09: "The deterministic chain runs, esclates to local
 models if need be, then to the cloud models"; "It should live in the grove,
@@ -65,12 +71,23 @@ from grove.seat_boxes import (
     Box,
     compose,
     human_line,
+    checks_line,
     legend,
     pile_header,
     render_box,
     say_line,
+    struck_line,
     use_color,
     who_line,
+)
+from grove.seat_say import (
+    CHECK_NAMES,
+    MODEL,
+    SayUnreachable,
+    build_prompt,
+    ollama_say,
+    passed,
+    run_checks,
 )
 
 GROVE_ROOT = Path(__file__).resolve().parent.parent
@@ -107,6 +124,9 @@ class Bot:
     cut: Callable[[dict, str, int], list[dict]]
     subject: Callable[[dict], str]
     piece_chars: int
+    #: The one script's layer-5 narration gate (``gate.check_claims``), the
+    #: function ``Run.say`` wraps; the quote check calls it when it is here.
+    claims: Callable[[str, dict], list[dict]] | None = None
 
 
 def bot_root() -> Path:
@@ -122,10 +142,12 @@ def load_bot(root: Path) -> Bot:
         )
     sys.path.insert(0, str(one))
     try:
-        from onescript import api, escalate, proposals
+        from onescript import api, escalate, gate, proposals
     except ImportError as e:
         raise SeatUnavailable(f"unreachable: the one script won't import: {e}") from e
-    return Bot(api, escalate.cut, proposals.subject, escalate.PIECE_CHARS)
+    return Bot(
+        api, escalate.cut, proposals.subject, escalate.PIECE_CHARS, gate.check_claims
+    )
 
 
 def config(bot: Bot, root: Path, grove: Path = GROVE_ROOT):
@@ -236,13 +258,28 @@ def _norm(text: str) -> str:
 
 
 @dataclass
+class Said:
+    """One reply as it stood: the boxes, who said the sentence, and the lines
+    after the who-line. ``checks`` is empty unless a model sentence was
+    checked; ``tail`` is the code sentence that replaced a struck one."""
+
+    batch: list[Box]
+    who: str
+    replay_who: str
+    lines: list[str]
+    cards: list[Box] = field(default_factory=list)
+    checks: list = field(default_factory=list)
+    tail: list[str] = field(default_factory=list)
+
+
+@dataclass
 class Turn:
     """One answered question, kept in the pile: what was said, and what is
     still waiting behind ``more?``. Asking again replays ``shown``."""
 
     at: str
     rest: list[Box]
-    shown: list[tuple[list[Box], str]] = field(default_factory=list)
+    shown: list[Said] = field(default_factory=list)
 
 
 class Seat:
@@ -253,6 +290,8 @@ class Seat:
         *,
         flower: Callable[[dict, str], dict] | None = None,
         deposit: Callable[[dict], dict] | None = None,
+        say: Callable[[str], str] | None = None,
+        model: str = MODEL,
         read: Callable[[str], str] = input,
         write: Callable[[str], None] = print,
         color: bool | None = None,
@@ -261,6 +300,8 @@ class Seat:
         self.bot, self.api, self.cfg = bot, bot.api, cfg
         self.flower = flower or ratatosk_flowering()
         self.deposit = deposit or willow_mcp_deposit()
+        #: The local model's sentence, ``say(prompt) -> str``. None: code only.
+        self.say, self.model = say, model
         self.read, self.write = read, write
         self.color = use_color() if color is None else color
         self.clock = clock
@@ -303,39 +344,98 @@ class Seat:
     def you(self, text: str) -> None:
         self.write(human_line(text, self.color))
 
-    def reply(self, boxes: list[Box], sentence: str, who: str) -> None:
-        self.show(*boxes)
+    def emit(self, said: Said, at: str = "") -> None:
+        """A reply: boxes, who said the sentence, the sentence, its check chips
+        and any code sentence that replaced a struck one. ``at`` is set when it
+        is shown again from the pile."""
+        self.show(*said.batch, *said.cards)
+        who = said.replay_who.format(at=at) if at else said.who
         self.write(who_line(who, self.color))
-        self.write(say_line(sentence))
+        for ln in said.lines:
+            self.write(ln)
+        if said.checks:
+            prefix = f"checks as they passed at {at}:" if at else "checks:"
+            self.write(checks_line(said.checks, CHECK_NAMES, prefix, self.color))
+        for ln in said.tail:
+            self.write(ln)
+
+    def speak(self, batch: list[Box], first: bool, human: str) -> Said:
+        """One reply's sentence. The model says it and code checks it; a
+        sentence that fails a check is struck and code's stands; a model that
+        can't be reached is an ``unreachable`` card and code's stands. Code's
+        sentence is composed either way and is never a crash."""
+        n = len(batch)
+        code = compose(batch, first=first)
+        again = "{at}"
+        if self.say is None:
+            return Said(
+                batch,
+                f"code · said {n} boxes, no model asked",
+                "code · shown again from the pile, no model asked now",
+                [say_line(code)],
+            )
+        replay = (
+            f"{self.model} at {again} · shown again from the pile, no model asked now"
+        )
+        try:
+            sentence = " ".join(
+                str(self.say(build_prompt(batch, human, first))).split()
+            )
+            state, why = ("populated", "") if sentence else ("empty", "said nothing")
+        except Exception as e:  # noqa: BLE001 - a model problem is a state, not a crash
+            state = "unreachable"
+            why = (
+                str(e) if isinstance(e, SayUnreachable) else f"{type(e).__name__}: {e}"
+            )
+        if state != "populated":
+            return Said(
+                batch,
+                f"code · {self.model} {state} · said {n} boxes by code",
+                "code · shown again from the pile, no model asked now",
+                [say_line(code)],
+                cards=[self.state_card("say", state, f"{self.model}: {why}")],
+            )
+        results = run_checks(sentence, batch, human, self.bot.claims)
+        if passed(results):
+            return Said(
+                batch,
+                f"{self.model} · said {n} boxes",
+                replay,
+                [say_line(sentence)],
+                checks=results,
+            )
+        return Said(
+            batch,
+            f"{self.model} · failed a check · replaced by a code sentence",
+            replay,
+            [struck_line(sentence, self.color)],
+            checks=results,
+            tail=[say_line(code)],
+        )
 
     def code_reply(self, text: str) -> None:
         self.write(who_line("code · no model, nothing served", self.color))
         self.write(say_line(text))
 
-    def converse(self, key: str, boxes: list[Box]) -> None:
-        """A turn's reply: the boxes, then one sentence code composed from
-        them. Asked again, the same boxes and sentence come back from the pile
-        with when they were first said; nothing is recomputed."""
+    def converse(self, key: str, boxes: list[Box], human: str = "") -> None:
+        """A turn's reply: the boxes, then one sentence over them (the model's
+        if it passed its checks, else code's). Asked again, the same boxes and
+        sentence come back from the pile with when they were first said;
+        nothing is recomputed and no model is asked."""
         turn = self.turns.get(key)
         if turn is None:
             turn = self.turns[key] = Turn(self.clock(), list(boxes))
         else:
             self.write(f"as noted at {turn.at} · same boxes, nothing new since")
-            for shown, sentence in turn.shown:
-                self.reply(
-                    shown,
-                    sentence,
-                    "code · shown again from the pile, no model asked now",
-                )
+            for said in turn.shown:
+                self.emit(said, turn.at)
         while turn.rest:
             if turn.shown and not self.more(len(turn.rest)):
                 return
             batch, turn.rest = turn.rest[:PAGE], turn.rest[PAGE:]
-            sentence = compose(batch, first=not turn.shown)
-            turn.shown.append((batch, sentence))
-            self.reply(
-                batch, sentence, f"code · said {len(batch)} boxes, no model asked"
-            )
+            said = self.speak(batch, not turn.shown, human)
+            turn.shown.append(said)
+            self.emit(said)
         self.write(CHIPS)
 
     def more(self, left: int) -> bool:
@@ -429,7 +529,7 @@ class Seat:
         key = _norm(task)
         self.you(task)
         if key in self.turns:  # asked again: from the pile, no recompute
-            self.converse(key, [])
+            self.converse(key, [], task)
             return
         res = self.api.escalate(self.cfg, task, piece_chars=self.bot.piece_chars)
         if self.refused(res):
@@ -449,7 +549,7 @@ class Seat:
         for p in pieces:
             if p["outcome"] == "answered" and p["rung"] != "d0":
                 self.pending += [r for r in p.get("rows") or [] if _is_row(r)]
-        self.converse(key, boxes)
+        self.converse(key, boxes, task)
         left = [p for p in pieces if p["outcome"] == "escalated"]
         if left:
             self.flowering(res["task"], left)
@@ -532,14 +632,18 @@ class Seat:
             )
 
     def checkout(self) -> None:
-        res = self.api.checkout(self.cfg)
-        if not self.refused(res):
-            screen = str(res.get("screen", "")).strip()
-            self.show(
-                self.card("pass", "morning screen", screen)
-                if screen
-                else self.state_card("morning screen", "empty", "nothing to report")
-            )
+        try:
+            res = self.api.checkout(self.cfg)
+        except Exception as e:  # noqa: BLE001 - the close-out must not be lost
+            self.show(self.gone("morning screen", f"{type(e).__name__}: {e}"))
+        else:
+            if not self.refused(res):
+                screen = str(res.get("screen", "")).strip()
+                self.show(
+                    self.card("pass", "morning screen", screen)
+                    if screen
+                    else self.state_card("morning screen", "empty", "nothing to report")
+                )
         self.close_out()
 
     def close_out(self) -> None:
@@ -636,7 +740,7 @@ def main(argv: list[str] | None = None) -> int:
     except SeatUnavailable as e:
         print(f"grove seat: {e}", file=sys.stderr)
         return 2
-    return Seat(bot, config(bot, root)).run()
+    return Seat(bot, config(bot, root), say=ollama_say()).run()
 
 
 if __name__ == "__main__":

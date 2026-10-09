@@ -18,6 +18,7 @@ import pytest
 
 from grove import seat_boxes as bx
 from grove import seat_cli as s
+from grove import seat_say as say_mod
 
 ANSI = re.compile(r"\x1b\[[0-9;]*m")
 
@@ -94,7 +95,17 @@ class FakeDeposit:
         return self.got
 
 
-def seat(api, keys, *, pieces=(), flower=None, deposit=None, color=False, clock=None):
+def seat(
+    api,
+    keys,
+    *,
+    pieces=(),
+    flower=None,
+    deposit=None,
+    color=False,
+    clock=None,
+    say=None,
+):
     out: list[str] = []
     it = iter(keys)
 
@@ -110,6 +121,7 @@ def seat(api, keys, *, pieces=(), flower=None, deposit=None, color=False, clock=
         cfg="cfg",
         flower=flower or (lambda p, q: pytest.fail("a cloud turn ran")),
         deposit=deposit or FakeDeposit(),
+        say=say,
         read=read,
         write=out.append,
         color=color,
@@ -615,9 +627,8 @@ def test_a_reply_is_boxes_then_one_sentence_from_the_boxes():
     t = text(out)
     assert "agent · code · said 2 boxes, no model asked" in t
     first = next(o for o in out if o.startswith("agent> "))
-    assert (
-        first == "agent> Looks like both answered 2, escalated 1 and local: d. No rush."
-    )
+    # "escalated 1" is a problem count: no reassurance over it (3b-ii, Loki F-low)
+    assert first == "agent> Looks like both answered 2, escalated 1 and local: d."
     assert out.index("agent · code · said 2 boxes, no model asked") < out.index(first)
 
 
@@ -814,3 +825,435 @@ def test_the_launcher_reports_no_willow_bot(tmp_path):
         check=False,
     )
     assert done.returncode == 2 and "unreachable" in done.stderr
+
+
+# --- 3b-ii: the local model's sentence, the four checks, the fallback -------------
+
+MODEL = say_mod.MODEL
+GOOD_CODE = "agent> Looks like both answered 1, escalated 0 and local: d. No rush."
+
+
+def tagged(make):
+    """A fake `say`: reads the box tags out of the prompt it is given and
+    returns ``make(*tags)``. Records every prompt."""
+
+    def say(prompt):
+        say.prompts.append(prompt)
+        return make(*re.findall(r"^\[(\w+)\] ", prompt, re.M))
+
+    say.prompts = []
+    return say
+
+
+def good(a, b):
+    return f"Looks like both answered 1, escalated 0 [{a}] and local: d [{b}]."
+
+
+def model_run(say, keys=("who", "", "the task", ""), **over):
+    api = FakeApi(escalate=chain_result(piece("local", "answered")), **over)
+    st, out = seat(api, list(keys), say=say)
+    return st.run(), out, api
+
+
+def test_a_model_sentence_that_passes_stands_with_its_four_chips():
+    say = tagged(good)
+    code, out, _api = model_run(say)
+    assert code == 0
+    assert f"agent · {MODEL} · said 2 boxes" in out
+    sentence = next(o for o in out if o.startswith("agent> Looks like"))
+    assert re.fullmatch(
+        r"agent> Looks like both .* \[\w+\] and local: d \[\w+\]\.", sentence
+    )
+    assert (
+        "checks: ✓ every cite was served · ✓ every box cited · "
+        "✓ nothing the boxes lack · – your words quoted exactly (none quoted)"
+    ) in out
+    assert "[struck]" not in text(out) and GOOD_CODE not in out
+    assert len(say.prompts) == 1
+
+
+def test_the_prompt_carries_the_facts_the_glue_the_voice_and_the_human():
+    say = tagged(good)
+    model_run(say)
+    p = say.prompts[0]
+    assert "answered 1, escalated 0" in p and "local: d" in p
+    assert "The human asked: the task" in p
+    assert all(w in p for w in bx.GLUE)
+    assert say_mod.VOICE in p and "glue words only" in say_mod.VOICE
+
+
+BAD = {
+    "cite-unserved": (lambda a, b: good(a, b).replace("d [", "d [zz9] ["), 0),
+    "box-omitted": (lambda a, b: f"Looks like answered 1, escalated 0 [{a}].", 1),
+    "invented-fact": (
+        lambda a, b: (
+            f"Looks like both answered 140, escalated 0 [{a}] and local: d [{b}]."
+        ),
+        2,
+    ),
+    "misquote": (
+        lambda a, b: (
+            f'Looks like both "answered 1, escalated 0" [{a}] and local: d [{b}].'
+        ),
+        3,
+    ),
+}
+
+
+@pytest.mark.parametrize("which", sorted(BAD))
+def test_each_check_catches_its_violation_and_code_replaces_the_sentence(which):
+    make, idx = BAD[which]
+    code, out, _api = model_run(tagged(make))
+    assert code == 0
+    assert f"agent · {MODEL} · failed a check · replaced by a code sentence" in out
+    struck = next(o for o in out if o.startswith("agent> ~~"))
+    assert struck.endswith("~~ [struck]")
+    chips = next(o for o in out if o.startswith("checks:"))
+    marks = [c.strip()[0] for c in chips.removeprefix("checks:").split(" · ")]
+    assert marks[idx] == "✗" and marks.count("✗") == 1, chips
+    assert out.index(struck) < out.index(GOOD_CODE)  # the code sentence beneath it
+    assert [o for o in out if o.startswith("agent> ") and "~~" not in o] == [GOOD_CODE]
+
+
+def test_an_invented_word_fails_nothing_the_boxes_lack_so_voice_cannot_add_a_fact():
+    wow = lambda a, b: f"Wow, great news: {good(a, b)}"  # noqa: E731
+    _code, out, _api = model_run(tagged(wow))
+    assert "[struck]" in text(out) and "✗ nothing the boxes lack" in text(out)
+
+
+def test_checks_by_hand():
+    a = bx.Box("b1", "block", "blocked", "PR 712 waiting", "126 tests pass")
+    b = bx.Box("b2", "you", "needs you", "Ratify the work order")
+    both = [a, b]
+    ok = "Morning. PR 712's still waiting, 126 tests pass [b1]. Ratify the work order [b2]."
+    assert say_mod.run_checks(ok, both) == [True, True, True, "na"]
+    assert say_mod.check_cites_served("x [b1] [b9]", both) is False
+    assert say_mod.check_boxes_cited("x [b1]", both) is False
+    assert say_mod.check_nothing_lacking(ok.replace("126", "140"), both) is False
+    assert (
+        say_mod.check_nothing_lacking(ok.replace("waiting", "failing"), both) is False
+    )
+    said = 'You said "where are we" [b1] [b2]'
+    assert say_mod.check_quotes(said, "where  are WE today") is True
+    assert say_mod.check_quotes(said, "what is up") is False
+    assert say_mod.check_quotes("no quote here", "x") == "na"
+
+
+def test_a_quote_the_one_scripts_gate_cant_verify_fails_even_if_it_reads_right():
+    seen = []
+
+    def claims(text_, facts):
+        seen.append(facts)
+        return [{"kind": "quote", "verdict": "unverified"}]
+
+    s_ = 'Looks like "where are we" [b1] [b2].'
+    both = [bx.Box("b1", "pass", "chain", "x"), bx.Box("b2", "pass", "p", "y")]
+    assert say_mod.check_quotes(s_, "where are we") is True
+    assert say_mod.check_quotes(s_, "where are we", claims) is False
+    assert seen == [{"operator_text": "where are we"}]
+    boom = lambda *a: (_ for _ in ()).throw(RuntimeError("gate down"))  # noqa: E731
+    assert say_mod.check_quotes(s_, "where are we", boom) is False
+    assert say_mod.run_checks(s_, both, "where are we")[3] is True
+
+
+def test_load_bot_hands_the_seat_the_one_scripts_claims_gate(monkeypatch, tmp_path):
+    import types
+
+    one = tmp_path / "one-script" / "onescript"
+    one.mkdir(parents=True)
+    (one / "api.py").write_text("", encoding="utf-8")
+    pkg = types.ModuleType("onescript")
+    mods = {
+        "api": types.SimpleNamespace(),
+        "escalate": types.SimpleNamespace(cut=len, PIECE_CHARS=7),
+        "gate": types.SimpleNamespace(check_claims="the gate"),
+        "proposals": types.SimpleNamespace(subject=str),
+    }
+    for name, mod in mods.items():
+        setattr(pkg, name, mod)
+        monkeypatch.setitem(sys.modules, f"onescript.{name}", mod)
+    monkeypatch.setitem(sys.modules, "onescript", pkg)
+    monkeypatch.setattr(sys, "path", list(sys.path))
+    assert s.load_bot(tmp_path).claims == "the gate"
+
+
+@pytest.mark.parametrize(
+    "boom, state, why",
+    [
+        (
+            say_mod.SayUnreachable("connection refused"),
+            "unreachable",
+            "connection refused",
+        ),
+        (RuntimeError("model crashed"), "unreachable", "RuntimeError: model crashed"),
+        ("   ", "empty", "said nothing"),
+    ],
+)
+def test_a_model_that_cant_be_asked_is_its_own_state_and_code_says_the_line(
+    boom, state, why
+):
+    def say(prompt):
+        if isinstance(boom, BaseException):
+            raise boom
+        return boom
+
+    code, out, _api = model_run(say)
+    assert code == 0
+    assert f"[{state}] say" in text(out) and f"{state} — {MODEL}: {why}" in text(out)
+    other = "empty" if state == "unreachable" else "unreachable"
+    assert f"[{other}] say" not in text(out)  # never collapsed into the other state
+    assert f"agent · code · {MODEL} {state} · said 2 boxes by code" in out
+    assert GOOD_CODE in out and "checks:" not in text(out)  # code's line, no chips
+
+
+def test_asked_again_replays_the_model_reply_without_asking_the_model():
+    say = tagged(good)
+    ticks = iter(["09:14", "09:40", "09:41"])
+    api = FakeApi(escalate=chain_result(piece("local", "answered")))
+    out: list[str] = []
+    keys = iter(["who", "", "where are we", "Where  are we", ""])
+
+    def read(prompt):
+        out.append(prompt)
+        try:
+            return next(keys)
+        except StopIteration:
+            raise EOFError from None
+
+    st = s.Seat(
+        bot(api),
+        cfg="cfg",
+        deposit=FakeDeposit(),
+        say=say,
+        read=read,
+        write=out.append,
+        color=False,
+        clock=lambda: next(ticks),
+    )
+    st.run()
+    assert len(say.prompts) == 1 and api.names().count("escalate") == 1
+    assert (
+        f"agent · {MODEL} at 09:14 · shown again from the pile, no model asked now"
+        in out
+    )
+    assert any(
+        o.startswith("checks as they passed at 09:14: ✓ every cite") for o in out
+    )
+
+
+def test_a_struck_reply_is_replayed_struck():
+    bad = BAD["invented-fact"][0]
+    api = FakeApi(escalate=chain_result(piece("local", "answered")))
+    ticks = iter(["09:14", "09:40"])
+    out: list[str] = []
+    keys = iter(["who", "", "q", "Q", ""])
+
+    def read(prompt):
+        try:
+            return next(keys)
+        except StopIteration:
+            raise EOFError from None
+
+    s.Seat(
+        bot(api),
+        cfg="cfg",
+        deposit=FakeDeposit(),
+        say=tagged(bad),
+        read=read,
+        write=out.append,
+        color=False,
+        clock=lambda: next(ticks),
+    ).run()
+    assert sum(o.endswith("~~ [struck]") for o in out) == 2
+    assert sum(o == GOOD_CODE for o in out) == 2
+
+
+def test_a_struck_sentence_is_marked_in_words_and_in_color_only_by_addition():
+    plain = bx.struck_line("a b")
+    hot = bx.struck_line("a b", color=True)
+    assert plain == "agent> ~~a b~~ [struck]"
+    assert "\x1b[9" in hot and ANSI.sub("", hot) == plain
+
+
+def test_no_say_is_the_code_only_seat_and_never_touches_ollama(monkeypatch):
+    monkeypatch.setattr(
+        say_mod.urllib.request,
+        "build_opener",
+        lambda *a: pytest.fail("the code-only seat reached for Ollama"),
+    )
+    code, out, _api = model_run(None)
+    assert code == 0 and GOOD_CODE in out
+    assert "agent · code · said 2 boxes, no model asked" in out
+
+
+def test_main_wires_the_ollama_say(monkeypatch):
+    seen = {}
+
+    class Fake:
+        def __init__(self, bot_, cfg, **kw):
+            seen.update(kw)
+
+        def run(self):
+            return 0
+
+    monkeypatch.setattr(s, "load_bot", lambda root: "bot")
+    monkeypatch.setattr(s, "config", lambda b, r: "cfg")
+    monkeypatch.setattr(s, "Seat", Fake)
+    assert s.main() == 0 and callable(seen["say"])
+
+
+# --- the default say: Ollama on loopback --------------------------------------------
+
+
+class Resp:
+    def __init__(self, body):
+        self.body = body
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *a):
+        return False
+
+    def read(self):
+        return self.body
+
+
+class Opener:
+    def __init__(self, result):
+        self.result, self.seen = result, []
+
+    def open(self, req, timeout=None):
+        self.seen.append((req, timeout))
+        if isinstance(self.result, BaseException):
+            raise self.result
+        return Resp(self.result)
+
+
+def test_the_default_say_posts_to_generate_on_loopback_and_drops_thinking():
+    op = Opener(json.dumps({"response": "<think>hm</think> Looks like it."}).encode())
+    got = say_mod.ollama_say(host="127.0.0.1:11434", opener=op)("the prompt")
+    assert got == "Looks like it."
+    req, _t = op.seen[0]
+    assert req.full_url == "http://127.0.0.1:11434/api/generate"
+    body = json.loads(req.data)
+    assert body["model"] == "qwen3:4b" and body["stream"] is False
+    assert body["prompt"] == "the prompt" and body["think"] is False
+
+
+@pytest.mark.parametrize(
+    "host",
+    [
+        "0.0.0.0:11434",
+        "10.0.0.5:11434",
+        "http://example.com:11434",
+        "https://127.0.0.1",
+        "x:y",
+    ],
+)
+def test_a_host_that_is_not_loopback_is_not_asked(host):
+    op = Opener(b"{}")
+    with pytest.raises(say_mod.SayUnreachable, match="loopback|host:port"):
+        say_mod.ollama_say(host=host, opener=op)("p")
+    assert op.seen == []  # nothing left the box
+
+
+@pytest.mark.parametrize("host", ["localhost:9", "http://127.0.0.1:9", "[::1]:11434"])
+def test_loopback_hosts_are_asked(host):
+    assert say_mod.ollama_base(host).startswith("http://")
+
+
+def test_ollama_host_comes_from_the_environment(monkeypatch):
+    monkeypatch.setenv("OLLAMA_HOST", "0.0.0.0:11434")
+    with pytest.raises(say_mod.SayUnreachable, match="loopback"):
+        say_mod.ollama_base()
+    monkeypatch.delenv("OLLAMA_HOST")
+    assert say_mod.ollama_base() == "http://127.0.0.1:11434"
+
+
+def test_a_missing_tag_a_bad_reply_and_a_refusal_are_unreachable():
+    import urllib.error
+
+    nf = urllib.error.HTTPError("u", 404, "nf", None, None)
+    with pytest.raises(say_mod.SayUnreachable, match="tag not installed"):
+        say_mod.ollama_say(opener=Opener(nf))("p")
+    with pytest.raises(say_mod.SayUnreachable, match="no response field"):
+        say_mod.ollama_say(opener=Opener(b'{"x": 1}'))("p")
+    with pytest.raises(say_mod.SayUnreachable, match="JSONDecodeError"):
+        say_mod.ollama_say(opener=Opener(b"not json"))("p")
+    with pytest.raises(say_mod.SayUnreachable, match="ConnectionRefusedError"):
+        say_mod.ollama_say(opener=Opener(ConnectionRefusedError("no")))("p")
+    with pytest.raises(say_mod.SayUnreachable):  # a real closed loopback port
+        say_mod.ollama_say(host="127.0.0.1:1", timeout=5)("p")
+
+
+# --- Loki's two low findings ----------------------------------------------------------
+
+
+def test_a_checkout_that_raises_is_unreachable_and_the_closeout_still_runs():
+    """F-low: api.checkout raising must not escape run() or lose the deposit."""
+
+    def boom(*a, **k):
+        raise RuntimeError("morning db down")
+
+    dep = FakeDeposit(DEPOSITED)
+    st, out = seat(FakeApi(checkout=boom, pooled=POOL), ["who", "", ""], deposit=dep)
+    assert st.run() == 0
+    assert "[unreachable] morning screen" in text(out)
+    assert "unreachable — RuntimeError: morning db down" in text(out)
+    assert dep.pools == [POOL] and text(out).count("seal ↗") == 1
+
+
+def test_no_rush_follows_what_a_box_says_not_its_kind():
+    calm = bx.Box("b1", "pass", "chain", "answered 2, escalated 0")
+    sore = bx.Box("b2", "pass", "chain", "answered 2, escalated 1")
+    assert bx.compose([calm]).endswith("No rush.")
+    for bad in (
+        sore,
+        bx.Box("b3", "pass", "check", "3 failed"),
+        bx.Box("b4", "pr", "changed", "PR 9 open", "refused by the gate"),
+        bx.Box("b5", "dec", "decided", "errors: 2"),
+        bx.Box("b6", "pass", "gate", "hard closed"),
+    ):
+        assert "No rush" not in bx.compose([bad]), bad
+        assert "No rush" not in bx.compose([calm, bad])
+    # kind still holds as before
+    assert "No rush" not in bx.compose([bx.Box("b7", "you", "needs you", "Pick one")])
+
+
+# --- the launcher's venv order ----------------------------------------------------------
+
+
+def fake_python(path, name):
+    path.mkdir(parents=True)
+    exe = path / "python3"
+    exe.write_text(f"#!/bin/sh\necho {name}\n", encoding="utf-8")
+    exe.chmod(0o755)
+
+
+@pytest.mark.skipif(
+    sys.platform == "win32" or shutil.which("bash") is None,
+    reason="scripts/grove-seat is a POSIX launcher",
+)
+def test_grove_venv_defaults_to_the_mcp_venv_ahead_of_the_bot_venv(tmp_path):
+    home = tmp_path / "home"
+    fake_python(home / "venvs" / "willow-mcp" / "bin", "mcp")
+    fake_python(home / "venvs" / "willow-bot" / "bin", "bot")
+    fake_python(tmp_path / "mine" / "bin", "explicit")
+    env = {"PATH": "/usr/bin:/bin", "WILLOW_HOME": str(home)}
+
+    def which(**extra):
+        done = subprocess.run(
+            ["bash", str(s.GROVE_ROOT / "scripts" / "grove-seat")],
+            env={**env, **extra},
+            capture_output=True,
+            text=True,
+            timeout=60,
+            check=False,
+        )
+        return done.stdout.strip()
+
+    assert which() == "mcp"  # no export needed: a lone human gets live deposits
+    assert which(GROVE_VENV=str(tmp_path / "mine")) == "explicit"  # override wins
+    (home / "venvs" / "willow-mcp" / "bin" / "python3").unlink()
+    assert which() == "bot"  # no mcp venv: the bot venv, as before
