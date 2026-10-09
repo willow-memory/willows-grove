@@ -7,6 +7,7 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 ### Added
 
 - **one-script:** deterministic P1 reconcile grader + test, and the 2026-10-08 Haiku fold (PR 130)
+- **seat:** the desk's CLI seat (`scripts/grove-seat`, `grove/seat_cli.py`): the one script at a terminal beside the web and APK; flowering turns go through Rat's ladder (`ratatosk --onescript --class flowering`, willow-memory/ratatosk#85) (PR 131)
 
 ## [0.14.0](https://github.com/willow-memory/willows-grove/compare/v0.13.1...v0.14.0) (2026-10-08)
 
