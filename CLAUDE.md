@@ -48,6 +48,7 @@ local.
 | `deploy/grove-mcp-serve.service.template` | systemd `--user` unit template |
 | `scripts/grove-serve` | Toggle serve unit + `.mcp.json` entry together |
 | `grove/seat_cli.py`, `scripts/grove-seat` | The desk's CLI seat beside `web/` and the APK: willow-bot's one-script api at a terminal; flowering turns go through Rat's ladder (`ratatosk --onescript --class flowering`) |
+| `grove/seat_boxes.py`, `grove/seat_say.py` | The seat's box cards and its reply sentence: `qwen3:4b` on the Ollama loopback says it, code checks it against the boxes (cites, coverage, nothing invented, quotes exact) and a failed or unreachable model falls back to the code sentence |
 
 ## Rules
 

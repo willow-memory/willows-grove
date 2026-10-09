@@ -47,6 +47,7 @@ KINDS: dict[str, tuple[str, tuple[int, int, int]]] = {
 }
 FAINT = (111, 100, 83)
 AMBER = KINDS["block"][1]
+RUST = (217, 100, 92)  # --rust: a failed check
 STATES = ("populated", "empty", "unreachable")
 #: state -> (top rule, bar). The glyphs differ so no color is needed to tell.
 RULE = {"populated": "+-", "empty": "+.", "unreachable": "+!"}
@@ -138,6 +139,41 @@ def say_line(text: str, color: bool = False) -> str:
     return f"agent> {text}"
 
 
+def struck_line(text: str, color: bool = False) -> str:
+    """A sentence a check failed: struck through, and marked in words so the
+    plain path (no color, no escape code) still tells it from a standing one."""
+    body = f"~~{text}~~"
+    if color:
+        body = f"\x1b[9;2m{body}{RESET}"
+    return f"agent> {body} [struck]"
+
+
+def checks_line(results: list, names: tuple[str, ...], prefix: str, color: bool) -> str:
+    """The four check chips: ``✓`` passed, ``✗`` failed, ``–`` none to check."""
+    chips = []
+    for name, st in zip(names, results, strict=True):
+        mark = "✓" if st is True else "✗" if st is False else "–"
+        chip = f"{mark} {name}" + (" (none quoted)" if st == "na" else "")
+        if color and st != "na":
+            chip = _paint(KINDS["pass"][1] if st is True else RUST, chip)
+        chips.append(chip)
+    return f"{prefix} " + " · ".join(chips)
+
+
+#: A word or number that reads as a problem, so reassurance never follows it.
+PROBLEM = re.compile(
+    r"\b(?:escalated|refused|failed|errors?|problems?|denied|stuck)\b\W{0,3}[1-9]\d*"
+    r"|\b[1-9]\d*\s+(?:escalated|refused|failed|errors?|problems?|denied)\b"
+    r"|\b(?:refused|failed|error|unreachable|denied|hard[- ]closed?|non[- ]?zero)\b",
+    re.I,
+)
+
+
+def problem(box: Box) -> bool:
+    """A box that carries something non-ideal, by what it says, not its kind."""
+    return bool(PROBLEM.search(f"{box.label} {box.value} {box.detail}"))
+
+
 def clause(box: Box) -> str:
     if box.state != "populated":
         return f"{box.label} is {box.value}"
@@ -162,5 +198,7 @@ def compose(boxes: list[Box], first: bool = True) -> str:
         body = f"{both}{parts[0]} and {parts[1]}"
     else:
         body = ", ".join(parts[:-1]) + f" and {parts[-1]}"
-    calm = not broken and not any(b.kind in ("you", "block") for b in boxes)
+    calm = not broken and not any(
+        b.kind in ("you", "block") or problem(b) for b in boxes
+    )
     return f"{opener}{body}.{' No rush.' if calm else ''}"
