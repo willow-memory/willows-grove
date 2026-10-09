@@ -47,6 +47,7 @@ local.
 | `run_mcp.sh` | Launch wrapper (resolves venv, sets env) |
 | `deploy/grove-mcp-serve.service.template` | systemd `--user` unit template |
 | `scripts/grove-serve` | Toggle serve unit + `.mcp.json` entry together |
+| `grove/seat_cli.py`, `scripts/grove-seat` | The desk's CLI seat beside `web/` and the APK: willow-bot's one-script api at a terminal; flowering turns go through Rat's ladder (`ratatosk --onescript --class flowering`) |
 
 ## Rules
 

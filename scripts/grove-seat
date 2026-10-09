@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# grove-seat — the desk's command-line seat: the one script at a terminal.
+# b17: GRSET · ΔΣ=42
+#
+#   scripts/grove-seat        # check-in, scope, served, chain, proposals, check-out
+#
+# The third front end beside web/ and the phone APK; all three call willow-bot's
+# one-script api. Portless: a terminal process, no listener. See grove/seat_cli.py.
+#
+#   WILLOW_BOT_ROOT   willow-bot checkout (default: ../willow-bot beside this repo)
+#   GROVE_VENV        python venv dir (else willow-bot's venv, else ./.venv, else python3)
+#   WILLOW_HOME       finds willow-bot's venv and the operator's public keyring
+#   WILLOW_NESTOR_DB  Nestor's store, read-only: where a seal is looked up
+#
+# A flowering turn runs `ratatosk --onescript --class flowering`; Rat's ladder
+# picks the provider and reads its keys from this environment.
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+
+PY=""
+BOT_VENV="${WILLOW_HOME:-}/venvs/willow-bot"
+if [[ -n "${GROVE_VENV:-}" && -x "${GROVE_VENV}/bin/python3" ]]; then
+  PY="${GROVE_VENV}/bin/python3"
+elif [[ -n "${WILLOW_HOME:-}" && -x "${BOT_VENV}/bin/python3" ]]; then
+  PY="${BOT_VENV}/bin/python3"
+elif [[ -x "${ROOT}/.venv/bin/python3" ]]; then
+  PY="${ROOT}/.venv/bin/python3"
+else
+  PY="$(command -v python3)"
+fi
+
+export PYTHONPATH="${ROOT}${PYTHONPATH:+:$PYTHONPATH}"
+exec "$PY" -m grove.seat_cli "$@"
