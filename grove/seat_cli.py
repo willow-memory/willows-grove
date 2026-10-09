@@ -28,6 +28,15 @@ The stages, in order, each shown in the prompt (``scope ▶``):
 The seat never seals: no prompt asks for one, it holds no key, and the deposit
 only proposes.
 
+What the seat prints is the box stream (``grove/seat_boxes.py``, after
+``web/demo/box-stream/box-stream-v1.3.html``), composed by code with no model:
+everything the agent says is a box card or a reply made of cards, a line that
+is not one is the human's, and a sentence is built from box facts plus fixed
+glue. A chain turn shows two boxes at a time (``more?``), small talk is
+answered by code, and a task asked again is shown again from the pile, stamped
+with when it was first said. Under ``NO_COLOR`` or a non-tty the cards are
+plain ASCII with no escape codes.
+
 The operator, 2026-10-09: "The deterministic chain runs, esclates to local
 models if need be, then to the cloud models"; "It should live in the grove,
 along side the web and apk"; "not anthropic. there is already routing in the
@@ -46,10 +55,23 @@ import os
 import subprocess
 import sys
 import tempfile
+import time
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
+
+from grove.seat_boxes import (
+    Box,
+    compose,
+    human_line,
+    legend,
+    pile_header,
+    render_box,
+    say_line,
+    use_color,
+    who_line,
+)
 
 GROVE_ROOT = Path(__file__).resolve().parent.parent
 ESCALATE_PATH = "ESCALATE"
@@ -59,6 +81,17 @@ DEFAULT_MAX_CHARS = 48_000
 FLOWER_TIMEOUT = 300.0
 NESTOR_UI = "http://127.0.0.1:8765"
 NO_DEPOSIT = "deposit unavailable here: willow-mcp not on the path"
+#: Boxes a reply shows before ``more?``.
+PAGE = 2
+#: What code answers to small talk: no boxes, nothing served.
+SMALL_TALK = {
+    "thanks": "Anytime.",
+    "thank you": "Anytime.",
+    "later": "Got it. It stays in the pile.",
+}
+MORE_YES = frozenset({"", "m", "more", "y", "yes"})
+STAY = "Got it. It stays in the pile."
+CHIPS = "chips: [later] [thanks]"
 
 
 class SeatUnavailable(Exception):
@@ -198,6 +231,20 @@ def three_state(state: str | None, why: str = "") -> str:
     return f"unreachable — {why or 'no answer'}"
 
 
+def _norm(text: str) -> str:
+    return " ".join(text.lower().split())
+
+
+@dataclass
+class Turn:
+    """One answered question, kept in the pile: what was said, and what is
+    still waiting behind ``more?``. Asking again replays ``shown``."""
+
+    at: str
+    rest: list[Box]
+    shown: list[tuple[list[Box], str]] = field(default_factory=list)
+
+
 class Seat:
     def __init__(
         self,
@@ -208,20 +255,100 @@ class Seat:
         deposit: Callable[[dict], dict] | None = None,
         read: Callable[[str], str] = input,
         write: Callable[[str], None] = print,
+        color: bool | None = None,
+        clock: Callable[[], str] = lambda: time.strftime("%H:%M"),
     ):
         self.bot, self.api, self.cfg = bot, bot.api, cfg
         self.flower = flower or ratatosk_flowering()
         self.deposit = deposit or willow_mcp_deposit()
         self.read, self.write = read, write
+        self.color = use_color() if color is None else color
+        self.clock = clock
         self.doc: dict | None = None
         self.pending: list[dict] = []  # passes not yet shown; the pool keeps them
+        self.turns: dict[str, Turn] = {}  # the pile of what was asked and said
+        self.pile_n = 0
+        self._n = 0
+
+    # -- the stream: cards, replies, the human's line
 
     def ask(self, stage: str, prompt: str = "") -> str:
         return self.read(f"{stage} ▶ {prompt}").strip()
 
+    def nid(self) -> str:
+        self._n += 1
+        return f"b{self._n}"
+
+    def put(self, text: str) -> None:
+        for ln in text.split("\n"):
+            self.write(ln)
+
+    def show(self, *boxes: Box) -> None:
+        for b in boxes:
+            self.put(render_box(b, self.color))
+
+    def card(
+        self, kind: str, label: str, value: str, detail: str = "", id: str = ""
+    ) -> Box:
+        return Box(id or self.nid(), kind, label, value, detail)
+
+    def state_card(self, label: str, state: str | None, why: str = "") -> Box:
+        """A reader's answer in its own state, never collapsed (INVARIANTS 1)."""
+        st = state if state in ("populated", "empty") else "unreachable"
+        return Box(self.nid(), "pass", label, three_state(st, why), state=st)
+
+    def gone(self, label: str, why: str) -> Box:
+        return self.state_card(label, "unreachable", why)
+
+    def you(self, text: str) -> None:
+        self.write(human_line(text, self.color))
+
+    def reply(self, boxes: list[Box], sentence: str, who: str) -> None:
+        self.show(*boxes)
+        self.write(who_line(who, self.color))
+        self.write(say_line(sentence))
+
+    def code_reply(self, text: str) -> None:
+        self.write(who_line("code · no model, nothing served", self.color))
+        self.write(say_line(text))
+
+    def converse(self, key: str, boxes: list[Box]) -> None:
+        """A turn's reply: the boxes, then one sentence code composed from
+        them. Asked again, the same boxes and sentence come back from the pile
+        with when they were first said; nothing is recomputed."""
+        turn = self.turns.get(key)
+        if turn is None:
+            turn = self.turns[key] = Turn(self.clock(), list(boxes))
+        else:
+            self.write(f"as noted at {turn.at} · same boxes, nothing new since")
+            for shown, sentence in turn.shown:
+                self.reply(
+                    shown,
+                    sentence,
+                    "code · shown again from the pile, no model asked now",
+                )
+        while turn.rest:
+            if turn.shown and not self.more(len(turn.rest)):
+                return
+            batch, turn.rest = turn.rest[:PAGE], turn.rest[PAGE:]
+            sentence = compose(batch, first=not turn.shown)
+            turn.shown.append((batch, sentence))
+            self.reply(
+                batch, sentence, f"code · said {len(batch)} boxes, no model asked"
+            )
+        self.write(CHIPS)
+
+    def more(self, left: int) -> bool:
+        ans = self.ask("more?", f"{left} more in the pile [enter = show, else keep]: ")
+        self.you(ans or "more")
+        if _norm(ans) in MORE_YES:
+            return True
+        self.code_reply(SMALL_TALK.get(_norm(ans), STAY))
+        return False
+
     def refused(self, res: dict) -> bool:
         if "refused" in res:
-            self.write(f"  refused: {res['refused']}")
+            self.show(self.gone("refused", str(res["refused"])))
             return True
         return False
 
@@ -232,13 +359,20 @@ class Seat:
         if self.refused(res):
             return False
         if "wont_open" in res:
-            self.write(f"  box won't open: {res['wont_open']}")
+            self.show(self.gone("check-in", f"box won't open: {res['wont_open']}"))
             return False
         rep = res["report"]
         for line in rep.get("lines", []):
-            self.write(f"  {line}")
+            self.show(self.card("pass", "check-in", str(line)))
         if rep.get("hard_close"):
-            self.write("  HARD CLOSE: nothing moves until a check-in opens")
+            self.show(
+                self.card(
+                    "block",
+                    "check-in",
+                    "HARD CLOSE",
+                    "nothing moves until a check-in opens",
+                )
+            )
             return False
         return True
 
@@ -248,11 +382,20 @@ class Seat:
         if self.refused(res):
             return False
         if not res.get("ids"):
-            self.write("  empty — no table matches; nothing to serve")
+            self.show(
+                self.state_card("scope", "empty", "no table matches; nothing to serve")
+            )
             return False
         for t in res.get("stack", []):
-            self.write(f"  {t['name']}  {t['rows']} rows  {t['id'][:12]}")
-        self.write(f"  subject: {res['subject']}")
+            self.show(
+                self.card(
+                    "pass", "table", str(t["name"]), f"{t['rows']} rows", t["id"][:12]
+                )
+            )
+        self.show(self.card("pass", "subject", str(res["subject"])))
+        self.pile_n = sum(
+            t["rows"] for t in res.get("stack", []) if isinstance(t.get("rows"), int)
+        )
         self.spec = res["spec"]
         return True
 
@@ -261,29 +404,53 @@ class Seat:
         try:
             cap = int(raw) if raw else DEFAULT_MAX_CHARS
         except ValueError:
-            self.write("  not a whole number")
+            self.show(self.card("block", "served", "not a whole number"))
             return self.served()
         res = self.api.serve(self.cfg, self.spec, max_chars=cap)
         if self.refused(res):
             return False
         self.doc = res["doc"]
-        self.write(f"  served: {three_state(res['state'], res.get('why', ''))}")
+        self.show(self.state_card("served", res["state"], res.get("why", "")))
+        self.write(pile_header(self.pile_n))
+        self.write(legend(self.color))
         return True
 
+    def piece_box(self, p: dict) -> Box:
+        if p["outcome"] == "answered":
+            kind, detail = "pass", ""
+        else:
+            kind = "you" if p.get("reason") in NO_FLOWER else "block"
+            detail = f"reason: {p.get('reason', p['label'])}"
+        return Box(
+            p["piece"][:12], kind, p["label"], f"{p['rung']}: {p['detail']}", detail
+        )
+
     def chain(self, task: str) -> None:
+        key = _norm(task)
+        self.you(task)
+        if key in self.turns:  # asked again: from the pile, no recompute
+            self.converse(key, [])
+            return
         res = self.api.escalate(self.cfg, task, piece_chars=self.bot.piece_chars)
         if self.refused(res):
             return
-        for p in res.get("pieces", []):
-            self.write(
-                f"  {p['label']:24} {p['rung']:5} {p['piece'][:12]}  {p['detail']}"
-            )
+        pieces = res.get("pieces", [])
+        if pieces:
+            boxes = [
+                self.card(
+                    "pass",
+                    "chain",
+                    f"answered {res.get('answered', 0)}, escalated {res.get('escalated', 0)}",
+                )
+            ]
+            boxes += [self.piece_box(p) for p in pieces]
+        else:
+            boxes = [self.state_card("chain", "empty", "the chain cut nothing")]
+        for p in pieces:
             if p["outcome"] == "answered" and p["rung"] != "d0":
                 self.pending += [r for r in p.get("rows") or [] if _is_row(r)]
-        self.write(
-            f"  answered {res.get('answered', 0)}, escalated {res.get('escalated', 0)}"
-        )
-        left = [p for p in res.get("pieces", []) if p["outcome"] == "escalated"]
+        self.converse(key, boxes)
+        left = [p for p in pieces if p["outcome"] == "escalated"]
         if left:
             self.flowering(res["task"], left)
 
@@ -299,19 +466,37 @@ class Seat:
         for r in left:
             tag = f"{r['piece'][:12]} ({r.get('reason', r['label'])})"
             if r.get("reason") in NO_FLOWER or self.doc is None:
-                self.write(f"  {tag}: code decided; it goes to the human card")
+                self.show(
+                    self.card(
+                        "you",
+                        "human card",
+                        tag,
+                        "code decided; it goes to the human card",
+                    )
+                )
                 continue
             piece = self.piece_for(question, r)
             if piece is None:
-                self.write(f"  {tag}: unreachable — the piece isn't in the served file")
+                self.show(
+                    self.gone("flowering", f"{tag}: the piece isn't in the served file")
+                )
                 continue
             if self.ask("flowering", f"{tag}: one cloud turn? [y/N] ").lower() != "y":
                 continue
             got = self.flower(piece, question)
-            self.write(f"  {got['summary']}")
+            self.show(
+                self.card("pass", "cloud turn", str(got["summary"] or "no summary"))
+            )
             rows = [x for x in got["rows"] if not _escalates(x)]
             if len(rows) < len(got["rows"]):
-                self.write("  the cloud turn escalated: it stays on the human card")
+                self.show(
+                    self.card(
+                        "you",
+                        "human card",
+                        "the cloud turn escalated",
+                        "it stays on the human card",
+                    )
+                )
             if rows:
                 taken = self.api.take_proposals(self.cfg, rows, bite="flowering")
                 if not self.refused(taken):
@@ -319,7 +504,13 @@ class Seat:
                         if p.get("verdict") == "pass":
                             self.pending.append(p)
                         else:
-                            self.write(f"  {p.get('verdict')}: {p.get('reason')}")
+                            self.show(
+                                self.card(
+                                    "block",
+                                    str(p.get("verdict")),
+                                    str(p.get("reason")),
+                                )
+                            )
 
     def proposals(self) -> None:
         """Show each pass and leave it pooled: the rows are already on record
@@ -329,23 +520,38 @@ class Seat:
             subject = p.get("subject") or self.bot.subject(
                 {k: p[k] for k in ("path", "data", "cites", "claim")}
             )
-            self.write(f"  {p['path']}  cites {len(p['cites'])}  — {p['claim']}")
             data = p["data"] if len(p["data"]) <= 400 else p["data"][:399] + "…"
-            self.write("    " + data.replace("\n", "\n    "))
-            self.write(f"    pooled: {subject}")
+            self.show(
+                self.card(
+                    "pr",
+                    "pooled",
+                    f"{p['path']} · cites {len(p['cites'])} — {p['claim']}",
+                    f"{data}\npooled: {subject}",
+                    str(subject).split(":")[-1][:12],
+                )
+            )
 
     def checkout(self) -> None:
         res = self.api.checkout(self.cfg)
         if not self.refused(res):
-            self.write(res.get("screen", ""))
+            screen = str(res.get("screen", "")).strip()
+            self.show(
+                self.card("pass", "morning screen", screen)
+                if screen
+                else self.state_card("morning screen", "empty", "nothing to report")
+            )
         self.close_out()
 
     def close_out(self) -> None:
         """Deposit the pool as Nestor drafts, then make the one seal offer."""
-        pool = self.api.pooled(self.cfg)
+        try:
+            pool = self.api.pooled(self.cfg)
+        except Exception as e:  # noqa: BLE001 - the close-out must not raise
+            self.show(self.gone("pool", f"{type(e).__name__}: {e}"))
+            return
         items = [p for p in pool.get("pooled") or [] if isinstance(p, dict)]
         if "refused" in pool:
-            self.write(f"  pool: unreachable — {pool['refused']}")
+            self.show(self.gone("pool", str(pool["refused"])))
             return
         try:
             got = self.deposit(pool)
@@ -353,19 +559,42 @@ class Seat:
             got = {"state": "unreachable", "reason": f"{type(e).__name__}: {e}"}
         state = got.get("state")
         if state != "populated":
-            self.write(f"  deposit: {three_state(state, got.get('reason', ''))}")
+            self.show(self.state_card("deposit", state, got.get("reason", "")))
             if state != "empty":  # nothing went in; show what is pooled
                 for p in items:
-                    self.write(f"    pooled, not deposited: {p.get('subject')}")
+                    self.show(
+                        self.card("pr", "pooled, not deposited", str(p.get("subject")))
+                    )
             return
         drafts = got.get("deposited") or []
-        self.write(f"  deposit: populated — {len(drafts)} in Nestor as drafts")
+        self.show(self.card("dec", "deposit", f"{len(drafts)} in Nestor as drafts"))
         for d in drafts:
             if d.get("status") == "error":
-                self.write(f"    {d.get('subject')}  ERROR: {d.get('error')}")
+                self.show(
+                    self.card(
+                        "block",
+                        "draft",
+                        str(d.get("subject")),
+                        f"ERROR: {d.get('error')}",
+                    )
+                )
             else:
-                self.write(f"    {d.get('subject')}  {d.get('status')}")
-        self.write(f"  seal ↗ {NESTOR_UI}  (the only place a seal is made)")
+                self.show(
+                    self.card(
+                        "pr", "draft", str(d.get("subject")), str(d.get("status"))
+                    )
+                )
+        subjects = ", ".join(
+            str(d.get("subject")) for d in drafts if d.get("status") != "error"
+        )
+        self.show(
+            self.card(
+                "you",
+                "seal ↗",
+                NESTOR_UI,
+                f"the only place a seal is made · to seal: {subjects or 'none'}",
+            )
+        )
 
     def run(self) -> int:
         try:
@@ -376,6 +605,10 @@ class Seat:
         try:
             if self.scope() and self.served():
                 while task := self.ask("chain", "task (empty to check out): "):
+                    if _norm(task) in SMALL_TALK:  # small talk: code, no boxes
+                        self.you(task)
+                        self.code_reply(SMALL_TALK[_norm(task)])
+                        continue
                     self.chain(task)
                     self.proposals()
             return 0
