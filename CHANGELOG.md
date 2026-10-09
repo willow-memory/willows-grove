@@ -2,6 +2,14 @@
 
 All notable changes land here per INVARIANTS.md §3. Format follows Keep a Changelog v1.1.0.
 
+## [0.15.0](https://github.com/willow-memory/willows-grove/compare/v0.14.0...v0.15.0) (2026-10-09)
+
+
+### Added
+
+* **seat:** the desk's CLI seat, the one script at a terminal ([378f5ae](https://github.com/willow-memory/willows-grove/commit/378f5ae1cf04c9d7493f81bfda8aff2be2880380))
+* **seat:** the desk's CLI seat, the one script at a terminal ([#131](https://github.com/willow-memory/willows-grove/issues/131)) ([b66b6b7](https://github.com/willow-memory/willows-grove/commit/b66b6b747fc79ad209c2c43ea89b3650018a98cb))
+
 ## [Unreleased]
 
 ### Added
