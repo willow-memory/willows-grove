@@ -9,6 +9,7 @@ printed and which api calls it made.
 from __future__ import annotations
 
 import json
+import shutil
 import subprocess
 import sys
 
@@ -423,6 +424,11 @@ def test_willow_bot_root_comes_from_the_env_then_beside_the_grove(
     assert s.bot_root() == s.GROVE_ROOT.parent / "willow-bot"
 
 
+@pytest.mark.skipif(
+    sys.platform == "win32" or shutil.which("bash") is None,
+    reason="scripts/grove-seat is a POSIX launcher; a Windows runner's bare "
+    "`bash` is the WSL stub (as with scripts/grove-serve-run)",
+)
 def test_the_launcher_reports_no_willow_bot(tmp_path):
     done = subprocess.run(
         ["bash", str(s.GROVE_ROOT / "scripts" / "grove-seat")],
