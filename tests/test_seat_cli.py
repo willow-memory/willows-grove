@@ -939,6 +939,92 @@ def test_checks_by_hand():
     assert say_mod.check_quotes("no quote here", "x") == "na"
 
 
+def test_a_quoted_number_the_human_said_still_has_to_come_from_a_box():
+    # Loki C1: the human's question carries 500; no box does.
+    boxes = [
+        bx.Box("b1", "pass", "check", "error fixed"),
+        bx.Box("b2", "pass", "p", "x"),
+    ]
+    human = "is the 500 error fixed"
+    s_ = 'Looks like both "500" error fixed [b1] [b2]'
+    assert say_mod.check_quotes(s_, human) is True  # it IS the human's word
+    assert say_mod.check_nothing_lacking(s_, boxes, human) is False
+    assert say_mod.run_checks(s_, boxes, human)[2] is False
+    # a quote of a value an actual box holds is not struck
+    held = [bx.Box("b1", "pass", "check", "500 error fixed"), boxes[1]]
+    ok = 'Looks like "500" error fixed [b1] and x [b2]'
+    assert say_mod.check_nothing_lacking(ok, held, human) is True
+    assert say_mod.run_checks(ok, held, human) == [True, True, True, True]
+
+
+def test_a_verbatim_quote_of_the_humans_words_passes_but_only_the_words():
+    boxes = [bx.Box("b1", "pass", "chain", "answered 1")]
+    human = "where are we"
+    quoted = 'Looks like "where are we" answered 1 [b1].'
+    assert say_mod.check_quotes(quoted, human) is True
+    assert say_mod.check_nothing_lacking(quoted, boxes, human) is True
+    assert say_mod.run_checks(quoted, boxes, human) == [True, True, True, True]
+    # the same words unquoted are the model's own and still fail
+    bare = "Looks like where are we answered 1 [b1]."
+    assert say_mod.check_nothing_lacking(bare, boxes, human) is False
+    # a quoted span that is not the human's gets no pass
+    other = 'Looks like "who goes there" answered 1 [b1].'
+    assert say_mod.check_nothing_lacking(other, boxes, human) is False
+    # an invented word beside a good quote still fails
+    extra = 'Looks like "where are we" zebra answered 1 [b1].'
+    assert say_mod.check_nothing_lacking(extra, boxes, human) is False
+    # a non-Latin word outside the quote still fails closed
+    cyr = 'Looks like "where are we" Иван answered 1 [b1].'
+    assert say_mod.check_nothing_lacking(cyr, boxes, human) is False
+    # a number in a verbatim quote still has to come from a box
+    num = 'Looks like "where are 500" answered 1 [b1].'
+    assert say_mod.check_nothing_lacking(num, boxes, "where are 500") is False
+
+
+def test_a_word_in_a_script_the_scan_cant_read_fails_closed():
+    boxes = [bx.Box("b1", "pass", "chain", "answered 1")]
+    latin = "Looks like answered 1 [b1]."
+    assert say_mod.check_nothing_lacking(latin, boxes) is True
+    assert (
+        say_mod.check_nothing_lacking("Looks like answered 1 Иван [b1].", boxes)
+        is False
+    )
+    assert (
+        say_mod.check_nothing_lacking("Looks like answered 1 я [b1].", boxes) is False
+    )
+    assert (
+        say_mod.check_nothing_lacking("Looks like answered 1 李 [b1].", boxes) is False
+    )
+    # accents fold; a non-Latin word the box itself holds is the box's word
+    cafe = [bx.Box("b1", "pass", "chain", "café ok")]
+    assert say_mod.check_nothing_lacking("Looks like cafe ok [b1].", cafe) is True
+    ivan = [bx.Box("b1", "pass", "chain", "Иван ok")]
+    assert say_mod.check_nothing_lacking("Looks like Иван ok [b1].", ivan) is True
+
+
+def test_a_cites_only_string_is_not_a_sentence_and_code_says_the_line():
+    boxes = [bx.Box("b1", "pass", "chain", "answered 1")]
+    for empty in ("[b1]", " [b1] . ", "[b1] 1"):
+        assert say_mod.check_nothing_lacking(empty, boxes) is False, empty
+        assert say_mod.passed(say_mod.run_checks(empty, boxes)) is False, empty
+    code, out, _api = model_run(tagged(lambda a, b: f"[{a}] [{b}]"))
+    assert code == 0
+    assert f"agent · {MODEL} · failed a check · replaced by a code sentence" in out
+    assert any(o.startswith("agent> ~~[") and o.endswith("[struck]") for o in out)
+    assert GOOD_CODE in out
+
+
+def test_a_nonzero_value_suppresses_no_rush():
+    calm = bx.Box("b1", "pass", "chain", "answered 2, escalated 0")
+    for bad in (
+        bx.Box("b2", "pass", "exit", "exit non-zero"),
+        bx.Box("b3", "pass", "exit", "ended", "returned nonzero"),
+    ):
+        assert "No rush" not in bx.compose([bad]), bad
+        assert "No rush" not in bx.compose([calm, bad])
+    assert bx.compose([calm]).endswith("No rush.")
+
+
 def test_a_quote_the_one_scripts_gate_cant_verify_fails_even_if_it_reads_right():
     seen = []
 

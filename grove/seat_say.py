@@ -31,6 +31,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import unicodedata
 import urllib.error
 import urllib.request
 from collections.abc import Callable
@@ -65,7 +66,9 @@ STOP = frozenset(
 CITE = re.compile(r"\[(\w+)\]")
 QUOTE = re.compile(r'["“]([^"“”\n]+)["”]')
 NUMBER = re.compile(r"\d+(?:\.\d+)*")
-WORD = re.compile(r"[a-z]+")
+#: Any Unicode letter run, so a word in a script the scan can't read is still
+#: seen (and fails ``nothing the boxes lack``) rather than slipping past it.
+WORD = re.compile(r"[^\W\d_]+")
 
 
 class SayUnreachable(Exception):
@@ -170,6 +173,12 @@ def _n(text: str) -> str:
     return " ".join(text.lower().split())
 
 
+def _fold(text: str) -> str:
+    """Lowercase with accents dropped (``café`` reads as ``cafe``)."""
+    d = unicodedata.normalize("NFKD", text.lower())
+    return "".join(c for c in d if not unicodedata.combining(c))
+
+
 def _stem(w: str) -> str:
     if w.endswith("ss"):
         return w
@@ -197,20 +206,29 @@ def check_boxes_cited(sentence: str, boxes: list[Box]) -> bool:
 
 def check_nothing_lacking(sentence: str, boxes: list[Box], human: str = "") -> bool:
     """Every number is a box's number; every word is a box's, glue, or a
-    function word. A quote of the human's own words is checked by the quote
-    check, not here, so it isn't read as an invented fact."""
-    text = _bare(sentence)
-    for q in QUOTE.findall(text):
-        if _n(q) in _n(human):
-            text = text.replace(q, " ")
-    facts = " ".join(f"{b.label} {fact(b)} {b.detail}" for b in boxes).lower()
-    facts = re.sub(r"['’]s\b", "", facts)
+    function word, in any script (accents folded; a letter the box vocab lacks
+    fails closed). A span quoted verbatim from the human is their own words,
+    attributed, so its words are not scanned; its numbers still are, since a
+    quote is no way to get a figure past the boxes. A span that is not the
+    human's gets no pass. A sentence with no word at all (only cites and
+    punctuation) is not one."""
+    text = _fold(_bare(sentence))
+    facts = " ".join(f"{b.label} {fact(b)} {b.detail}" for b in boxes)
+    facts = _fold(re.sub(r"['’]s\b", "", facts))
+    words = [w for w in WORD.findall(text) if len(w) > 1 or not w.isascii()]
+    if not words:
+        return False
     if not set(NUMBER.findall(text)) <= set(NUMBER.findall(facts)):
         return False
+    human_n = _n(human)
+    outside = QUOTE.sub(
+        lambda m: " " if _n(m.group(1)) in human_n else m.group(0), _bare(sentence)
+    )
+    scanned = [w for w in WORD.findall(_fold(outside)) if len(w) > 1 or not w.isascii()]
     vocab = {_stem(w) for w in WORD.findall(facts)}
-    vocab |= {_stem(w) for g in GLUE for w in WORD.findall(g)}
+    vocab |= {_stem(w) for g in GLUE for w in WORD.findall(_fold(g))}
     vocab |= {_stem(w) for w in STOP}
-    return all(_stem(w) in vocab for w in WORD.findall(text.lower()) if len(w) > 1)
+    return all(_stem(w) in vocab for w in scanned)
 
 
 def check_quotes(

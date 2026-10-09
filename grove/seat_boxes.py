@@ -164,7 +164,7 @@ def checks_line(results: list, names: tuple[str, ...], prefix: str, color: bool)
 PROBLEM = re.compile(
     r"\b(?:escalated|refused|failed|errors?|problems?|denied|stuck)\b\W{0,3}[1-9]\d*"
     r"|\b[1-9]\d*\s+(?:escalated|refused|failed|errors?|problems?|denied)\b"
-    r"|\b(?:refused|failed|error|unreachable|denied|hard[- ]closed?)\b",
+    r"|\b(?:refused|failed|error|unreachable|denied|hard[- ]closed?|non[- ]?zero)\b",
     re.I,
 )
 
