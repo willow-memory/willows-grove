@@ -2,6 +2,15 @@
 
 All notable changes land here per INVARIANTS.md §3. Format follows Keep a Changelog v1.1.0.
 
+## [0.18.0](https://github.com/willow-memory/willows-grove/compare/v0.17.0...v0.18.0) (2026-10-09)
+
+
+### Added
+
+* **seat:** a local model says the reply sentence and code checks it ([121dccf](https://github.com/willow-memory/willows-grove/commit/121dccf2a710c764f55771ef8014de11c479be7e))
+* **seat:** a quoted number still comes from a box; fail closed on unread scripts ([a281c7f](https://github.com/willow-memory/willows-grove/commit/a281c7f1c0378a2133f6dc1f16a7fa9ed080438a))
+* **seat:** the model says one sentence, code checks it against the boxes ([#137](https://github.com/willow-memory/willows-grove/issues/137)) ([1af5cb8](https://github.com/willow-memory/willows-grove/commit/1af5cb8370efb9a809250cd12c5478781934c19d))
+
 ## [0.17.0](https://github.com/willow-memory/willows-grove/compare/v0.16.0...v0.17.0) (2026-10-09)
 
 
