@@ -2,6 +2,14 @@
 
 All notable changes land here per INVARIANTS.md §3. Format follows Keep a Changelog v1.1.0.
 
+## [0.19.0](https://github.com/willow-memory/willows-grove/compare/v0.18.0...v0.19.0) (2026-10-11)
+
+
+### Added
+
+* **seat:** bot-venv default, ratatosk beside python, 300s say timeout ([e507417](https://github.com/willow-memory/willows-grove/commit/e5074178fff126a6ba0750ba7fcfb86b7e656c16))
+* **seat:** default to the bot venv, resolve ratatosk, raise the model timeout ([#139](https://github.com/willow-memory/willows-grove/issues/139)) ([07bd745](https://github.com/willow-memory/willows-grove/commit/07bd745a4e10b22dac455bdfb883ca76adfa1d37))
+
 ## [0.18.0](https://github.com/willow-memory/willows-grove/compare/v0.17.0...v0.18.0) (2026-10-09)
 
 
