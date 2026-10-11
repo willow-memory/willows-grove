@@ -41,7 +41,21 @@ from grove.seat_boxes import GLUE, KINDS, Box, short
 
 MODEL = "qwen3:4b"
 DEFAULT_HOST = "127.0.0.1:11434"
-SAY_TIMEOUT = 90.0
+DEFAULT_SAY_TIMEOUT = 300.0
+
+
+def say_timeout(environ: dict | None = None) -> float:
+    """``GROVE_SAY_TIMEOUT`` seconds, else 300. Unset, unparsable, non-finite
+    or non-positive falls back to the default."""
+    raw = (os.environ if environ is None else environ).get("GROVE_SAY_TIMEOUT", "")
+    try:
+        got = float(raw)
+    except ValueError:
+        return DEFAULT_SAY_TIMEOUT
+    return got if 0 < got < float("inf") else DEFAULT_SAY_TIMEOUT
+
+
+SAY_TIMEOUT = say_timeout()
 LOOPBACK = frozenset({"127.0.0.1", "localhost", "::1"})
 #: The four checks, in the order of ``CHECK_NAMES`` in the web sketch.
 CHECK_NAMES = (
