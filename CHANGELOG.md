@@ -19,6 +19,7 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Added
 
+- **seat:** serve the sealed snapshot via `api.resume` (B part 2): at start the seat serves the human's newest sealed scope pinned at its `upto`, skipping the group-by prompt, so the subject holds still while the desk adds rows; an unreachable or missing `resume` shows an `unreachable` card and scopes fresh; at close-out a grown scope's subject joins the one `seal ↗` offer. The seat still seals and mints nothing (PR 143).
 - **seat:** `GROVE_SAY_MODEL` picks the reply-sentence model (default `qwen3:4b`), and a `qwen3*` model gets `/no_think` appended so it returns instead of running away thinking (PR 141).
 
 ## [0.19.0](https://github.com/willow-memory/willows-grove/compare/v0.18.0...v0.19.0) (2026-10-11)

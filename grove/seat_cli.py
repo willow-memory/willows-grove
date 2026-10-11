@@ -12,6 +12,11 @@ writes nothing but a scratch file per cloud turn.
 The stages, in order, each shown in the prompt (``scope ▶``):
 
     checkin    api.checkin: the record, the probes, the four gates
+    resume     api.resume: the newest human-sealed scope, spec pinned at its
+               ``upto``. Found, the seat serves that snapshot and skips the
+               group-by prompt, so the subject holds still while the desk adds
+               rows. None, a fresh scope as below. Raises or missing (an older
+               willow-bot): an ``unreachable`` card, then the fresh scope
     scope      api.scope proposes a stack and names its subject; no prompt
     served     api.serve is the silent start-check: it serves only a scope a
                past human seal already covers (three states, never collapsed)
@@ -26,7 +31,9 @@ The stages, in order, each shown in the prompt (``scope ▶``):
                points at the Nestor UI, the only place a seal is made
 
 The seat never seals: no prompt asks for one, it holds no key, and the deposit
-only proposes.
+only proposes. When it served a pinned snapshot and the record has grown, the
+one ``seal ↗`` offer also names the grown scope's subject, so the human can
+advance the snapshot in Nestor.
 
 What the seat prints is the box stream (``grove/seat_boxes.py``, after
 ``web/demo/box-stream/box-stream-v1.3.html``): everything the agent says is a
@@ -317,8 +324,12 @@ class Seat:
         self.doc: dict | None = None
         self.pending: list[dict] = []  # passes not yet shown; the pool keeps them
         self.turns: dict[str, Turn] = {}  # the pile of what was asked and said
-        self.pile_n = 0
+        self.pile_n: int | None = 0
         self._n = 0
+        #: The sealed snapshot being served ({spec, subject}), else None.
+        self.sealed: dict | None = None
+        #: The grown scope's subject when it differs from the sealed one.
+        self.grown: str | None = None
 
     # -- the stream: cards, replies, the human's line
 
@@ -485,6 +496,64 @@ class Seat:
             return False
         return True
 
+    def resume(self) -> bool:
+        """Serve the human's newest sealed snapshot, pinned at its ``upto``.
+        True: ``self.spec`` is that pinned spec, no group-by prompt. False: no
+        snapshot (``{resume: None}``, or an unreachable resume), so the caller
+        scopes fresh. Never ``empty`` for a failure (INVARIANTS 1)."""
+        try:
+            res = self.api.resume(self.cfg)
+        except (EOFError, KeyboardInterrupt):
+            raise
+        except Exception as e:  # noqa: BLE001 - older willow-bot, or a read failure
+            self.show(
+                self.gone("resume", f"{type(e).__name__}: {e}; scoping fresh instead")
+            )
+            return False
+        if not isinstance(res, dict) or "refused" in res:
+            why = res.get("refused") if isinstance(res, dict) else "not a record"
+            self.show(self.gone("resume", f"{why}; scoping fresh instead"))
+            return False
+        spec, subject = res.get("spec"), res.get("subject")
+        if not isinstance(spec, dict) or not subject:
+            return False  # {resume: None}: nothing sealed yet, today's bootstrap
+        self.sealed = {"spec": spec, "subject": str(subject)}
+        self.spec = spec
+        self.pile_n = (
+            None  # no stack was proposed; the snapshot's size is not recounted
+        )
+        self.show(
+            self.card(
+                "pass",
+                "sealed snapshot",
+                str(subject),
+                f"serving the human's seal at upto={spec.get('upto')}; "
+                "the desk's later rows stay out of this scope",
+            )
+        )
+        return True
+
+    def grown_scope(self) -> None:
+        """Before check-out, for a served snapshot: what a fresh scope at the
+        latest row would be called. If it differs from the sealed subject it
+        joins the one ``seal ↗`` offer. This only proposes a scope; the seat
+        seals nothing."""
+        if not self.sealed or self.doc is None:
+            return
+        spec = self.sealed["spec"]
+        try:
+            res = self.api.scope(
+                self.cfg, by=list(spec.get("by") or ["who"]), match=spec.get("match")
+            )
+        except Exception as e:  # noqa: BLE001 - the close-out must not be lost
+            self.show(self.gone("grown scope", f"{type(e).__name__}: {e}"))
+            return
+        if self.refused(res):
+            return
+        now = res.get("subject")
+        if now and now != self.sealed["subject"]:
+            self.grown = str(now)
+
     def scope(self) -> bool:
         by = self.ask("scope", "group by [who]: ") or "who"
         res = self.api.scope(self.cfg, by=[w for w in by.split(",") if w])
@@ -520,7 +589,8 @@ class Seat:
             return False
         self.doc = res["doc"]
         self.show(self.state_card("served", res["state"], res.get("why", "")))
-        self.write(pile_header(self.pile_n))
+        if self.pile_n is not None:
+            self.write(pile_header(self.pile_n))
         self.write(legend(self.color))
         return True
 
@@ -666,11 +736,11 @@ class Seat:
             pool = self.api.pooled(self.cfg)
         except Exception as e:  # noqa: BLE001 - the close-out must not raise
             self.show(self.gone("pool", f"{type(e).__name__}: {e}"))
-            return
+            return self.offer_grown()
         items = [p for p in pool.get("pooled") or [] if isinstance(p, dict)]
         if "refused" in pool:
             self.show(self.gone("pool", str(pool["refused"])))
-            return
+            return self.offer_grown()
         try:
             got = self.deposit(pool)
         except Exception as e:  # noqa: BLE001 - the close-out must not raise
@@ -683,7 +753,7 @@ class Seat:
                     self.show(
                         self.card("pr", "pooled, not deposited", str(p.get("subject")))
                     )
-            return
+            return self.offer_grown()
         drafts = got.get("deposited") or []
         self.show(self.card("dec", "deposit", f"{len(drafts)} in Nestor as drafts"))
         for d in drafts:
@@ -705,14 +775,19 @@ class Seat:
         subjects = ", ".join(
             str(d.get("subject")) for d in drafts if d.get("status") != "error"
         )
-        self.show(
-            self.card(
-                "you",
-                "seal ↗",
-                NESTOR_UI,
-                f"the only place a seal is made · to seal: {subjects or 'none'}",
-            )
-        )
+        self.seal_offer(subjects)
+
+    def offer_grown(self) -> None:
+        """No draft to seal, but a grown scope: the offer carries just that."""
+        if self.grown:
+            self.seal_offer()
+
+    def seal_offer(self, subjects: str = "") -> None:
+        """The one ``seal ↗`` card. A grown scope's subject rides on it."""
+        detail = f"the only place a seal is made · to seal: {subjects or 'none'}"
+        if self.grown:
+            detail += f" · advance the snapshot: {self.grown}"
+        self.show(self.card("you", "seal ↗", NESTOR_UI, detail))
 
     def run(self) -> int:
         try:
@@ -721,7 +796,7 @@ class Seat:
         except (EOFError, KeyboardInterrupt):
             return 1
         try:
-            if self.scope() and self.served():
+            if (self.resume() or self.scope()) and self.served():
                 while task := self.ask("chain", "task (empty to check out): "):
                     if _norm(task) in SMALL_TALK:  # small talk: code, no boxes
                         self.you(task)
@@ -734,6 +809,7 @@ class Seat:
             self.write("")
             return 0
         finally:
+            self.grown_scope()
             self.checkout()
 
 
