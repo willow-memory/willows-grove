@@ -9,9 +9,8 @@
 #
 #   WILLOW_BOT_ROOT   willow-bot checkout (default: ../willow-bot beside this repo)
 #   GROVE_VENV        python venv dir; wins over every default below. Else
-#                     $WILLOW_HOME/venvs/willow-mcp (imports willow_mcp, onescript
-#                     and Store, so the close-out deposit is live), else
-#                     $WILLOW_HOME/venvs/willow-bot, else ./.venv, else python3
+#                     $WILLOW_HOME/venvs/willow-bot (ships willow_mcp, onescript
+#                     and ratatosk), else ./.venv, else python3
 #   WILLOW_HOME       finds the venvs and the operator's public keyring
 #   WILLOW_NESTOR_DB  Nestor's store, read-only: where a seal is looked up
 #   OLLAMA_HOST       the local model's Ollama, loopback only (default 127.0.0.1:11434);
@@ -23,12 +22,9 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 PY=""
-MCP_VENV="${WILLOW_HOME:-}/venvs/willow-mcp"
 BOT_VENV="${WILLOW_HOME:-}/venvs/willow-bot"
 if [[ -n "${GROVE_VENV:-}" && -x "${GROVE_VENV}/bin/python3" ]]; then
   PY="${GROVE_VENV}/bin/python3"
-elif [[ -n "${WILLOW_HOME:-}" && -x "${MCP_VENV}/bin/python3" ]]; then
-  PY="${MCP_VENV}/bin/python3"
 elif [[ -n "${WILLOW_HOME:-}" && -x "${BOT_VENV}/bin/python3" ]]; then
   PY="${BOT_VENV}/bin/python3"
 elif [[ -x "${ROOT}/.venv/bin/python3" ]]; then

@@ -169,6 +169,14 @@ def config(bot: Bot, root: Path, grove: Path = GROVE_ROOT):
 # --- the flowering rung --------------------------------------------------------
 
 
+def resolve_ratatosk() -> str:
+    """The ``ratatosk`` console script beside this python (the venv's bin),
+    else the bare name for PATH. A missing one is a clean ``rung_error`` /
+    ``can't run`` row downstream, never a traceback."""
+    beside = Path(sys.executable).parent / "ratatosk"
+    return str(beside) if beside.is_file() else "ratatosk"
+
+
 def ratatosk_flowering(
     cmd: Sequence[str] = ("ratatosk",), timeout: float = FLOWER_TIMEOUT
 ) -> Callable[[dict, str], dict]:
@@ -298,7 +306,8 @@ class Seat:
         clock: Callable[[], str] = lambda: time.strftime("%H:%M"),
     ):
         self.bot, self.api, self.cfg = bot, bot.api, cfg
-        self.flower = flower or ratatosk_flowering()
+        self.ratatosk = resolve_ratatosk()
+        self.flower = flower or ratatosk_flowering(cmd=(self.ratatosk,))
         self.deposit = deposit or willow_mcp_deposit()
         #: The local model's sentence, ``say(prompt) -> str``. None: code only.
         self.say, self.model = say, model
@@ -531,7 +540,12 @@ class Seat:
         if key in self.turns:  # asked again: from the pile, no recompute
             self.converse(key, [], task)
             return
-        res = self.api.escalate(self.cfg, task, piece_chars=self.bot.piece_chars)
+        res = self.api.escalate(
+            self.cfg,
+            task,
+            piece_chars=self.bot.piece_chars,
+            ratatosk=(self.ratatosk,),
+        )
         if self.refused(res):
             return
         pieces = res.get("pieces", [])

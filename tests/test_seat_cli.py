@@ -1321,7 +1321,7 @@ def fake_python(path, name):
     sys.platform == "win32" or shutil.which("bash") is None,
     reason="scripts/grove-seat is a POSIX launcher",
 )
-def test_grove_venv_defaults_to_the_mcp_venv_ahead_of_the_bot_venv(tmp_path):
+def test_grove_venv_defaults_to_the_bot_venv_and_has_no_mcp_rung(tmp_path):
     home = tmp_path / "home"
     fake_python(home / "venvs" / "willow-mcp" / "bin", "mcp")
     fake_python(home / "venvs" / "willow-bot" / "bin", "bot")
@@ -1339,7 +1339,59 @@ def test_grove_venv_defaults_to_the_mcp_venv_ahead_of_the_bot_venv(tmp_path):
         )
         return done.stdout.strip()
 
-    assert which() == "mcp"  # no export needed: a lone human gets live deposits
+    assert which() == "bot"  # the bot venv ships the seat runtime
     assert which(GROVE_VENV=str(tmp_path / "mine")) == "explicit"  # override wins
-    (home / "venvs" / "willow-mcp" / "bin" / "python3").unlink()
-    assert which() == "bot"  # no mcp venv: the bot venv, as before
+    (home / "venvs" / "willow-bot" / "bin" / "python3").unlink()
+    assert which() != "mcp"  # no mcp rung: never the mcp venv
+
+
+# --- ratatosk resolution and the say timeout ----------------------------------------
+
+
+def test_ratatosk_resolves_beside_sys_executable(tmp_path, monkeypatch):
+    bindir = tmp_path / "bin"
+    bindir.mkdir()
+    (bindir / "ratatosk").write_text("#!/bin/sh\n", encoding="utf-8")
+    monkeypatch.setattr(sys, "executable", str(bindir / "python3"))
+    assert s.resolve_ratatosk() == str(bindir / "ratatosk")
+
+
+def test_ratatosk_falls_back_to_path_when_absent(tmp_path, monkeypatch):
+    (tmp_path / "bin").mkdir()
+    monkeypatch.setattr(sys, "executable", str(tmp_path / "bin" / "python3"))
+    assert s.resolve_ratatosk() == "ratatosk"
+
+
+def test_the_resolved_ratatosk_reaches_escalate_and_flowering(tmp_path, monkeypatch):
+    bindir = tmp_path / "bin"
+    bindir.mkdir()
+    rat = bindir / "ratatosk"
+    rat.write_text("#!/bin/sh\n", encoding="utf-8")
+    monkeypatch.setattr(sys, "executable", str(bindir / "python3"))
+    seen: list = []
+    real = s.ratatosk_flowering
+    monkeypatch.setattr(
+        s,
+        "ratatosk_flowering",
+        lambda cmd=("ratatosk",), **k: seen.append(cmd) or real(cmd, **k),
+    )
+    api = FakeApi()
+    st = s.Seat(
+        bot(api),
+        cfg="cfg",
+        deposit=FakeDeposit(),
+        read=lambda p: "",
+        write=lambda x: None,
+        color=False,
+    )
+    assert seen == [(str(rat),)]  # the default flowering rung
+    st.chain("the task")
+    esc = [c for c in api.calls if c[0] == "escalate"]
+    assert esc and esc[0][2]["ratatosk"] == (str(rat),)
+
+
+def test_say_timeout_defaults_to_300_and_honors_the_env():
+    assert say_mod.say_timeout({}) == 300.0
+    assert say_mod.say_timeout({"GROVE_SAY_TIMEOUT": "45.5"}) == 45.5
+    for bad in ("", "soon", "0", "-3", "nan", "inf"):
+        assert say_mod.say_timeout({"GROVE_SAY_TIMEOUT": bad}) == 300.0
