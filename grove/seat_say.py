@@ -39,7 +39,7 @@ from urllib.parse import urlparse
 
 from grove.seat_boxes import GLUE, KINDS, Box, short
 
-MODEL = "qwen3:4b"
+MODEL = os.environ.get("GROVE_SAY_MODEL") or "qwen3:4b"
 DEFAULT_HOST = "127.0.0.1:11434"
 DEFAULT_SAY_TIMEOUT = 300.0
 
@@ -123,10 +123,13 @@ def ollama_say(
 
     def say(prompt: str) -> str:
         base = ollama_base(host)
+        # qwen3 is a hybrid thinking model; the `think` param alone did not stop
+        # it returning on this box, so the `/no_think` directive is appended too.
+        think_off = " /no_think" if model.startswith("qwen3") else ""
         body = json.dumps(
             {
                 "model": model,
-                "prompt": prompt,
+                "prompt": prompt + think_off,
                 "stream": False,
                 "think": False,
                 "options": {"temperature": 0},
