@@ -1488,6 +1488,73 @@ def test_grove_venv_defaults_to_the_bot_venv_and_has_no_mcp_rung(tmp_path):
     assert which() != "mcp"  # no mcp rung: never the mcp venv
 
 
+def launch(env, **extra):
+    done = subprocess.run(
+        ["bash", str(s.GROVE_ROOT / "scripts" / "grove-seat")],
+        env={**env, **extra},
+        capture_output=True,
+        text=True,
+        timeout=60,
+        check=False,
+    )
+    return done.stdout.strip(), done.stderr
+
+
+@pytest.mark.skipif(
+    sys.platform == "win32" or shutil.which("bash") is None,
+    reason="scripts/grove-seat is a POSIX launcher",
+)
+def test_bot_venv_new_home_wins_over_legacy_without_a_warning(tmp_path):
+    home = tmp_path / "home"
+    fake_python(home / "willow-bot" / "venvs" / "willow-bot" / "bin", "new")
+    fake_python(home / "venvs" / "willow-bot" / "bin", "legacy")
+    env = {"PATH": "/usr/bin:/bin", "WILLOW_HOME": str(home)}
+    out, err = launch(env)
+    assert out == "new"
+    assert "warning" not in err
+
+
+@pytest.mark.skipif(
+    sys.platform == "win32" or shutil.which("bash") is None,
+    reason="scripts/grove-seat is a POSIX launcher",
+)
+def test_bot_venv_legacy_home_is_used_with_a_warning_naming_the_new_home(tmp_path):
+    home = tmp_path / "home"
+    fake_python(home / "venvs" / "willow-bot" / "bin", "legacy")
+    env = {"PATH": "/usr/bin:/bin", "WILLOW_HOME": str(home)}
+    out, err = launch(env)
+    assert out == "legacy"
+    assert err.count("\n") == 1  # one line
+    assert "warning" in err and str(home / "willow-bot" / "venvs" / "willow-bot") in err
+
+
+@pytest.mark.skipif(
+    sys.platform == "win32" or shutil.which("bash") is None,
+    reason="scripts/grove-seat is a POSIX launcher",
+)
+def test_grove_venv_still_wins_over_both_bot_homes_and_is_quiet(tmp_path):
+    home = tmp_path / "home"
+    fake_python(home / "willow-bot" / "venvs" / "willow-bot" / "bin", "new")
+    fake_python(home / "venvs" / "willow-bot" / "bin", "legacy")
+    fake_python(tmp_path / "mine" / "bin", "explicit")
+    env = {"PATH": "/usr/bin:/bin", "WILLOW_HOME": str(home)}
+    out, err = launch(env, GROVE_VENV=str(tmp_path / "mine"))
+    assert out == "explicit"
+    assert "warning" not in err
+
+
+@pytest.mark.skipif(
+    sys.platform == "win32" or shutil.which("bash") is None,
+    reason="scripts/grove-seat is a POSIX launcher",
+)
+def test_no_bot_venv_anywhere_falls_through_to_python3(tmp_path):
+    home = tmp_path / "home"
+    home.mkdir()
+    out, err = launch({"PATH": "/usr/bin:/bin", "WILLOW_HOME": str(home)})
+    assert "warning" not in err
+    assert out not in ("new", "legacy")
+
+
 # --- ratatosk resolution and the say timeout ----------------------------------------
 
 

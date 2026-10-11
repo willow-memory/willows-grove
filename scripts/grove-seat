@@ -9,8 +9,11 @@
 #
 #   WILLOW_BOT_ROOT   willow-bot checkout (default: ../willow-bot beside this repo)
 #   GROVE_VENV        python venv dir; wins over every default below. Else
-#                     $WILLOW_HOME/venvs/willow-bot (ships willow_mcp, onescript
-#                     and ratatosk), else ./.venv, else python3
+#                     $WILLOW_HOME/willow-bot/venvs/willow-bot (seal D2: the
+#                     bot's venvs live in the bot; ships willow_mcp, onescript
+#                     and ratatosk), else the legacy $WILLOW_HOME/venvs/willow-bot
+#                     (used with a stderr warning until it is recreated in the
+#                     bot), else ./.venv, else python3
 #   WILLOW_HOME       finds the venvs and the operator's public keyring
 #   WILLOW_NESTOR_DB  Nestor's store, read-only: where a seal is looked up
 #   OLLAMA_HOST       the local model's Ollama, loopback only (default 127.0.0.1:11434);
@@ -22,11 +25,15 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 PY=""
-BOT_VENV="${WILLOW_HOME:-}/venvs/willow-bot"
+NEW_VENV="${WILLOW_HOME:-}/willow-bot/venvs/willow-bot"
+OLD_VENV="${WILLOW_HOME:-}/venvs/willow-bot"
 if [[ -n "${GROVE_VENV:-}" && -x "${GROVE_VENV}/bin/python3" ]]; then
   PY="${GROVE_VENV}/bin/python3"
-elif [[ -n "${WILLOW_HOME:-}" && -x "${BOT_VENV}/bin/python3" ]]; then
-  PY="${BOT_VENV}/bin/python3"
+elif [[ -n "${WILLOW_HOME:-}" && -x "${NEW_VENV}/bin/python3" ]]; then
+  PY="${NEW_VENV}/bin/python3"
+elif [[ -n "${WILLOW_HOME:-}" && -x "${OLD_VENV}/bin/python3" ]]; then
+  PY="${OLD_VENV}/bin/python3"
+  echo "grove-seat: warning: using the old venv ${OLD_VENV}, outside the bot (D2); recreate it at ${NEW_VENV}." >&2
 elif [[ -x "${ROOT}/.venv/bin/python3" ]]; then
   PY="${ROOT}/.venv/bin/python3"
 else
