@@ -1218,13 +1218,14 @@ class Opener:
 
 def test_the_default_say_posts_to_generate_on_loopback_and_drops_thinking():
     op = Opener(json.dumps({"response": "<think>hm</think> Looks like it."}).encode())
-    got = say_mod.ollama_say(host="127.0.0.1:11434", opener=op)("the prompt")
+    say = say_mod.ollama_say(model="qwen3:4b", host="127.0.0.1:11434", opener=op)
+    got = say("the prompt")
     assert got == "Looks like it."
     req, _t = op.seen[0]
     assert req.full_url == "http://127.0.0.1:11434/api/generate"
     body = json.loads(req.data)
     assert body["model"] == "qwen3:4b" and body["stream"] is False
-    assert body["prompt"] == "the prompt" and body["think"] is False
+    assert body["prompt"] == "the prompt /no_think" and body["think"] is False
 
 
 @pytest.mark.parametrize(

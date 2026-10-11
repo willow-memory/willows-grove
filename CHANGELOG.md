@@ -2,6 +2,12 @@
 
 All notable changes land here per INVARIANTS.md §3. Format follows Keep a Changelog v1.1.0.
 
+## [Unreleased]
+
+### Added
+
+- **seat:** `GROVE_SAY_MODEL` picks the reply-sentence model (default `qwen3:4b`), and a `qwen3*` model gets `/no_think` appended so it returns instead of running away thinking (PR 141).
+
 ## [0.19.0](https://github.com/willow-memory/willows-grove/compare/v0.18.0...v0.19.0) (2026-10-11)
 
 
