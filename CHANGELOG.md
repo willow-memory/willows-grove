@@ -2,6 +2,19 @@
 
 All notable changes land here per INVARIANTS.md §3. Format follows Keep a Changelog v1.1.0.
 
+## [0.20.0](https://github.com/willow-memory/willows-grove/compare/v0.19.0...v0.20.0) (2026-10-11)
+
+
+### Added
+
+* **seat:** GROVE_SAY_MODEL picks the reply model; qwen3 gets /no_think ([24a277a](https://github.com/willow-memory/willows-grove/commit/24a277a10771f71d4ef4133dfcb17a580cf8f5f5))
+* **seat:** selectable reply model (GROVE_SAY_MODEL) + qwen3 /no_think ([#141](https://github.com/willow-memory/willows-grove/issues/141)) ([1869768](https://github.com/willow-memory/willows-grove/commit/1869768910e314b6aceadd465677ebc5faed9e5c))
+
+
+### Fixed
+
+* **changelog:** dash bullet under [Unreleased] so the §3 check counts it ([64196ee](https://github.com/willow-memory/willows-grove/commit/64196ee6ac82f1d98498d975f5f3daeca52a9a9c))
+
 ## [Unreleased]
 
 ### Added
