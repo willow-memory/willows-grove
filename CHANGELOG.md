@@ -2,6 +2,19 @@
 
 All notable changes land here per INVARIANTS.md §3. Format follows Keep a Changelog v1.1.0.
 
+## [0.21.0](https://github.com/willow-memory/willows-grove/compare/v0.20.0...v0.21.0) (2026-10-12)
+
+
+### Added
+
+* **seat:** serve the sealed snapshot via api.resume (B part 2) ([00b7968](https://github.com/willow-memory/willows-grove/commit/00b7968d55b28d1e50d55b25a53d969651044787))
+* **seat:** serve the sealed snapshot via api.resume (B part 2); venv default follows D2 ([#143](https://github.com/willow-memory/willows-grove/issues/143)) ([3039c28](https://github.com/willow-memory/willows-grove/commit/3039c28683082d4601c48b161cfe83a7966dc7a3))
+
+
+### Fixed
+
+* **seat:** bot venv default follows seal D2 ([4c2b3d4](https://github.com/willow-memory/willows-grove/commit/4c2b3d4de12a2ec6d3b2b23da835e035173285ad))
+
 ## [0.20.0](https://github.com/willow-memory/willows-grove/compare/v0.19.0...v0.20.0) (2026-10-11)
 
 
