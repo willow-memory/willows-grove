@@ -44,6 +44,7 @@ class FakeApi:
                 "stack": [{"name": "who=human", "id": "t1" * 8, "rows": 2}],
             },
             "pooled": {"pooled": [], "count": 0, "code": 0},
+            "resume": {"resume": None, "code": 0},
             "serve": {"doc": DOC, "state": "populated", "why": ""},
             "escalate": {
                 "task": "the task",
@@ -162,6 +163,7 @@ def test_the_stages_run_in_order_and_check_out(capsys):
     assert st.run() == 0
     assert api.names() == [
         "checkin",
+        "resume",
         "scope",
         "serve",
         "escalate",
@@ -1308,6 +1310,146 @@ def test_no_rush_follows_what_a_box_says_not_its_kind():
     assert "No rush" not in bx.compose([bx.Box("b7", "you", "needs you", "Pick one")])
 
 
+# --- resume: serve the sealed snapshot (B part 2) ---------------------------------------
+
+PINNED = {"by": ["who"], "match": {}, "upto": 41}
+SEALED = "serve:9439efca"
+GROWN = "serve:4ae0b332"
+
+
+def resumed(**kw):
+    return {"spec": PINNED, "subject": SEALED, "code": 0, **kw}
+
+
+def scope_at(subject):
+    return {
+        "spec": {"by": ["who"], "match": {}, "upto": 99},
+        "subject": subject,
+        "ids": ["t1"],
+        "stack": [{"name": "who=human", "id": "t1" * 8, "rows": 2}],
+    }
+
+
+def offers(out):
+    """The seal cards as one string each (a card is several lines)."""
+    cards, mine = [], None
+    for o in out:
+        if "seal ↗" in o:
+            mine = [o]
+            cards.append(mine)
+        elif mine is not None and o.startswith("|"):
+            mine.append(o)
+        else:
+            mine = None
+    return ["\n".join(c) for c in cards]
+
+
+def test_resume_hit_serves_the_pinned_spec_and_skips_group_by():
+    api = FakeApi(resume=resumed())
+    st, out = seat(api, ["", ""])  # cap, then check out
+    assert st.run() == 0
+    assert "scope" not in api.names()[: api.names().index("serve")]
+    serve = next(c for c in api.calls if c[0] == "serve")
+    assert serve[1][0] == PINNED and serve[1][0]["upto"] == 41
+    assert not any(o.startswith("scope ▶") for o in out)
+    body = text(out)
+    assert "sealed snapshot" in body and SEALED in body and "upto=41" in body
+
+
+def test_resume_none_bootstraps_a_fresh_scope_as_before():
+    api = FakeApi(resume={"resume": None, "code": 0})
+    st, out = seat(api, ["who", "", ""])
+    assert st.run() == 0
+    assert api.names()[:4] == ["checkin", "resume", "scope", "serve"]
+    assert any(o.startswith("scope ▶") for o in out)
+    assert "sealed snapshot" not in text(out)
+    assert serve_spec(api) == {"by": ["who"]}
+
+
+def serve_spec(api):
+    return next(c for c in api.calls if c[0] == "serve")[1][0]
+
+
+@pytest.mark.parametrize(
+    "boom",
+    [RuntimeError("no such verb"), AttributeError("resume"), KeyError("resume")],
+)
+def test_resume_raising_is_unreachable_not_empty_and_falls_back(boom):
+    def bad(*a, **k):
+        raise boom
+
+    api = FakeApi(resume=bad)
+    st, out = seat(api, ["who", "", ""])
+    assert st.run() == 0
+    body = text(out)
+    assert "unreachable —" in body and "scoping fresh instead" in body
+    assert "empty — " not in body.split("scoping fresh")[0].splitlines()[-1]
+    assert "scope" in api.names() and "serve" in api.names()
+    assert serve_spec(api) == {"by": ["who"]}
+
+
+def test_resume_refused_is_unreachable_and_falls_back():
+    api = FakeApi(resume={"refused": "box won't open", "code": 2})
+    st, out = seat(api, ["who", "", ""])
+    assert st.run() == 0
+    assert "unreachable — box won't open" in text(out)
+    assert "scope" in api.names()
+
+
+def test_closeout_offers_the_grown_subject_when_it_differs():
+    api = FakeApi(resume=resumed(), scope=scope_at(GROWN))
+    st, out = seat(api, ["", ""])
+    assert st.run() == 0
+    grown_call = next(c for c in api.calls if c[0] == "scope")
+    assert grown_call[2]["by"] == ["who"] and grown_call[2]["match"] == {}
+    # asked before the box closes, while the desk can still be scoped
+    assert api.names().index("scope") < api.names().index("checkout")
+    got = offers(out)
+    assert len(got) == 1 and GROWN in got[0] and "advance the snapshot" in got[0]
+
+
+def test_closeout_adds_the_grown_subject_to_the_one_offer_beside_drafts():
+    dep = FakeDeposit(
+        {"state": "populated", "deposited": [{"subject": SUBJ, "status": "draft"}]}
+    )
+    api = FakeApi(resume=resumed(), scope=scope_at(GROWN))
+    st, out = seat(api, ["", ""], deposit=dep)
+    assert st.run() == 0
+    got = offers(out)
+    assert len(got) == 1
+    assert SUBJ in got[0] and GROWN in got[0]
+
+
+def test_closeout_makes_no_offer_when_the_grown_subject_is_the_sealed_one():
+    api = FakeApi(resume=resumed(), scope=scope_at(SEALED))
+    st, out = seat(api, ["", ""])
+    assert st.run() == 0
+    assert offers(out) == []
+
+
+def test_a_fresh_scope_session_asks_for_no_grown_scope():
+    api = FakeApi()
+    st, out = seat(api, ["who", "", ""])
+    assert st.run() == 0
+    assert api.names().count("scope") == 1  # the bootstrap one only
+    assert "advance the snapshot" not in text(out)
+
+
+def test_the_grown_scope_refused_is_shown_not_offered():
+    api = FakeApi(resume=resumed(), scope={"refused": "no open box", "code": 2})
+    st, out = seat(api, ["", ""])
+    assert st.run() == 0
+    assert "unreachable — no open box" in text(out)
+    assert offers(out) == []
+
+
+def test_the_seat_never_seals_or_mints_on_the_resume_path():
+    api = FakeApi(resume=resumed(), scope=scope_at(GROWN))
+    st, _out = seat(api, ["", ""])
+    assert st.run() == 0
+    assert not {n for n in api.names() if "seal" in n or "mint" in n or "key" in n}
+
+
 # --- the launcher's venv order ----------------------------------------------------------
 
 
@@ -1344,6 +1486,73 @@ def test_grove_venv_defaults_to_the_bot_venv_and_has_no_mcp_rung(tmp_path):
     assert which(GROVE_VENV=str(tmp_path / "mine")) == "explicit"  # override wins
     (home / "venvs" / "willow-bot" / "bin" / "python3").unlink()
     assert which() != "mcp"  # no mcp rung: never the mcp venv
+
+
+def launch(env, **extra):
+    done = subprocess.run(
+        ["bash", str(s.GROVE_ROOT / "scripts" / "grove-seat")],
+        env={**env, **extra},
+        capture_output=True,
+        text=True,
+        timeout=60,
+        check=False,
+    )
+    return done.stdout.strip(), done.stderr
+
+
+@pytest.mark.skipif(
+    sys.platform == "win32" or shutil.which("bash") is None,
+    reason="scripts/grove-seat is a POSIX launcher",
+)
+def test_bot_venv_new_home_wins_over_legacy_without_a_warning(tmp_path):
+    home = tmp_path / "home"
+    fake_python(home / "willow-bot" / "venvs" / "willow-bot" / "bin", "new")
+    fake_python(home / "venvs" / "willow-bot" / "bin", "legacy")
+    env = {"PATH": "/usr/bin:/bin", "WILLOW_HOME": str(home)}
+    out, err = launch(env)
+    assert out == "new"
+    assert "warning" not in err
+
+
+@pytest.mark.skipif(
+    sys.platform == "win32" or shutil.which("bash") is None,
+    reason="scripts/grove-seat is a POSIX launcher",
+)
+def test_bot_venv_legacy_home_is_used_with_a_warning_naming_the_new_home(tmp_path):
+    home = tmp_path / "home"
+    fake_python(home / "venvs" / "willow-bot" / "bin", "legacy")
+    env = {"PATH": "/usr/bin:/bin", "WILLOW_HOME": str(home)}
+    out, err = launch(env)
+    assert out == "legacy"
+    assert err.count("\n") == 1  # one line
+    assert "warning" in err and str(home / "willow-bot" / "venvs" / "willow-bot") in err
+
+
+@pytest.mark.skipif(
+    sys.platform == "win32" or shutil.which("bash") is None,
+    reason="scripts/grove-seat is a POSIX launcher",
+)
+def test_grove_venv_still_wins_over_both_bot_homes_and_is_quiet(tmp_path):
+    home = tmp_path / "home"
+    fake_python(home / "willow-bot" / "venvs" / "willow-bot" / "bin", "new")
+    fake_python(home / "venvs" / "willow-bot" / "bin", "legacy")
+    fake_python(tmp_path / "mine" / "bin", "explicit")
+    env = {"PATH": "/usr/bin:/bin", "WILLOW_HOME": str(home)}
+    out, err = launch(env, GROVE_VENV=str(tmp_path / "mine"))
+    assert out == "explicit"
+    assert "warning" not in err
+
+
+@pytest.mark.skipif(
+    sys.platform == "win32" or shutil.which("bash") is None,
+    reason="scripts/grove-seat is a POSIX launcher",
+)
+def test_no_bot_venv_anywhere_falls_through_to_python3(tmp_path):
+    home = tmp_path / "home"
+    home.mkdir()
+    out, err = launch({"PATH": "/usr/bin:/bin", "WILLOW_HOME": str(home)})
+    assert "warning" not in err
+    assert out not in ("new", "legacy")
 
 
 # --- ratatosk resolution and the say timeout ----------------------------------------
