@@ -24,7 +24,7 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Fixed
 
-- **seat:** `scripts/grove-seat` bot-venv default follows seal D2: `$WILLOW_HOME/willow-bot/venvs/willow-bot` first, then the legacy `$WILLOW_HOME/venvs/willow-bot` with a one-line stderr warning naming the new home (`GROVE_VENV` still wins) (PR 144).
+- **seat:** `scripts/grove-seat` bot-venv default follows seal D2: `$WILLOW_HOME/willow-bot/venvs/willow-bot` first, then the legacy `$WILLOW_HOME/venvs/willow-bot` with a one-line stderr warning naming the new home (`GROVE_VENV` still wins) (PR 143).
 
 ## [0.19.0](https://github.com/willow-memory/willows-grove/compare/v0.18.0...v0.19.0) (2026-10-11)
 
