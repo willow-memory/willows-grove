@@ -21,6 +21,18 @@ only from the box's label, value and detail plus the glue list; an
 not glue, as in the sketch's code-only unreachable reply; the model is never
 asked to say them and they are not run through the four checks.
 
+After a reply the row of chips is built from the boxes just shown (``chips``):
+a ``show me <ref>`` for the blocked box with a detail to open (else the first
+populated box with one), where ``<ref>`` is the box's first number or first two
+to four words and only if no other shown box answers to it; the options of a needs-you
+box whose detail splits on `` · `` into at least three short parts without a
+digit (taken as the box says them, no more); and always ``later`` and
+``thanks``. The row is capped at ``CHIP_CAP`` (choices are cut first, then the
+``show me`` is left off when the choices fill the room). ``parse_follow`` reads
+a typed line as a follow-up (``show me 712``, ``open 712``, a box id, ``the
+second one``, ``that``, ``why``, ``go on``); the seat resolves it against the
+last reply's boxes by fixed rules, in code.
+
 Color is gated on a tty and on ``NO_COLOR`` being unset. Anywhere else the
 card is plain ASCII with no escape code.
 """
@@ -30,7 +42,7 @@ from __future__ import annotations
 import os
 import re
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 #: The only free words in a sentence (``GLUE`` in the web sketch).
 GLUE = (
@@ -426,3 +438,158 @@ def compose(
     if greet:
         text = f"{greet} {text}".strip()
     return f"{text} No rush." if calm and text else text
+
+
+# --- chips and follow-ups ------------------------------------------------------
+
+#: The most chips one row carries, ``later`` and ``thanks`` included.
+CHIP_CAP = 6
+#: A needs-you box's detail reads as options when it splits on `` · `` into at
+#: least this many short, digit-free parts (two parts are ambiguous with a
+#: plain ``fact · fact`` detail, so they are not taken as a question).
+OPTION_MIN = 3
+OPTION_WORDS = 4
+LATER, THANKS = "later", "thanks"
+NUMBER = re.compile(r"\d+(?:\.\d+)*")
+WORD = re.compile(r"[^\W_]+(?:['’.-][^\W_]+)*")
+_UNSAFE = re.compile(r"[\[\]\x00-\x1f\x7f]")
+ORDINALS = {
+    "first": 0,
+    "1st": 0,
+    "second": 1,
+    "2nd": 1,
+    "third": 2,
+    "3rd": 2,
+    "fourth": 3,
+    "4th": 3,
+}
+MORE_WORDS = frozenset({"go on", "more", "next"})
+WHY_WORDS = frozenset({"why", "what's that", "whats that", "tell me more"})
+THAT_WORDS = frozenset({"that", "that one"})
+SHOW = re.compile(r"(?:show me|show|open)\s+(.+)")
+ORDINAL = re.compile(r"(?:the\s+)?(" + "|".join(ORDINALS) + r")(?:\s+one)?")
+
+
+@dataclass
+class Chips:
+    """The chip row after a reply: an optional ``show me <ref>``, the choices a
+    needs-you box carries, then always ``later`` and ``thanks``."""
+
+    show: str = ""
+    choices: list[str] = field(default_factory=list)
+
+    def labels(self) -> list[str]:
+        return [*([self.show] if self.show else []), *self.choices, LATER, THANKS]
+
+    def row(self) -> str:
+        return "chips: " + " ".join(f"[{c}]" for c in self.labels())
+
+
+def _label(text: str) -> str:
+    return _UNSAFE.sub("", _val(text)).strip()
+
+
+def _words(text: str) -> list[str]:
+    return [w.lower() for w in WORD.findall(str(text))]
+
+
+def options(box: Box) -> list[str]:
+    """The options a populated needs-you box carries, only as its own one-line
+    detail says them: split on `` · ``, at least ``OPTION_MIN`` parts, each at
+    most ``OPTION_WORDS`` words and without a digit. ``[]`` otherwise."""
+    detail = box.detail.strip()
+    if box.state != "populated" or box.kind != "you" or not detail or "\n" in detail:
+        return []
+    parts = [_label(p) for p in detail.split(" · ")]
+    if len(parts) < OPTION_MIN or not all(parts):
+        return []
+    if any(len(p.split()) > OPTION_WORDS or any(c.isdigit() for c in p) for p in parts):
+        return []
+    seen: set[str] = set()
+    out = []
+    for p in parts:
+        if p.lower() not in seen | {LATER, THANKS}:
+            seen.add(p.lower())
+            out.append(p)
+    return out
+
+
+def matches(box: Box, text: str) -> bool:
+    """Does ``text`` name this box: its id, a number in its value, or the whole
+    words its value starts with."""
+    want = " ".join(_words(text))
+    if not want:
+        return False
+    if want == box.id.lower() or want in NUMBER.findall(str(box.value)):
+        return True
+    value = " ".join(_words(box.value))
+    return value == want or value.startswith(want + " ")
+
+
+def unique_ref(box: Box, boxes: list[Box]) -> str:
+    """A short ref only this box answers to, from its own value: its first
+    number, else its first two, three or four words. ``""`` when none is
+    unique."""
+    nums = NUMBER.findall(str(box.value))
+    words = _words(box.value)
+    cands = ([nums[0]] if nums else []) + [" ".join(words[:n]) for n in (2, 3, 4)]
+    for c in cands:
+        if c and [b for b in boxes if matches(b, c)] == [box]:
+            return _label(c)
+    return ""
+
+
+def chips(boxes: list[Box]) -> Chips:
+    """The chip row for the boxes a turn showed. Choices come from the first
+    needs-you box that carries options (``options``), capped so the row stays
+    within ``CHIP_CAP`` with ``later`` and ``thanks``. A ``show me <ref>`` chip
+    follows only if the row has room: the blocked box with a detail to open,
+    else the first populated box with one, whose ref is unique among the
+    boxes."""
+    room = CHIP_CAP - 2
+    got: list[str] = []
+    for b in boxes:
+        got = options(b)
+        if got:
+            break
+    out = Chips(choices=got[:room])
+    if len(out.choices) < room:
+        order = sorted(
+            (
+                b
+                for b in boxes
+                if b.state == "populated" and b.detail and not options(b)
+            ),
+            key=lambda b: b.kind != "block",  # stable: rank order within
+        )
+        for b in order:
+            ref = unique_ref(b, boxes)
+            if ref:
+                out.show = f"show me {ref}"
+                break
+    return out
+
+
+def _fold(text: str) -> str:
+    t = " ".join(str(text).lower().replace("’", "'").split())
+    return t.rstrip("?!. ")
+
+
+def parse_follow(line: str) -> tuple[str, str, bool] | None:
+    """A typed line read as a follow-up: ``(kind, arg, prefixed)`` or None.
+    Kinds: ``more``, ``why``, ``that``, ``ord`` (arg the 0-based index) and
+    ``ref`` (arg the text after ``show me`` / ``open``; a bare line is a ref
+    only when ``prefixed`` is False and it later matches a box id)."""
+    t = _fold(line)
+    if t in MORE_WORDS:
+        return ("more", "", False)
+    if t in WHY_WORDS:
+        return ("why", "", False)
+    m = SHOW.fullmatch(t)
+    inner, prefixed = (m[1], True) if m else (t, False)
+    o = ORDINAL.fullmatch(inner)
+    if o:
+        return ("ord", str(ORDINALS[o[1]]), prefixed)
+    if inner in THAT_WORDS:
+        return ("that", "", prefixed)
+    return ("ref", inner, prefixed) if inner else None

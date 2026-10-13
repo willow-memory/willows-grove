@@ -67,7 +67,21 @@ order. The code sentence is a short sentence per box; it opens ``Morning.`` on
 the run's first reply when the turn's clock time is before noon; a stage whose
 card is ``empty`` or ``unreachable`` also says so in a plain code line. Small
 talk is answered by code, and a task asked again is shown again from the pile,
-stamped with when it was first said. Under ``NO_COLOR`` or a non-tty the cards are plain ASCII with
+stamped with when it was first said.
+
+A reply ends with a row of chips built from the boxes it showed
+(``seat_boxes.chips``): ``show me <ref>`` for a box worth opening, the options a
+needs-you box carries, and always ``later`` and ``thanks``. The seat keeps the
+last reply (``Thread``) and answers a typed line against it in code, before the
+chain: a chip choice is acknowledged (``Got it: <choice>.``, nothing recorded
+or sealed, the row spent); ``show me 712`` / ``open 712`` / a box id / ``the
+second one`` / ``that`` show that box again with its full detail and a code
+sentence; ``why`` / ``what's that`` / ``tell me more`` say its detail;
+``go on`` / ``more`` / ``next`` show the next page (by code, no model) or say
+nothing is left. An ordinal past what was shown, or a ref that fits two boxes,
+is a plain line, never a guess. None of these asks a model, calls
+``api.escalate`` or writes a row; a line that matches nothing goes to the chain
+as before. Under ``NO_COLOR`` or a non-tty the cards are plain ASCII with
 no escape codes.
 
 The operator, 2026-10-09: "The deterministic chain runs, esclates to local
@@ -100,10 +114,15 @@ from typing import Any
 
 from grove.seat_boxes import (
     Box,
+    cap,
     compose,
     human_line,
     checks_line,
+    chips,
+    clause,
     legend,
+    matches,
+    parse_follow,
     pile_header,
     plain_line,
     rank,
@@ -112,6 +131,7 @@ from grove.seat_boxes import (
     struck_line,
     use_color,
     who_line,
+    _val,
 )
 from grove.seat_say import (
     CHECK_NAMES,
@@ -124,6 +144,7 @@ from grove.seat_say import (
     run_checks,
 )
 
+ORD = ("first", "second", "third", "fourth")
 GROVE_ROOT = Path(__file__).resolve().parent.parent
 ESCALATE_PATH = "ESCALATE"
 #: Reasons a flowering turn may not take: code decided these, no model.
@@ -142,7 +163,8 @@ SMALL_TALK = {
 }
 MORE_YES = frozenset({"", "m", "more", "y", "yes"})
 STAY = "Got it. It stays in the pile."
-CHIPS = "chips: [later] [thanks]"
+NOTHING_MORE = "Nothing more in the pile."
+NO_DETAIL = "Nothing more is on the record for it."
 
 
 class SeatUnavailable(Exception):
@@ -324,6 +346,20 @@ class Turn:
     shown: list[Said] = field(default_factory=list)
 
 
+@dataclass
+class Thread:
+    """The last reply, kept so a follow-up can be resolved against it: its
+    turn (every box shown so far, and what waits behind ``more?``), the chip
+    choices it offered, and the box last opened (``focus``)."""
+
+    turn: Turn
+    choices: list[str] = field(default_factory=list)
+    focus: Box | None = None
+
+    def boxes(self) -> list[Box]:
+        return [b for said in self.turn.shown for b in said.batch]
+
+
 class Seat:
     def __init__(
         self,
@@ -354,6 +390,8 @@ class Seat:
         self.pile_n: int | None = 0
         self._n = 0
         self.greeted = False  # the run's one time-of-day greeting
+        #: The last reply (chain turns only), for follow-ups and chip choices.
+        self.thread: Thread | None = None
         #: The sealed snapshot being served ({spec, subject}), else None.
         self.sealed: dict | None = None
         #: The grown scope's subject when it differs from the sealed one.
@@ -425,7 +463,13 @@ class Seat:
             return ""
 
     def speak(
-        self, batch: list[Box], first: bool, human: str, page: int = 0, at: str = ""
+        self,
+        batch: list[Box],
+        first: bool,
+        human: str,
+        page: int = 0,
+        at: str = "",
+        model: bool = True,
     ) -> Said:
         """One reply's sentence. The model says it and code checks it; a
         sentence that fails a check is struck and code's stands; a model that
@@ -436,7 +480,7 @@ class Seat:
             batch, first=first, page=page, greet=self.greeting(at) if first else ""
         )
         again = "{at}"
-        if self.say is None:
+        if self.say is None or not model:
             return Said(
                 batch,
                 f"code · said {n} boxes, no model asked",
@@ -498,6 +542,7 @@ class Seat:
             self.write(f"as noted at {turn.at} · same boxes, nothing new since")
             for said in turn.shown:
                 self.emit(said, turn.at)
+        self.thread = thread = Thread(turn)
         while turn.rest:
             if turn.shown and not self.more(len(turn.rest)):
                 return
@@ -507,7 +552,120 @@ class Seat:
             )
             turn.shown.append(said)
             self.emit(said)
-        self.write(CHIPS)
+        self.offer(thread)
+
+    def offer(self, thread: Thread) -> None:
+        """The chip row for what the turn showed. Its choices are remembered so
+        a typed one is acknowledged, nothing more."""
+        got = chips(thread.boxes())
+        thread.choices = got.choices
+        self.write(got.row())
+
+    def choice(self, task: str) -> bool:
+        """A typed line that is a choice chip just offered: acknowledged by
+        code, never sent to the chain. It changes no record, seals nothing and
+        writes no row; the row is spent."""
+        th = self.thread
+        hit = next(
+            (c for c in (th.choices if th else []) if _norm(c) == _norm(task)), ""
+        )
+        if not hit:
+            return False
+        self.you(task)
+        self.code_reply(f"Got it: {hit}.")
+        th.choices = []
+        return True
+
+    def follow_up(self, task: str) -> bool:
+        """Resolve a typed line against the last reply by fixed rules, in code:
+        no model, no ``api.escalate``, no record row. False: not one, the line
+        goes to the chain as before."""
+        th = self.thread
+        got = parse_follow(task) if th else None
+        if th is None or got is None:
+            return False
+        kind, arg, prefixed = got
+        boxes = th.boxes()
+        if kind == "more":
+            self.you(task)
+            self.go_on(th)
+            return True
+        found: Box | None = None
+        if kind == "ord":
+            n = int(arg)
+            if n >= len(boxes):
+                return self.said(
+                    task, f"{self.only(boxes)}, so there is no {ORD[n]} one."
+                )
+            found = boxes[n]
+        elif kind in ("that", "why"):
+            last = th.turn.shown[-1].batch if th.turn.shown else []
+            found = th.focus or (last[0] if last else None)
+        elif prefixed:
+            hits = [b for b in boxes if matches(b, arg)]
+            if len(hits) > 1:
+                return self.said(
+                    task, f'"{arg}" fits {len(hits)} boxes: {self.list_of(hits)}.'
+                )
+            found = hits[0] if hits else None
+        else:
+            hits = [b for b in boxes if b.id.lower() == arg]
+            found = hits[0] if len(hits) == 1 else None
+        if found is None:
+            return False
+        th.focus = found
+        self.you(task)
+        if kind == "why":
+            self.code_reply(self.detail_sentence(found))
+        else:
+            self.show(found, plain=False)
+            self.code_reply(self.open_sentence(found))
+        return True
+
+    def said(self, task: str, text: str) -> bool:
+        self.you(task)
+        self.code_reply(text)
+        return True
+
+    @staticmethod
+    def list_of(boxes: list[Box]) -> str:
+        return "; ".join(f"{b.id}: {_val(b.value)}" for b in boxes)
+
+    def only(self, boxes: list[Box]) -> str:
+        n = len(boxes)
+        return f"I showed {n} box{'' if n == 1 else 'es'} ({self.list_of(boxes)})"
+
+    @staticmethod
+    def open_sentence(box: Box) -> str:
+        """A box said once more: its own phrase, from its own facts."""
+        return cap(clause(box)) + "."
+
+    @staticmethod
+    def detail_sentence(box: Box) -> str:
+        """A box's detail, as the box has it (lines joined by ``;``, the
+        ``·`` parts by commas); with none, the box's own phrase and a line
+        saying there is no more."""
+        if box.state != "populated":
+            return plain_line(box)
+        detail = "; ".join(
+            _val(ln).replace(" · ", ", ") for ln in box.detail.split("\n") if ln.strip()
+        )
+        return f"{cap(detail)}." if detail else f"{cap(clause(box))}. {NO_DETAIL}"
+
+    def go_on(self, th: Thread) -> None:
+        """The next page of the last reply, said by code (no model is asked), or
+        a line saying nothing is left."""
+        turn = th.turn
+        if not turn.rest:
+            return self.code_reply(NOTHING_MORE)
+        batch, turn.rest = turn.rest[:PAGE], turn.rest[PAGE:]
+        said = self.speak(
+            batch, False, "", page=len(turn.shown), at=turn.at, model=False
+        )
+        turn.shown.append(said)
+        self.emit(said)
+        if not turn.rest:
+            self.offer(th)
 
     def more(self, left: int) -> bool:
         ans = self.ask("more?", f"{left} more in the pile [enter = show, else keep]: ")
@@ -890,6 +1048,8 @@ class Seat:
                             self.you(task)
                             self.code_reply(SMALL_TALK[_norm(task)])
                             continue
+                        if self.choice(task) or self.follow_up(task):
+                            continue  # code answered it: no chain, no model
                         self.chain(task)
                         self.proposals()
             return 0

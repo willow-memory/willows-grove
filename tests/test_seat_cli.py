@@ -573,6 +573,11 @@ def test_a_colored_card_is_the_plain_card_with_escapes():
     assert "38;2;230;179;76" in hot  # needs-you is the sun
 
 
+def chip_at(out, start=0):
+    """Index of the first chip row at or after ``start``."""
+    return next(i for i in range(start, len(out)) if out[i].startswith("chips:"))
+
+
 def lines_ok(out):
     """Every printed line is a card row, a reply line, the human's, or chrome."""
     ok = ("+", "|", ":", "!", "agent ·", "agent>", "you:")
@@ -675,8 +680,8 @@ def test_a_question_asked_again_is_shown_from_the_pile_with_its_timestamp():
     cards = lambda block: [o for o in block if o[:1] in "+|"]  # noqa: E731
     i1 = out.index("you: where are we")
     i2 = out.index(stamp)
-    first_cards = cards(out[i1 : out.index(s.CHIPS, i1)])
-    assert first_cards and cards(out[i2 : out.index(s.CHIPS, i2)]) == first_cards
+    first_cards = cards(out[i1 : chip_at(out, i1)])
+    assert first_cards and cards(out[i2 : chip_at(out, i2)]) == first_cards
     assert "agent · code · shown again from the pile, no model asked now" in out
     assert "09:40" not in text(out)  # the second asking did not restamp
 
@@ -2090,3 +2095,278 @@ def test_converse_ranks_then_pages_the_ranked_list():
     said = [o for o in out if o.startswith("agent> ")]
     assert said[0].startswith("agent> Morning. You need to ratify")
     assert said[1].startswith("agent> Oh, and phone only proposes is decided")
+
+
+# --- chips, chip answers and follow-ups ------------------------------------------
+
+
+def demo_boxes():
+    return [
+        bx.Box("b1", "dec", "decided", "phone only proposes", "recorded"),
+        bx.Box("b2", "pr", "changed", "PR #127 open", "grid rows JE–JI · baton 9"),
+        bx.Box("b3", "pr", "changed", "PR #714 open", "untracks 3 bytecode files"),
+        bx.Box(
+            "b4", "block", "blocked", "PR 712 waiting", "broker verb · 126 tests pass"
+        ),
+        bx.Box(
+            "b5", "you", "needs you", "Ratify the work order", "local-flow-and-ui §7"
+        ),
+    ]
+
+
+GATE = [
+    bx.Box("c1", "block", "step", "Check-in hard-closed", "the box did not open"),
+    bx.Box("c2", "block", "gate", "ruff 0.16.10", "installed in the venv"),
+    bx.Box(
+        "c5",
+        "you",
+        "needs you",
+        "Pick one",
+        "put it back · keep as a grant · block · stop",
+    ),
+]
+
+
+def thread_run(keys, boxes=None, **kw):
+    """A run whose chain turns are fixed boxes, so a follow-up has something to
+    resolve against. ``api.escalate`` must never be called by a follow-up."""
+    api = FakeApi()
+    st, out = seat(api, ["who", "", *keys, ""], **kw)
+
+    def chain(task):
+        st.you(task)
+        st.converse(s._norm(task), list(boxes or demo_boxes()), task)
+
+    st.chain = chain
+    st.run()
+    return api, out
+
+
+ALL = ["", ""]  # accept both more? prompts: the whole demo list is shown
+
+
+def chips_of(out):
+    return [o for o in out if o.startswith("chips:")]
+
+
+def after(out, you, nth=0):
+    """The lines printed after the human's ``you: <you>`` (the nth time)."""
+    i = [k for k, o in enumerate(out) if o == f"you: {you}"][nth]
+    nxt = next(
+        (j for j in range(i + 1, len(out)) if out[j].startswith(("you:", "chain ▶"))),
+        len(out),
+    )
+    return out[i + 1 : nxt]
+
+
+def test_the_chip_row_comes_from_the_boxes_just_shown():
+    row = bx.chips(bx.rank(demo_boxes())).row()
+    assert row == "chips: [show me 712] [later] [thanks]"  # the blocked box, by number
+    assert bx.chips(GATE).row() == (
+        "chips: [put it back] [keep as a grant] [block] [stop] [later] [thanks]"
+    )
+    assert (
+        bx.chips([bx.Box("b1", "pass", "x", "fine")]).row() == "chips: [later] [thanks]"
+    )
+
+
+def test_a_ref_must_be_unique_and_comes_only_from_the_boxs_own_value():
+    twin = [
+        bx.Box("b1", "block", "blocked", "PR 712 waiting", "why"),
+        bx.Box("b2", "block", "blocked", "PR 712 held", "why"),
+    ]
+    assert bx.chips(twin).show == "show me pr 712 waiting"  # number shared: more words
+    same = [
+        bx.Box("b1", "block", "x", "PR 7 waiting", "d"),
+        bx.Box("b2", "pr", "x", "PR 7 waiting", "d"),
+    ]
+    assert bx.chips(same).show == ""  # nothing names one box alone: no chip
+
+
+def test_options_need_three_short_digitless_parts_and_the_row_is_capped():
+    two = bx.Box("b1", "you", "needs you", "Ratify", "local-flow · section seven")
+    assert bx.options(two) == []
+    digits = bx.Box("b1", "you", "needs you", "Ratify", "a · b · section 7")
+    assert bx.options(digits) == []
+    many = bx.Box("b1", "you", "x", "Pick", " · ".join(f"opt{c}" for c in "abcdefg"))
+    assert len(bx.chips([many]).labels()) == bx.CHIP_CAP
+    blk = bx.Box("b2", "block", "x", "PR 9 waiting", "detail")
+    full = bx.Box("b1", "you", "x", "Pick", "one · two · three · four")
+    assert bx.chips([full, blk]).show == ""  # choices fill the row: no show me
+    dup = bx.Box("b1", "you", "x", "Pick", "One · one · later · thanks · two")
+    assert bx.options(dup) == ["One", "two"]
+
+
+def test_the_chip_row_is_ascii_safe_of_control_and_bracket_characters():
+    odd = bx.Box("b1", "you", "x", "Pick", "[red]\x1b one · two\x07 · three")
+    row = bx.chips([odd]).row()
+    assert "\x1b" not in row and "\x07" not in row and "[[" not in row
+
+
+def test_a_reply_ends_with_its_chips_and_a_choice_is_only_acknowledged():
+    api, out = thread_run(["check in", "", "put it back", "block"], boxes=GATE)
+    assert chips_of(out)[0].startswith("chips: [put it back] [keep as a grant]")
+    assert after(out, "put it back") == [
+        "agent · code · no model, nothing served",
+        "agent> Got it: put it back.",
+    ]
+    assert api.names().count("escalate") == 0
+    # the row is spent once a choice is made: a second goes to the chain as today
+    assert "agent> Got it: block." not in out
+
+
+def test_thanks_and_later_after_a_reply_are_answered_by_code():
+    api, out = thread_run(["where are we", "thanks", "later"])
+    assert "agent> Anytime." in out and "agent> Got it. It stays in the pile." in out
+    assert "escalate" not in api.names()
+
+
+def test_a_choice_not_offered_is_not_taken_for_one():
+    _api, out = thread_run(["where are we", "put it back"])
+    assert not any("Got it: put it back" in o for o in out)
+
+
+def test_show_me_a_ref_shows_the_box_again_in_full_with_a_code_sentence():
+    api, out = thread_run(["where are we", *ALL, "show me 712"])
+    got = after(out, "show me 712")
+    assert got[0].startswith("+- [blocked] blocked  b4")
+    assert "| PR 712 waiting" in got and "| broker verb · 126 tests pass" in got
+    assert got[-2:] == [
+        "agent · code · no model, nothing served",
+        "agent> PR 712's still waiting, 126 tests pass.",
+    ]
+    assert "escalate" not in api.names()
+
+
+@pytest.mark.parametrize("line", ["open 712", "B4", "show me b4", "Show me 712?"])
+def test_open_and_a_box_id_name_the_same_box(line):
+    _api, out = thread_run(["where are we", *ALL, line])
+    assert after(out, line)[0].startswith("+- [blocked] blocked  b4")
+
+
+def test_ordinals_count_the_boxes_the_last_reply_showed():
+    _api, out = thread_run(["where are we", *ALL, "the second one"])
+    assert after(out, "the second one")[0].startswith("+- [blocked] blocked  b4")
+    _api, out = thread_run(["where are we", *ALL, "the first"])
+    assert after(out, "the first")[0].startswith("+- [needs you] needs you  b5")
+
+
+def test_that_is_the_first_of_the_last_page_then_the_box_last_opened():
+    _api, out = thread_run(["where are we", "n", "that"])
+    assert after(out, "that")[0].startswith("+- [needs you] needs you  b5")
+    _api, out = thread_run(["where are we", *ALL, "that"])  # the last page: b3 alone
+    assert after(out, "that")[0].startswith("+- [changed] changed  b3")
+    _api, out = thread_run(["where are we", *ALL, "show me 712", "that one"])
+    assert after(out, "that one")[0].startswith("+- [blocked] blocked  b4")
+
+
+@pytest.mark.parametrize("line", ["why", "Why?", "what's that", "tell me more"])
+def test_why_says_the_boxs_detail_by_code(line):
+    api, out = thread_run(["where are we", *ALL, "show me 712", line])
+    got = after(out, line)
+    assert got == [
+        "agent · code · no model, nothing served",
+        "agent> Broker verb, 126 tests pass.",
+    ]
+    assert "escalate" not in api.names()
+
+
+def test_why_on_a_box_without_detail_says_so_and_on_a_bare_state_says_its_reason():
+    boxes = [bx.Box("b1", "dec", "decided", "phone only proposes")]
+    _api, out = thread_run(["where are we", "why"], boxes=boxes)
+    assert (
+        "agent> Phone only proposes is decided. Nothing more is on the record for it."
+        in out
+    )
+    down = [bx.Box("b1", "pass", "served", "unreachable — no key", state="unreachable")]
+    _api, out = thread_run(["where are we", "why"], boxes=down)
+    assert f"agent> {bx.CANT_READ}. No key." in out
+
+
+def test_an_ordinal_past_what_was_shown_is_a_plain_line_never_a_guess():
+    boxes = demo_boxes()[:3]  # 3 boxes: pages of two, one box left behind more?
+    _api, out = thread_run(["where are we", "n", "the third one"], boxes=boxes)
+    got = after(out, "the third one")
+    assert got[-1].startswith("agent> I showed 2 boxes (")
+    assert got[-1].endswith("so there is no third one.")
+    assert not any(o.startswith("+-") for o in got)
+
+
+def test_a_ref_that_fits_two_boxes_is_said_not_guessed():
+    boxes = [
+        bx.Box("b1", "block", "x", "PR 712 waiting", "d"),
+        bx.Box("b2", "pr", "x", "PR 712 open", "d"),
+    ]
+    api, out = thread_run(["where are we", "show me 712"], boxes=boxes)
+    got = after(out, "show me 712")
+    assert got[-1] == 'agent> "712" fits 2 boxes: b1: PR 712 waiting; b2: PR 712 open.'
+    assert "escalate" not in api.names()
+
+
+def test_go_on_shows_the_next_page_by_code_then_says_nothing_is_left():
+    # decline the first more? so the pile keeps the rest, then ask for it
+    api, out = thread_run(["where are we", "n", "go on", "go on", "next"])
+    first = after(out, "go on")
+    assert "agent · code · said 2 boxes, no model asked" in first
+    assert (
+        "agent> Oh, and phone only proposes is decided and recorded; PR #127 open. No rush."
+        in first
+    )
+    assert chips_of(first) == []  # one box still behind it
+    last = after(out, "go on", 1)
+    assert (
+        any("b3" in o for o in last) and "agent> Also, PR #714 open. No rush." in last
+    )
+    assert chips_of(last)  # the pile is empty: the row is offered
+    assert after(out, "next") == [
+        "agent · code · no model, nothing served",
+        "agent> Nothing more in the pile.",
+    ]
+    assert "escalate" not in api.names()
+
+
+def test_a_follow_up_with_no_reply_before_it_goes_to_the_chain_as_today():
+    api = FakeApi()
+    st, out = seat(api, ["who", "", "why", "show me 712", ""])
+    st.run()
+    assert api.names().count("escalate") == 2
+
+
+def test_a_line_that_resolves_to_nothing_goes_to_the_chain_as_today():
+    calls = []
+    api = FakeApi()
+    st, out = seat(
+        api, ["who", "", "where are we", "show me the stack", "b99", "the sky", ""]
+    )
+    st.chain = lambda task: (
+        st.you(task),
+        calls.append(task),
+        st.converse(task, demo_boxes()[:2], task),
+    )
+    st.run()
+    assert calls == ["where are we", "show me the stack", "b99", "the sky"]
+
+
+def test_asked_again_still_replays_and_a_follow_up_leaves_no_row():
+    ticks = iter(["09:14", "09:40", "09:41"])
+    api, out = thread_run(
+        ["where are we", *ALL, "show me 712", "Where  are we", "why"],
+        clock=lambda: next(ticks),
+    )
+    assert "as noted at 09:14 · same boxes, nothing new since" in out
+    writes = {"take_proposals", "checkin", "checkout", "escalate"}
+    assert not [n for n in api.names() if n == "escalate" or n == "take_proposals"]
+    assert writes  # (the only api calls are the stages around the turns)
+
+
+def test_a_follow_up_never_asks_the_model():
+    asked = []
+
+    def sayer(prompt):
+        asked.append(prompt)
+        return "x"
+
+    _api, out = thread_run(
+        ["where are we", "n", "go on", "show me 712", "why", "the first one"], say=sayer
+    )
+    assert len(asked) == 1  # only the first reply's sentence; none for the follow-ups
