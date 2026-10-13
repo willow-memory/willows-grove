@@ -12,6 +12,15 @@ reason) and an ``unreachable`` card (amber, its own rule and bar, reason).
 They differ in marker and glyph, not only in color, so the plain path, which
 is what tests and CI read, tells them apart.
 
+A reply's boxes are ranked (``rank``): a heads-up (``empty``/``unreachable``)
+first, then needs you, blocked, decided, changed, routine pass, stable within
+a kind. ``compose`` says them in short sentences, one phrasing per kind, built
+only from the box's label, value and detail plus the glue list; an
+``unreachable`` or ``empty`` box also gets a plain line in words
+(``plain_line``), apart from its card. Those fixed lines are code's own words,
+not glue, as in the sketch's code-only unreachable reply; the model is never
+asked to say them and they are not run through the four checks.
+
 Color is gated on a tty and on ``NO_COLOR`` being unset. Anywhere else the
 card is plain ASCII with no escape code.
 """
@@ -174,31 +183,246 @@ def problem(box: Box) -> bool:
     return bool(PROBLEM.search(f"{box.label} {box.value} {box.detail}"))
 
 
+#: Reply order, most pressing first: needs you, blocked, decided, changed, then
+#: the routine pass (the web sketch's priority, ``box-stream-v1.3.html``).
+PRIORITY = ("you", "block", "dec", "pr", "pass")
+#: ``Part``: a run of the sentence and the box id it cites (None: glue).
+Part = tuple[str, "str | None"]
+STATE_PREFIX = re.compile(r"^(?:unreachable|empty)\s*[—–-]+\s*", re.I)
+#: A block's value ending in one of these reads "<head>'s still <status>".
+STATUS = re.compile(
+    r"^(?P<head>.+?)\s+(?P<st>waiting|blocked|stuck|held|pending)$", re.I
+)
+#: The adjective a same-kind pair falls back to when its values share no word.
+BOTH = {"you": "need you", "block": "still blocked", "dec": "decided"}
+TAIL_WORDS = {"block": 6, "dec": 2}
+#: Said when the record can't be read: fixed code words, as in the sketch's
+#: unreachable scene. Only the why after it comes from a box.
+CANT_READ = "I can't read the record right now"
+
+
+def rank(boxes: list[Box]) -> list[Box]:
+    """Boxes in reply order: a heads-up (an ``empty`` or ``unreachable`` box)
+    first, then needs you, blocked, decided, changed, routine pass. Stable:
+    boxes of one kind keep the order they came in. A kind not in the list
+    sorts after the routine pass."""
+
+    def key(b: Box) -> int:
+        if b.state != "populated":
+            return -1
+        return PRIORITY.index(b.kind) if b.kind in PRIORITY else len(PRIORITY)
+
+    return sorted(boxes, key=key)
+
+
+def _val(text: str) -> str:
+    """A box field as a sentence reads it: one line, hashes short, no full stop."""
+    return short(" ".join(str(text).split())).rstrip(".")
+
+
+def lead(text: str) -> str:
+    """Lowercase a sentence's first word when it is only capitalized (Ratify,
+    Phone), never an acronym, a name with a digit, or ``I``."""
+    w = text.split(" ", 1)[0]
+    if len(w) > 1 and w[0].isupper() and w[1:].isalpha() and w[1:].islower():
+        return w[0].lower() + text[1:]
+    return text
+
+
+def cap(text: str) -> str:
+    return text[:1].upper() + text[1:]
+
+
+def why(box: Box) -> str:
+    """The reason a non-populated box gives: its value without the state word."""
+    v = _val(box.value)
+    got = STATE_PREFIX.sub("", v).strip()
+    return "" if got.lower() in ("unreachable", "empty") else got
+
+
+def plain_line(box: Box) -> str:
+    """The plain sentence for an ``empty`` or ``unreachable`` box (the sketch's
+    ``I can't read the record right now. <why>.``): fixed code words, the
+    reason from the box. Populated: ``""``."""
+    reason = why(box)
+    if box.state == "unreachable":
+        return f"{CANT_READ}. {cap(reason)}." if reason else f"{CANT_READ}."
+    if box.state == "empty":
+        base = f"{cap(_val(box.label))} is empty"
+        return f"{base}: {reason}." if reason else f"{base}."
+    return ""
+
+
+def _tail(box: Box) -> str:
+    """The last ``·`` part of a one-line detail, if short enough to say."""
+    detail = " ".join(box.detail.split())
+    last = _val(detail.split(" · ")[-1]) if detail else ""
+    limit = TAIL_WORDS.get(box.kind, 0)
+    if not last or len(last.split()) > limit or last.lower() == _val(box.value).lower():
+        return ""
+    return last
+
+
+def _single(b: Box) -> list[Part]:
+    v = _val(b.value)
+    tail = _tail(b)
+    if b.kind == "you":
+        words = v.split()
+        if len(words) > 1 and lead(v) != v:
+            return [(f"You need to {lead(v)}", b.id)]
+        return [(f"{v} needs you", b.id)]
+    if b.kind == "block":
+        m = STATUS.match(v)
+        body = (
+            f"{m['head']}'s still {m['st'].lower()}" if m else f"{v} is still blocked"
+        )
+        return [(f"{body}, {tail}" if tail else body, b.id)]
+    if b.kind == "dec":
+        return [(f"{v} is decided and {tail}" if tail else f"{v} is decided", b.id)]
+    return [(v, b.id)]
+
+
 def clause(box: Box) -> str:
+    """One box as the phrase code says it, from its own facts and glue."""
     if box.state != "populated":
-        return f"{box.label} is {box.value}"
-    if box.kind == "you":
-        return f"{box.value} needs you"
-    if box.kind == "block":
-        return f"{box.value} is still blocked"
-    return box.value
+        return plain_line(box).rstrip(".")
+    return "".join(t for t, _ in _single(box))
 
 
-def compose(boxes: list[Box], first: bool = True) -> str:
-    """One sentence from box facts and glue. Deterministic; no model."""
+def _pair(a: Box, b: Box) -> list[Part]:
+    """Two boxes of one kind in one phrase, with ``both``."""
+    va, vb = _val(a.value), _val(b.value)
+    if a.kind == "you":
+        return [
+            ("Both need you: ", None),
+            (lead(va), a.id),
+            (" and ", None),
+            (lead(vb), b.id),
+        ]
+    wa, wb = va.split(), vb.split()
+    share = len(wa) > 1 and len(wb) > 1 and wa[-1].lower() == wb[-1].lower()
+    if share and wa[-1].isalpha() and len(wa[-1]) > 2:
+        return [
+            (" ".join(wa[:-1]), a.id),
+            (" and ", None),
+            (" ".join(wb[:-1]), b.id),
+            (f" are both {wa[-1]}", None),
+        ]
+    if a.kind in BOTH:
+        return [
+            (va, a.id),
+            (" and ", None),
+            (vb, b.id),
+            (f" are both {BOTH[a.kind]}", None),
+        ]
+    return [("both ", None), (va, a.id), (" and ", None), (vb, b.id)]
+
+
+def _run(group: list[Box]) -> list[Part]:
+    """A run of one kind: one box, a pair, or (decided, changed, pass) a list."""
+    if len(group) == 1:
+        return _single(group[0])
+    if len(group) == 2:
+        return _pair(*group)
+    parts: list[Part] = []
+    for i, b in enumerate(group):
+        sep = ", " if i < len(group) - 2 else " and "
+        parts += [(_val(b.value), b.id)] + ([(sep, None)] if i < len(group) - 1 else [])
+    return parts
+
+
+def _render(parts: list[Part], cite: bool) -> str:
+    return "".join(f"{t} [{i}]" if cite and i else t for t, i in parts)
+
+
+def compose(
+    boxes: list[Box],
+    first: bool = True,
+    *,
+    page: int | None = None,
+    greet: str = "",
+    cite: bool = False,
+) -> str:
+    """One reply's sentence from box facts and glue. Deterministic; no model.
+
+    A short sentence per box, in the order given (``rank`` puts the pressing
+    ones first): ``You need to ratify the work order. PR 712's still waiting,
+    126 tests pass.`` Decided, changed and routine boxes share one
+    ``;``-joined sentence, and two of a kind say ``both``. ``greet`` opens it
+    (``Morning.``); a page after the first opens ``Oh, and`` (the second) or
+    ``Also,`` (later); ``Looks like`` opens a first page that is all routine;
+    ``Heads up:`` precedes a problem or an unreachable box, whose plain line
+    (``I can't read the record right now. <why>.``) is fixed code words; and
+    ``No rush.`` ends a reply only when nothing needs the human, blocks, or
+    went wrong. ``cite=True`` tags each fact with its box ``[id]`` the way a
+    model sentence is tagged, so the checks can be run over it."""
     if not boxes:
         return ""
+    page = (0 if first else 1) if page is None else page
     broken = any(b.state != "populated" for b in boxes)
-    opener = "Heads up: " if broken else "Looks like " if first else "Oh, and "
-    parts = [clause(b) for b in boxes]
-    if len(parts) == 1:
-        body = parts[0]
-    elif len(parts) == 2:
-        both = "both " if boxes[0].kind == boxes[1].kind and not broken else ""
-        body = f"{both}{parts[0]} and {parts[1]}"
-    else:
-        body = ", ".join(parts[:-1]) + f" and {parts[-1]}"
-    calm = not broken and not any(
-        b.kind in ("you", "block") or problem(b) for b in boxes
-    )
-    return f"{opener}{body}.{' No rush.' if calm else ''}"
+    bad = any(b.state == "populated" and problem(b) for b in boxes)
+    sents: list[tuple[list[Part], str]] = []  # (parts, kind: heads | soft | hard)
+    i = 0
+    while i < len(boxes):
+        b = boxes[i]
+        if b.state != "populated":
+            line = plain_line(b)[:-1]
+            parts = [(line, b.id)] if line else []
+            sents.append((parts, "heads" if b.state == "unreachable" else "plain"))
+            i += 1
+            continue
+        j = i
+        while (
+            j < len(boxes) and boxes[j].state == "populated" and boxes[j].kind == b.kind
+        ):
+            j += 1
+        group = boxes[i:j]
+        i = j
+        if b.kind in ("you", "block") and len(group) > 2:
+            sents += [(_single(g), "hard") for g in group]
+        else:
+            soft = b.kind not in ("you", "block")
+            sents.append((_run(group), "soft" if soft else "hard"))
+    # fold neighbouring soft sentences into one, joined by "; "
+    folded: list[tuple[list[Part], str]] = []
+    for parts, kind in sents:
+        if kind == "soft" and folded and folded[-1][1] == "soft":
+            prev = folded[-1][0]
+            folded[-1] = (
+                prev + [("; ", None)] + [(lead(parts[0][0]), parts[0][1])] + parts[1:],
+                "soft",
+            )
+        else:
+            folded.append((parts, kind))
+    # a problem box gets heads up, once
+    flagged = False
+    out: list[list[Part]] = []
+    hot_at: list[bool] = []
+    for parts, kind in folded:
+        hot = kind == "heads" or any(
+            b.id in {i for _, i in parts if i} and problem(b)
+            for b in boxes
+            if b.state == "populated"
+        )
+        if hot and not flagged and parts:
+            parts = [("Heads up: ", None), (lead(parts[0][0]), parts[0][1]), *parts[1:]]
+            flagged = True
+        out.append(parts)
+        hot_at.append(hot)
+    calm = not broken and not bad and not any(b.kind in ("you", "block") for b in boxes)
+    kinds_ok = all(b.kind in ("dec", "pr", "pass") for b in boxes)
+    prefix = ""
+    if page > 0:
+        prefix = "Oh, and " if page == 1 else "Also, "
+    elif calm and kinds_ok:
+        prefix = "Looks like "
+    if prefix:
+        for n, parts in enumerate(out):
+            if parts and folded[n][1] in ("soft", "hard") and not hot_at[n]:
+                out[n] = [(prefix, None), (lead(parts[0][0]), parts[0][1]), *parts[1:]]
+                break
+    body = ". ".join(cap(_render(p, cite)) for p in out if p)
+    text = f"{body}." if body else ""
+    if greet:
+        text = f"{greet} {text}".strip()
+    return f"{text} No rush." if calm and text else text

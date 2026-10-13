@@ -61,9 +61,13 @@ the human's words quoted exactly. A sentence that fails a check is shown
 struck and replaced by the sentence code composes from box facts plus fixed
 glue, which is also what stands when the model can't be reached (an
 ``unreachable`` card, never a crash). With no ``say`` the seat is code only.
-A chain turn shows two boxes at a time (``more?``), small talk is answered by
-code, and a task asked again is shown again from the pile, stamped with when it
-was first said. Under ``NO_COLOR`` or a non-tty the cards are plain ASCII with
+A chain turn ranks its boxes (a heads-up first, then needs you, blocked,
+decided, changed, routine pass) and shows two at a time (``more?``) from that
+order. The code sentence is a short sentence per box; it opens ``Morning.`` on
+the run's first reply when the turn's clock time is before noon; a stage whose
+card is ``empty`` or ``unreachable`` also says so in a plain code line. Small
+talk is answered by code, and a task asked again is shown again from the pile,
+stamped with when it was first said. Under ``NO_COLOR`` or a non-tty the cards are plain ASCII with
 no escape codes.
 
 The operator, 2026-10-09: "The deterministic chain runs, esclates to local
@@ -101,6 +105,8 @@ from grove.seat_boxes import (
     checks_line,
     legend,
     pile_header,
+    plain_line,
+    rank,
     render_box,
     say_line,
     struck_line,
@@ -347,6 +353,7 @@ class Seat:
         self.turns: dict[str, Turn] = {}  # the pile of what was asked and said
         self.pile_n: int | None = 0
         self._n = 0
+        self.greeted = False  # the run's one time-of-day greeting
         #: The sealed snapshot being served ({spec, subject}), else None.
         self.sealed: dict | None = None
         #: The grown scope's subject when it differs from the sealed one.
@@ -365,9 +372,14 @@ class Seat:
         for ln in text.split("\n"):
             self.write(ln)
 
-    def show(self, *boxes: Box) -> None:
+    def show(self, *boxes: Box, plain: bool = True) -> None:
+        """The cards. A stage's ``empty`` or ``unreachable`` card is also said
+        in a plain code line (``plain``); a reply's cards are not, since the
+        reply's sentence already says them."""
         for b in boxes:
             self.put(render_box(b, self.color))
+            if plain and b.state != "populated":
+                self.code_reply(plain_line(b))
 
     def card(
         self, kind: str, label: str, value: str, detail: str = "", id: str = ""
@@ -389,7 +401,7 @@ class Seat:
         """A reply: boxes, who said the sentence, the sentence, its check chips
         and any code sentence that replaced a struck one. ``at`` is set when it
         is shown again from the pile."""
-        self.show(*said.batch, *said.cards)
+        self.show(*said.batch, *said.cards, plain=False)
         who = said.replay_who.format(at=at) if at else said.who
         self.write(who_line(who, self.color))
         for ln in said.lines:
@@ -400,13 +412,29 @@ class Seat:
         for ln in said.tail:
             self.write(ln)
 
-    def speak(self, batch: list[Box], first: bool, human: str) -> Said:
+    def greeting(self, at: str) -> str:
+        """``Morning.`` on the run's first reply when it is before noon, once.
+        Read from the turn's own clock time, so a test's clock decides it; any
+        other hour, or a time that doesn't parse, says no greeting."""
+        if self.greeted:
+            return ""
+        self.greeted = True
+        try:
+            return "Morning." if 0 <= int(at.split(":")[0]) < 12 else ""
+        except ValueError:
+            return ""
+
+    def speak(
+        self, batch: list[Box], first: bool, human: str, page: int = 0, at: str = ""
+    ) -> Said:
         """One reply's sentence. The model says it and code checks it; a
         sentence that fails a check is struck and code's stands; a model that
         can't be reached is an ``unreachable`` card and code's stands. Code's
         sentence is composed either way and is never a crash."""
         n = len(batch)
-        code = compose(batch, first=first)
+        code = compose(
+            batch, first=first, page=page, greet=self.greeting(at) if first else ""
+        )
         again = "{at}"
         if self.say is None:
             return Said(
@@ -465,7 +493,7 @@ class Seat:
         nothing is recomputed and no model is asked."""
         turn = self.turns.get(key)
         if turn is None:
-            turn = self.turns[key] = Turn(self.clock(), list(boxes))
+            turn = self.turns[key] = Turn(self.clock(), rank(boxes))
         else:
             self.write(f"as noted at {turn.at} · same boxes, nothing new since")
             for said in turn.shown:
@@ -474,7 +502,9 @@ class Seat:
             if turn.shown and not self.more(len(turn.rest)):
                 return
             batch, turn.rest = turn.rest[:PAGE], turn.rest[PAGE:]
-            said = self.speak(batch, not turn.shown, human)
+            said = self.speak(
+                batch, not turn.shown, human, page=len(turn.shown), at=turn.at
+            )
             turn.shown.append(said)
             self.emit(said)
         self.write(CHIPS)

@@ -631,7 +631,10 @@ def test_a_reply_is_boxes_then_one_sentence_from_the_boxes():
     assert "agent · code · said 2 boxes, no model asked" in t
     first = next(o for o in out if o.startswith("agent> "))
     # "escalated 1" is a problem count: no reassurance over it (3b-ii, Loki F-low)
-    assert first == "agent> Looks like both answered 2, escalated 1 and local: d."
+    assert first == (
+        "agent> Morning. Local: d is still blocked, reason: local_escalate. "
+        "Heads up: answered 2, escalated 1."
+    )
     assert out.index("agent · code · said 2 boxes, no model asked") < out.index(first)
 
 
@@ -639,7 +642,7 @@ def test_more_shows_the_next_boxes_and_declining_keeps_them_in_the_pile():
     _api, out = rich_run()
     t = text(out)
     assert t.count("more? ▶") == 1 and "you: more" in out
-    assert "agent> Oh, and local: d is still blocked and d0: d." in t
+    assert "agent> Oh, and both local: d and d0: d. No rush." in t
     _api2, out2 = rich_run(keys=["who", "", "the task", "later", ""])
     assert "agent> Got it. It stays in the pile." in out2
     assert "agent> Oh, and" not in text(out2)  # the rest stayed in the pile
@@ -684,13 +687,16 @@ def test_the_sentence_is_glue_plus_box_facts_only():
     c = bx.Box("b3", "pr", "changed", "PR 127 open")
     d = bx.Box("b4", "pr", "changed", "PR 714 open")
     assert bx.compose([a, b]) == (
-        "Looks like Ratify the work order needs you and PR 712 waiting is still blocked."
+        "You need to ratify the work order. PR 712's still waiting."
     )
+    assert bx.compose([a, b], greet="Morning.").startswith("Morning. You need")
     assert bx.compose([c, d], first=False) == (
-        "Oh, and both PR 127 open and PR 714 open. No rush."
+        "Oh, and PR 127 and PR 714 are both open. No rush."
     )
+    assert bx.compose([c, d], page=2).startswith("Also, PR 127")
+    assert bx.compose([c, d]) == "Looks like PR 127 and PR 714 are both open. No rush."
     down = bx.Box("b5", "pass", "served", "unreachable — no key", state="unreachable")
-    assert bx.compose([down]) == "Heads up: served is unreachable — no key."
+    assert bx.compose([down]) == "Heads up: I can't read the record right now. No key."
     assert bx.compose([]) == ""
     for word in ("morning", "still", "both", "heads up", "no rush", "looks like"):
         assert word in bx.GLUE
@@ -833,7 +839,9 @@ def test_the_launcher_reports_no_willow_bot(tmp_path):
 # --- 3b-ii: the local model's sentence, the four checks, the fallback -------------
 
 MODEL = say_mod.MODEL
-GOOD_CODE = "agent> Looks like both answered 1, escalated 0 and local: d. No rush."
+GOOD_CODE = (
+    "agent> Morning. Looks like both answered 1, escalated 0 and local: d. No rush."
+)
 
 
 def tagged(make):
@@ -915,7 +923,8 @@ def test_each_check_catches_its_violation_and_code_replaces_the_sentence(which):
     marks = [c.strip()[0] for c in chips.removeprefix("checks:").split(" · ")]
     assert marks[idx] == "✗" and marks.count("✗") == 1, chips
     assert out.index(struck) < out.index(GOOD_CODE)  # the code sentence beneath it
-    assert [o for o in out if o.startswith("agent> ") and "~~" not in o] == [GOOD_CODE]
+    said = [o for o in out if o.startswith("agent> ") and "~~" not in o]
+    assert [o for o in said if " is empty" not in o] == [GOOD_CODE]  # stage lines aside
 
 
 def test_an_invented_word_fails_nothing_the_boxes_lack_so_voice_cannot_add_a_fact():
@@ -1898,3 +1907,186 @@ def test_pooled_at_start_a_non_record_answer_is_unreachable():
     st.pooled_at_start()
     assert pooled_card(out).splitlines()[0].startswith("+!")
     assert "not a pool record" in text(out)
+
+
+# --- step 1: rank, per-kind phrasing, glue, greeting, plain lines -------------------
+
+DEMO = {
+    "b1": bx.Box(
+        "b1",
+        "dec",
+        "decided",
+        "Phone only proposes",
+        "seal in Nestor on the box · recorded",
+    ),
+    "b2": bx.Box("b2", "pr", "changed", "PR #127 open", "grid rows JE–JI · baton 9"),
+    "b3": bx.Box("b3", "pr", "changed", "PR #714 open", "untracks 3 bytecode files"),
+    "b4": bx.Box(
+        "b4", "block", "blocked", "PR 712 waiting", "broker verb · 126 tests pass"
+    ),
+    "b5": bx.Box(
+        "b5", "you", "needs you", "Ratify the work order", "local-flow-and-ui §7"
+    ),
+}
+
+
+def demo(*ids):
+    return [DEMO[i] for i in ids]
+
+
+def test_rank_is_needs_you_blocked_decided_changed_pass_stable_heads_up_first():
+    p1 = bx.Box("p1", "pass", "x", "ok")
+    p2 = bx.Box("p2", "pass", "x", "ok2")
+    down = bx.Box("d", "pass", "served", "unreachable — no key", state="unreachable")
+    gap = bx.Box("g", "pass", "chain", "empty — none", state="empty")
+    odd = bx.Box("o", "weird", "x", "v")
+    got = bx.rank(
+        [
+            p1,
+            odd,
+            DEMO["b2"],
+            p2,
+            DEMO["b1"],
+            DEMO["b4"],
+            down,
+            DEMO["b5"],
+            gap,
+            DEMO["b3"],
+        ]
+    )
+    assert [b.id for b in got] == [
+        "d",
+        "g",
+        "b5",
+        "b4",
+        "b1",
+        "b2",
+        "b3",
+        "p1",
+        "p2",
+        "o",
+    ]
+
+
+def test_the_demo_scenes_read_like_the_sketch():
+    assert bx.compose(demo("b5", "b4"), greet="Morning.") == (
+        "Morning. You need to ratify the work order. PR 712's still waiting, 126 tests pass."
+    )
+    assert bx.compose(demo("b1", "b2", "b3"), first=False) == (
+        "Oh, and phone only proposes is decided and recorded; "
+        "PR #127 and PR #714 are both open. No rush."
+    )
+
+
+def test_glue_is_the_sketchs_list_and_the_model_may_use_exactly_it():
+    html = (s.GROVE_ROOT / "web/demo/box-stream/box-stream-v1.3.html").read_text(
+        "utf-8"
+    )
+    sketch = re.search(r"const GLUE = \[(.*?)\];", html).group(1)
+    assert tuple(re.findall(r"'([^']+)'", sketch)) == bx.GLUE
+    assert say_mod.GLUE is bx.GLUE
+    prompt = say_mod.build_prompt(demo("b5"), "where are we")
+    assert "Free words, and only these: " + ", ".join(bx.GLUE) in prompt
+
+
+SETS = [
+    ("b5", "b4"),
+    ("b1", "b2", "b3"),
+    ("b2", "b3"),
+    ("b5",),
+    ("b4", "b1"),
+    ("b5", "b4", "b1", "b2", "b3"),
+]
+
+
+@pytest.mark.parametrize("ids", SETS)
+@pytest.mark.parametrize("page", [0, 1, 2])
+def test_the_code_sentence_passes_the_checks_a_model_sentence_faces(ids, page):
+    """Cited, the code sentence passes all four checks. Uncited (as it is
+    shown today), cites-served and quotes pass, nothing-lacking passes, and
+    only ``every box cited`` is False (there is no tag to find)."""
+    boxes = bx.rank(demo(*ids))
+    cited = bx.compose(
+        boxes, page=page, greet="Morning." if not page else "", cite=True
+    )
+    assert say_mod.passed(say_mod.run_checks(cited, boxes, "where are we")), cited
+    assert say_mod.run_checks(cited, boxes)[3] == "na"
+    plain = bx.compose(boxes, page=page)
+    r = say_mod.run_checks(plain, boxes, "where are we")
+    assert r == [True, False, True, "na"], plain
+
+
+def test_a_made_up_fact_would_not_pass_the_same_check():
+    boxes = demo("b5", "b4")
+    s_ = bx.compose(boxes, cite=True).replace("126", "140")
+    assert say_mod.run_checks(s_, boxes)[2] is False
+
+
+def test_empty_and_unreachable_have_their_own_plain_lines():
+    down = bx.Box(
+        "b1",
+        "pass",
+        "served",
+        "unreachable — The box wasn't found.",
+        state="unreachable",
+    )
+    gap = bx.Box(
+        "b2",
+        "pass",
+        "still pooled",
+        "empty — nothing pooled from earlier runs",
+        state="empty",
+    )
+    assert (
+        bx.plain_line(down)
+        == "I can't read the record right now. The box wasn't found."
+    )
+    assert (
+        bx.plain_line(gap) == "Still pooled is empty: nothing pooled from earlier runs."
+    )
+    assert bx.plain_line(DEMO["b5"]) == ""
+    assert bx.compose([down]).startswith("Heads up: I can't read the record right now.")
+    assert "can't read" not in bx.compose([gap]) and "No rush" not in bx.compose([gap])
+    assert bx.compose([gap]) != bx.compose([down])
+    assert all(ord(c) < 128 for c in bx.plain_line(down) + bx.plain_line(gap))
+
+
+def test_a_stage_that_is_unreachable_or_empty_also_says_so_in_words():
+    def boom(*a, **k):
+        raise RuntimeError("pool db down")
+
+    st, out = seat(FakeApi(pooled=boom), ["who"])
+    st.run()
+    t = text(out)
+    assert "[unreachable] still pooled" in t
+    assert (
+        "agent> I can't read the record right now. RuntimeError: pool db down." in out
+    )
+    st, out = seat(FakeApi(pooled={"pooled": []}), ["who"])
+    st.run()
+    assert "agent> Still pooled is empty: nothing pooled from earlier runs." in out
+    assert "I can't read" not in text(out)
+
+
+def test_the_greeting_is_once_per_run_before_noon_from_the_injected_clock():
+    for at, greets in (("09:14", True), ("13:05", False), ("garbled", False)):
+        st, out = seat(FakeApi(), ["", ""], clock=lambda at=at: at)
+        st.converse("k1", demo("b5", "b4", "b1"), "q")  # two pages: PAGE=2
+        st.converse("k2", demo("b1"), "q")
+        said = [o for o in out if o.startswith("agent> ")]
+        assert sum("Morning." in o for o in said) == (1 if greets else 0), (at, said)
+        assert (not greets) or "Morning." in said[0]
+
+
+def test_converse_ranks_then_pages_the_ranked_list():
+    st, out = seat(
+        FakeApi(),
+        [""],
+    )
+    p = bx.Box("p", "pass", "x", "fine")
+    st.converse("k", [p, DEMO["b1"], DEMO["b4"], DEMO["b5"]], "q")
+    heads = [o for o in out if o.startswith(("+-", "+.", "+!"))]
+    assert [h.split("] ")[0] for h in heads[:2]] == ["+- [needs you", "+- [blocked"]
+    said = [o for o in out if o.startswith("agent> ")]
+    assert said[0].startswith("agent> Morning. You need to ratify")
+    assert said[1].startswith("agent> Oh, and phone only proposes is decided")

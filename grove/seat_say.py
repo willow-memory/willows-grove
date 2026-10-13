@@ -5,7 +5,9 @@ A small local model (``qwen3:4b`` on the Ollama loopback) says one sentence
 over the served boxes; code then checks that sentence against the boxes, the
 way ``web/demo/box-stream/box-stream-v1.3.html`` shows (``CHECK_NAMES``). A
 sentence that fails any check is struck and replaced by the deterministic
-sentence ``seat_boxes.compose`` builds. The model is a writer, never an
+sentence ``seat_boxes.compose`` builds (short sentences per box, the same
+fixed glue list the model is given: ``seat_boxes.GLUE``, the sketch's list).
+The model is a writer, never an
 authority: every number, name and status must come from a box.
 
 ``say`` is an injected callable, ``say(prompt) -> str``. The default talks to
@@ -201,6 +203,8 @@ def build_prompt(boxes: list[Box], human: str, first: bool = True) -> str:
             "Use only their facts: add no number, name or status they lack.",
             "After each fact put its box tag, like [b1]. Cite every box once, "
             "and no other tag.",
+            "Say them in the order given: the boxes are already ranked, most "
+            "pressing first.",
             "Free words, and only these: " + ", ".join(GLUE) + ".",
             "Quote the human only word for word, in double quotes, or not at all.",
             "Reply with the sentence only." + ("" if first else " It continues."),
