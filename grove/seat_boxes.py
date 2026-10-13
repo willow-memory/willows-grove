@@ -35,6 +35,7 @@ a typed line as a follow-up (``show me 712``, ``open 712``, a box id, ``the
 second one``, ``that``, ``why``, ``go on``); the seat resolves it against the
 last reply's boxes by fixed rules, in code.
 
+A count code says is pluralised (``plural``: ``1 box``, ``2 boxes``).
 A sentence code ends is ended once (``terminate``): a quoted reason that ends
 ``."`` is not followed by a second full stop. ``why_sentence`` says the reason
 of one box (the human's quoted words led by who said them, provenance dropped
@@ -150,7 +151,7 @@ def legend(color: bool = False) -> str:
 
 
 def pile_header(n: int) -> str:
-    return f"the pile · {n} boxes on the record"
+    return f"the pile · {plural(n, 'box', 'boxes')} on the record"
 
 
 def human_line(text: str, color: bool = False) -> str:
@@ -267,6 +268,12 @@ def terminate(text: str) -> str:
     words inside the quotes are never touched."""
     text = text.rstrip()
     return text if not text or ENDED.search(text) else text + "."
+
+
+def plural(n: int, one: str, many: str = "") -> str:
+    """``n`` and its noun, pluralised: ``1 box``, ``2 boxes``, ``0 boxes``.
+    ``many`` is the plural form when it is not ``one`` + ``s``."""
+    return f"{n} {one if n == 1 else many or one + 's'}"
 
 
 def bare(text: str) -> str:

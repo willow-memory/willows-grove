@@ -158,6 +158,7 @@ from grove.seat_boxes import (
     matches,
     parse_follow,
     pile_header,
+    plural,
     plain_line,
     rank,
     terminate,
@@ -405,6 +406,12 @@ def willow_mcp_deposit(app_id: str = "willow") -> Callable[[dict], dict]:
 # --- the seat ------------------------------------------------------------------
 
 
+def row_count(rows: object) -> str:
+    """A table's row count as the stack gave it, ``1 row`` not ``1 rows``; a
+    value that is not a whole number is said as it came."""
+    return plural(rows, "row") if isinstance(rows, int) else f"{rows} rows"
+
+
 def three_state(state: str | None, why: str = "") -> str:
     if state == "populated":
         return "populated"
@@ -621,7 +628,7 @@ class Seat:
         if self.say is None or not model:
             return Said(
                 batch,
-                f"code · said {n} boxes, no model asked",
+                f"code · said {plural(n, 'box', 'boxes')}, no model asked",
                 "code · shown again from the pile, no model asked now",
                 [say_line(code)],
             )
@@ -641,7 +648,7 @@ class Seat:
         if state != "populated":
             return Said(
                 batch,
-                f"code · {self.model} {state} · said {n} boxes by code",
+                f"code · {self.model} {state} · said {plural(n, 'box', 'boxes')} by code",
                 "code · shown again from the pile, no model asked now",
                 [say_line(code)],
                 cards=[self.state_card("say", state, f"{self.model}: {why}")],
@@ -650,7 +657,7 @@ class Seat:
         if passed(results):
             return Said(
                 batch,
-                f"{self.model} · said {n} boxes",
+                f"{self.model} · said {plural(n, 'box', 'boxes')}",
                 replay,
                 [say_line(sentence)],
                 checks=results,
@@ -777,7 +784,9 @@ class Seat:
             if len(hits) > 1:
                 return self.said(
                     task,
-                    terminate(f'"{arg}" fits {len(hits)} boxes: {self.list_of(hits)}'),
+                    terminate(
+                        f'"{arg}" fits {plural(len(hits), "box", "boxes")}: {self.list_of(hits)}'
+                    ),
                 )
             found = hits[0] if hits else None
         else:
@@ -805,7 +814,7 @@ class Seat:
 
     def only(self, boxes: list[Box]) -> str:
         n = len(boxes)
-        return f"I showed {n} box{'' if n == 1 else 'es'} ({self.list_of(boxes)})"
+        return f"I showed {plural(n, 'box', 'boxes')} ({self.list_of(boxes)})"
 
     @staticmethod
     def open_sentence(box: Box) -> str:
@@ -994,7 +1003,7 @@ class Seat:
         for t in res.get("stack", []):
             self.show(
                 self.card(
-                    "pass", "table", str(t["name"]), f"{t['rows']} rows", t["id"][:12]
+                    "pass", "table", str(t["name"]), row_count(t["rows"]), t["id"][:12]
                 )
             )
         self.show(self.card("pass", "subject", str(res["subject"])))
@@ -1205,7 +1214,13 @@ class Seat:
                     )
             return self.offer_grown()
         drafts = got.get("deposited") or []
-        self.show(self.card("dec", "deposit", f"{len(drafts)} in Nestor as drafts"))
+        self.show(
+            self.card(
+                "dec",
+                "deposit",
+                f"{len(drafts)} in Nestor as {'a draft' if len(drafts) == 1 else 'drafts'}",
+            )
+        )
         for d in drafts:
             if d.get("status") == "error":
                 self.show(

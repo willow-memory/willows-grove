@@ -2911,3 +2911,63 @@ def test_a_chip_choice_ending_in_a_quote_is_acknowledged_without_a_second_stop()
     box = bx.Box("b1", "you", "x", "Pick", 'say "ok." · say "no." · say "later."')
     _api, out = thread_run(["status of the build", 'say "ok."'], boxes=[box])
     assert 'agent> Got it: say "ok."' in out and 'agent> Got it: say "ok.".' not in out
+
+
+# --- counts code says are pluralised ("1 box", "2 boxes") --------------------------------
+
+
+@pytest.mark.parametrize(
+    "n, got", [(0, "0 boxes"), (1, "1 box"), (2, "2 boxes"), (10, "10 boxes")]
+)
+def test_plural_says_one_box_and_n_boxes(n, got):
+    assert bx.plural(n, "box", "boxes") == got
+    assert bx.pile_header(n) == f"the pile · {got} on the record"
+    assert bx.plural(1, "row") == "1 row" and bx.plural(3, "row") == "3 rows"
+
+
+def test_the_who_line_says_one_box_when_a_page_holds_one():
+    boxes = demo_boxes()[:3]  # pages of two: the second page is one box
+    _api, out = thread_run(
+        ["status of the build", "", "status of the build", ""], boxes=boxes
+    )
+    t = text(out)
+    assert "agent · code · said 2 boxes, no model asked" in t
+    assert t.count("agent · code · said 1 box, no model asked") == 1
+    assert "shown again from the pile" in t  # the replay who-line carries no count
+    assert "1 boxes" not in t
+
+
+def test_a_one_row_table_and_a_one_draft_deposit_are_not_plural():
+    assert s.row_count(1) == "1 row" and s.row_count(136) == "136 rows"
+    assert s.row_count("?") == "? rows"
+
+
+def test_ten_more_sealed_and_one_more_in_the_pile_read_right(tmp_path):
+    rows = [pair(n, f"s{n}", f"t{n}", reason=f"r{n}.") for n in range(1, 16)]
+    p = make(tmp_path / "t.db", rows, [], schema=(PAIRS, REJS))
+    from grove.seat_nestor import read_store
+
+    vals = [b.value for b in read_store(p).boxes]
+    assert "11 more sealed" in vals
+    one = make(tmp_path / "o.db", rows[:5], [], schema=(PAIRS, REJS))
+    assert "1 more sealed" in [b.value for b in read_store(one).boxes]
+
+
+def test_one_more_rejection_and_one_box_shown_are_singular(tmp_path):
+    from grove.seat_nestor import read_store
+
+    rej = [
+        (f"r{n}", f"q{n}", "es", "en", f"t{n}", "ana", f"no {n}.", f"2026-02-0{n}", "")
+        for n in range(1, 6)
+    ]
+    p = make(tmp_path / "r.db", [], rej, schema=(PAIRS, REJS))
+    vals = [b.value for b in read_store(p).boxes]
+    assert "2 more rejections" in vals
+    p2 = make(tmp_path / "r2.db", [], rej[:4], schema=(PAIRS, REJS))
+    assert "1 more rejection" in [b.value for b in read_store(p2).boxes]
+    one = [bx.Box("b1", "dec", "decided", "phone only proposes", "recorded")]
+    _api, out = thread_run(["status of the build", "the third one"], boxes=one)
+    assert (
+        "agent> I showed 1 box (b1: phone only proposes), so there is no third one."
+        in out
+    )
