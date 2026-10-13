@@ -76,7 +76,9 @@ decided, changed, routine pass) and shows two at a time (``more?``) from that
 order. The code sentence is a short sentence per box; it opens ``Morning.`` on
 the run's first reply when the turn's clock time is before noon; a stage whose
 card is ``empty`` or ``unreachable`` also says so in a plain code line. Small
-talk is answered by code, and a task asked again is shown again from the pile,
+talk is answered by code (greetings, ``ok``, ``thanks``, ``later``, and ``help``,
+a fixed line of what the seat understands; ``bye``, ``done`` and ``quit`` check
+out like an empty line), and a task asked again is shown again from the pile,
 stamped with when it was first said.
 
 A reply ends with a row of chips built from the boxes it showed
@@ -175,12 +177,27 @@ NESTOR_UI = "http://127.0.0.1:8765"
 NO_DEPOSIT = "deposit unavailable here: willow-mcp not on the path"
 #: Boxes a reply shows before ``more?``.
 PAGE = 2
-#: What code answers to small talk: no boxes, nothing served.
+#: What code answers to small talk: no boxes, nothing served, no model. The
+#: words are the sketch's glue ("Anytime.", "Got it.") or fixed code lines.
+HELLO = "Hello. Give me a task, or say help."
+HELP = (
+    'Give me a task and the chain takes it; a line like "where are we" goes '
+    'to the chain. After a reply you can say "show me 712", "why", '
+    '"the second one" or "go on". "thanks" and "later" are only '
+    'acknowledged; an empty line, "bye", "done" or "quit" checks out.'
+)
 SMALL_TALK = {
     "thanks": "Anytime.",
     "thank you": "Anytime.",
     "later": "Got it. It stays in the pile.",
+    **dict.fromkeys(("hi", "hello", "hey", "morning", "good morning"), HELLO),
+    **dict.fromkeys(("ok", "okay", "cool", "got it", "sure"), "Got it."),
+    **dict.fromkeys(("help", "what can you do"), HELP),
 }
+#: The small talk that answers a ``more?`` it declines (the rest says ``STAY``).
+THANKS_LATER = ("thanks", "thank you", "later")
+#: Said like an empty line: check out.
+FAREWELLS = frozenset({"bye", "done", "quit"})
 MORE_YES = frozenset({"", "m", "more", "y", "yes"})
 STAY = "Got it. It stays in the pile."
 NOTHING_MORE = "Nothing more in the pile."
@@ -394,6 +411,11 @@ def checkin_kind(line: str, rep: dict) -> str:
 
 def _norm(text: str) -> str:
     return " ".join(text.lower().split())
+
+
+def _talk(text: str) -> str:
+    """A line as small talk is matched: ``_norm`` without a closing ``?!.``."""
+    return _norm(text).rstrip("?!. ")
 
 
 @dataclass
@@ -747,7 +769,7 @@ class Seat:
         self.you(ans or "more")
         if _norm(ans) in MORE_YES:
             return True
-        self.code_reply(SMALL_TALK.get(_norm(ans), STAY))
+        self.code_reply(SMALL_TALK[_talk(ans)] if _talk(ans) in THANKS_LATER else STAY)
         return False
 
     def refused(self, res: dict) -> bool:
@@ -1148,9 +1170,12 @@ class Seat:
                 self.pooled_at_start()
                 if self.served():
                     while task := self.ask("chain", "task (empty to check out): "):
-                        if _norm(task) in SMALL_TALK:  # small talk: code, no boxes
+                        if _talk(task) in FAREWELLS:  # like an empty line
                             self.you(task)
-                            self.code_reply(SMALL_TALK[_norm(task)])
+                            break
+                        if _talk(task) in SMALL_TALK:  # small talk: code, no boxes
+                            self.you(task)
+                            self.code_reply(SMALL_TALK[_talk(task)])
                             continue
                         if self.choice(task) or self.follow_up(task):
                             continue  # code answered it: no chain, no model

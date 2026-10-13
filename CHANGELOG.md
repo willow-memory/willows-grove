@@ -43,6 +43,7 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 - **seat:** `--no-say` runs the seat code only (no model is asked), and `--model NAME` picks the reply model for this run, winning over `GROVE_SAY_MODEL`; a `qwen3*` model still gets `/no_think`, and the two flags together exit 2 (PR 145).
 - **seat:** serve the sealed snapshot via `api.resume` (B part 2): at start the seat serves the human's newest sealed scope pinned at its `upto`, skipping the group-by prompt, so the subject holds still while the desk adds rows; an unreachable or missing `resume` shows an `unreachable` card and scopes fresh; at close-out a grown scope's subject joins the one `seal ↗` offer. The seat still seals and mints nothing (PR 143).
 - **seat:** `GROVE_SAY_MODEL` picks the reply-sentence model (default `qwen3:4b`), and a `qwen3*` model gets `/no_think` appended so it returns instead of running away thinking (PR 141).
+- **seat:** more small talk is answered by code, never the chain: greetings (`hi`, `hello`, `hey`, `morning`, `good morning`) get one fixed line, acknowledgements (`ok`, `okay`, `cool`, `got it`, `sure`) get "Got it.", and `help` / `what can you do` get a fixed line of what the seat understands (a task, `show me 712`, `why`, `the second one`, `go on`; `thanks` and `later` are only acknowledged); `bye`, `done` and `quit` check out like an empty line. A closing `?`, `!` or `.` is ignored, and a declined `more?` still says the pile keeps it.
 
 ### Fixed
 

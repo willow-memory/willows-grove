@@ -2548,3 +2548,70 @@ def test_a_cap_that_is_not_a_whole_number_is_said_plainly_and_asked_again():
     assert 'you said "0"' in body and 'you said "-5"' in body
     assert "[blocked]" not in body
     assert [c for c in api.calls if c[0] == "serve"][0][2]["max_chars"] == 100
+
+
+# --- small talk: greetings, acknowledgements, help, farewells (F5) ------------------------
+
+
+def talk(*lines):
+    api = FakeApi()
+    st, out = seat(api, ["", "", *lines, ""])
+    assert st.run() == 0
+    return api, text(out)
+
+
+@pytest.mark.parametrize(
+    "word", ["hi", "Hello", "hey", "morning", "Good morning", "hi!"]
+)
+def test_a_greeting_is_answered_by_code_not_the_chain(word):
+    api, out = talk(word)
+    assert s.HELLO in out and "escalate" not in api.names()
+
+
+@pytest.mark.parametrize("word", ["ok", "okay", "cool", "got it", "sure"])
+def test_an_acknowledgement_is_answered_by_code_not_the_chain(word):
+    api, out = talk(word)
+    assert "agent> Got it." in out and "escalate" not in api.names()
+
+
+@pytest.mark.parametrize("word", ["help", "what can you do", "What can you do?"])
+def test_help_lists_what_the_seat_understands_in_a_fixed_line(word):
+    api, out = talk(word)
+    assert s.HELP in out and "escalate" not in api.names()
+    for part in ('"where are we"', "show me", "why", "second one", "go on", "later"):
+        assert part in s.HELP
+
+
+@pytest.mark.parametrize("word", ["bye", "done", "quit", "Bye!"])
+def test_a_farewell_checks_out_like_an_empty_line(word):
+    api = FakeApi()
+    st, out = seat(api, ["", "", word, "never read"])
+    assert st.run() == 0
+    assert api.names()[-2:] == ["checkout", "pooled"]
+    assert "escalate" not in api.names() and f"you: {word}" in out
+    assert not any(o.startswith("chain ▶") for o in out[out.index(f"you: {word}") :])
+
+
+def test_small_talk_replies_use_only_glue_or_fixed_lines():
+    for reply in s.SMALL_TALK.values():
+        assert reply in (s.HELLO, s.HELP, "Anytime.", "Got it.", s.STAY)
+    glue = {g.capitalize() for g in bx.GLUE}
+    assert {"Anytime", "Got it"} <= glue
+
+
+def test_declining_more_still_says_the_pile_keeps_it():
+    api = FakeApi(
+        escalate={
+            "task": "t",
+            "answered": 3,
+            "escalated": 0,
+            "pieces": [
+                {"piece": f"p{i}" * 8, "label": f"L{i}", "rung": "d0",
+                 "outcome": "answered", "detail": f"d{i}"}
+                for i in range(3)
+            ],
+        }
+    )  # fmt: skip
+    st, out = seat(api, ["", "", "task", "ok", ""])
+    st.run()
+    assert f"agent> {s.STAY}" in out
