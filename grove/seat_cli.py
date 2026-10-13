@@ -88,12 +88,15 @@ last reply (``Thread``) and answers a typed line against it in code, before the
 chain: a chip choice is acknowledged (``Got it: <choice>.``, nothing recorded
 or sealed, the row spent); ``show me 712`` / ``open 712`` / a box id / ``the
 second one`` / ``that`` show that box again with its full detail and a code
-sentence; ``why`` / ``what's that`` / ``tell me more`` say its detail;
+sentence; ``why`` / ``what's that`` / ``tell me more`` say the reason
+(``seat_boxes.why_sentence``: the human's own words quoted exactly and led by who
+said them, provenance such as an origin left to the card but a fixture still
+marked ``(fixture)``; a box with nothing but provenance says there is no more);
 ``go on`` / ``more`` / ``next`` show the next page (by code, no model) or say
 nothing is left. An ordinal past what was shown, or a ref that fits two boxes,
 is a plain line, never a guess. None of these asks a model, calls
 ``api.escalate`` or writes a row; a line that matches nothing goes to the chain
-as before. A ``show me`` ref is a number of two digits or more, an id-like
+as before. A sentence never ends ``.".`` (``terminate``). A ``show me`` ref is a number of two digits or more, an id-like
 token (``PR 712``) or a short box id (``b4``), never the first words of a value;
 with none, no ``show me`` chip. ``No rush.`` is said at most once per turn, and
 the chain's ``answered N, escalated M`` is said as a sentence, never after a
@@ -157,11 +160,13 @@ from grove.seat_boxes import (
     pile_header,
     plain_line,
     rank,
+    terminate,
     render_box,
     say_line,
     struck_line,
     use_color,
     who_line,
+    why_sentence,
     _val,
 )
 from grove.seat_nestor import read_store
@@ -738,7 +743,7 @@ class Seat:
         if not hit:
             return False
         self.you(task)
-        self.code_reply(f"Got it: {hit}.")
+        self.code_reply(terminate(f"Got it: {hit}"))
         th.choices = []
         return True
 
@@ -761,7 +766,7 @@ class Seat:
             n = int(arg)
             if n >= len(boxes):
                 return self.said(
-                    task, f"{self.only(boxes)}, so there is no {ORD[n]} one."
+                    task, terminate(f"{self.only(boxes)}, so there is no {ORD[n]} one")
                 )
             found = boxes[n]
         elif kind in ("that", "why"):
@@ -771,7 +776,8 @@ class Seat:
             hits = [b for b in boxes if matches(b, arg)]
             if len(hits) > 1:
                 return self.said(
-                    task, f'"{arg}" fits {len(hits)} boxes: {self.list_of(hits)}.'
+                    task,
+                    terminate(f'"{arg}" fits {len(hits)} boxes: {self.list_of(hits)}'),
                 )
             found = hits[0] if hits else None
         else:
@@ -804,19 +810,18 @@ class Seat:
     @staticmethod
     def open_sentence(box: Box) -> str:
         """A box said once more: its own phrase, from its own facts."""
-        return cap(clause(box)) + "."
+        return terminate(cap(clause(box)))
 
     @staticmethod
     def detail_sentence(box: Box) -> str:
-        """A box's detail, as the box has it (lines joined by ``;``, the
-        ``·`` parts by commas); with none, the box's own phrase and a line
-        saying there is no more."""
+        """``why``: the reason, said naturally (``why_sentence``): the human's
+        own quoted words led by who said them, provenance left to the card but
+        a fixture still marked ``(fixture)``. With nothing but provenance or
+        no detail, the box's own phrase and a line saying there is no more."""
         if box.state != "populated":
             return plain_line(box)
-        detail = "; ".join(
-            _val(ln).replace(" · ", ", ") for ln in box.detail.split("\n") if ln.strip()
-        )
-        return f"{cap(detail)}." if detail else f"{cap(clause(box))}. {NO_DETAIL}"
+        got = why_sentence(box)
+        return got or f"{terminate(cap(clause(box)))} {NO_DETAIL}"
 
     def go_on(self, th: Thread) -> None:
         """The next page of the last reply, said by code (no model is asked), or

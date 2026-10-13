@@ -35,6 +35,11 @@ a typed line as a follow-up (``show me 712``, ``open 712``, a box id, ``the
 second one``, ``that``, ``why``, ``go on``); the seat resolves it against the
 last reply's boxes by fixed rules, in code.
 
+A sentence code ends is ended once (``terminate``): a quoted reason that ends
+``."`` is not followed by a second full stop. ``why_sentence`` says the reason
+of one box (the human's quoted words led by who said them, provenance dropped
+with a ``(fixture)`` marker kept).
+
 Color is gated on a tty and on ``NO_COLOR`` being unset. Anywhere else the
 card is plain ASCII with no escape code.
 """
@@ -250,6 +255,25 @@ def cap(text: str) -> str:
     return text[:1].upper() + text[1:]
 
 
+#: A sentence already ends: ``.`` ``?`` ``!``, or one of those just inside a
+#: closing quote or bracket (``..."``), which a human's quoted words may carry.
+ENDED = re.compile(r"[.?!][\"”')\]]*$")
+
+
+def terminate(text: str) -> str:
+    """``text`` as a sentence: a full stop only if it does not already end in
+    ``.``/``?``/``!`` (or one of them closed by a quote), so a quoted reason
+    ending ``one."`` is never followed by a second ``.`` (``one.".``). The
+    words inside the quotes are never touched."""
+    text = text.rstrip()
+    return text if not text or ENDED.search(text) else text + "."
+
+
+def bare(text: str) -> str:
+    """``text`` without the one full stop ``terminate`` may have added."""
+    return text[:-1] if text.endswith(".") else text
+
+
 def why(box: Box) -> str:
     """The reason a non-populated box gives: its value without the state word."""
     v = _val(box.value)
@@ -263,11 +287,91 @@ def plain_line(box: Box) -> str:
     reason from the box. Populated: ``""``."""
     reason = why(box)
     if box.state == "unreachable":
-        return f"{CANT_READ}. {cap(reason)}." if reason else f"{CANT_READ}."
+        return f"{CANT_READ}. {terminate(cap(reason))}" if reason else f"{CANT_READ}."
     if box.state == "empty":
         base = f"{cap(_val(box.label))} is empty"
-        return f"{base}: {reason}." if reason else f"{base}."
+        return terminate(f"{base}: {reason}") if reason else f"{base}."
     return ""
+
+
+#: A detail line that only says where a box came from, not why: its origin, the
+#: store-holds-fixture-rows note, or the count's "fiction, not a real trail".
+PROVENANCE = re.compile(
+    r"^(?:origin\b|fiction, not a real trail|.*\bthe store holds fixture rows\b)", re.I
+)
+#: Detail lines that name who decided (the speaker of a reason), by form.
+SPEAKER_NO = re.compile(r"^a no from (?P<who>.+?)(?::|$)", re.I)
+SPEAKER_BY = re.compile(r"^rejected by (?P<who>.+)$", re.I)
+SPEAKER_SEAL = re.compile(r"^sealed by (?P<who>.+?)(?P<then>, then replaced)?$", re.I)
+#: A reason line: ``reason: "her words"`` (quoted) or ``reason: empty_scope``.
+REASON = re.compile(r"^reason(?P<when> then| now)?: (?P<text>.+)$", re.I)
+QUOTED = re.compile(r'^"(?P<q>.*)"$', re.S)
+NOBODY = "nobody"
+FIXTURE_MARK = "(fixture)"
+
+
+def why_sentence(box: Box) -> str:
+    """``why`` over a populated box: the reason, said as a person would, from
+    the box's own detail. ``""`` when the detail holds nothing but provenance.
+
+    The human's own words (a ``reason: "..."`` line) are quoted exactly and led
+    by who said them (``Nieves said no: "Not little."``, ``Nieves sealed it:
+    "..."``, ``Nieves said not yet: "..."``); a reason with no quotes (a chain
+    box's ``reason: empty_scope``) is ``Reason: empty_scope``; any other line is
+    kept as the box has it. Provenance lines (origin, the fixture note) are not
+    the reason and are left out of the sentence, but a box that carried one is
+    still a fixture, so the sentence ends ``(fixture)``: fiction stays visible
+    (the card keeps the lines). Never a doubled full stop."""
+    lines = [" ".join(ln.split()) for ln in box.detail.split("\n") if ln.strip()]
+    fixture = "(fixture" in box.label or any(PROVENANCE.match(ln) for ln in lines)
+    head = ""
+    rest: list[str] = []
+    for ln in lines:
+        m = SPEAKER_NO.match(ln) or SPEAKER_BY.match(ln) or SPEAKER_SEAL.match(ln)
+        who = cap(m["who"]) if m and m["who"].lower() != NOBODY else ""
+        if PROVENANCE.match(ln):
+            continue
+        if SPEAKER_NO.match(ln):
+            head = head or (f"{who} said no" if who else "A no")
+        elif SPEAKER_BY.match(ln):
+            head = head or (f"{who} said not yet" if who else "")
+        elif SPEAKER_SEAL.match(ln):
+            then = ", then it was replaced" if m["then"] else ""
+            head = head or (f"{who} sealed it{then}" if who else "")
+        else:
+            rest.append(ln)
+    out: list[str] = []
+    voiced = False
+    plain = any(REASON.match(ln) and not REASON.match(ln)["when"] for ln in rest)
+    order = rest
+    if head and plain:  # her words come right after who said them
+        order = [ln for ln in rest if REASON.match(ln)] + [
+            ln for ln in rest if not REASON.match(ln)
+        ]
+    for ln in order:
+        m = REASON.match(ln)
+        q = QUOTED.match(m["text"]) if m else None
+        if m and q:
+            key = "Reason" + (m["when"] or "").lower()
+            if head and not voiced and not m["when"]:
+                out.append(f'{head}: "{q["q"]}"')
+                voiced = True
+            else:
+                out.append(f'{key}: "{q["q"]}"')
+        elif m:
+            out.append(f"Reason: {_val(m['text'])}")
+        else:
+            line = _val(ln).replace(" · ", ", ")
+            if head.endswith("not yet") and line.lower().startswith("not yet, "):
+                line = line[len("not yet, ") :]  # the head already said it
+            out.append(cap(line))
+    if head and not voiced:
+        out.insert(0, head)
+    if not out:
+        return ""
+    if fixture:
+        out[-1] += f" {FIXTURE_MARK}"
+    return " ".join(terminate(x) for x in out)
 
 
 def _tail(box: Box) -> str:
@@ -331,7 +435,7 @@ def _single(b: Box) -> list[Part]:
 def clause(box: Box) -> str:
     """One box as the phrase code says it, from its own facts and glue."""
     if box.state != "populated":
-        return plain_line(box).rstrip(".")
+        return bare(plain_line(box))
     return "".join(t for t, _ in _single(box))
 
 
@@ -414,7 +518,7 @@ def compose(
     while i < len(boxes):
         b = boxes[i]
         if b.state != "populated":
-            line = plain_line(b)[:-1]
+            line = bare(plain_line(b))
             parts = [(line, b.id)] if line else []
             sents.append((parts, "heads" if b.state == "unreachable" else "plain"))
             i += 1
@@ -469,8 +573,7 @@ def compose(
             if parts and folded[n][1] in ("soft", "hard") and not hot_at[n]:
                 out[n] = [(prefix, None), (lead(parts[0][0]), parts[0][1]), *parts[1:]]
                 break
-    body = ". ".join(cap(_render(p, cite)) for p in out if p)
-    text = f"{body}." if body else ""
+    text = " ".join(terminate(cap(_render(p, cite))) for p in out if p)
     if greet:
         text = f"{greet} {text}".strip()
     return f"{text} No rush." if calm and text and rush else text

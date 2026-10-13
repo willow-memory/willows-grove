@@ -2804,3 +2804,110 @@ def test_asking_again_after_the_store_changed_is_a_fresh_read(tmp_path):
 def test_help_mentions_the_store_turn():
     assert '"where are we"' in s.HELP and '"what needs me"' in s.HELP
     assert "Nestor" in s.HELP
+
+
+# --- why: the reason, said naturally; no doubled full stop -------------------------------
+
+
+def fixture_store(tmp_path, name="f.db"):
+    rows = [
+        pair(1, "Hola", "Hello", reason="Settled it once.", origin="fixture:demo"),
+        pair(
+            2,
+            "Adios",
+            "Bye",
+            status="draft",
+            reason="Leaving it.",
+            origin="fixture:demo",
+        ),
+    ]
+    rej = (
+        "r1",
+        "hola",
+        "es",
+        "en",
+        "Howdy",
+        "ana",
+        "Not little. Never.",
+        "2026-02-01",
+        "",
+    )
+    ny = (
+        "r2",
+        "casa",
+        "es",
+        "en",
+        "the house",
+        "ana",
+        "Guessing.",
+        "2026-02-02",
+        "the photo",
+    )
+    return make(tmp_path / name, rows, [rej, ny], schema=(PAIRS, REJS))
+
+
+def why_of(tmp_path, which):
+    from grove.seat_nestor import read_store
+
+    path = fixture_store(tmp_path, f"f{len(list(tmp_path.iterdir()))}.db")
+    box = next(b for b in read_store(path).boxes if which(b))
+    return s.Seat.detail_sentence(box)
+
+
+def test_why_on_a_no_is_who_said_no_and_her_words_exactly(tmp_path):
+    got = why_of(tmp_path, lambda b: b.label.startswith("a no"))
+    assert got == 'Ana said no: "Not little. Never." (fixture).'
+    assert '"Not little. Never."' in got  # her words, exact
+    assert "origin" not in got and "never serve" not in got
+
+
+def test_why_keeps_the_fixture_marker_when_it_drops_the_provenance_line(tmp_path):
+    for which in (lambda b: b.kind == "dec", lambda b: b.label.startswith("not yet")):
+        got = why_of(tmp_path, which)
+        assert got.endswith("(fixture).") and "origin" not in got
+
+
+def test_why_on_a_seal_a_not_yet_and_a_draft(tmp_path):
+    seal = why_of(tmp_path, lambda b: b.kind == "dec")
+    assert seal == 'Ana sealed it: "Settled it once." (fixture).'
+    ny = why_of(tmp_path, lambda b: b.label.startswith("not yet"))
+    assert (
+        ny.startswith('Ana said not yet: "Guessing."')
+        and 'Reopen when: "the photo"' in ny
+    )
+    dr = why_of(tmp_path, lambda b: "draft" in b.label)
+    assert 'Reason: "Leaving it."' in dr and "nobody has confirmed it" in dr
+
+
+def test_why_on_a_chain_box_is_its_reason_with_no_provenance_noise():
+    b = bx.Box("b1", "block", "x", "scope held", "reason: empty_scope")
+    assert s.Seat.detail_sentence(b) == "Reason: empty_scope."
+
+
+@pytest.mark.parametrize(
+    "text",
+    ['She said "Go."', 'Is it "ready?"', "Done!", "Plain", "Wait (really).", ""],
+)
+def test_terminate_never_doubles_the_end(text):
+    got = bx.terminate(text)
+    assert not got.endswith(('.".', '?".', '!".', "..")) and got.startswith(text)
+    assert bx.terminate(got) == got
+
+
+def test_a_quoted_reason_ending_a_value_is_not_followed_by_a_second_full_stop():
+    q = bx.Box("b1", "pass", "x", 'she wrote "done."')
+    assert bx.compose([q], rush=False) == 'Looks like she wrote "done."'
+    assert s.Seat.open_sentence(q) == 'She wrote "done."'
+    two = bx.compose([q, bx.Box("b2", "you", "y", 'sign "here?"')])
+    assert '".' not in two.replace('."', "").replace('?"', "") and not two.endswith(
+        '".'
+    )
+    gone = bx.Box("b3", "pass", "x", 'unreachable — said "no."', state="unreachable")
+    assert bx.plain_line(gone).endswith('Said "no."')
+    assert bx.compose([gone]).endswith('Said "no."')
+
+
+def test_a_chip_choice_ending_in_a_quote_is_acknowledged_without_a_second_stop():
+    box = bx.Box("b1", "you", "x", "Pick", 'say "ok." · say "no." · say "later."')
+    _api, out = thread_run(["status of the build", 'say "ok."'], boxes=[box])
+    assert 'agent> Got it: say "ok."' in out and 'agent> Got it: say "ok.".' not in out
