@@ -100,6 +100,16 @@ the chain's ``answered N, escalated M`` is said as a sentence, never after a
 ``Heads up:``. Under ``NO_COLOR`` or a non-tty the cards are plain ASCII with
 no escape codes.
 
+``where are we`` and ``what needs me`` are not chain tasks: they are answered
+from the Nestor store at the config's ``nestor_db`` (``api.default_nestor_db()``,
+``$WILLOW_NESTOR_DB`` / ``$NESTOR_DB``), read-only, by ``grove/seat_nestor.py``,
+then said through the same ranked converse, so ``show me``, ``why``, ``the
+second one`` and ``go on`` work on them. No path, a missing file or a file that
+is not a Nestor store is one ``unreachable`` box (never ``empty``, which is a
+store that was read and holds nothing); no chain runs and no row is written.
+``what needs me`` shows only the waiting drafts (marked drafts), else says
+nothing is waiting. A ``fixture:`` origin stays on the card.
+
 The operator, 2026-10-09: "The deterministic chain runs, esclates to local
 models if need be, then to the cloud models"; "It should live in the grove,
 along side the web and apk"; "not anthropic. there is already routing in the
@@ -154,6 +164,7 @@ from grove.seat_boxes import (
     who_line,
     _val,
 )
+from grove.seat_nestor import read_store
 from grove.seat_say import (
     CHECK_NAMES,
     MODEL,
@@ -185,11 +196,16 @@ PAGE = 2
 #: words are the sketch's glue ("Anytime.", "Got it.") or fixed code lines.
 HELLO = "Hello. Give me a task, or say help."
 HELP = (
-    'Give me a task and the chain takes it; a line like "where are we" goes '
-    'to the chain. After a reply you can say "show me 712", "why", '
+    'Give me a task and the chain takes it. "where are we" and "what needs me" '
+    "are read from your Nestor store (read-only). "
+    'After a reply you can say "show me 712", "why", '
     '"the second one" or "go on". "thanks" and "later" are only '
     'acknowledged; an empty line, "bye", "done" or "quit" checks out.'
 )
+#: A line the seat answers from the Nestor store, not the chain (matched whole,
+#: after ``_talk``): the store's whole state, or only what waits on the human.
+WHERE_ARE_WE = frozenset({"where are we", "where am i", "whats waiting"})
+WHAT_NEEDS_ME = frozenset({"what needs me", "what needs you"})
 SMALL_TALK = {
     "thanks": "Anytime.",
     "thank you": "Anytime.",
@@ -206,6 +222,7 @@ MORE_YES = frozenset({"", "m", "more", "y", "yes"})
 STAY = "Got it. It stays in the pile."
 NOTHING_MORE = "Nothing more in the pile."
 NO_DETAIL = "Nothing more is on the record for it."
+NOTHING_WAITING = "Nothing in the Nestor store is waiting on you."
 
 
 class SeatUnavailable(Exception):
@@ -418,8 +435,9 @@ def _norm(text: str) -> str:
 
 
 def _talk(text: str) -> str:
-    """A line as small talk is matched: ``_norm`` without a closing ``?!.``."""
-    return _norm(text).rstrip("?!. ")
+    """A line as small talk is matched: ``_norm`` without a closing ``?!.``
+    (a curly or straight apostrophe is dropped, so ``what's`` is ``whats``)."""
+    return _norm(text).replace("'", "").replace("’", "").rstrip("?!. ")
 
 
 @dataclass
@@ -673,6 +691,34 @@ class Seat:
             turn.shown.append(said)
             self.emit(said)
         self.offer(thread)
+
+    def nestor(self, task: str) -> None:
+        """ "Where are we" / "what needs me": the Nestor store read read-only
+        (``grove/seat_nestor.py``) into boxes, then the same ranked converse as
+        a chain turn, so ``show me``, ``why``, ``the second one`` and ``go on``
+        work on them. The path is the config's ``nestor_db`` (``api.default_
+        nestor_db()``). Not configured, missing or not a store: one
+        ``unreachable`` box, said in its plain line; a store with no rows:
+        ``empty``. No chain, no record row, nothing written. ``what needs me``
+        raises the waiting drafts to ``needs you`` and shows only those (and a
+        heads-up); a draft stays marked a draft, never a fact."""
+        self.you(task)
+        path = getattr(self.cfg, "nestor_db", None)
+        asked = _talk(task) in WHAT_NEEDS_ME
+        got = read_store(path, drafts_as="you" if asked else "pr")
+        boxes = got.boxes
+        if asked and got.state == "populated":
+            boxes = [b for b in boxes if b.kind == "you"]
+            if not boxes:
+                return self.code_reply(NOTHING_WAITING)
+        try:
+            st = Path(path).stat()
+            sig = f"{st.st_mtime_ns}:{st.st_size}"
+        except (OSError, TypeError):
+            sig = got.state  # a store that can't be read has no version
+        self.converse(
+            f"nestor:{'needs' if asked else 'where'}:{path}:{sig}", boxes, task
+        )
 
     def offer(self, thread: Thread) -> None:
         """The chip row for what the turn showed. Its choices are remembered so
@@ -1208,6 +1254,9 @@ class Seat:
                             continue
                         if self.choice(task) or self.follow_up(task):
                             continue  # code answered it: no chain, no model
+                        if _talk(task) in WHERE_ARE_WE | WHAT_NEEDS_ME:
+                            self.nestor(task)  # the store, read-only: no chain
+                            continue
                         self.chain(task)
                         self.proposals()
             return 0

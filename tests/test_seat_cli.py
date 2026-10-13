@@ -672,7 +672,7 @@ def test_a_question_asked_again_is_shown_from_the_pile_with_its_timestamp():
     api = FakeApi(escalate=chain_result(*pieces))
     st, out = seat(
         api,
-        ["who", "", "where are we", "Where  are we", ""],
+        ["who", "", "status of the build", "Status  of the build", ""],
         clock=lambda: next(ticks),
     )
     st.run()
@@ -680,7 +680,7 @@ def test_a_question_asked_again_is_shown_from_the_pile_with_its_timestamp():
     stamp = "as noted at 09:14 · same boxes, nothing new since"
     assert out.count(stamp) == 1
     cards = lambda block: [o for o in block if o[:1] in "+|"]  # noqa: E731
-    i1 = out.index("you: where are we")
+    i1 = out.index("you: status of the build")
     i2 = out.index(stamp)
     first_cards = cards(out[i1 : chip_at(out, i1)])
     assert first_cards and cards(out[i2 : chip_at(out, i2)]) == first_cards
@@ -1116,7 +1116,7 @@ def test_asked_again_replays_the_model_reply_without_asking_the_model():
     ticks = iter(["09:14", "09:40", "09:41"])
     api = FakeApi(escalate=chain_result(piece("local", "answered")))
     out: list[str] = []
-    keys = iter(["who", "", "where are we", "Where  are we", ""])
+    keys = iter(["who", "", "status of the build", "Status  of the build", ""])
 
     def read(prompt):
         out.append(prompt)
@@ -2243,18 +2243,18 @@ def test_a_reply_ends_with_its_chips_and_a_choice_is_only_acknowledged():
 
 
 def test_thanks_and_later_after_a_reply_are_answered_by_code():
-    api, out = thread_run(["where are we", "thanks", "later"])
+    api, out = thread_run(["status of the build", "thanks", "later"])
     assert "agent> Anytime." in out and "agent> Got it. It stays in the pile." in out
     assert "escalate" not in api.names()
 
 
 def test_a_choice_not_offered_is_not_taken_for_one():
-    _api, out = thread_run(["where are we", "put it back"])
+    _api, out = thread_run(["status of the build", "put it back"])
     assert not any("Got it: put it back" in o for o in out)
 
 
 def test_show_me_a_ref_shows_the_box_again_in_full_with_a_code_sentence():
-    api, out = thread_run(["where are we", *ALL, "show me 712"])
+    api, out = thread_run(["status of the build", *ALL, "show me 712"])
     got = after(out, "show me 712")
     assert got[0].startswith("+- [blocked] blocked  b4")
     assert "| PR 712 waiting" in got and "| broker verb · 126 tests pass" in got
@@ -2267,29 +2267,31 @@ def test_show_me_a_ref_shows_the_box_again_in_full_with_a_code_sentence():
 
 @pytest.mark.parametrize("line", ["open 712", "B4", "show me b4", "Show me 712?"])
 def test_open_and_a_box_id_name_the_same_box(line):
-    _api, out = thread_run(["where are we", *ALL, line])
+    _api, out = thread_run(["status of the build", *ALL, line])
     assert after(out, line)[0].startswith("+- [blocked] blocked  b4")
 
 
 def test_ordinals_count_the_boxes_the_last_reply_showed():
-    _api, out = thread_run(["where are we", *ALL, "the second one"])
+    _api, out = thread_run(["status of the build", *ALL, "the second one"])
     assert after(out, "the second one")[0].startswith("+- [blocked] blocked  b4")
-    _api, out = thread_run(["where are we", *ALL, "the first"])
+    _api, out = thread_run(["status of the build", *ALL, "the first"])
     assert after(out, "the first")[0].startswith("+- [needs you] needs you  b5")
 
 
 def test_that_is_the_first_of_the_last_page_then_the_box_last_opened():
-    _api, out = thread_run(["where are we", "n", "that"])
+    _api, out = thread_run(["status of the build", "n", "that"])
     assert after(out, "that")[0].startswith("+- [needs you] needs you  b5")
-    _api, out = thread_run(["where are we", *ALL, "that"])  # the last page: b3 alone
+    _api, out = thread_run(
+        ["status of the build", *ALL, "that"]
+    )  # the last page: b3 alone
     assert after(out, "that")[0].startswith("+- [changed] changed  b3")
-    _api, out = thread_run(["where are we", *ALL, "show me 712", "that one"])
+    _api, out = thread_run(["status of the build", *ALL, "show me 712", "that one"])
     assert after(out, "that one")[0].startswith("+- [blocked] blocked  b4")
 
 
 @pytest.mark.parametrize("line", ["why", "Why?", "what's that", "tell me more"])
 def test_why_says_the_boxs_detail_by_code(line):
-    api, out = thread_run(["where are we", *ALL, "show me 712", line])
+    api, out = thread_run(["status of the build", *ALL, "show me 712", line])
     got = after(out, line)
     assert got == [
         "agent · code · no model, nothing served",
@@ -2300,19 +2302,19 @@ def test_why_says_the_boxs_detail_by_code(line):
 
 def test_why_on_a_box_without_detail_says_so_and_on_a_bare_state_says_its_reason():
     boxes = [bx.Box("b1", "dec", "decided", "phone only proposes")]
-    _api, out = thread_run(["where are we", "why"], boxes=boxes)
+    _api, out = thread_run(["status of the build", "why"], boxes=boxes)
     assert (
         "agent> Phone only proposes is decided. Nothing more is on the record for it."
         in out
     )
     down = [bx.Box("b1", "pass", "served", "unreachable — no key", state="unreachable")]
-    _api, out = thread_run(["where are we", "why"], boxes=down)
+    _api, out = thread_run(["status of the build", "why"], boxes=down)
     assert f"agent> {bx.CANT_READ}. No key." in out
 
 
 def test_an_ordinal_past_what_was_shown_is_a_plain_line_never_a_guess():
     boxes = demo_boxes()[:3]  # 3 boxes: pages of two, one box left behind more?
-    _api, out = thread_run(["where are we", "n", "the third one"], boxes=boxes)
+    _api, out = thread_run(["status of the build", "n", "the third one"], boxes=boxes)
     got = after(out, "the third one")
     assert got[-1].startswith("agent> I showed 2 boxes (")
     assert got[-1].endswith("so there is no third one.")
@@ -2324,7 +2326,7 @@ def test_a_ref_that_fits_two_boxes_is_said_not_guessed():
         bx.Box("b1", "block", "x", "PR 712 waiting", "d"),
         bx.Box("b2", "pr", "x", "PR 712 open", "d"),
     ]
-    api, out = thread_run(["where are we", "show me 712"], boxes=boxes)
+    api, out = thread_run(["status of the build", "show me 712"], boxes=boxes)
     got = after(out, "show me 712")
     assert got[-1] == 'agent> "712" fits 2 boxes: b1: PR 712 waiting; b2: PR 712 open.'
     assert "escalate" not in api.names()
@@ -2332,7 +2334,7 @@ def test_a_ref_that_fits_two_boxes_is_said_not_guessed():
 
 def test_go_on_shows_the_next_page_by_code_then_says_nothing_is_left():
     # decline the first more? so the pile keeps the rest, then ask for it
-    api, out = thread_run(["where are we", "n", "go on", "go on", "next"])
+    api, out = thread_run(["status of the build", "n", "go on", "go on", "next"])
     first = after(out, "go on")
     assert "agent · code · said 2 boxes, no model asked" in first
     assert (
@@ -2361,7 +2363,8 @@ def test_a_line_that_resolves_to_nothing_goes_to_the_chain_as_today():
     calls = []
     api = FakeApi()
     st, out = seat(
-        api, ["who", "", "where are we", "show me the stack", "b99", "the sky", ""]
+        api,
+        ["who", "", "status of the build", "show me the stack", "b99", "the sky", ""],
     )
     st.chain = lambda task: (
         st.you(task),
@@ -2369,13 +2372,13 @@ def test_a_line_that_resolves_to_nothing_goes_to_the_chain_as_today():
         st.converse(task, demo_boxes()[:2], task),
     )
     st.run()
-    assert calls == ["where are we", "show me the stack", "b99", "the sky"]
+    assert calls == ["status of the build", "show me the stack", "b99", "the sky"]
 
 
 def test_asked_again_still_replays_and_a_follow_up_leaves_no_row():
     ticks = iter(["09:14", "09:40", "09:41"])
     api, out = thread_run(
-        ["where are we", *ALL, "show me 712", "Where  are we", "why"],
+        ["status of the build", *ALL, "show me 712", "Status  of the build", "why"],
         clock=lambda: next(ticks),
     )
     assert "as noted at 09:14 · same boxes, nothing new since" in out
@@ -2392,7 +2395,8 @@ def test_a_follow_up_never_asks_the_model():
         return "x"
 
     _api, out = thread_run(
-        ["where are we", "n", "go on", "show me 712", "why", "the first one"], say=sayer
+        ["status of the build", "n", "go on", "show me 712", "why", "the first one"],
+        say=sayer,
     )
     assert len(asked) == 1  # only the first reply's sentence; none for the follow-ups
 
@@ -2696,3 +2700,107 @@ def test_no_rush_is_said_at_most_once_per_turn():
     assert text(out).count("No rush") == 1
     assert bx.compose(boxes[:2], rush=False).endswith("fine 2.")
     assert bx.compose(boxes[:2]).endswith("No rush.")
+
+
+# --- "where are we" / "what needs me": the Nestor store, read-only -----------------------
+
+from types import SimpleNamespace  # noqa: E402
+
+from tests.test_seat_nestor import PAIRS, REJS, make, pair  # noqa: E402
+
+
+def nestor_run(keys, path):
+    api = FakeApi()
+    st, out = seat(api, ["who", "", *keys, ""])
+    st.cfg = SimpleNamespace(nestor_db=path)
+    assert st.run() == 0
+    return api, out
+
+
+def small_store(tmp_path):
+    rows = [
+        pair(1, "Hola", "Hello", reason="Settled it once."),
+        pair(2, "Adios", "Bye", status="draft", reason="Not sure yet."),
+    ]
+    rej = ("r1", "hola", "es", "en", "Howdy", "ana", "Too American.", "2026-02-01", "")
+    return make(tmp_path / "n.db", rows, [rej], schema=(PAIRS, REJS))
+
+
+def test_where_are_we_unconfigured_is_unreachable_and_never_the_chain():
+    api, out = nestor_run(["where are we"], None)
+    body = text(out)
+    assert "+! [unreachable] nestor store" in body and "nestor store  nstate" in body
+    assert "I can't read the record right now. No Nestor store is configured" in body
+    assert "escalate" not in api.names()
+
+
+def test_where_are_we_reads_the_store_and_follow_ups_work_on_its_boxes(tmp_path):
+    p = small_store(tmp_path)
+    before = p.read_bytes()
+    api, out = nestor_run(["Where are we?", "", "the second one", "why", "go on"], p)
+    body = text(out)
+    assert "[blocked]" in body and '"Howdy" for hola' in body
+    assert "Adios (draft)" in body and "(fixture)" in body
+    assert "escalate" not in api.names()
+    assert "Hola → Hello" in body  # opened by 'the second one' or 'go on'
+    assert 'reason: "Too American."' in body or "Too American." in body
+    assert p.read_bytes() == before  # the seat wrote nothing to the store
+
+
+def test_where_are_we_empty_store_is_empty_not_unreachable(tmp_path):
+    p = make(tmp_path / "e.db", schema=(PAIRS, REJS))
+    _api, out = nestor_run(["where are we"], p)
+    body = text(out)
+    assert "+. [empty]" in body and "Nestor store is empty" in body
+    assert "[unreachable]" not in body
+
+
+def test_where_are_we_missing_file_says_the_path(tmp_path):
+    _api, out = nestor_run(["where are we"], tmp_path / "gone.db")
+    assert "no Nestor store at" in text(out) and "gone.db" in text(out)
+
+
+def test_what_needs_me_lists_only_the_waiting_drafts_as_drafts(tmp_path):
+    api, out = nestor_run(["what needs me?"], small_store(tmp_path))
+    body = text(out)
+    assert "[needs you]" in body and "Adios (draft)" in body
+    assert "[blocked]" not in body and "[decided]" not in body
+    assert "agent> " in body and "Adios → Bye" not in body
+    assert "escalate" not in api.names()
+
+
+def test_what_needs_me_with_nothing_waiting_says_so(tmp_path):
+    p = make(tmp_path / "d.db", [pair(1, "Hola", "Hello")], schema=(PAIRS, REJS))
+    _api, out = nestor_run(["what needs me"], p)
+    assert s.NOTHING_WAITING in text(out) and "[needs you]" not in text(out)
+
+
+def test_asking_again_after_the_store_changed_is_a_fresh_read(tmp_path):
+    p = small_store(tmp_path)
+    api = FakeApi()
+    st, out = seat(api, ["who", "", "where are we", "", "where are we", "", ""])
+    st.cfg = SimpleNamespace(nestor_db=p)
+    orig = st.nestor
+    calls = []
+
+    def nestor(task):
+        if calls:  # the store grows between the two asks
+            import sqlite3
+
+            con = sqlite3.connect(p)
+            con.execute("DELETE FROM tm_rejections")
+            con.commit()
+            con.close()
+        calls.append(task)
+        orig(task)
+
+    st.nestor = nestor
+    st.run()
+    body = text(out)
+    assert "same boxes, nothing new since" not in body
+    assert body.count("[blocked]") == 1  # the second read lost the rejection
+
+
+def test_help_mentions_the_store_turn():
+    assert '"where are we"' in s.HELP and '"what needs me"' in s.HELP
+    assert "Nestor" in s.HELP
