@@ -57,9 +57,49 @@ ratification for 8768 is operator config, not yet encoded in that test file.
 | Layer | Owns | Does not own |
 |-------|------|----------------|
 | **Willow seat** (`seat/willow/`) | Probe scripts, intake JSON, desk composition doctrine, federation unblock wrappers | Grove HTML, watcher, `:8766` bind |
+| **CLI seat** ([`grove/seat_cli.py`](../../grove/seat_cli.py)) | The terminal front end: stages over willow-bot's `onescript/api.py`, the box stream, the checked reply sentence, the pooled-proposal deposit | Any seal or seal key, a model provider choice (Rat's ladder picks), a listener |
 | **Ratatosk** | Session lifecycle, tool permission gate, Grove bus posts when configured | Charter law, vault keys, desk rendering |
 | **willow-mcp** | Muscle, envelopes, store, dispatch, `--serve` | Persona roster curation (reads charter) |
 | **Heimdallr / Grove** | Served desk honesty, resident watcher, `:8767` MCP resource | Operator seat scripts under `seat/willow/` |
+
+## CLI seat
+
+The third front end beside the web components and the phone APK. All three
+call willow-bot's `one-script/onescript/api.py`, so a terminal run leaves the
+same record rows the app does. Run it with
+[`scripts/grove-seat`](../../scripts/grove-seat): a terminal process, no
+listener, no port. Code: [`grove/seat_cli.py`](../../grove/seat_cli.py).
+
+Stages, in order:
+
+| Stage | What happens |
+|-------|--------------|
+| checkin | `api.checkin`: the record, the probes, the four gates |
+| resume | `api.resume`: the newest human-sealed scope, pinned at its `upto`; none or unreachable scopes fresh |
+| scope | `api.scope` proposes a stack and names its subject |
+| served | `api.serve`, the silent start-check: serves only a scope a past seal covers |
+| chain | `api.escalate`: D0 code, then the hash record, then a local rung |
+| flowering | one cloud turn on the human's yes: `ratatosk --onescript --class flowering` (Rat's ladder picks the provider) |
+| proposals | each pass shown and left pooled, nothing sealed |
+| checkout | `api.checkout`, then the pool deposited into Nestor as drafts |
+
+**Reply sentence.** A reply is box cards plus one sentence
+([`grove/seat_boxes.py`](../../grove/seat_boxes.py)). A local model says it,
+`qwen3:4b` on the Ollama loopback (override with `GROVE_SAY_MODEL`), and code
+checks it against the boxes: every cite served, every box cited, nothing the
+boxes lack, the human's words quoted exactly
+([`grove/seat_say.py`](../../grove/seat_say.py)). A failed check strikes the
+sentence and code's own stands; an unreachable model is an `unreachable` card
+and the same code sentence, never a crash.
+
+**Never seals.** No prompt asks for a seal and the seat holds no key. At
+checkout one `seal ↗` offer points at the Nestor UI (`:8765`), the only place
+a seal is made.
+
+**Venv.** `scripts/grove-seat` takes the first that exists: `GROVE_VENV`,
+`$WILLOW_HOME/willow-bot/venvs/willow-bot`, the legacy
+`$WILLOW_HOME/venvs/willow-bot` (with a stderr warning), `./.venv`, then
+`python3`.
 
 ## Ratatosk ↔ Grove wiring
 
