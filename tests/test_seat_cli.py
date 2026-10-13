@@ -165,6 +165,7 @@ def test_the_stages_run_in_order_and_check_out(capsys):
         "checkin",
         "resume",
         "scope",
+        "pooled",
         "serve",
         "escalate",
         "checkout",
@@ -1551,7 +1552,7 @@ def test_resume_none_bootstraps_a_fresh_scope_as_before():
     api = FakeApi(resume={"resume": None, "code": 0})
     st, out = seat(api, ["who", "", ""])
     assert st.run() == 0
-    assert api.names()[:4] == ["checkin", "resume", "scope", "serve"]
+    assert api.names()[:5] == ["checkin", "resume", "scope", "pooled", "serve"]
     assert any(o.startswith("scope ▶") for o in out)
     assert "sealed snapshot" not in text(out)
     assert serve_spec(api) == {"by": ["who"]}
@@ -1796,3 +1797,104 @@ def test_say_timeout_defaults_to_300_and_honors_the_env():
     assert say_mod.say_timeout({"GROVE_SAY_TIMEOUT": "45.5"}) == 45.5
     for bad in ("", "soon", "0", "-3", "nan", "inf"):
         assert say_mod.say_timeout({"GROVE_SAY_TIMEOUT": bad}) == 300.0
+
+
+# --- still pooled: the start card (api.pooled, read for display) ------------------------
+
+
+def pool_of(*subjects):
+    items = [
+        {
+            "subject": x,
+            "path": "notes/a.md",
+            "data": "# A",
+            "cites": ["t1"],
+            "claim": "c",
+        }
+        for x in subjects
+    ]
+    return {"pooled": items, "count": len(items), "code": 0}
+
+
+def pooled_card(out):
+    """The ``still pooled`` card as one string (a header, then its bar lines)."""
+    i = next(n for n, o in enumerate(out) if "still pooled" in o)
+    j = i
+    while j + 1 < len(out) and out[j + 1][:1] in "|:!" and out[j + 1][1:2] == " ":
+        j += 1
+        if out[j].startswith(("served", "chain")):
+            break
+    return "\n".join(out[i : j + 1])
+
+
+def test_pooled_at_start_shows_one_populated_card_with_a_count_and_subjects():
+    api = FakeApi(pooled=pool_of("proposal:aaa", "proposal:bbb", "proposal:ccc"))
+    st, out = seat(api, ["who", "", ""])
+    assert st.run() == 0
+    assert sum("still pooled" in o for o in out) == 1
+    card = pooled_card(out)
+    assert "3 from earlier runs, unsealed" in card
+    assert "proposal:aaa; proposal:bbb (+1 more)" in card and "ccc" not in card
+    assert card.splitlines()[0].startswith("+-")  # populated
+
+
+def test_pooled_at_start_empty_is_its_own_state():
+    st, out = seat(FakeApi(), ["who", "", ""])
+    assert st.run() == 0
+    card = pooled_card(out)
+    assert card.splitlines()[0].startswith("+.")
+    assert "empty — nothing pooled from earlier runs" in card
+
+
+@pytest.mark.parametrize(
+    "bad",
+    [
+        RuntimeError("no such verb"),
+        AttributeError("pooled"),
+        {"refused": "box won't open", "code": 2},
+        {"pooled": "nope"},
+    ],
+)
+def test_pooled_at_start_unreachable_is_a_card_not_a_crash(bad):
+    def pooled(*a, **k):
+        if isinstance(bad, BaseException):
+            raise bad
+        return bad
+
+    api = FakeApi(pooled=pooled)
+    st, out = seat(api, ["who", "", ""])
+    assert st.run() == 0
+    card = pooled_card(out)
+    assert card.splitlines()[0].startswith("+!")
+    assert "unreachable —" in card and "empty — " not in card
+    assert "served" in api.names() or "serve" in api.names()
+
+
+def test_pooled_at_start_is_read_only_and_leaves_the_resume_snapshot_alone():
+    dep = FakeDeposit()
+    api = FakeApi(resume=resumed(), pooled=pool_of("proposal:aaa"))
+    st, out = seat(api, ["", ""], deposit=dep)
+    assert st.run() == 0
+    assert st.sealed == {"spec": PINNED, "subject": SEALED}
+    assert (
+        serve_spec(api) == PINNED
+        and "scope" not in api.names()[: api.names().index("serve")]
+    )
+    assert api.names().index("pooled") < api.names().index("serve")
+    assert not {n for n in api.names() if "seal" in n or "mint" in n or "take" in n}
+    # the start read deposits nothing; only the close-out deposit sees the pool
+    assert len(dep.pools) == 1
+
+
+def test_pooled_at_start_is_skipped_when_nothing_is_served():
+    api = FakeApi(scope={"refused": "no open box", "code": 2})
+    st, out = seat(api, ["who"])
+    st.run()
+    assert not any("still pooled" in o for o in out)
+
+
+def test_pooled_at_start_a_non_record_answer_is_unreachable():
+    st, out = seat(FakeApi(pooled="garbage"), [])
+    st.pooled_at_start()
+    assert pooled_card(out).splitlines()[0].startswith("+!")
+    assert "not a pool record" in text(out)

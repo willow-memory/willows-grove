@@ -29,6 +29,11 @@ The stages, in order, each shown in the prompt (``scope ▶``):
                rows. None, a fresh scope as below. Raises or missing (an older
                willow-bot): an ``unreachable`` card, then the fresh scope
     scope      api.scope proposes a stack and names its subject; no prompt
+    pooled     api.pooled, read once for display: ONE ``still pooled`` card for
+               the proposals earlier runs left unsealed (count, a couple of
+               subjects). Populated, empty, or ``unreachable`` (a raise or a
+               missing ``pooled`` on an older willow-bot); it seals and
+               deposits nothing, and the resume snapshot is unchanged by it
     served     api.serve is the silent start-check: it serves only a scope a
                past human seal already covers (three states, never collapsed)
     chain      api.escalate: D0 code, then the hash record, then a local rung
@@ -549,6 +554,41 @@ class Seat:
         )
         return True
 
+    def pooled_at_start(self) -> None:
+        """One ``still pooled`` card: the proposals earlier runs left pooled
+        and unsealed (``api.pooled``'s read, the same the close-out deposits),
+        so the human sees them before adding more. Populated, empty and
+        unreachable look different; a raise or a missing ``pooled`` (an older
+        willow-bot) is an ``unreachable`` card, never a crash. It shows and
+        counts only: nothing is sealed, deposited or kept."""
+        label = "still pooled"
+        try:
+            pool = self.api.pooled(self.cfg)
+        except (EOFError, KeyboardInterrupt):
+            raise
+        except Exception as e:  # noqa: BLE001 - older willow-bot, or a read failure
+            return self.show(self.gone(label, f"{type(e).__name__}: {e}"))
+        got = pool.get("pooled") if isinstance(pool, dict) else None
+        if not isinstance(pool, dict) or "refused" in pool or not isinstance(got, list):
+            why = pool.get("refused") if isinstance(pool, dict) else None
+            return self.show(self.gone(label, str(why or "not a pool record")))
+        items = [p for p in got if isinstance(p, dict)]
+        if not items:
+            return self.show(
+                self.state_card(label, "empty", "nothing pooled from earlier runs")
+            )
+        names = [str(p.get("subject") or p.get("path") or "?") for p in items]
+        more = f" (+{len(names) - 2} more)" if len(names) > 2 else ""
+        self.show(
+            Box(
+                self.nid(),
+                "pr",
+                label,
+                f"{len(items)} from earlier runs, unsealed",
+                f"{'; '.join(names[:2])}{more}\nseal in Nestor; the seat seals nothing",
+            )
+        )
+
     def grown_scope(self) -> None:
         """Before check-out, for a served snapshot: what a fresh scope at the
         latest row would be called. If it differs from the sealed subject it
@@ -812,14 +852,16 @@ class Seat:
         except (EOFError, KeyboardInterrupt):
             return 1
         try:
-            if (self.resume() or self.scope()) and self.served():
-                while task := self.ask("chain", "task (empty to check out): "):
-                    if _norm(task) in SMALL_TALK:  # small talk: code, no boxes
-                        self.you(task)
-                        self.code_reply(SMALL_TALK[_norm(task)])
-                        continue
-                    self.chain(task)
-                    self.proposals()
+            if self.resume() or self.scope():
+                self.pooled_at_start()
+                if self.served():
+                    while task := self.ask("chain", "task (empty to check out): "):
+                        if _norm(task) in SMALL_TALK:  # small talk: code, no boxes
+                            self.you(task)
+                            self.code_reply(SMALL_TALK[_norm(task)])
+                            continue
+                        self.chain(task)
+                        self.proposals()
             return 0
         except (EOFError, KeyboardInterrupt):
             self.write("")
