@@ -165,6 +165,7 @@ def test_the_stages_run_in_order_and_check_out(capsys):
         "checkin",
         "resume",
         "scope",
+        "pooled",
         "serve",
         "escalate",
         "checkout",
@@ -1190,6 +1191,197 @@ def test_main_wires_the_ollama_say(monkeypatch):
     assert s.main() == 0 and callable(seen["say"])
 
 
+# --- flags that write nothing: --help, --version, a bad flag, --check -----------------
+
+
+@pytest.fixture
+def no_session(monkeypatch):
+    """Tripwires: a flag path must not load the bot, build a Seat or check in."""
+    monkeypatch.setattr(s, "load_bot", lambda root: pytest.fail("the bot was loaded"))
+    monkeypatch.setattr(s, "Seat", lambda *a, **k: pytest.fail("a session was opened"))
+
+
+def test_help_prints_usage_and_exits_0_without_a_session(no_session, capsys):
+    assert s.main(["--help"]) == 0
+    out = capsys.readouterr().out
+    assert "usage: grove-seat" in out and "--check" in out
+
+
+def test_version_prints_the_grove_version_and_exits_0(no_session, capsys):
+    assert s.main(["--version"]) == 0
+    out = capsys.readouterr().out.strip()
+    assert out == f"grove-seat {s.grove_version()}"
+    assert re.fullmatch(r"grove-seat \d+\.\d+\.\d+.*", out)
+
+
+@pytest.mark.parametrize("argv", [["--chek"], ["stray"], ["--check", "--bogus"]])
+def test_an_unknown_flag_or_argument_exits_2_before_the_bot_loads(
+    no_session, capsys, argv
+):
+    assert s.main(argv) == 2
+    assert "usage: grove-seat" in capsys.readouterr().err
+
+
+def bot_tree(tmp_path):
+    api = tmp_path / "one-script" / "onescript" / "api.py"
+    api.parent.mkdir(parents=True)
+    api.write_text("", encoding="utf-8")
+    return tmp_path
+
+
+def probed(monkeypatch, tmp_path, *, root=True, ollama=("populated", "up"), rat=True):
+    monkeypatch.setenv("WILLOW_BOT_ROOT", str(bot_tree(tmp_path) if root else tmp_path))
+    monkeypatch.setattr(s, "ollama_probe", lambda model: ollama)
+    monkeypatch.setattr(
+        s, "resolve_ratatosk", lambda: sys.executable if rat else "nope"
+    )
+    monkeypatch.setattr(s.shutil, "which", lambda name: None)
+
+
+def test_check_all_populated_exits_0_and_checks_in_nothing(
+    no_session, monkeypatch, tmp_path, capsys
+):
+    probed(monkeypatch, tmp_path)
+    assert s.main(["--check"]) == 0
+    out = capsys.readouterr().out.splitlines()
+    assert [ln.split()[0] for ln in out] == ["bot", "python", "ratatosk", "ollama"]
+    assert all(" populated" in ln for ln in out)
+
+
+@pytest.mark.parametrize(
+    ("over", "label", "state"),
+    [
+        ({"root": False}, "bot root", "unreachable"),
+        ({"rat": False}, "ratatosk", "unreachable"),
+        ({"ollama": ("unreachable", "refused")}, "ollama", "unreachable"),
+        ({"ollama": ("empty", "qwen3:4b is not installed")}, "ollama", "empty"),
+    ],
+)
+def test_check_names_each_failure_in_its_own_state_and_exits_nonzero(
+    no_session, monkeypatch, tmp_path, capsys, over, label, state
+):
+    probed(monkeypatch, tmp_path, **over)
+    assert s.main(["--check"]) == 1
+    lines = capsys.readouterr().out.splitlines()
+    mine = next(ln for ln in lines if ln.startswith(label))
+    assert f" {state}" in mine
+    assert sum("populated" in ln for ln in lines) == 3
+
+
+def test_check_never_calls_the_api(monkeypatch, tmp_path, capsys):
+    api = FakeApi()
+    probed(monkeypatch, tmp_path)
+    monkeypatch.setattr(s, "load_bot", lambda root: bot(api))
+    assert s.main(["--check"]) == 0
+    assert api.calls == []
+
+
+def test_the_probe_reads_tags_and_tells_up_from_installed():
+    tags = json.dumps({"models": [{"name": "qwen3:4b"}]}).encode()
+    op = Opener(tags)
+    assert say_mod.ollama_probe("qwen3:4b", "127.0.0.1:11434", opener=op)[0] == (
+        "populated"
+    )
+    req, timeout = op.seen[0]
+    assert req.full_url == "http://127.0.0.1:11434/api/tags"
+    assert req.data is None and timeout == 2.0
+    state, why = say_mod.ollama_probe("llama3.2:3b", opener=Opener(tags))
+    assert state == "empty" and "not installed" in why
+
+
+@pytest.mark.parametrize(
+    "result", [OSError("refused"), b"not json", json.dumps({"x": 1}).encode()]
+)
+def test_the_probe_is_unreachable_not_empty_when_it_gets_no_answer(result):
+    assert say_mod.ollama_probe(opener=Opener(result))[0] == "unreachable"
+
+
+def test_the_probe_refuses_a_non_loopback_host_without_asking():
+    op = Opener(b"{}")
+    state, why = say_mod.ollama_probe(host="10.0.0.5:11434", opener=op)
+    assert state == "unreachable" and "not loopback" in why and op.seen == []
+
+
+# --- --no-say and --model -----------------------------------------------------------
+
+
+@pytest.fixture
+def wired(monkeypatch):
+    """main() with a fake Seat: what it was built with, and the models asked."""
+    seen = {"asked": []}
+
+    class Fake:
+        def __init__(self, bot_, cfg, **kw):
+            seen.update(kw)
+
+        def run(self):
+            return 0
+
+    real = s.ollama_say
+    monkeypatch.setattr(s, "load_bot", lambda root: "bot")
+    monkeypatch.setattr(s, "config", lambda b, r: "cfg")
+    monkeypatch.setattr(s, "Seat", Fake)
+    monkeypatch.setattr(
+        s, "ollama_say", lambda model: seen["asked"].append(model) or real(model=model)
+    )
+    return seen
+
+
+def test_no_say_runs_code_only_and_never_builds_the_ollama_say(wired):
+    assert s.main(["--no-say"]) == 0
+    assert wired["say"] is None and wired["asked"] == []
+
+
+def test_model_flag_picks_the_reply_model_for_the_seat_and_the_say(wired):
+    assert s.main(["--model", "llama3.2:3b"]) == 0
+    assert wired["model"] == "llama3.2:3b" and wired["asked"] == ["llama3.2:3b"]
+    assert callable(wired["say"])
+
+
+def test_model_flag_wins_over_the_env_and_the_env_stands_without_it(wired, monkeypatch):
+    monkeypatch.setattr(s, "MODEL", "from-env")  # GROVE_SAY_MODEL, read at import
+    assert s.main([]) == 0 and wired["model"] == "from-env"
+    assert s.main(["--model", "from-flag"]) == 0 and wired["model"] == "from-flag"
+
+
+def test_a_qwen3_model_from_the_flag_still_gets_no_think(wired, monkeypatch):
+    op = Opener(json.dumps({"response": "ok"}).encode())
+    monkeypatch.setattr(say_mod.urllib.request, "build_opener", lambda *a: op)
+    assert s.main(["--model", "qwen3:8b"]) == 0
+    assert wired["say"]("hi") == "ok"
+    body = json.loads(op.seen[0][0].data)
+    assert body["model"] == "qwen3:8b" and body["prompt"] == "hi /no_think"
+
+
+@pytest.mark.parametrize(
+    "argv",
+    [["--no-say", "--model", "x"], ["--model", "x", "--no-say"], ["--model", " "]],
+)
+def test_no_say_with_a_model_or_a_blank_model_exits_2_before_the_bot_loads(
+    no_session, capsys, argv
+):
+    assert s.main(argv) == 2
+    assert "usage: grove-seat" in capsys.readouterr().err
+
+
+def test_model_flag_without_a_name_is_a_usage_error(no_session, capsys):
+    assert s.main(["--model"]) == 2
+
+
+def test_check_probes_the_flagged_model_and_skips_ollama_under_no_say(
+    no_session, monkeypatch, tmp_path, capsys
+):
+    probed(monkeypatch, tmp_path)
+    asked = []
+    monkeypatch.setattr(
+        s, "ollama_probe", lambda m: asked.append(m) or ("populated", m)
+    )
+    assert s.main(["--check", "--model", "llama3.2:3b"]) == 0
+    assert asked == ["llama3.2:3b"] and "ollama" in capsys.readouterr().out
+    assert s.main(["--check", "--no-say"]) == 0 and asked == ["llama3.2:3b"]
+    assert "ollama" not in capsys.readouterr().out
+
+
 # --- the default say: Ollama on loopback --------------------------------------------
 
 
@@ -1360,7 +1552,7 @@ def test_resume_none_bootstraps_a_fresh_scope_as_before():
     api = FakeApi(resume={"resume": None, "code": 0})
     st, out = seat(api, ["who", "", ""])
     assert st.run() == 0
-    assert api.names()[:4] == ["checkin", "resume", "scope", "serve"]
+    assert api.names()[:5] == ["checkin", "resume", "scope", "pooled", "serve"]
     assert any(o.startswith("scope ▶") for o in out)
     assert "sealed snapshot" not in text(out)
     assert serve_spec(api) == {"by": ["who"]}
@@ -1605,3 +1797,104 @@ def test_say_timeout_defaults_to_300_and_honors_the_env():
     assert say_mod.say_timeout({"GROVE_SAY_TIMEOUT": "45.5"}) == 45.5
     for bad in ("", "soon", "0", "-3", "nan", "inf"):
         assert say_mod.say_timeout({"GROVE_SAY_TIMEOUT": bad}) == 300.0
+
+
+# --- still pooled: the start card (api.pooled, read for display) ------------------------
+
+
+def pool_of(*subjects):
+    items = [
+        {
+            "subject": x,
+            "path": "notes/a.md",
+            "data": "# A",
+            "cites": ["t1"],
+            "claim": "c",
+        }
+        for x in subjects
+    ]
+    return {"pooled": items, "count": len(items), "code": 0}
+
+
+def pooled_card(out):
+    """The ``still pooled`` card as one string (a header, then its bar lines)."""
+    i = next(n for n, o in enumerate(out) if "still pooled" in o)
+    j = i
+    while j + 1 < len(out) and out[j + 1][:1] in "|:!" and out[j + 1][1:2] == " ":
+        j += 1
+        if out[j].startswith(("served", "chain")):
+            break
+    return "\n".join(out[i : j + 1])
+
+
+def test_pooled_at_start_shows_one_populated_card_with_a_count_and_subjects():
+    api = FakeApi(pooled=pool_of("proposal:aaa", "proposal:bbb", "proposal:ccc"))
+    st, out = seat(api, ["who", "", ""])
+    assert st.run() == 0
+    assert sum("still pooled" in o for o in out) == 1
+    card = pooled_card(out)
+    assert "3 from earlier runs, unsealed" in card
+    assert "proposal:aaa; proposal:bbb (+1 more)" in card and "ccc" not in card
+    assert card.splitlines()[0].startswith("+-")  # populated
+
+
+def test_pooled_at_start_empty_is_its_own_state():
+    st, out = seat(FakeApi(), ["who", "", ""])
+    assert st.run() == 0
+    card = pooled_card(out)
+    assert card.splitlines()[0].startswith("+.")
+    assert "empty — nothing pooled from earlier runs" in card
+
+
+@pytest.mark.parametrize(
+    "bad",
+    [
+        RuntimeError("no such verb"),
+        AttributeError("pooled"),
+        {"refused": "box won't open", "code": 2},
+        {"pooled": "nope"},
+    ],
+)
+def test_pooled_at_start_unreachable_is_a_card_not_a_crash(bad):
+    def pooled(*a, **k):
+        if isinstance(bad, BaseException):
+            raise bad
+        return bad
+
+    api = FakeApi(pooled=pooled)
+    st, out = seat(api, ["who", "", ""])
+    assert st.run() == 0
+    card = pooled_card(out)
+    assert card.splitlines()[0].startswith("+!")
+    assert "unreachable —" in card and "empty — " not in card
+    assert "served" in api.names() or "serve" in api.names()
+
+
+def test_pooled_at_start_is_read_only_and_leaves_the_resume_snapshot_alone():
+    dep = FakeDeposit()
+    api = FakeApi(resume=resumed(), pooled=pool_of("proposal:aaa"))
+    st, out = seat(api, ["", ""], deposit=dep)
+    assert st.run() == 0
+    assert st.sealed == {"spec": PINNED, "subject": SEALED}
+    assert (
+        serve_spec(api) == PINNED
+        and "scope" not in api.names()[: api.names().index("serve")]
+    )
+    assert api.names().index("pooled") < api.names().index("serve")
+    assert not {n for n in api.names() if "seal" in n or "mint" in n or "take" in n}
+    # the start read deposits nothing; only the close-out deposit sees the pool
+    assert len(dep.pools) == 1
+
+
+def test_pooled_at_start_is_skipped_when_nothing_is_served():
+    api = FakeApi(scope={"refused": "no open box", "code": 2})
+    st, out = seat(api, ["who"])
+    st.run()
+    assert not any("still pooled" in o for o in out)
+
+
+def test_pooled_at_start_a_non_record_answer_is_unreachable():
+    st, out = seat(FakeApi(pooled="garbage"), [])
+    st.pooled_at_start()
+    assert pooled_card(out).splitlines()[0].startswith("+!")
+    assert "not a pool record" in text(out)

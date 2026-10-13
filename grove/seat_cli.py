@@ -2,12 +2,23 @@
 """grove seat — the one script at a terminal: the desk's command-line seat.
 
     scripts/grove-seat            # check-in, scope, served, chain, proposals
+    scripts/grove-seat --check    # probe only: nothing checked in, nothing written
+    scripts/grove-seat --no-say   # code only, no model asked
+    scripts/grove-seat --model qwen3:8b   # this run's reply model
 
 The third front end beside the web components and the phone APK. All three
 call willow-bot's ``one-script/onescript/api.py``, so a seat run leaves the
 same record rows the app does. This module only reads keys, prints, and
 calls those functions; it holds no seal key, names no model provider, and
 writes nothing but a scratch file per cloud turn.
+
+``--no-say`` runs code only (no model is asked); ``--model NAME`` picks the reply
+model for the run, winning over ``GROVE_SAY_MODEL``, and the two together exit 2.
+``--help`` and ``--version`` print and exit 0; an unknown flag or argument exits
+2 before the bot is loaded. None of them, and not ``--check`` (which reports the
+bot root, the python in use, whether ``ratatosk`` resolves and whether the
+Ollama loopback answers, each ``populated`` or ``unreachable`` or ``empty``),
+calls ``api.checkin``: only a session does, and that writes record rows.
 
 The stages, in order, each shown in the prompt (``scope ▶``):
 
@@ -18,6 +29,11 @@ The stages, in order, each shown in the prompt (``scope ▶``):
                rows. None, a fresh scope as below. Raises or missing (an older
                willow-bot): an ``unreachable`` card, then the fresh scope
     scope      api.scope proposes a stack and names its subject; no prompt
+    pooled     api.pooled, read once for display: ONE ``still pooled`` card for
+               the proposals earlier runs left unsealed (count, a couple of
+               subjects). Populated, empty, or ``unreachable`` (a raise or a
+               missing ``pooled`` on an older willow-bot); it seals and
+               deposits nothing, and the resume snapshot is unchanged by it
     served     api.serve is the silent start-check: it serves only a scope a
                past human seal already covers (three states, never collapsed)
     chain      api.escalate: D0 code, then the hash record, then a local rung
@@ -63,14 +79,18 @@ willow-bot is found at ``WILLOW_BOT_ROOT``, else beside this repo
 
 from __future__ import annotations
 
+import argparse
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
 import time
+import tomllib
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
+from importlib import metadata
 from pathlib import Path
 from typing import Any
 
@@ -92,6 +112,7 @@ from grove.seat_say import (
     MODEL,
     SayUnreachable,
     build_prompt,
+    ollama_probe,
     ollama_say,
     passed,
     run_checks,
@@ -533,6 +554,41 @@ class Seat:
         )
         return True
 
+    def pooled_at_start(self) -> None:
+        """One ``still pooled`` card: the proposals earlier runs left pooled
+        and unsealed (``api.pooled``'s read, the same the close-out deposits),
+        so the human sees them before adding more. Populated, empty and
+        unreachable look different; a raise or a missing ``pooled`` (an older
+        willow-bot) is an ``unreachable`` card, never a crash. It shows and
+        counts only: nothing is sealed, deposited or kept."""
+        label = "still pooled"
+        try:
+            pool = self.api.pooled(self.cfg)
+        except (EOFError, KeyboardInterrupt):
+            raise
+        except Exception as e:  # noqa: BLE001 - older willow-bot, or a read failure
+            return self.show(self.gone(label, f"{type(e).__name__}: {e}"))
+        got = pool.get("pooled") if isinstance(pool, dict) else None
+        if not isinstance(pool, dict) or "refused" in pool or not isinstance(got, list):
+            why = pool.get("refused") if isinstance(pool, dict) else None
+            return self.show(self.gone(label, str(why or "not a pool record")))
+        items = [p for p in got if isinstance(p, dict)]
+        if not items:
+            return self.show(
+                self.state_card(label, "empty", "nothing pooled from earlier runs")
+            )
+        names = [str(p.get("subject") or p.get("path") or "?") for p in items]
+        more = f" (+{len(names) - 2} more)" if len(names) > 2 else ""
+        self.show(
+            Box(
+                self.nid(),
+                "pr",
+                label,
+                f"{len(items)} from earlier runs, unsealed",
+                f"{'; '.join(names[:2])}{more}\nseal in Nestor; the seat seals nothing",
+            )
+        )
+
     def grown_scope(self) -> None:
         """Before check-out, for a served snapshot: what a fresh scope at the
         latest row would be called. If it differs from the sealed subject it
@@ -796,14 +852,16 @@ class Seat:
         except (EOFError, KeyboardInterrupt):
             return 1
         try:
-            if (self.resume() or self.scope()) and self.served():
-                while task := self.ask("chain", "task (empty to check out): "):
-                    if _norm(task) in SMALL_TALK:  # small talk: code, no boxes
-                        self.you(task)
-                        self.code_reply(SMALL_TALK[_norm(task)])
-                        continue
-                    self.chain(task)
-                    self.proposals()
+            if self.resume() or self.scope():
+                self.pooled_at_start()
+                if self.served():
+                    while task := self.ask("chain", "task (empty to check out): "):
+                        if _norm(task) in SMALL_TALK:  # small talk: code, no boxes
+                            self.you(task)
+                            self.code_reply(SMALL_TALK[_norm(task)])
+                            continue
+                        self.chain(task)
+                        self.proposals()
             return 0
         except (EOFError, KeyboardInterrupt):
             self.write("")
@@ -823,15 +881,108 @@ def _escalates(r: object) -> bool:
     return isinstance(r, dict) and r.get("path") == ESCALATE_PATH
 
 
+def grove_version() -> str:
+    """The grove package version: the installed distribution's, else the hatch
+    ``fallback-version`` in ``pyproject.toml`` (a checkout that isn't installed,
+    which is what ``scripts/grove-seat`` runs), else ``unknown``."""
+    try:
+        return metadata.version("willows-grove")
+    except metadata.PackageNotFoundError:
+        pass
+    try:
+        with (GROVE_ROOT / "pyproject.toml").open("rb") as f:
+            return str(tomllib.load(f)["tool"]["hatch"]["version"]["fallback-version"])
+    except (OSError, KeyError, ValueError):
+        return "unknown"
+
+
+def parser() -> argparse.ArgumentParser:
+    p = argparse.ArgumentParser(
+        prog="grove-seat",
+        description="The desk's command-line seat. With no flag it opens a "
+        "session: check-in (which writes record rows), scope, chain, check-out.",
+    )
+    p.add_argument(
+        "--version", action="version", version=f"grove-seat {grove_version()}"
+    )
+    p.add_argument(
+        "--check",
+        action="store_true",
+        help="probe only: bot root, python, ratatosk, the Ollama loopback; "
+        "no check-in, nothing written; exit 0 only if all are populated",
+    )
+    p.add_argument(
+        "--no-say",
+        action="store_true",
+        help="code only: no local model says the reply sentence, Ollama is never asked",
+    )
+    p.add_argument(
+        "--model",
+        metavar="NAME",
+        help=f"the reply model for this run (default {MODEL}, or GROVE_SAY_MODEL; "
+        "the flag wins over the env); not with --no-say",
+    )
+    return p
+
+
+def check_line(label: str, state: str, why: str = "") -> str:
+    """One probe line, its state spelled out (INVARIANTS 1): ``populated`` is
+    followed by what was found, ``empty`` and ``unreachable`` by why."""
+    return f"{label:<10} {state}" + (f" — {why}" if why else "")
+
+
+def probe(root: Path, model: str | None = MODEL) -> list[tuple[str, str, str]]:
+    """What ``--check`` reports, as ``(label, state, why)``. It imports no
+    willow-bot module, calls no api function and writes nothing. ``model``
+    None (``--no-say``) leaves the Ollama row out: a code-only run never asks."""
+    one = root / "one-script" / "onescript" / "api.py"
+    bot_ = (
+        ("populated", str(root))
+        if one.is_file()
+        else ("unreachable", f"no one script at {one.parent} (set WILLOW_BOT_ROOT)")
+    )
+    venv = "a venv" if sys.prefix != sys.base_prefix else "no venv"
+    rat = resolve_ratatosk()
+    where = rat if Path(rat).is_file() else shutil.which(rat)
+    return [
+        ("bot root", *bot_),
+        ("python", "populated", f"{sys.executable} ({venv}: {sys.prefix})"),
+        (
+            "ratatosk",
+            *(
+                ("populated", where)
+                if where
+                else ("unreachable", f"{rat} is not on the path")
+            ),
+        ),
+        *([("ollama", *ollama_probe(model))] if model else []),
+    ]
+
+
 def main(argv: list[str] | None = None) -> int:
+    p = parser()
+    try:
+        args = p.parse_args([] if argv is None else argv)
+        if args.no_say and args.model is not None:
+            p.error("--no-say and --model conflict: no model is asked")
+        if args.model is not None and not args.model.strip():
+            p.error("--model needs a model name")
+    except SystemExit as e:  # --help and --version exit 0, a bad flag 2
+        return int(e.code or 0)
+    model = (args.model or "").strip() or MODEL  # the flag wins over GROVE_SAY_MODEL
+    if args.check:
+        got = probe(bot_root(), None if args.no_say else model)
+        print("\n".join(check_line(*g) for g in got))
+        return 0 if all(g[1] == "populated" for g in got) else 1
     root = bot_root()
     try:
         bot = load_bot(root)
     except SeatUnavailable as e:
         print(f"grove seat: {e}", file=sys.stderr)
         return 2
-    return Seat(bot, config(bot, root), say=ollama_say()).run()
+    say = None if args.no_say else ollama_say(model=model)
+    return Seat(bot, config(bot, root), say=say, model=model).run()
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(main(sys.argv[1:]))
