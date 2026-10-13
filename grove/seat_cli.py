@@ -91,6 +91,10 @@ crown. Agent agnostic". Two chain rules hold here too: a piece code cut as
 over its cap never reaches a model, and an empty or unreachable scope is
 escalated by code, never handed to one.
 
+The gate's toolchain check looks in the venv the seat runs in
+(``resolve_venv``): the running interpreter's venv when it is one, else the
+launcher's order (``GROVE_VENV``, the D2 bot venv, the legacy one, ``./.venv``).
+
 willow-bot is found at ``WILLOW_BOT_ROOT``, else beside this repo
 (``../willow-bot``), the way the one script finds this repo.
 """
@@ -206,9 +210,42 @@ def load_bot(root: Path) -> Bot:
     )
 
 
+def resolve_venv(
+    environ: dict | None = None,
+    prefix: str | None = None,
+    base_prefix: str | None = None,
+    grove: Path = GROVE_ROOT,
+) -> Path:
+    """The venv the gate's toolchain check (``Config.venv``) looks in: the one
+    the seat runs in. When the running interpreter is a venv, that venv (the
+    launcher ``scripts/grove-seat`` already chose it by seal D2, so the gate
+    and the seat can't disagree); otherwise the launcher's own order:
+    ``GROVE_VENV``, ``$WILLOW_HOME/willow-bot/venvs/willow-bot`` (D2), the
+    legacy ``$WILLOW_HOME/venvs/willow-bot``, ``<grove>/.venv``, each only if
+    it has a ``bin/python3``. With none, the D2 path, so a missing toolchain
+    is reported against the place it belongs."""
+    env = os.environ if environ is None else environ
+    prefix = sys.prefix if prefix is None else prefix
+    base_prefix = sys.base_prefix if base_prefix is None else base_prefix
+    if prefix != base_prefix:
+        return Path(prefix)
+    willow = env.get("WILLOW_HOME", "")
+    new = Path(willow).expanduser() / "willow-bot" / "venvs" / "willow-bot"
+    cands = []
+    if env.get("GROVE_VENV"):
+        cands.append(Path(env["GROVE_VENV"]).expanduser())
+    if willow:
+        cands += [new, Path(willow).expanduser() / "venvs" / "willow-bot"]
+    cands.append(grove / ".venv")
+    found = next((c for c in cands if (c / "bin" / "python3").is_file()), None)
+    if found:
+        return found
+    home = Path(willow or "~").expanduser()
+    return home / "willow-bot" / "venvs" / "willow-bot"
+
+
 def config(bot: Bot, root: Path, grove: Path = GROVE_ROOT):
     """The Config the one script's own CLI builds, with the same defaults."""
-    home = Path(os.environ.get("WILLOW_HOME", "~")).expanduser()
     return bot.api.Config(
         box=root / ".flow" / "onescript",
         keys=root / ".flow" / "onescript-keys" / "keys.json",
@@ -216,7 +253,7 @@ def config(bot: Bot, root: Path, grove: Path = GROVE_ROOT):
         ci=grove / ".github" / "workflows" / "tests.yml",
         root=root,
         grove=grove,
-        venv=home / "venvs" / "willow-bot",
+        venv=resolve_venv(grove=grove),
         keyring=bot.api.default_keyring(),
         nestor_db=bot.api.default_nestor_db(),
     )

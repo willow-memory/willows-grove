@@ -2370,3 +2370,70 @@ def test_a_follow_up_never_asks_the_model():
         ["where are we", "n", "go on", "show me 712", "why", "the first one"], say=sayer
     )
     assert len(asked) == 1  # only the first reply's sentence; none for the follow-ups
+
+
+# --- the gate's venv is the seat's venv (F1) ------------------------------------------
+
+
+def _py(path):
+    path.mkdir(parents=True)
+    (path / "python3").write_text("", encoding="utf-8")
+
+
+def rv(env, tmp_path, prefix="/usr", base="/usr"):
+    return s.resolve_venv(env, prefix, base, tmp_path / "grove")
+
+
+def test_gate_venv_is_the_running_venv_when_the_interpreter_is_one(tmp_path):
+    home = tmp_path / "home"
+    _py(home / "venvs" / "willow-bot" / "bin")  # the legacy one exists too
+    env = {"WILLOW_HOME": str(home)}
+    got = rv(env, tmp_path, prefix=str(tmp_path / "run"), base="/usr")
+    assert got == tmp_path / "run"
+
+
+def test_gate_venv_follows_the_launcher_order_outside_a_venv(tmp_path):
+    home = tmp_path / "home"
+    new = home / "willow-bot" / "venvs" / "willow-bot"
+    old = home / "venvs" / "willow-bot"
+    mine = tmp_path / "mine"
+    env = {"WILLOW_HOME": str(home), "GROVE_VENV": str(mine)}
+    _py(old / "bin")
+    assert rv(env, tmp_path) == old  # legacy, when it is all there is
+    _py(new / "bin")
+    assert rv(env, tmp_path) == new  # D2 beats legacy
+    _py(mine / "bin")
+    assert rv(env, tmp_path) == mine  # GROVE_VENV beats both
+
+
+def test_gate_venv_skips_a_grove_venv_with_no_python_and_ends_at_dot_venv(tmp_path):
+    home = tmp_path / "home"
+    env = {"WILLOW_HOME": str(home), "GROVE_VENV": str(tmp_path / "gone")}
+    _py(tmp_path / "grove" / ".venv" / "bin")
+    assert rv(env, tmp_path) == tmp_path / "grove" / ".venv"
+
+
+def test_gate_venv_with_nothing_is_the_d2_path_not_the_legacy_one(tmp_path):
+    env = {"WILLOW_HOME": str(tmp_path / "home")}
+    want = tmp_path / "home" / "willow-bot" / "venvs" / "willow-bot"
+    assert rv(env, tmp_path) == want
+
+
+def test_config_hands_the_gate_the_resolved_venv(tmp_path, monkeypatch):
+    home = tmp_path / "home"
+    new = home / "willow-bot" / "venvs" / "willow-bot"
+    _py(new / "bin")
+    monkeypatch.setenv("WILLOW_HOME", str(home))
+    monkeypatch.delenv("GROVE_VENV", raising=False)
+    monkeypatch.setattr(sys, "prefix", sys.base_prefix)
+
+    class Cfg:
+        def __init__(self, **kw):
+            self.__dict__.update(kw)
+
+    api = FakeApi()
+    api.Config = Cfg
+    api.default_keyring = lambda: None
+    api.default_nestor_db = lambda: None
+    cfg = s.config(bot(api), tmp_path / "bot", tmp_path / "grove")
+    assert cfg.venv == new
