@@ -635,10 +635,12 @@ def test_a_reply_is_boxes_then_one_sentence_from_the_boxes():
     t = text(out)
     assert "agent · code · said 2 boxes, no model asked" in t
     first = next(o for o in out if o.startswith("agent> "))
-    # "escalated 1" is a problem count: no reassurance over it (3b-ii, Loki F-low)
+    # "escalated 1" is still a problem count (no reassurance over it, 3b-ii,
+    # Loki F-low), but the chain summary is said as a sentence, with no
+    # "Heads up:" before a bare count (F6)
     assert first == (
         "agent> Morning. Local: d is still blocked, reason: local_escalate. "
-        "Heads up: answered 2, escalated 1."
+        "The chain answered 2 and escalated 1."
     )
     assert out.index("agent · code · said 2 boxes, no model asked") < out.index(first)
 
@@ -2175,12 +2177,37 @@ def test_a_ref_must_be_unique_and_comes_only_from_the_boxs_own_value():
         bx.Box("b1", "block", "blocked", "PR 712 waiting", "why"),
         bx.Box("b2", "block", "blocked", "PR 712 held", "why"),
     ]
-    assert bx.chips(twin).show == "show me pr 712 waiting"  # number shared: more words
+    assert bx.chips(twin).show == "show me b1"  # number shared: the box id, not words
     same = [
-        bx.Box("b1", "block", "x", "PR 7 waiting", "d"),
-        bx.Box("b2", "pr", "x", "PR 7 waiting", "d"),
+        bx.Box("zzz", "block", "x", "PR 7 waiting", "d"),
+        bx.Box("yyy", "pr", "x", "PR 7 waiting", "d"),
     ]
     assert bx.chips(same).show == ""  # nothing names one box alone: no chip
+
+
+def test_a_ref_is_a_number_an_id_like_token_or_the_box_id_never_first_words():
+    d0 = bx.Box(
+        "b7116acfef88",
+        "you",
+        "escalated",
+        "d0: the scope is 'empty': nothing served",
+        "r",
+    )
+    assert bx.ref_tokens(d0) == []  # no number, no id token, a hash id: no chip
+    assert bx.chips([d0]).show == ""
+    assert bx.chips([d0]).row() == "chips: [later] [thanks]"
+    one = bx.Box("zz", "block", "x", "step 7 of 9 waiting", "d")
+    assert bx.ref_tokens(one) == []  # one digit is no ref
+    ver = bx.Box("zz", "block", "x", "ruff 0.16.10 missing", "d")
+    assert bx.ref_tokens(ver) == []  # parts of a version are no ref
+    hexish = bx.Box("zz", "block", "x", "run 7476c1338860 held", "d")
+    assert bx.ref_tokens(hexish) == []
+    pr = bx.Box("b4", "block", "x", "PR 712 waiting", "d")
+    assert bx.ref_tokens(pr) == ["712", "PR 712", "b4"]
+    assert bx.ref_tokens(bx.Box("zz", "pr", "x", "PR #714 open"))[:1] == ["714"]
+    twin = [pr, bx.Box("b5", "block", "x", "Issue 712 held", "d")]
+    assert bx.unique_ref(pr, twin) == "PR 712"  # the number is shared, the token isn't
+    assert bx.matches(pr, "pr 712") and not bx.matches(twin[1], "pr 712")
 
 
 def test_options_need_three_short_digitless_parts_and_the_row_is_capped():
@@ -2314,9 +2341,7 @@ def test_go_on_shows_the_next_page_by_code_then_says_nothing_is_left():
     )
     assert chips_of(first) == []  # one box still behind it
     last = after(out, "go on", 1)
-    assert (
-        any("b3" in o for o in last) and "agent> Also, PR #714 open. No rush." in last
-    )
+    assert any("b3" in o for o in last) and "agent> Also, PR #714 open." in last
     assert chips_of(last)  # the pile is empty: the row is offered
     assert after(out, "next") == [
         "agent · code · no model, nothing served",
@@ -2615,3 +2640,59 @@ def test_declining_more_still_says_the_pile_keeps_it():
     st, out = seat(api, ["", "", "task", "ok", ""])
     st.run()
     assert f"agent> {s.STAY}" in out
+
+
+# --- phrasing on real data (F6) -----------------------------------------------------------
+
+LONG_YOU = bx.Box(
+    "b7116acfef88",
+    "you",
+    "escalated:empty_scope",
+    "d0: the scope is 'empty': the scope has no human seal over this exact set; "
+    "nothing served",
+    "reason: empty_scope",
+)
+CHAIN = bx.Box("b4", "pass", "chain", "answered 0, escalated 1")
+
+
+def test_a_long_needs_you_value_is_not_given_a_dangling_suffix():
+    said = bx.compose([LONG_YOU])
+    assert said.startswith("This needs you: d0: the scope is 'empty'")
+    assert "nothing served needs you" not in said and said.endswith("nothing served.")
+    assert bx.cap(bx.clause(LONG_YOU)).startswith("This needs you: ")
+
+
+def test_a_short_needs_you_value_keeps_its_suffix_and_a_verb_phrase_its_lead():
+    assert bx.compose([bx.Box("b1", "you", "x", "PR 712")]) == "PR 712 needs you."
+    got = bx.compose([bx.Box("b1", "you", "x", "Ratify the work order")])
+    assert got == "You need to ratify the work order."
+    comma = bx.Box("b1", "you", "x", "PR 712, 713")
+    assert "needs you: PR 712, 713" in bx.compose([comma])
+
+
+def test_the_chain_count_is_a_sentence_and_never_a_heads_up_over_a_bare_count():
+    got = bx.compose([LONG_YOU, CHAIN])
+    assert "The chain answered 0 and escalated 1." in got
+    assert "Heads up: answered" not in got and "Heads up" not in got
+    assert "No rush" not in got  # an escalation is still no calm
+    assert bx.compose([CHAIN]) == "The chain answered 0 and escalated 1."
+    calm = bx.Box("b2", "pass", "chain", "answered 2, escalated 0")
+    assert bx.compose([calm]).endswith("the chain answered 2 and escalated 0. No rush.")
+    still = bx.Box("b3", "pass", "check", "3 failed")
+    assert "Heads up: " in bx.compose([still])  # a real problem still is one
+
+
+def test_no_rush_is_said_at_most_once_per_turn():
+    boxes = [bx.Box(f"b{i}", "pass", "x", f"fine {i}") for i in range(1, 5)]
+    api = FakeApi()
+    st, out = seat(api, ["who", "", "task", "", ""])
+
+    def chain(task):
+        st.you(task)
+        st.converse(s._norm(task), list(boxes), task)
+
+    st.chain = chain
+    st.run()
+    assert text(out).count("No rush") == 1
+    assert bx.compose(boxes[:2], rush=False).endswith("fine 2.")
+    assert bx.compose(boxes[:2]).endswith("No rush.")

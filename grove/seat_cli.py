@@ -93,7 +93,11 @@ sentence; ``why`` / ``what's that`` / ``tell me more`` say its detail;
 nothing is left. An ordinal past what was shown, or a ref that fits two boxes,
 is a plain line, never a guess. None of these asks a model, calls
 ``api.escalate`` or writes a row; a line that matches nothing goes to the chain
-as before. Under ``NO_COLOR`` or a non-tty the cards are plain ASCII with
+as before. A ``show me`` ref is a number of two digits or more, an id-like
+token (``PR 712``) or a short box id (``b4``), never the first words of a value;
+with none, no ``show me`` chip. ``No rush.`` is said at most once per turn, and
+the chain's ``answered N, escalated M`` is said as a sentence, never after a
+``Heads up:``. Under ``NO_COLOR`` or a non-tty the cards are plain ASCII with
 no escape codes.
 
 The operator, 2026-10-09: "The deterministic chain runs, esclates to local
@@ -442,6 +446,15 @@ class Turn:
     rest: list[Box]
     shown: list[Said] = field(default_factory=list)
 
+    def said_rush(self) -> bool:
+        """``No rush.`` was already said on a page of this turn (it is said
+        once per turn), whoever's sentence has it."""
+        return any(
+            "no rush" in ln.lower()
+            for said in self.shown
+            for ln in (*said.lines, *said.tail)
+        )
+
 
 @dataclass
 class Thread:
@@ -567,6 +580,7 @@ class Seat:
         page: int = 0,
         at: str = "",
         model: bool = True,
+        rush: bool = True,
     ) -> Said:
         """One reply's sentence. The model says it and code checks it; a
         sentence that fails a check is struck and code's stands; a model that
@@ -574,7 +588,11 @@ class Seat:
         sentence is composed either way and is never a crash."""
         n = len(batch)
         code = compose(
-            batch, first=first, page=page, greet=self.greeting(at) if first else ""
+            batch,
+            first=first,
+            page=page,
+            greet=self.greeting(at) if first else "",
+            rush=rush,
         )
         again = "{at}"
         if self.say is None or not model:
@@ -645,7 +663,12 @@ class Seat:
                 return
             batch, turn.rest = turn.rest[:PAGE], turn.rest[PAGE:]
             said = self.speak(
-                batch, not turn.shown, human, page=len(turn.shown), at=turn.at
+                batch,
+                not turn.shown,
+                human,
+                page=len(turn.shown),
+                at=turn.at,
+                rush=not turn.said_rush(),
             )
             turn.shown.append(said)
             self.emit(said)
@@ -757,7 +780,13 @@ class Seat:
             return self.code_reply(NOTHING_MORE)
         batch, turn.rest = turn.rest[:PAGE], turn.rest[PAGE:]
         said = self.speak(
-            batch, False, "", page=len(turn.shown), at=turn.at, model=False
+            batch,
+            False,
+            "",
+            page=len(turn.shown),
+            at=turn.at,
+            model=False,
+            rush=not turn.said_rush(),
         )
         turn.shown.append(said)
         self.emit(said)

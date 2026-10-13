@@ -23,8 +23,10 @@ asked to say them and they are not run through the four checks.
 
 After a reply the row of chips is built from the boxes just shown (``chips``):
 a ``show me <ref>`` for the blocked box with a detail to open (else the first
-populated box with one), where ``<ref>`` is the box's first number or first two
-to four words and only if no other shown box answers to it; the options of a needs-you
+populated box with one), where ``<ref>`` is a meaningful token (``ref_tokens``):
+a number of two digits or more from its value, an id-like token (``PR 712``),
+or its short box id (``b4``), never the first words of a value, and only if no
+other shown box answers to it (no such token: no chip); the options of a needs-you
 box whose detail splits on `` · `` into at least three short parts without a
 digit (taken as the box says them, no more); and always ``later`` and
 ``thanks``. The row is capped at ``CHIP_CAP`` (choices are cut first, then the
@@ -182,6 +184,9 @@ def checks_line(results: list, names: tuple[str, ...], prefix: str, color: bool)
 
 
 #: A word or number that reads as a problem, so reassurance never follows it.
+#: ``escalated N`` stays one for reassurance (no ``No rush.`` over it), but a
+#: chain summary's count is not flagged ``Heads up:`` (``routine_count``): its
+#: escalations have boxes of their own, which rank first and carry the flag.
 PROBLEM = re.compile(
     r"\b(?:escalated|refused|failed|errors?|problems?|denied|stuck)\b\W{0,3}[1-9]\d*"
     r"|\b[1-9]\d*\s+(?:escalated|refused|failed|errors?|problems?|denied)\b"
@@ -275,6 +280,33 @@ def _tail(box: Box) -> str:
     return last
 
 
+#: The chain's summary value, ``answered N, escalated M``.
+CHAIN_COUNT = re.compile(r"answered\s+(\d+),\s*escalated\s+(\d+)", re.I)
+#: A needs-you value is a short phrase (``PR 712``) at most this many words,
+#: with no ``: ; , ( )`` inside; "<value> needs you" is said only of one.
+SHORT_YOU_WORDS = 6
+INNER_PUNCT = re.compile(r"[:;,()]")
+
+
+def routine_count(b: Box) -> bool:
+    """The chain's own ``answered N, escalated M`` summary: a count, not a
+    problem to flag. Its escalated pieces are boxes of their own."""
+    return b.kind == "pass" and bool(CHAIN_COUNT.fullmatch(_val(b.value)))
+
+
+def _fact(b: Box) -> str:
+    """A box's value as a sentence part. The chain's ``answered N, escalated
+    M`` said alone reads ``The chain answered N and escalated M`` (label, numbers
+    and verbs from the box; ``The`` and ``and`` are fixed words), never a bare
+    count; any other value is itself. In a pair or a list it stays as the box
+    has it."""
+    v = _val(b.value)
+    m = CHAIN_COUNT.fullmatch(v)
+    if m and b.kind == "pass" and len(_val(b.label).split()) == 1:
+        return f"The {_val(b.label)} answered {m[1]} and escalated {m[2]}"
+    return v
+
+
 def _single(b: Box) -> list[Part]:
     v = _val(b.value)
     tail = _tail(b)
@@ -282,6 +314,8 @@ def _single(b: Box) -> list[Part]:
         words = v.split()
         if len(words) > 1 and lead(v) != v:
             return [(f"You need to {lead(v)}", b.id)]
+        if len(words) > SHORT_YOU_WORDS or INNER_PUNCT.search(v):
+            return [("This needs you: ", None), (v, b.id)]  # no dangling suffix
         return [(f"{v} needs you", b.id)]
     if b.kind == "block":
         m = STATUS.match(v)
@@ -291,7 +325,7 @@ def _single(b: Box) -> list[Part]:
         return [(f"{body}, {tail}" if tail else body, b.id)]
     if b.kind == "dec":
         return [(f"{v} is decided and {tail}" if tail else f"{v} is decided", b.id)]
-    return [(v, b.id)]
+    return [(_fact(b), b.id)]
 
 
 def clause(box: Box) -> str:
@@ -354,6 +388,7 @@ def compose(
     page: int | None = None,
     greet: str = "",
     cite: bool = False,
+    rush: bool = True,
 ) -> str:
     """One reply's sentence from box facts and glue. Deterministic; no model.
 
@@ -366,7 +401,8 @@ def compose(
     ``Heads up:`` precedes a problem or an unreachable box, whose plain line
     (``I can't read the record right now. <why>.``) is fixed code words; and
     ``No rush.`` ends a reply only when nothing needs the human, blocks, or
-    went wrong. ``cite=True`` tags each fact with its box ``[id]`` the way a
+    went wrong, and only once per turn (``rush=False`` leaves it off a later
+    page). ``cite=True`` tags each fact with its box ``[id]`` the way a
     model sentence is tagged, so the checks can be run over it."""
     if not boxes:
         return ""
@@ -412,7 +448,7 @@ def compose(
     hot_at: list[bool] = []
     for parts, kind in folded:
         hot = kind == "heads" or any(
-            b.id in {i for _, i in parts if i} and problem(b)
+            b.id in {i for _, i in parts if i} and problem(b) and not routine_count(b)
             for b in boxes
             if b.state == "populated"
         )
@@ -437,7 +473,7 @@ def compose(
     text = f"{body}." if body else ""
     if greet:
         text = f"{greet} {text}".strip()
-    return f"{text} No rush." if calm and text else text
+    return f"{text} No rush." if calm and text and rush else text
 
 
 # --- chips and follow-ups ------------------------------------------------------
@@ -520,21 +556,40 @@ def matches(box: Box, text: str) -> bool:
     want = " ".join(_words(text))
     if not want:
         return False
-    if want == box.id.lower() or want in NUMBER.findall(str(box.value)):
+    ids = {" ".join(_words(m)) for m in ID_TOKEN.findall(str(box.value))}
+    if want == box.id.lower() or want in NUMBER.findall(str(box.value)) or want in ids:
         return True
     value = " ".join(_words(box.value))
     return value == want or value.startswith(want + " ")
 
 
+#: A number a ref may be: two digits or more, not part of a dotted version, a
+#: hash or a word (``126`` yes; ``7``, ``0.16.10``, ``7476c13`` no).
+REF_NUMBER = re.compile(r"(?<![\w.])\d{2,}(?![\w]|\.\d)")
+#: An id-like token: letters, a space or dash, then a number (``PR 712``,
+#: ``ABC-123``).
+ID_TOKEN = re.compile(r"\b[A-Za-z]{1,6}[ -]#?\d{2,}\b(?![\w.]\w)")
+#: A box id short enough to type (``b4``, ``c1``); a hash id is not one.
+SHORT_ID = re.compile(r"[A-Za-z]\d{1,3}")
+
+
+def ref_tokens(box: Box) -> list[str]:
+    """What a ``show me`` ref may be, in order: a number of two digits or more
+    from the value (``712``), an id-like token from it (``PR 712``), then the
+    box's own short id (``b4``). Never the first words of a value. ``[]`` when
+    the box has none."""
+    value = str(box.value)
+    out = REF_NUMBER.findall(value) + ID_TOKEN.findall(value)
+    if SHORT_ID.fullmatch(box.id):
+        out.append(box.id)
+    return list(dict.fromkeys(out))
+
+
 def unique_ref(box: Box, boxes: list[Box]) -> str:
-    """A short ref only this box answers to, from its own value: its first
-    number, else its first two, three or four words. ``""`` when none is
-    unique."""
-    nums = NUMBER.findall(str(box.value))
-    words = _words(box.value)
-    cands = ([nums[0]] if nums else []) + [" ".join(words[:n]) for n in (2, 3, 4)]
-    for c in cands:
-        if c and [b for b in boxes if matches(b, c)] == [box]:
+    """A ref only this box answers to (``ref_tokens``, the first that no other
+    shown box answers to). ``""`` when none is unique: no ``show me`` chip."""
+    for c in ref_tokens(box):
+        if [b for b in boxes if matches(b, c)] == [box]:
             return _label(c)
     return ""
 
