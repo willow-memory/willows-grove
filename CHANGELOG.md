@@ -2,6 +2,16 @@
 
 All notable changes land here per INVARIANTS.md §3. Format follows Keep a Changelog v1.1.0.
 
+## [0.22.0](https://github.com/willow-memory/willows-grove/compare/v0.21.0...v0.22.0) (2026-10-13)
+
+
+### Added
+
+* **seat:** --no-say and --model NAME ([94b91f2](https://github.com/willow-memory/willows-grove/commit/94b91f2d189877f5c37ca76fff4987cd0c2363c5))
+* **seat:** flags that write nothing, --no-say/--model, still-pooled card; seat-stack names the CLI seat ([#145](https://github.com/willow-memory/willows-grove/issues/145)) ([649ce82](https://github.com/willow-memory/willows-grove/commit/649ce82600c9b376cf673cc667821b69b34fc5d6))
+* **seat:** flags that write nothing: --help, --version, --check ([ea82178](https://github.com/willow-memory/willows-grove/commit/ea82178f74d27212ee88c4a1bc658e01e9a1e691))
+* **seat:** show what is still pooled at start ([af59418](https://github.com/willow-memory/willows-grove/commit/af59418ee665b329d238c961c50be14f4b84d467))
+
 ## [0.21.0](https://github.com/willow-memory/willows-grove/compare/v0.20.0...v0.21.0) (2026-10-12)
 
 
