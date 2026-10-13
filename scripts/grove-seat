@@ -5,6 +5,7 @@
 #   scripts/grove-seat        # check-in, scope, served, chain, proposals, check-out
 #   scripts/grove-seat --check    # probe only (bot root, python, ratatosk, Ollama); writes nothing
 #   scripts/grove-seat --help | --version
+#   scripts/grove-seat --no-say | --model NAME   # code only | this run's reply model
 #
 # The third front end beside web/ and the phone APK; all three call willow-bot's
 # one-script api. Portless: a terminal process, no listener. See grove/seat_cli.py.
@@ -18,6 +19,7 @@
 #                     bot), else ./.venv, else python3
 #   WILLOW_HOME       finds the venvs and the operator's public keyring
 #   WILLOW_NESTOR_DB  Nestor's store, read-only: where a seal is looked up
+#   GROVE_SAY_MODEL   the reply model (default qwen3:4b); --model NAME wins over it
 #   OLLAMA_HOST       the local model's Ollama, loopback only (default 127.0.0.1:11434);
 #                     it says each reply's sentence (qwen3:4b) and code checks it
 #

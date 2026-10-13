@@ -3,6 +3,8 @@
 
     scripts/grove-seat            # check-in, scope, served, chain, proposals
     scripts/grove-seat --check    # probe only: nothing checked in, nothing written
+    scripts/grove-seat --no-say   # code only, no model asked
+    scripts/grove-seat --model qwen3:8b   # this run's reply model
 
 The third front end beside the web components and the phone APK. All three
 call willow-bot's ``one-script/onescript/api.py``, so a seat run leaves the
@@ -10,6 +12,8 @@ same record rows the app does. This module only reads keys, prints, and
 calls those functions; it holds no seal key, names no model provider, and
 writes nothing but a scratch file per cloud turn.
 
+``--no-say`` runs code only (no model is asked); ``--model NAME`` picks the reply
+model for the run, winning over ``GROVE_SAY_MODEL``, and the two together exit 2.
 ``--help`` and ``--version`` print and exit 0; an unknown flag or argument exits
 2 before the bot is loaded. None of them, and not ``--check`` (which reports the
 bot root, the python in use, whether ``ratatosk`` resolves and whether the
@@ -865,6 +869,17 @@ def parser() -> argparse.ArgumentParser:
         help="probe only: bot root, python, ratatosk, the Ollama loopback; "
         "no check-in, nothing written; exit 0 only if all are populated",
     )
+    p.add_argument(
+        "--no-say",
+        action="store_true",
+        help="code only: no local model says the reply sentence, Ollama is never asked",
+    )
+    p.add_argument(
+        "--model",
+        metavar="NAME",
+        help=f"the reply model for this run (default {MODEL}, or GROVE_SAY_MODEL; "
+        "the flag wins over the env); not with --no-say",
+    )
     return p
 
 
@@ -874,9 +889,10 @@ def check_line(label: str, state: str, why: str = "") -> str:
     return f"{label:<10} {state}" + (f" — {why}" if why else "")
 
 
-def probe(root: Path, model: str = MODEL) -> list[tuple[str, str, str]]:
+def probe(root: Path, model: str | None = MODEL) -> list[tuple[str, str, str]]:
     """What ``--check`` reports, as ``(label, state, why)``. It imports no
-    willow-bot module, calls no api function and writes nothing."""
+    willow-bot module, calls no api function and writes nothing. ``model``
+    None (``--no-say``) leaves the Ollama row out: a code-only run never asks."""
     one = root / "one-script" / "onescript" / "api.py"
     bot_ = (
         ("populated", str(root))
@@ -897,17 +913,23 @@ def probe(root: Path, model: str = MODEL) -> list[tuple[str, str, str]]:
                 else ("unreachable", f"{rat} is not on the path")
             ),
         ),
-        ("ollama", *ollama_probe(model)),
+        *([("ollama", *ollama_probe(model))] if model else []),
     ]
 
 
 def main(argv: list[str] | None = None) -> int:
+    p = parser()
     try:
-        args = parser().parse_args([] if argv is None else argv)
+        args = p.parse_args([] if argv is None else argv)
+        if args.no_say and args.model is not None:
+            p.error("--no-say and --model conflict: no model is asked")
+        if args.model is not None and not args.model.strip():
+            p.error("--model needs a model name")
     except SystemExit as e:  # --help and --version exit 0, a bad flag 2
         return int(e.code or 0)
+    model = (args.model or "").strip() or MODEL  # the flag wins over GROVE_SAY_MODEL
     if args.check:
-        got = probe(bot_root())
+        got = probe(bot_root(), None if args.no_say else model)
         print("\n".join(check_line(*g) for g in got))
         return 0 if all(g[1] == "populated" for g in got) else 1
     root = bot_root()
@@ -916,7 +938,8 @@ def main(argv: list[str] | None = None) -> int:
     except SeatUnavailable as e:
         print(f"grove seat: {e}", file=sys.stderr)
         return 2
-    return Seat(bot, config(bot, root), say=ollama_say()).run()
+    say = None if args.no_say else ollama_say(model=model)
+    return Seat(bot, config(bot, root), say=say, model=model).run()
 
 
 if __name__ == "__main__":

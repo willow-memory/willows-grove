@@ -1301,6 +1301,86 @@ def test_the_probe_refuses_a_non_loopback_host_without_asking():
     assert state == "unreachable" and "not loopback" in why and op.seen == []
 
 
+# --- --no-say and --model -----------------------------------------------------------
+
+
+@pytest.fixture
+def wired(monkeypatch):
+    """main() with a fake Seat: what it was built with, and the models asked."""
+    seen = {"asked": []}
+
+    class Fake:
+        def __init__(self, bot_, cfg, **kw):
+            seen.update(kw)
+
+        def run(self):
+            return 0
+
+    real = s.ollama_say
+    monkeypatch.setattr(s, "load_bot", lambda root: "bot")
+    monkeypatch.setattr(s, "config", lambda b, r: "cfg")
+    monkeypatch.setattr(s, "Seat", Fake)
+    monkeypatch.setattr(
+        s, "ollama_say", lambda model: seen["asked"].append(model) or real(model=model)
+    )
+    return seen
+
+
+def test_no_say_runs_code_only_and_never_builds_the_ollama_say(wired):
+    assert s.main(["--no-say"]) == 0
+    assert wired["say"] is None and wired["asked"] == []
+
+
+def test_model_flag_picks_the_reply_model_for_the_seat_and_the_say(wired):
+    assert s.main(["--model", "llama3.2:3b"]) == 0
+    assert wired["model"] == "llama3.2:3b" and wired["asked"] == ["llama3.2:3b"]
+    assert callable(wired["say"])
+
+
+def test_model_flag_wins_over_the_env_and_the_env_stands_without_it(wired, monkeypatch):
+    monkeypatch.setattr(s, "MODEL", "from-env")  # GROVE_SAY_MODEL, read at import
+    assert s.main([]) == 0 and wired["model"] == "from-env"
+    assert s.main(["--model", "from-flag"]) == 0 and wired["model"] == "from-flag"
+
+
+def test_a_qwen3_model_from_the_flag_still_gets_no_think(wired, monkeypatch):
+    op = Opener(json.dumps({"response": "ok"}).encode())
+    monkeypatch.setattr(say_mod.urllib.request, "build_opener", lambda *a: op)
+    assert s.main(["--model", "qwen3:8b"]) == 0
+    assert wired["say"]("hi") == "ok"
+    body = json.loads(op.seen[0][0].data)
+    assert body["model"] == "qwen3:8b" and body["prompt"] == "hi /no_think"
+
+
+@pytest.mark.parametrize(
+    "argv",
+    [["--no-say", "--model", "x"], ["--model", "x", "--no-say"], ["--model", " "]],
+)
+def test_no_say_with_a_model_or_a_blank_model_exits_2_before_the_bot_loads(
+    no_session, capsys, argv
+):
+    assert s.main(argv) == 2
+    assert "usage: grove-seat" in capsys.readouterr().err
+
+
+def test_model_flag_without_a_name_is_a_usage_error(no_session, capsys):
+    assert s.main(["--model"]) == 2
+
+
+def test_check_probes_the_flagged_model_and_skips_ollama_under_no_say(
+    no_session, monkeypatch, tmp_path, capsys
+):
+    probed(monkeypatch, tmp_path)
+    asked = []
+    monkeypatch.setattr(
+        s, "ollama_probe", lambda m: asked.append(m) or ("populated", m)
+    )
+    assert s.main(["--check", "--model", "llama3.2:3b"]) == 0
+    assert asked == ["llama3.2:3b"] and "ollama" in capsys.readouterr().out
+    assert s.main(["--check", "--no-say"]) == 0 and asked == ["llama3.2:3b"]
+    assert "ollama" not in capsys.readouterr().out
+
+
 # --- the default say: Ollama on loopback --------------------------------------------
 
 
