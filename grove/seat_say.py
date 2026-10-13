@@ -157,6 +157,34 @@ def ollama_say(
     return say
 
 
+def ollama_probe(
+    model: str = MODEL,
+    host: str | None = None,
+    timeout: float = 2.0,
+    opener: urllib.request.OpenerDirector | None = None,
+) -> tuple[str, str]:
+    """Is the Ollama loopback up, and does it hold ``model``? GET
+    ``/api/tags`` only: it asks for no reply and writes nothing. Returns
+    ``(state, why)``: ``populated`` (up, tag installed), ``empty`` (up, tag
+    not installed) or ``unreachable`` (not loopback, no answer, a bad reply)."""
+    try:
+        base = ollama_base(host)
+        op = opener or urllib.request.build_opener(urllib.request.ProxyHandler({}))
+        with op.open(urllib.request.Request(base + "/api/tags"), timeout=timeout) as r:
+            got = json.loads(r.read().decode("utf-8"))
+    except SayUnreachable as e:
+        return "unreachable", str(e)
+    except (OSError, ValueError) as e:  # HTTPError is an OSError
+        return "unreachable", f"{type(e).__name__}: {e}"
+    models = got.get("models") if isinstance(got, dict) else None
+    if not isinstance(models, list):
+        return "unreachable", f"{base}: no models field"
+    names = {str(m.get("name")) for m in models if isinstance(m, dict)}
+    if model in names or f"{model}:latest" in names:
+        return "populated", f"{model} at {base}"
+    return "empty", f"{base} is up, {model} is not installed"
+
+
 def fact(b: Box) -> str:
     """A box as the prompt (and the vocabulary check) sees it."""
     name = KINDS.get(b.kind, ("note",))[0] if b.state == "populated" else b.state

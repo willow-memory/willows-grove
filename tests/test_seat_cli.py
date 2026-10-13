@@ -1190,6 +1190,117 @@ def test_main_wires_the_ollama_say(monkeypatch):
     assert s.main() == 0 and callable(seen["say"])
 
 
+# --- flags that write nothing: --help, --version, a bad flag, --check -----------------
+
+
+@pytest.fixture
+def no_session(monkeypatch):
+    """Tripwires: a flag path must not load the bot, build a Seat or check in."""
+    monkeypatch.setattr(s, "load_bot", lambda root: pytest.fail("the bot was loaded"))
+    monkeypatch.setattr(s, "Seat", lambda *a, **k: pytest.fail("a session was opened"))
+
+
+def test_help_prints_usage_and_exits_0_without_a_session(no_session, capsys):
+    assert s.main(["--help"]) == 0
+    out = capsys.readouterr().out
+    assert "usage: grove-seat" in out and "--check" in out
+
+
+def test_version_prints_the_grove_version_and_exits_0(no_session, capsys):
+    assert s.main(["--version"]) == 0
+    out = capsys.readouterr().out.strip()
+    assert out == f"grove-seat {s.grove_version()}"
+    assert re.fullmatch(r"grove-seat \d+\.\d+\.\d+.*", out)
+
+
+@pytest.mark.parametrize("argv", [["--chek"], ["stray"], ["--check", "--bogus"]])
+def test_an_unknown_flag_or_argument_exits_2_before_the_bot_loads(
+    no_session, capsys, argv
+):
+    assert s.main(argv) == 2
+    assert "usage: grove-seat" in capsys.readouterr().err
+
+
+def bot_tree(tmp_path):
+    api = tmp_path / "one-script" / "onescript" / "api.py"
+    api.parent.mkdir(parents=True)
+    api.write_text("", encoding="utf-8")
+    return tmp_path
+
+
+def probed(monkeypatch, tmp_path, *, root=True, ollama=("populated", "up"), rat=True):
+    monkeypatch.setenv("WILLOW_BOT_ROOT", str(bot_tree(tmp_path) if root else tmp_path))
+    monkeypatch.setattr(s, "ollama_probe", lambda model: ollama)
+    monkeypatch.setattr(
+        s, "resolve_ratatosk", lambda: sys.executable if rat else "nope"
+    )
+    monkeypatch.setattr(s.shutil, "which", lambda name: None)
+
+
+def test_check_all_populated_exits_0_and_checks_in_nothing(
+    no_session, monkeypatch, tmp_path, capsys
+):
+    probed(monkeypatch, tmp_path)
+    assert s.main(["--check"]) == 0
+    out = capsys.readouterr().out.splitlines()
+    assert [ln.split()[0] for ln in out] == ["bot", "python", "ratatosk", "ollama"]
+    assert all(" populated" in ln for ln in out)
+
+
+@pytest.mark.parametrize(
+    ("over", "label", "state"),
+    [
+        ({"root": False}, "bot root", "unreachable"),
+        ({"rat": False}, "ratatosk", "unreachable"),
+        ({"ollama": ("unreachable", "refused")}, "ollama", "unreachable"),
+        ({"ollama": ("empty", "qwen3:4b is not installed")}, "ollama", "empty"),
+    ],
+)
+def test_check_names_each_failure_in_its_own_state_and_exits_nonzero(
+    no_session, monkeypatch, tmp_path, capsys, over, label, state
+):
+    probed(monkeypatch, tmp_path, **over)
+    assert s.main(["--check"]) == 1
+    lines = capsys.readouterr().out.splitlines()
+    mine = next(ln for ln in lines if ln.startswith(label))
+    assert f" {state}" in mine
+    assert sum("populated" in ln for ln in lines) == 3
+
+
+def test_check_never_calls_the_api(monkeypatch, tmp_path, capsys):
+    api = FakeApi()
+    probed(monkeypatch, tmp_path)
+    monkeypatch.setattr(s, "load_bot", lambda root: bot(api))
+    assert s.main(["--check"]) == 0
+    assert api.calls == []
+
+
+def test_the_probe_reads_tags_and_tells_up_from_installed():
+    tags = json.dumps({"models": [{"name": "qwen3:4b"}]}).encode()
+    op = Opener(tags)
+    assert say_mod.ollama_probe("qwen3:4b", "127.0.0.1:11434", opener=op)[0] == (
+        "populated"
+    )
+    req, timeout = op.seen[0]
+    assert req.full_url == "http://127.0.0.1:11434/api/tags"
+    assert req.data is None and timeout == 2.0
+    state, why = say_mod.ollama_probe("llama3.2:3b", opener=Opener(tags))
+    assert state == "empty" and "not installed" in why
+
+
+@pytest.mark.parametrize(
+    "result", [OSError("refused"), b"not json", json.dumps({"x": 1}).encode()]
+)
+def test_the_probe_is_unreachable_not_empty_when_it_gets_no_answer(result):
+    assert say_mod.ollama_probe(opener=Opener(result))[0] == "unreachable"
+
+
+def test_the_probe_refuses_a_non_loopback_host_without_asking():
+    op = Opener(b"{}")
+    state, why = say_mod.ollama_probe(host="10.0.0.5:11434", opener=op)
+    assert state == "unreachable" and "not loopback" in why and op.seen == []
+
+
 # --- the default say: Ollama on loopback --------------------------------------------
 
 

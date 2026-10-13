@@ -2,12 +2,19 @@
 """grove seat — the one script at a terminal: the desk's command-line seat.
 
     scripts/grove-seat            # check-in, scope, served, chain, proposals
+    scripts/grove-seat --check    # probe only: nothing checked in, nothing written
 
 The third front end beside the web components and the phone APK. All three
 call willow-bot's ``one-script/onescript/api.py``, so a seat run leaves the
 same record rows the app does. This module only reads keys, prints, and
 calls those functions; it holds no seal key, names no model provider, and
 writes nothing but a scratch file per cloud turn.
+
+``--help`` and ``--version`` print and exit 0; an unknown flag or argument exits
+2 before the bot is loaded. None of them, and not ``--check`` (which reports the
+bot root, the python in use, whether ``ratatosk`` resolves and whether the
+Ollama loopback answers, each ``populated`` or ``unreachable`` or ``empty``),
+calls ``api.checkin``: only a session does, and that writes record rows.
 
 The stages, in order, each shown in the prompt (``scope ▶``):
 
@@ -63,14 +70,18 @@ willow-bot is found at ``WILLOW_BOT_ROOT``, else beside this repo
 
 from __future__ import annotations
 
+import argparse
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
 import time
+import tomllib
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
+from importlib import metadata
 from pathlib import Path
 from typing import Any
 
@@ -92,6 +103,7 @@ from grove.seat_say import (
     MODEL,
     SayUnreachable,
     build_prompt,
+    ollama_probe,
     ollama_say,
     passed,
     run_checks,
@@ -823,7 +835,81 @@ def _escalates(r: object) -> bool:
     return isinstance(r, dict) and r.get("path") == ESCALATE_PATH
 
 
+def grove_version() -> str:
+    """The grove package version: the installed distribution's, else the hatch
+    ``fallback-version`` in ``pyproject.toml`` (a checkout that isn't installed,
+    which is what ``scripts/grove-seat`` runs), else ``unknown``."""
+    try:
+        return metadata.version("willows-grove")
+    except metadata.PackageNotFoundError:
+        pass
+    try:
+        with (GROVE_ROOT / "pyproject.toml").open("rb") as f:
+            return str(tomllib.load(f)["tool"]["hatch"]["version"]["fallback-version"])
+    except (OSError, KeyError, ValueError):
+        return "unknown"
+
+
+def parser() -> argparse.ArgumentParser:
+    p = argparse.ArgumentParser(
+        prog="grove-seat",
+        description="The desk's command-line seat. With no flag it opens a "
+        "session: check-in (which writes record rows), scope, chain, check-out.",
+    )
+    p.add_argument(
+        "--version", action="version", version=f"grove-seat {grove_version()}"
+    )
+    p.add_argument(
+        "--check",
+        action="store_true",
+        help="probe only: bot root, python, ratatosk, the Ollama loopback; "
+        "no check-in, nothing written; exit 0 only if all are populated",
+    )
+    return p
+
+
+def check_line(label: str, state: str, why: str = "") -> str:
+    """One probe line, its state spelled out (INVARIANTS 1): ``populated`` is
+    followed by what was found, ``empty`` and ``unreachable`` by why."""
+    return f"{label:<10} {state}" + (f" — {why}" if why else "")
+
+
+def probe(root: Path, model: str = MODEL) -> list[tuple[str, str, str]]:
+    """What ``--check`` reports, as ``(label, state, why)``. It imports no
+    willow-bot module, calls no api function and writes nothing."""
+    one = root / "one-script" / "onescript" / "api.py"
+    bot_ = (
+        ("populated", str(root))
+        if one.is_file()
+        else ("unreachable", f"no one script at {one.parent} (set WILLOW_BOT_ROOT)")
+    )
+    venv = "a venv" if sys.prefix != sys.base_prefix else "no venv"
+    rat = resolve_ratatosk()
+    where = rat if Path(rat).is_file() else shutil.which(rat)
+    return [
+        ("bot root", *bot_),
+        ("python", "populated", f"{sys.executable} ({venv}: {sys.prefix})"),
+        (
+            "ratatosk",
+            *(
+                ("populated", where)
+                if where
+                else ("unreachable", f"{rat} is not on the path")
+            ),
+        ),
+        ("ollama", *ollama_probe(model)),
+    ]
+
+
 def main(argv: list[str] | None = None) -> int:
+    try:
+        args = parser().parse_args([] if argv is None else argv)
+    except SystemExit as e:  # --help and --version exit 0, a bad flag 2
+        return int(e.code or 0)
+    if args.check:
+        got = probe(bot_root())
+        print("\n".join(check_line(*g) for g in got))
+        return 0 if all(g[1] == "populated" for g in got) else 1
     root = bot_root()
     try:
         bot = load_bot(root)
@@ -834,4 +920,4 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(main(sys.argv[1:]))

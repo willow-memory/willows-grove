@@ -3,6 +3,8 @@
 # b17: GRSET · ΔΣ=42
 #
 #   scripts/grove-seat        # check-in, scope, served, chain, proposals, check-out
+#   scripts/grove-seat --check    # probe only (bot root, python, ratatosk, Ollama); writes nothing
+#   scripts/grove-seat --help | --version
 #
 # The third front end beside web/ and the phone APK; all three call willow-bot's
 # one-script api. Portless: a terminal process, no listener. See grove/seat_cli.py.
