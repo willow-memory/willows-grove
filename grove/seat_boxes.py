@@ -500,6 +500,7 @@ def compose(
     greet: str = "",
     cite: bool = False,
     rush: bool = True,
+    look: bool = True,
 ) -> str:
     """One reply's sentence from box facts and glue. Deterministic; no model.
 
@@ -514,7 +515,9 @@ def compose(
     ``No rush.`` ends a reply only when nothing needs the human, blocks, or
     went wrong, and only once per turn (``rush=False`` leaves it off a later
     page). ``cite=True`` tags each fact with its box ``[id]`` the way a
-    model sentence is tagged, so the checks can be run over it."""
+    model sentence is tagged, so the checks can be run over it. ``look=False``
+    leaves ``Looks like`` off a first page that is all routine (a count that
+    orients the reply is said as itself)."""
     if not boxes:
         return ""
     page = (0 if first else 1) if page is None else page
@@ -573,7 +576,7 @@ def compose(
     prefix = ""
     if page > 0:
         prefix = "Oh, and " if page == 1 else "Also, "
-    elif calm and kinds_ok:
+    elif calm and kinds_ok and look:
         prefix = "Looks like "
     if prefix:
         for n, parts in enumerate(out):

@@ -8,6 +8,7 @@ printed and which api calls it made.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import shutil
@@ -2971,3 +2972,82 @@ def test_one_more_rejection_and_one_box_shown_are_singular(tmp_path):
         "agent> I showed 1 box (b1: phone only proposes), so there is no third one."
         in out
     )
+
+
+# --- "where are we" leads with the count, then what is open (the shoebox sketch) ---------
+
+
+def test_lead_rank_is_count_then_drafts_then_refusals_then_decided(tmp_path):
+    from grove.seat_nestor import lead_rank, read_store
+
+    got = read_store(fixture_store(tmp_path, "l.db"))
+    order = [b.label.split(" ·")[0].split(" (")[0] for b in lead_rank(got.boxes)]
+    assert order == [
+        "nestor store",
+        "draft, waiting",
+        "a no",
+        "not yet",
+        "sealed by ana",
+    ]
+    generic = [
+        b.kind for b in got.boxes
+    ]  # the reading itself is still the generic rank
+    assert generic == ["block", "block", "dec", "pr", "pass"]
+    down = read_store(tmp_path / "nope.db")
+    assert lead_rank(down.boxes) == down.boxes  # a heads-up still leads alone
+
+
+def test_where_are_we_opens_with_the_count_alone_then_the_drafts(tmp_path):
+    p = fixture_store(tmp_path, "w.db")
+    before = hashlib.sha256(p.read_bytes()).hexdigest()
+    api, out = nestor_run(["where are we", "", "", ""], p)
+    t = text(out)
+    first = after(out, "where are we")
+    assert first[0].startswith("+- [routine pass] nestor store")  # the count first
+    said = next(o for o in first if o.startswith("agent> "))
+    assert said == "agent> Morning. 1 sealed, 1 draft, 2 rejected (fixture)."
+    assert "said 1 box, no model asked" in text(first)
+    assert "Looks like" not in t and "No rush" not in t  # a refusal is in the store
+    assert not any("[blocked]" in o for o in first)  # the refusals come after
+    nxt = after(out, "more")
+    assert nxt[0].startswith("+- [changed] draft, waiting (fixture)")  # the open one
+    assert "(draft)" in text(nxt) and "escalate" not in api.names()
+    assert hashlib.sha256(p.read_bytes()).hexdigest() == before  # still read-only
+
+
+def test_the_count_page_keeps_no_rush_when_the_store_holds_no_refusal(tmp_path):
+    p = make(
+        tmp_path / "c.db",
+        [pair(1, "Hola", "Hello", reason="Once.")],
+        [],
+        schema=(PAIRS, REJS),
+    )
+    _api, out = nestor_run(["where are we"], p)
+    said = next(o for o in after(out, "where are we") if o.startswith("agent> "))
+    assert said == "agent> Morning. 1 sealed (fixture). No rush."
+
+
+def test_a_chain_turn_and_what_needs_me_keep_the_generic_rank(tmp_path):
+    p = fixture_store(tmp_path, "n.db")
+    _api, out = nestor_run(["what needs me"], p)
+    first = after(out, "what needs me")
+    assert first[0].startswith("+- [needs you] draft, waiting")
+    _api, out = thread_run(["status of the build"])  # a chain turn: generic rank
+    assert after(out, "status of the build")[0].startswith("+- [needs you]")
+
+
+def test_lead_rank_puts_a_heads_up_first_and_a_more_box_last_in_its_group():
+    from grove.seat_nestor import lead_rank
+
+    mk = bx.Box
+    boxes = [
+        mk("a", "dec", "more · 4 shown", "11 more sealed"),
+        mk("b", "dec", "sealed by x", "s1 → t1"),
+        mk("c", "pr", "more · 4 shown", "2 more drafts or changes"),
+        mk("d", "pr", "changed", "c1"),
+        mk("e", "pr", "draft, waiting", "d1 (draft)"),
+        mk("f", "block", "a no", "r1"),
+        mk("g", "pass", "nestor store", "3 sealed"),
+        mk("h", "pass", "nestor store", "unreachable — gone", state="unreachable"),
+    ]
+    assert [b.id for b in lead_rank(boxes)] == list("hgefbadc")

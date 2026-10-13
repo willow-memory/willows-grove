@@ -170,7 +170,7 @@ from grove.seat_boxes import (
     why_sentence,
     _val,
 )
-from grove.seat_nestor import read_store
+from grove.seat_nestor import lead_rank, read_store
 from grove.seat_say import (
     CHECK_NAMES,
     MODEL,
@@ -475,6 +475,18 @@ class Turn:
     at: str
     rest: list[Box]
     shown: list[Said] = field(default_factory=list)
+    #: A store turn that opens with its count alone (one box on page one) and
+    #: says it plainly (no ``Looks like``); ``rush=False``: ``No rush.`` is not
+    #: said over a store that holds a refusal.
+    lead: bool = False
+    rush: bool = True
+
+    def take(self) -> list[Box]:
+        """The next page off ``rest``: ``PAGE`` boxes, or the one count box on
+        a lead turn's first page."""
+        n = 1 if self.lead and not self.shown else PAGE
+        batch, self.rest = self.rest[:n], self.rest[n:]
+        return batch
 
     def said_rush(self) -> bool:
         """``No rush.`` was already said on a page of this turn (it is said
@@ -611,6 +623,7 @@ class Seat:
         at: str = "",
         model: bool = True,
         rush: bool = True,
+        look: bool = True,
     ) -> Said:
         """One reply's sentence. The model says it and code checks it; a
         sentence that fails a check is struck and code's stands; a model that
@@ -623,6 +636,7 @@ class Seat:
             page=page,
             greet=self.greeting(at) if first else "",
             rush=rush,
+            look=look,
         )
         again = "{at}"
         if self.say is None or not model:
@@ -675,14 +689,25 @@ class Seat:
         self.write(who_line("code · no model, nothing served", self.color))
         self.write(say_line(text))
 
-    def converse(self, key: str, boxes: list[Box], human: str = "") -> None:
+    def converse(
+        self,
+        key: str,
+        boxes: list[Box],
+        human: str = "",
+        *,
+        lead: bool = False,
+        rush: bool = True,
+    ) -> None:
         """A turn's reply: the boxes, then one sentence over them (the model's
         if it passed its checks, else code's). Asked again, the same boxes and
         sentence come back from the pile with when they were first said;
         nothing is recomputed and no model is asked."""
         turn = self.turns.get(key)
         if turn is None:
-            turn = self.turns[key] = Turn(self.clock(), rank(boxes))
+            # a lead turn arrives in its own order (``lead_rank``), not re-ranked
+            turn = self.turns[key] = Turn(
+                self.clock(), list(boxes) if lead else rank(boxes), lead=lead, rush=rush
+            )
         else:
             self.write(f"as noted at {turn.at} · same boxes, nothing new since")
             for said in turn.shown:
@@ -691,14 +716,15 @@ class Seat:
         while turn.rest:
             if turn.shown and not self.more(len(turn.rest)):
                 return
-            batch, turn.rest = turn.rest[:PAGE], turn.rest[PAGE:]
+            batch = turn.take()
             said = self.speak(
                 batch,
                 not turn.shown,
                 human,
                 page=len(turn.shown),
                 at=turn.at,
-                rush=not turn.said_rush(),
+                rush=turn.rush and not turn.said_rush(),
+                look=not turn.lead,
             )
             turn.shown.append(said)
             self.emit(said)
@@ -711,7 +737,12 @@ class Seat:
         work on them. The path is the config's ``nestor_db`` (``api.default_
         nestor_db()``). Not configured, missing or not a store: one
         ``unreachable`` box, said in its plain line; a store with no rows:
-        ``empty``. No chain, no record row, nothing written. ``what needs me``
+        ``empty``. No chain, no record row, nothing written. "Where are we" opens with the
+        store's count alone (one box on page one: "14 sealed, 3 drafts, 2 rejected
+        (fixture)", said plainly, no ``Looks like``, and no ``No rush.`` over a
+        store that holds a refusal), then the waiting drafts, the refusals, the
+        decided and the other changes (``seat_nestor.lead_rank``, after the
+        shoebox sketch); ``more?`` and ``go on`` page that order. ``what needs me``
         raises the waiting drafts to ``needs you`` and shows only those (and a
         heads-up); a draft stays marked a draft, never a fact."""
         self.you(task)
@@ -728,8 +759,13 @@ class Seat:
             sig = f"{st.st_mtime_ns}:{st.st_size}"
         except (OSError, TypeError):
             sig = got.state  # a store that can't be read has no version
+        lead = not asked and got.state == "populated"
         self.converse(
-            f"nestor:{'needs' if asked else 'where'}:{path}:{sig}", boxes, task
+            f"nestor:{'needs' if asked else 'where'}:{path}:{sig}",
+            lead_rank(boxes) if lead else boxes,
+            task,
+            lead=lead,
+            rush=not got.counts.get("rejected"),
         )
 
     def offer(self, thread: Thread) -> None:
@@ -838,7 +874,7 @@ class Seat:
         turn = th.turn
         if not turn.rest:
             return self.code_reply(NOTHING_MORE)
-        batch, turn.rest = turn.rest[:PAGE], turn.rest[PAGE:]
+        batch = turn.take()
         said = self.speak(
             batch,
             False,
@@ -846,7 +882,8 @@ class Seat:
             page=len(turn.shown),
             at=turn.at,
             model=False,
-            rush=not turn.said_rush(),
+            rush=turn.rush and not turn.said_rush(),
+            look=not turn.lead,
         )
         turn.shown.append(said)
         self.emit(said)

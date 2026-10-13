@@ -51,6 +51,10 @@ A field is data: control characters (an escape sequence in a stored reason)
 are dropped before a box is made, nothing else is changed, so a quoted reason
 is exact apart from that.
 
+``lead_rank`` is the order "where are we" says them in (the count first, then
+waiting drafts, refusals, decided, other changes), after the sketch; ``Reading
+.boxes`` stays in the generic ``rank`` order.
+
 Order is deterministic: kind rank, then ``created_at``, then row id. Each kind
 shows its most recent ``CAPS[kind]`` boxes (oldest first) and one ``more`` box
 counts the rest, so nothing is cut silently.
@@ -317,6 +321,34 @@ def _summary(counts: dict[str, int], fixtures: list[str], seen: set[str]) -> Box
         else "counted from the store, nothing guessed"
     )
     return Box(_bid("pass", "count", seen), "pass", "nestor store", value, detail)
+
+
+#: ``where are we`` order, after ``shoebox-stream-v1.html`` (its first reply is
+#: the count box alone, its ``more`` is the drafts): the count orients, then what
+#: is still open (waiting drafts), then what is refused, then what is decided,
+#: then any other change, with a kind's counted ``more`` box last in its group.
+LEAD = {"pass": 1, "you": 2, "draft": 2, "block": 3, "dec": 4, "pr": 5}
+DRAFT_LABEL = "draft, waiting"
+MORE_LABEL = "more ·"
+
+
+def lead_rank(boxes: list[Box]) -> list[Box]:
+    """Boxes in the order "where are we" says them: a heads-up first (an
+    ``empty`` or ``unreachable`` reading), then the count, then waiting drafts,
+    refusals, decided, other changes. Stable within a group; deterministic.
+    ``what needs me`` and a chain turn keep the generic ``rank``."""
+
+    def key(b: Box) -> tuple[int, int]:
+        if b.state != "populated":
+            return (0, 0)
+        more = b.label.startswith(MORE_LABEL)
+        draft = b.label.startswith(DRAFT_LABEL)
+        return (
+            LEAD["draft" if draft else b.kind] if (draft or b.kind in LEAD) else 6,
+            more,
+        )
+
+    return sorted(boxes, key=key)
 
 
 def read_store(path: str | Path | None, *, drafts_as: str = "pr") -> Reading:
