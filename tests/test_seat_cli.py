@@ -2437,3 +2437,50 @@ def test_config_hands_the_gate_the_resolved_venv(tmp_path, monkeypatch):
     api.default_nestor_db = lambda: None
     cfg = s.config(bot(api), tmp_path / "bot", tmp_path / "grove")
     assert cfg.venv == new
+
+
+# --- check-in cards take their kind from the row's status (F2) -------------------------
+
+TESTS_LINE = "tests: onescript: failed: 23 failed, 375 passed, 10 skipped in 16.03s"
+TOOL_LINE = "toolchain: ruff: can't run on the box: not installed; pinned 0.16.7"
+GATES = [
+    {"gate": "tests", "where": "onescript", "verdict": "failing",
+     "why": "failed: 23 failed, 375 passed, 10 skipped in 16.03s"},
+    {"gate": "toolchain", "where": "ruff", "verdict": "unreachable",
+     "why": "can't run on the box: not installed; pinned 0.16.7"},
+    {"gate": "freshness", "where": "g", "verdict": "satisfied", "why": "3 ahead"},
+]  # fmt: skip
+
+
+def checkin_cards(report):
+    api = FakeApi(checkin={"report": report})
+    st, out = seat(api, [])
+    st.run()
+    return text(out)
+
+
+def test_a_failed_test_run_in_the_check_in_is_blocked_not_a_routine_pass():
+    out = checkin_cards(
+        {"hard_close": True, "lines": [TESTS_LINE, TOOL_LINE], "gates": GATES}
+    )
+    assert "[blocked] check-in" in out
+    assert "[routine pass] check-in" not in out
+    assert out.count("[blocked] check-in") == 3  # two lines + the HARD CLOSE card
+
+
+def test_a_record_break_line_of_a_hard_close_is_blocked_too():
+    out = checkin_cards({"hard_close": True, "lines": ["record: broken at n=4"]})
+    assert "[blocked] check-in" in out
+
+
+def test_a_clean_check_in_line_stays_a_routine_pass():
+    out = checkin_cards({"hard_close": False, "lines": ["probes: 4/4"]})
+    assert "[routine pass] check-in" in out
+
+
+def test_checkin_kind_reads_the_gate_verdict_not_the_words():
+    ok = {"gate": "tests", "where": "x", "verdict": "satisfied", "why": "failed 0"}
+    rep = {"hard_close": False, "gates": [ok]}
+    assert s.checkin_kind("tests: x: failed 0", rep) == "pass"
+    bad = {**ok, "verdict": "failing"}
+    assert s.checkin_kind("tests: x: failed 0", {"gates": [bad]}) == "block"

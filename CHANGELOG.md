@@ -48,6 +48,7 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 - **seat:** `scripts/grove-seat` bot-venv default follows seal D2: `$WILLOW_HOME/willow-bot/venvs/willow-bot` first, then the legacy `$WILLOW_HOME/venvs/willow-bot` with a one-line stderr warning naming the new home (`GROVE_VENV` still wins) (PR 143).
 - **seat:** the gate's venv is the seat's venv: `Config.venv` (where `api.checkin` looks for the toolchain) was the legacy `$WILLOW_HOME/venvs/willow-bot` while `scripts/grove-seat` runs the bot by seal D2, so the check pointed at a different venv than the seat ran in. `seat_cli.resolve_venv` now gives the running interpreter's venv when it is one, else the launcher's order (`GROVE_VENV`, `$WILLOW_HOME/willow-bot/venvs/willow-bot`, legacy, `./.venv`), else the D2 path.
+- **seat:** a check-in line takes its card kind from the row's own status, not a default `pass`: a line made by a `failing` or `unreachable` gate ("tests: onescript: failed: 23 failed", "toolchain: ruff: ... not installed") is a `blocked` card, as is any other line of a hard-closed report (a record break, a turn never closed); only a line of a report that did not hard-close, from a gate that is not bad, stays a `routine pass` (`seat_cli.checkin_kind`).
 
 ## [0.19.0](https://github.com/willow-memory/willows-grove/compare/v0.18.0...v0.19.0) (2026-10-11)
 

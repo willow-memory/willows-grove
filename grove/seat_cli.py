@@ -22,7 +22,9 @@ calls ``api.checkin``: only a session does, and that writes record rows.
 
 The stages, in order, each shown in the prompt (``scope ▶``):
 
-    checkin    api.checkin: the record, the probes, the four gates
+    checkin    api.checkin: the record, the probes, the four gates; a line of a
+               failed, not-installed or hard-closed check-in is a ``blocked``
+               card, never a ``routine pass`` (``checkin_kind``)
     resume     api.resume: the newest human-sealed scope, spec pinned at its
                ``upto``. Found, the seat serves that snapshot and skips the
                group-by prompt, so the subject holds still while the desk adds
@@ -352,6 +354,28 @@ def three_state(state: str | None, why: str = "") -> str:
     if state == "empty":
         return f"empty — {why or 'nothing in scope'}"
     return f"unreachable — {why or 'no answer'}"
+
+
+#: A gate verdict that is not a pass: the check-in line it made is a ``block``.
+GATE_BAD = frozenset({"failing", "unreachable"})
+
+
+def checkin_kind(line: str, rep: dict) -> str:
+    """The card kind of one check-in line, from the row's own status and never
+    from a default. The one script writes a line only for a problem
+    (``hard_close`` is "there are lines"), as ``<gate>: <where>: <why>`` for a
+    gate. So: a line made by a ``failing`` or ``unreachable`` gate (a failed
+    test run, a toolchain that isn't installed) is ``block``; any other line of
+    a hard-closed report (a record break, a turn never closed) is ``block``;
+    a line of a report that did not hard-close, from a gate whose verdict is
+    not bad, is ``pass``."""
+    for g in rep.get("gates") or []:
+        if (
+            isinstance(g, dict)
+            and line == f"{g.get('gate')}: {g.get('where')}: {g.get('why')}"
+        ):
+            return "block" if g.get("verdict") in GATE_BAD else "pass"
+    return "block" if rep.get("hard_close") else "pass"
 
 
 def _norm(text: str) -> str:
@@ -729,7 +753,7 @@ class Seat:
             return False
         rep = res["report"]
         for line in rep.get("lines", []):
-            self.show(self.card("pass", "check-in", str(line)))
+            self.show(self.card(checkin_kind(str(line), rep), "check-in", str(line)))
         if rep.get("hard_close"):
             self.show(
                 self.card(
