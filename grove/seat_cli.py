@@ -30,14 +30,22 @@ The stages, in order, each shown in the prompt (``scope ▶``):
                group-by prompt, so the subject holds still while the desk adds
                rows. None, a fresh scope as below. Raises or missing (an older
                willow-bot): an ``unreachable`` card, then the fresh scope
-    scope      api.scope proposes a stack and names its subject; no prompt
+    scope      api.scope proposes a stack and names its subject, after one
+               prompt, ``group by (enter = who)``. Enter takes the default; an
+               answer the api refuses as a usage error is said in a plain code
+               line ("Group by takes who, what, when or where; you said ...")
+               and asked again, never an ``unreachable`` card. Any other
+               refusal is the ``refused`` card as before
     pooled     api.pooled, read once for display: ONE ``still pooled`` card for
                the proposals earlier runs left unsealed (count, a couple of
                subjects). Populated, empty, or ``unreachable`` (a raise or a
                missing ``pooled`` on an older willow-bot); it seals and
                deposits nothing, and the resume snapshot is unchanged by it
     served     api.serve is the silent start-check: it serves only a scope a
-               past human seal already covers (three states, never collapsed)
+               past human seal already covers (three states, never collapsed),
+               after one prompt, ``cap in characters (enter = 48000)``; an
+               answer that is not a whole number of 1 or more is said in a
+               plain code line and asked again (no card, no state)
     chain      api.escalate: D0 code, then the hash record, then a local rung
     flowering  for a piece the chain left, one cloud turn on the human's yes:
                ``ratatosk --onescript --class flowering`` (the ladder picks
@@ -106,6 +114,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -156,6 +165,11 @@ ESCALATE_PATH = "ESCALATE"
 #: Reasons a flowering turn may not take: code decided these, no model.
 NO_FLOWER = frozenset({"cap", "empty_scope"})
 DEFAULT_MAX_CHARS = 48_000
+#: The group-by prompt's default.
+DEFAULT_BY = "who"
+#: The one script's refusal of a group-by it doesn't take (``serve.py``): the
+#: names it takes are read from it, so the seat holds no second list.
+GROUP_BY_REFUSAL = re.compile(r"group by one or more of \((?P<names>[^)]*)\)")
 FLOWER_TIMEOUT = 300.0
 NESTOR_UI = "http://127.0.0.1:8765"
 NO_DEPOSIT = "deposit unavailable here: willow-mcp not on the path"
@@ -860,8 +874,14 @@ class Seat:
             self.grown = str(now)
 
     def scope(self) -> bool:
-        by = self.ask("scope", "group by [who]: ") or "who"
-        res = self.api.scope(self.cfg, by=[w for w in by.split(",") if w])
+        while True:
+            by = self.ask("scope", f"group by (enter = {DEFAULT_BY}): ") or DEFAULT_BY
+            words = [w.strip() for w in by.split(",") if w.strip()]
+            res = self.api.scope(self.cfg, by=words or [DEFAULT_BY])
+            usage = self.bad_group_by(res, by)
+            if not usage:
+                break
+            self.code_reply(usage)  # the human's answer was refused: say so, re-ask
         if self.refused(res):
             return False
         if not res.get("ids"):
@@ -882,13 +902,36 @@ class Seat:
         self.spec = res["spec"]
         return True
 
+    @staticmethod
+    def bad_group_by(res: dict, said: str) -> str:
+        """The plain line for a refusal that is the human's answer at the
+        group-by prompt (a usage error, read from the refusal's own words): the
+        words it takes, and what was said. ``""`` for any other refusal, which
+        stays a ``refused`` card; the stage is not unreachable for a typo."""
+        got = GROUP_BY_REFUSAL.search(str(res.get("refused", "")))
+        if not got:
+            return ""
+        names = re.findall(r"[\w-]+", got["names"])
+        if not names:
+            return ""
+        head = ", ".join(names[:-1]) + (" or " if len(names) > 1 else "") + names[-1]
+        return f'Group by takes {head}; you said "{said}".'
+
     def served(self) -> bool:
-        raw = self.ask("served", f"cap in characters [{DEFAULT_MAX_CHARS}]: ")
-        try:
-            cap = int(raw) if raw else DEFAULT_MAX_CHARS
-        except ValueError:
-            self.show(self.card("block", "served", "not a whole number"))
-            return self.served()
+        while True:
+            raw = self.ask(
+                "served", f"cap in characters (enter = {DEFAULT_MAX_CHARS}): "
+            )
+            if not raw:
+                cap = DEFAULT_MAX_CHARS
+            elif raw.isascii() and raw.isdigit() and int(raw) >= 1:
+                cap = int(raw)
+            else:  # the human's answer, said as it is; no card, no state
+                self.code_reply(
+                    f'The cap takes a whole number, 1 or more; you said "{raw}".'
+                )
+                continue
+            break
         res = self.api.serve(self.cfg, self.spec, max_chars=cap)
         if self.refused(res):
             return False

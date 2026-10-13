@@ -2484,3 +2484,67 @@ def test_checkin_kind_reads_the_gate_verdict_not_the_words():
     assert s.checkin_kind("tests: x: failed 0", rep) == "pass"
     bad = {**ok, "verdict": "failing"}
     assert s.checkin_kind("tests: x: failed 0", {"gates": [bad]}) == "block"
+
+
+# --- the stage prompts: defaults stated, a refused answer said plainly (F4) ---------------
+
+BY_REFUSAL = (
+    "group by one or more of ('who', 'what', 'when', 'where'), got ('where are we',)"
+)
+
+
+def scope_says(res_ok):
+    """A scope api that refuses any ``by`` outside the four words."""
+
+    def call(cfg, by=(), **_):
+        if any(w not in ("who", "what", "when", "where") for w in by):
+            return {"refused": BY_REFUSAL, "code": 1}
+        return res_ok
+
+    return call
+
+
+def test_the_prompts_state_their_defaults_plainly():
+    api = FakeApi()
+    _st, out = seat(api, ["", ""])
+    _st.run()
+    assert "scope ▶ group by (enter = who): " in out
+    assert "served ▶ cap in characters (enter = 48000): " in out
+
+
+def test_a_refused_group_by_is_said_plainly_and_asked_again_not_unreachable():
+    api = FakeApi()
+    api.res["scope"] = scope_says(api.res["scope"])
+    st, out = seat(api, ["where are we", "", ""])
+    assert st.run() == 0
+    body = text(out)
+    assert 'Group by takes who, what, when or where; you said "where are we".' in body
+    assert "[unreachable]" not in body and "can't read the record" not in body
+    assert sum(1 for o in out if o.startswith("scope ▶")) == 2  # asked again
+    assert "serve" in api.names()  # and then the run went on
+
+
+def test_group_by_words_are_trimmed_and_enter_takes_the_default():
+    api = FakeApi()
+    api.res["scope"] = scope_says(api.res["scope"])
+    st, _out = seat(api, ["who, what", "", ""])
+    st.run()
+    assert [c for c in api.calls if c[0] == "scope"][0][2]["by"] == ["who", "what"]
+
+
+def test_any_other_scope_refusal_stays_a_refused_card():
+    api = FakeApi(scope={"refused": "no open box", "code": 2})
+    st, out = seat(api, [""])
+    assert st.run() == 0
+    assert "[unreachable] refused" in text(out) and "Group by takes" not in text(out)
+
+
+def test_a_cap_that_is_not_a_whole_number_is_said_plainly_and_asked_again():
+    api = FakeApi()
+    st, out = seat(api, ["", "lots", "0", "-5", "100", ""])
+    assert st.run() == 0
+    body = text(out)
+    assert 'The cap takes a whole number, 1 or more; you said "lots".' in body
+    assert 'you said "0"' in body and 'you said "-5"' in body
+    assert "[blocked]" not in body
+    assert [c for c in api.calls if c[0] == "serve"][0][2]["max_chars"] == 100
