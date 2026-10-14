@@ -580,9 +580,36 @@ def clause(box: Box) -> str:
 RUN_VERB = {"dec": "decided", "pr": "changed", "pass": "routine"}
 
 
+#: The closed set of words a shared last word may be said as a verb. Only a
+#: genuine status reads right ("PR 1 and PR 2 are both open"); free text that
+#: happens to end alike ("local: a short answer", "local: another answer")
+#: does not, and takes the kind's fixed word. From the sketches' PR lines
+#: (``box-stream-v1.3``: open, waiting, "tests pass"), ``STATUS`` above
+#: (waiting, blocked, stuck, held, pending), the box labels (``KINDS``,
+#: ``seat_nestor``: changed, retired, decided, sealed, blocked), and the plain
+#: states a PR or a check is in (merged, closed, failed, passed, green, red,
+#: done, ready).
+STATUS_WORDS = frozenset(
+    "open merged closed blocked waiting pending stuck held failed passed "
+    "green red done ready sealed decided changed retired".split()
+)
+
+
+def _shared_status(words: list[list[str]]) -> str:
+    """The last word every value shares, if it is a status word, else ``""``.
+    One rule for a pair and a run."""
+    last = words[0][-1].lower() if words[0] else ""
+    if last in STATUS_WORDS and all(
+        len(w) > 1 and w[-1].lower() == last for w in words
+    ):
+        return words[0][-1]
+    return ""
+
+
 def _pair(a: Box, b: Box) -> list[Part]:
     """Two boxes of one kind in one phrase, with ``both``: ``are both <word>``
-    where the word is the last word the values share, else the kind's fixed
+    where the word is the last word the values share when it is a status word
+    (``STATUS_WORDS``; "answer" or "rows" is not one), else the kind's fixed
     word (``BOTH``, else ``RUN_VERB``: changed, routine). A pair always ends
     with a verb; only a kind with no fixed word at all keeps a leading
     ``both``."""
@@ -602,13 +629,13 @@ def _pair(a: Box, b: Box) -> list[Part]:
             (lead(vb), b.id),
         ]
     wa, wb = va.split(), vb.split()
-    share = len(wa) > 1 and len(wb) > 1 and wa[-1].lower() == wb[-1].lower()
-    if share and wa[-1].isalpha() and len(wa[-1]) > 2:
+    word = _shared_status([wa, wb])
+    if word:
         return [
             (" ".join(wa[:-1]), a.id),
             (" and ", None),
             (" ".join(wb[:-1]), b.id),
-            (f" are both {wa[-1]}", None),
+            (f" are both {word}", None),
         ]
     verb = BOTH.get(a.kind) or RUN_VERB.get(a.kind)
     if verb:
@@ -619,8 +646,8 @@ def _pair(a: Box, b: Box) -> list[Part]:
 def _run(group: list[Box]) -> list[Part]:
     """A run of one kind: one box, a pair, or (decided, changed, pass) a list.
     A list of three or more ends with a verb, as a pair does: ``are all <word>``
-    where the word is the last word every value shares (``PR 1, PR 2 and PR 3
-    are all open``), else the kind's fixed word (``RUN_VERB``: decided, changed,
+    where the word is the last word every value shares when it is a status word
+    (``STATUS_WORDS``: ``PR 1, PR 2 and PR 3 are all open``), else the kind's fixed word (``RUN_VERB``: decided, changed,
     routine). A draft run says ``The drafts are waiting:`` instead."""
     if len(group) == 1:
         return _single(group[0])
@@ -632,12 +659,8 @@ def _run(group: list[Box]) -> list[Part]:
     end = RUN_VERB.get(group[0].kind, "") if not draft else ""
     if group[0].kind != "dec" and not draft:
         words = [v.split() for v in vals]
-        last = words[0][-1]
-        if (
-            all(len(w) > 1 and w[-1].lower() == last.lower() for w in words)
-            and last.isalpha()
-            and len(last) > 2
-        ):
+        last = _shared_status(words)
+        if last:
             vals, end = [" ".join(w[:-1]) for w in words], last
     if draft:
         parts.append(("The drafts are waiting: ", None))
