@@ -41,6 +41,15 @@ The stages, in order, each shown in the prompt (``scope ▶``):
                subjects). Populated, empty, or ``unreachable`` (a raise or a
                missing ``pooled`` on an older willow-bot); it seals and
                deposits nothing, and the resume snapshot is unchanged by it
+    opening    ONE code sentence that picks up from last time, said from what
+               resume and pooled already returned (no call of its own, no model,
+               no row): "Picking up from the sealed snapshot serve:... (rows up
+               to N); 2 proposals still pooled from earlier runs." Each of
+               nothing sealed, an unreadable resume, a pool that is empty, and a
+               pool that cannot be read has its own clause, so an unreadable
+               read is never said as "nothing to pick up". It carries the run's
+               one ``Morning.`` (before noon), so the first reply does not say
+               it again. The resume call returns no date, so none is named
     served     api.serve is the silent start-check: it serves only a scope a
                past human seal already covers (three states, never collapsed),
                after one prompt, ``cap in characters (enter = 48000)``; an
@@ -73,8 +82,9 @@ glue, which is also what stands when the model can't be reached (an
 ``unreachable`` card, never a crash). With no ``say`` the seat is code only.
 A chain turn ranks its boxes (a heads-up first, then needs you, blocked,
 decided, changed, routine pass) and shows two at a time (``more?``) from that
-order. The code sentence is a short sentence per box; it opens ``Morning.`` on
-the run's first reply when the turn's clock time is before noon; a stage whose
+order. The code sentence is a short sentence per box; the run's one
+``Morning.`` (before noon, by the turn's clock time) goes on the opening sentence,
+or on the first reply when there was no opening; a stage whose
 card is ``empty`` or ``unreachable`` also says so in a plain code line. Small
 talk is answered by code (greetings, ``ok``, ``thanks``, ``later``, and ``help``,
 a fixed line of what the seat understands; ``bye``, ``done`` and ``quit`` check
@@ -163,6 +173,7 @@ from grove.seat_boxes import (
     legend,
     looks_like_ref,
     matches,
+    opening,
     parse_follow,
     pile_header,
     plural,
@@ -567,6 +578,10 @@ class Seat:
         self.sealed: dict | None = None
         #: The grown scope's subject when it differs from the sealed one.
         self.grown: str | None = None
+        #: What ``api.resume`` and ``api.pooled`` said at start, for the one
+        #: opening sentence (``seat_boxes.opening``); nothing is read again.
+        self.start_resume: tuple = ("none",)
+        self.start_pool: tuple = ("unreachable",)
 
     # -- the stream: cards, replies, the human's line
 
@@ -988,17 +1003,21 @@ class Seat:
         except (EOFError, KeyboardInterrupt):
             raise
         except Exception as e:  # noqa: BLE001 - older willow-bot, or a read failure
+            self.start_resume = ("unreachable",)
             self.show(
                 self.gone("resume", f"{type(e).__name__}: {e}; scoping fresh instead")
             )
             return False
         if not isinstance(res, dict) or "refused" in res:
             why = res.get("refused") if isinstance(res, dict) else "not a record"
+            self.start_resume = ("unreachable",)
             self.show(self.gone("resume", f"{why}; scoping fresh instead"))
             return False
         spec, subject = res.get("spec"), res.get("subject")
         if not isinstance(spec, dict) or not subject:
+            self.start_resume = ("none",)
             return False  # {resume: None}: nothing sealed yet, today's bootstrap
+        self.start_resume = ("sealed", str(subject), spec.get("upto"))
         self.sealed = {"spec": spec, "subject": str(subject)}
         self.spec = spec
         self.pile_n = (
@@ -1028,16 +1047,20 @@ class Seat:
         except (EOFError, KeyboardInterrupt):
             raise
         except Exception as e:  # noqa: BLE001 - older willow-bot, or a read failure
+            self.start_pool = ("unreachable",)
             return self.show(self.gone(label, f"{type(e).__name__}: {e}"))
         got = pool.get("pooled") if isinstance(pool, dict) else None
         if not isinstance(pool, dict) or "refused" in pool or not isinstance(got, list):
             why = pool.get("refused") if isinstance(pool, dict) else None
+            self.start_pool = ("unreachable",)
             return self.show(self.gone(label, str(why or "not a pool record")))
         items = [p for p in got if isinstance(p, dict)]
         if not items:
+            self.start_pool = ("empty",)
             return self.show(
                 self.state_card(label, "empty", "nothing pooled from earlier runs")
             )
+        self.start_pool = ("populated", len(items))
         names = [str(p.get("subject") or p.get("path") or "?") for p in items]
         more = f" (+{len(names) - 2} more)" if len(names) > 2 else ""
         self.show(
@@ -1048,6 +1071,15 @@ class Seat:
                 f"{len(items)} from earlier runs, unsealed",
                 f"{'; '.join(names[:2])}{more}\nseal in Nestor; the seat seals nothing",
             )
+        )
+
+    def open_with(self) -> None:
+        """The run's one opening sentence, said by code from what resume and
+        pooled already returned (``seat_boxes.opening``): no api call, no model,
+        no row. It carries the run's one ``Morning.`` when it is before noon, so
+        the first reply does not say it again."""
+        self.code_reply(
+            opening(self.start_resume, self.start_pool, self.greeting(self.clock()))
         )
 
     def grown_scope(self) -> None:
@@ -1350,6 +1382,7 @@ class Seat:
         try:
             if self.resume() or self.scope():
                 self.pooled_at_start()
+                self.open_with()
                 if self.served():
                     while task := self.ask("chain", "task (empty to check out): "):
                         if _talk(task) in FAREWELLS:  # like an empty line

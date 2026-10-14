@@ -635,12 +635,17 @@ def test_a_reply_is_boxes_then_one_sentence_from_the_boxes():
     _api, out = rich_run()
     t = text(out)
     assert "agent · code · said 2 boxes, no model asked" in t
-    first = next(o for o in out if o.startswith("agent> "))
+    # the opening took the run's one "Morning." (O2), so this first reply has none
+    first = next(
+        o
+        for i, o in enumerate(out)
+        if o.startswith("agent> ") and out[i - 1].startswith("agent · code · said")
+    )
     # "escalated 1" is still a problem count (no reassurance over it, 3b-ii,
     # Loki F-low), but the chain summary is said as a sentence, with no
     # "Heads up:" before a bare count (F6)
     assert first == (
-        "agent> Morning. Local: d is still blocked, reason: local_escalate. "
+        "agent> Local: d is still blocked, reason: local_escalate. "
         "The chain answered 2 and escalated 1."
     )
     assert out.index("agent · code · said 2 boxes, no model asked") < out.index(first)
@@ -668,7 +673,7 @@ def test_small_talk_is_answered_by_code_with_no_boxes_and_no_api_call():
 
 
 def test_a_question_asked_again_is_shown_from_the_pile_with_its_timestamp():
-    ticks = iter(["09:14", "09:40", "09:41"])
+    ticks = iter(["09:14", "09:14", "09:40", "09:41"])  # the opening reads one
     pieces = [piece("local", "answered", rows=[ROW])]
     api = FakeApi(escalate=chain_result(*pieces))
     st, out = seat(
@@ -848,8 +853,7 @@ def test_the_launcher_reports_no_willow_bot(tmp_path):
 
 MODEL = say_mod.MODEL
 GOOD_CODE = (
-    "agent> Morning. Looks like answered 1, escalated 0 and local: d are both routine. "
-    "No rush."
+    "agent> Looks like answered 1, escalated 0 and local: d are both routine. No rush."
 )
 
 
@@ -933,7 +937,10 @@ def test_each_check_catches_its_violation_and_code_replaces_the_sentence(which):
     assert marks[idx] == "✗" and marks.count("✗") == 1, chips
     assert out.index(struck) < out.index(GOOD_CODE)  # the code sentence beneath it
     said = [o for o in out if o.startswith("agent> ") and "~~" not in o]
-    assert [o for o in said if " is empty" not in o] == [GOOD_CODE]  # stage lines aside
+    # stage lines and the opening (O2) aside
+    assert [o for o in said if " is empty" not in o and "scoping fresh" not in o] == [
+        GOOD_CODE
+    ]
 
 
 def test_an_invented_word_fails_nothing_the_boxes_lack_so_voice_cannot_add_a_fact():
@@ -1115,7 +1122,7 @@ def test_a_model_that_cant_be_asked_is_its_own_state_and_code_says_the_line(
 
 def test_asked_again_replays_the_model_reply_without_asking_the_model():
     say = tagged(good)
-    ticks = iter(["09:14", "09:40", "09:41"])
+    ticks = iter(["09:14", "09:14", "09:40", "09:41"])  # the opening reads one
     api = FakeApi(escalate=chain_result(piece("local", "answered")))
     out: list[str] = []
     keys = iter(["who", "", "status of the build", "Status  of the build", ""])
@@ -1151,7 +1158,7 @@ def test_asked_again_replays_the_model_reply_without_asking_the_model():
 def test_a_struck_reply_is_replayed_struck():
     bad = BAD["invented-fact"][0]
     api = FakeApi(escalate=chain_result(piece("local", "answered")))
-    ticks = iter(["09:14", "09:40"])
+    ticks = iter(["09:14", "09:14", "09:40"])  # the opening reads one
     out: list[str] = []
     keys = iter(["who", "", "q", "Q", ""])
 
@@ -1849,7 +1856,8 @@ def test_pooled_at_start_shows_one_populated_card_with_a_count_and_subjects():
     api = FakeApi(pooled=pool_of("proposal:aaa", "proposal:bbb", "proposal:ccc"))
     st, out = seat(api, ["who", "", ""])
     assert st.run() == 0
-    assert sum("still pooled" in o for o in out) == 1
+    # one card; the opening sentence also says "still pooled" (O2), as a line
+    assert sum("still pooled" in o for o in out if o[:2] == "+-") == 1
     card = pooled_card(out)
     assert "3 from earlier runs, unsealed" in card
     assert "proposal:aaa; proposal:bbb (+1 more)" in card and "ccc" not in card
@@ -2443,7 +2451,7 @@ def test_a_line_that_resolves_to_nothing_goes_to_the_chain_as_today():
 
 
 def test_asked_again_still_replays_and_a_follow_up_leaves_no_row():
-    ticks = iter(["09:14", "09:40", "09:41"])
+    ticks = iter(["09:14", "09:14", "09:40", "09:41"])  # the opening reads one
     api, out = thread_run(
         ["status of the build", *ALL, "show me 712", "Status  of the build", "why"],
         clock=lambda: next(ticks),
@@ -3071,7 +3079,7 @@ def test_where_are_we_opens_with_the_count_then_the_open_items(tmp_path):
     first = after(out, "where are we")
     assert first[0].startswith("+- [routine pass] nestor store")  # the count first
     said = next(o for o in first if o.startswith("agent> "))
-    assert said.startswith("agent> Morning. 1 sealed, 1 draft, 2 rejected (fixture). ")
+    assert said.startswith("agent> 1 sealed, 1 draft, 2 rejected (fixture). ")
     assert "Adios (draft) is waiting." in said  # a draft, never a fact
     assert "said 5 boxes, no model asked" in t and "more?" not in t  # one page
     assert "Looks like" not in t and "No rush" not in t  # a refusal is in the store
@@ -3090,9 +3098,7 @@ def test_the_count_page_keeps_no_rush_when_the_store_holds_no_refusal(tmp_path):
     )
     _api, out = nestor_run(["where are we"], p)
     said = next(o for o in after(out, "where are we") if o.startswith("agent> "))
-    assert (
-        said == "agent> Morning. 1 sealed (fixture). Hola → Hello is decided. No rush."
-    )
+    assert said == "agent> 1 sealed (fixture). Hola → Hello is decided. No rush."
 
 
 def test_a_chain_turn_and_what_needs_me_keep_the_generic_rank(tmp_path):
@@ -3370,3 +3376,100 @@ def test_a_show_me_reference_that_matches_nothing_stays_a_plain_line(line):
         o.startswith("agent> Nothing I showed answers to") for o in after(out, line)
     )
     assert "escalate" not in api.names()
+
+
+# --- O2: an opening that picks up from last time --------------------------------------
+
+
+def start_opening(api, clock=None, keys=("who", "", "")):
+    st, out = seat(api, list(keys), clock=clock)
+    assert st.run() == 0
+    n = next(i for i, o in enumerate(out) if o.startswith("served ▶"))
+    return api, out, [o for o in out[:n] if o.startswith("agent> ")][-1]
+
+
+def test_opening_picks_up_from_the_sealed_snapshot_and_the_pool_count():
+    api = FakeApi(resume=resumed(), pooled=pool_of("proposal:aaa", "proposal:bbb"))
+    _a, out, line = start_opening(api)
+    assert line == (
+        f"agent> Morning. Picking up from the sealed snapshot {SEALED} "
+        "(rows up to 41); 2 proposals still pooled from earlier runs."
+    )
+    assert "agent · code · no model, nothing served" in out
+
+
+def test_opening_with_nothing_sealed_and_nothing_pooled_is_a_plain_line():
+    _a, _o, line = start_opening(FakeApi())
+    assert line == (
+        "agent> Morning. No snapshot has been sealed yet, so I'm scoping fresh; "
+        "nothing is pooled from earlier runs."
+    )
+
+
+def test_opening_one_pooled_is_singular():
+    _a, _o, line = start_opening(FakeApi(pooled=pool_of("proposal:aaa")))
+    assert "; 1 proposal still pooled from earlier runs." in line
+
+
+def test_opening_keeps_the_three_states_apart():
+    def boom(*a, **k):
+        raise RuntimeError("no such verb")
+
+    lines = {
+        "resume-none+empty": start_opening(FakeApi())[2],
+        "resume-down": start_opening(FakeApi(resume=boom))[2],
+        "resume-refused": start_opening(
+            FakeApi(resume={"refused": "box won't open", "code": 2})
+        )[2],
+        "pool-down": start_opening(FakeApi(pooled=boom))[2],
+        "pool-refused": start_opening(FakeApi(pooled={"refused": "x", "code": 2}))[2],
+        "pool-full": start_opening(FakeApi(pooled=pool_of("proposal:aaa")))[2],
+    }
+    assert (
+        "couldn't read the last sealed snapshot, so I'm scoping fresh"
+        in lines["resume-down"]
+    )
+    assert lines["resume-down"].split("; ")[1] == (
+        "nothing is pooled from earlier runs."
+    )
+    assert lines["resume-refused"] == lines["resume-down"]
+    assert (
+        "I couldn't read the pool, so I can't say what is still pooled"
+        in lines["pool-down"]
+    )
+    assert lines["pool-refused"] == lines["pool-down"]
+    assert "nothing is pooled" not in lines["pool-down"]  # down is never empty
+    assert "No snapshot has been sealed yet" in lines["pool-down"]
+    assert len(set(lines.values())) == 4  # none, down, pool-down, pool-full differ
+
+
+def test_opening_carries_the_one_morning_and_the_first_reply_does_not_repeat_it():
+    pieces = [piece("local", "answered", rows=[ROW])]
+    api = FakeApi(escalate=chain_result(*pieces))
+    st, out = seat(api, ["who", "", "status of the build", ""])
+    st.run()
+    agent = [o for o in out if o.startswith("agent> ")]
+    greeted = [o for o in agent if "Morning." in o]
+    assert len(greeted) == 1 and "scoping fresh" in greeted[0]
+
+
+def test_opening_afternoon_has_no_greeting_and_still_says_the_state():
+    _a, _o, line = start_opening(FakeApi(), clock=lambda: "15:02")
+    assert line.startswith("agent> No snapshot has been sealed yet")
+
+
+def test_opening_makes_no_api_call_of_its_own_and_asks_no_model():
+    asked = []
+    api = FakeApi(resume=resumed(), pooled=pool_of("proposal:aaa"))
+    st, out = seat(api, ["", ""], say=lambda p: asked.append(p) or "x")
+    st.run()
+    assert api.names().count("resume") == 1
+    assert api.names().count("pooled") == 2  # the start read, and the close-out's
+    assert asked == []
+    assert not {n for n in api.names() if "seal" in n or "mint" in n or "take" in n}
+
+
+def test_opening_is_not_said_when_nothing_is_served():
+    st, out = seat(FakeApi(scope={"refused": "no open box", "code": 2}), ["who"])
+    st.run()
+    assert not any("scoping fresh" in o or "Picking up" in o for o in out)
