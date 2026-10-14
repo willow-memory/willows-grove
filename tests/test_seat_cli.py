@@ -635,12 +635,17 @@ def test_a_reply_is_boxes_then_one_sentence_from_the_boxes():
     _api, out = rich_run()
     t = text(out)
     assert "agent · code · said 2 boxes, no model asked" in t
-    first = next(o for o in out if o.startswith("agent> "))
+    # the opening took the run's one "Morning." (O2), so this first reply has none
+    first = next(
+        o
+        for i, o in enumerate(out)
+        if o.startswith("agent> ") and out[i - 1].startswith("agent · code · said")
+    )
     # "escalated 1" is still a problem count (no reassurance over it, 3b-ii,
     # Loki F-low), but the chain summary is said as a sentence, with no
     # "Heads up:" before a bare count (F6)
     assert first == (
-        "agent> Morning. Local: d is still blocked, reason: local_escalate. "
+        "agent> Local: d is still blocked, reason: local_escalate. "
         "The chain answered 2 and escalated 1."
     )
     assert out.index("agent · code · said 2 boxes, no model asked") < out.index(first)
@@ -668,7 +673,7 @@ def test_small_talk_is_answered_by_code_with_no_boxes_and_no_api_call():
 
 
 def test_a_question_asked_again_is_shown_from_the_pile_with_its_timestamp():
-    ticks = iter(["09:14", "09:40", "09:41"])
+    ticks = iter(["09:14", "09:14", "09:40", "09:41"])  # the opening reads one
     pieces = [piece("local", "answered", rows=[ROW])]
     api = FakeApi(escalate=chain_result(*pieces))
     st, out = seat(
@@ -848,8 +853,7 @@ def test_the_launcher_reports_no_willow_bot(tmp_path):
 
 MODEL = say_mod.MODEL
 GOOD_CODE = (
-    "agent> Morning. Looks like answered 1, escalated 0 and local: d are both routine. "
-    "No rush."
+    "agent> Looks like answered 1, escalated 0 and local: d are both routine. No rush."
 )
 
 
@@ -933,7 +937,10 @@ def test_each_check_catches_its_violation_and_code_replaces_the_sentence(which):
     assert marks[idx] == "✗" and marks.count("✗") == 1, chips
     assert out.index(struck) < out.index(GOOD_CODE)  # the code sentence beneath it
     said = [o for o in out if o.startswith("agent> ") and "~~" not in o]
-    assert [o for o in said if " is empty" not in o] == [GOOD_CODE]  # stage lines aside
+    # stage lines, the opening (O2) and the closing (O4) aside
+    assert [o for o in said if " is empty" not in o and "pooled" not in o] == [
+        GOOD_CODE
+    ]
 
 
 def test_an_invented_word_fails_nothing_the_boxes_lack_so_voice_cannot_add_a_fact():
@@ -1115,7 +1122,7 @@ def test_a_model_that_cant_be_asked_is_its_own_state_and_code_says_the_line(
 
 def test_asked_again_replays_the_model_reply_without_asking_the_model():
     say = tagged(good)
-    ticks = iter(["09:14", "09:40", "09:41"])
+    ticks = iter(["09:14", "09:14", "09:40", "09:41"])  # the opening reads one
     api = FakeApi(escalate=chain_result(piece("local", "answered")))
     out: list[str] = []
     keys = iter(["who", "", "status of the build", "Status  of the build", ""])
@@ -1151,7 +1158,7 @@ def test_asked_again_replays_the_model_reply_without_asking_the_model():
 def test_a_struck_reply_is_replayed_struck():
     bad = BAD["invented-fact"][0]
     api = FakeApi(escalate=chain_result(piece("local", "answered")))
-    ticks = iter(["09:14", "09:40"])
+    ticks = iter(["09:14", "09:14", "09:40"])  # the opening reads one
     out: list[str] = []
     keys = iter(["who", "", "q", "Q", ""])
 
@@ -1849,7 +1856,8 @@ def test_pooled_at_start_shows_one_populated_card_with_a_count_and_subjects():
     api = FakeApi(pooled=pool_of("proposal:aaa", "proposal:bbb", "proposal:ccc"))
     st, out = seat(api, ["who", "", ""])
     assert st.run() == 0
-    assert sum("still pooled" in o for o in out) == 1
+    # one card; the opening sentence also says "still pooled" (O2), as a line
+    assert sum("still pooled" in o for o in out if o[:2] == "+-") == 1
     card = pooled_card(out)
     assert "3 from earlier runs, unsealed" in card
     assert "proposal:aaa; proposal:bbb (+1 more)" in card and "ccc" not in card
@@ -2443,7 +2451,7 @@ def test_a_line_that_resolves_to_nothing_goes_to_the_chain_as_today():
 
 
 def test_asked_again_still_replays_and_a_follow_up_leaves_no_row():
-    ticks = iter(["09:14", "09:40", "09:41"])
+    ticks = iter(["09:14", "09:14", "09:40", "09:41"])  # the opening reads one
     api, out = thread_run(
         ["status of the build", *ALL, "show me 712", "Status  of the build", "why"],
         clock=lambda: next(ticks),
@@ -3071,7 +3079,7 @@ def test_where_are_we_opens_with_the_count_then_the_open_items(tmp_path):
     first = after(out, "where are we")
     assert first[0].startswith("+- [routine pass] nestor store")  # the count first
     said = next(o for o in first if o.startswith("agent> "))
-    assert said.startswith("agent> Morning. 1 sealed, 1 draft, 2 rejected (fixture). ")
+    assert said.startswith("agent> 1 sealed, 1 draft, 2 rejected (fixture). ")
     assert "Adios (draft) is waiting." in said  # a draft, never a fact
     assert "said 5 boxes, no model asked" in t and "more?" not in t  # one page
     assert "Looks like" not in t and "No rush" not in t  # a refusal is in the store
@@ -3090,9 +3098,7 @@ def test_the_count_page_keeps_no_rush_when_the_store_holds_no_refusal(tmp_path):
     )
     _api, out = nestor_run(["where are we"], p)
     said = next(o for o in after(out, "where are we") if o.startswith("agent> "))
-    assert (
-        said == "agent> Morning. 1 sealed (fixture). Hola → Hello is decided. No rush."
-    )
+    assert said == "agent> 1 sealed (fixture). Hola → Hello is decided. No rush."
 
 
 def test_a_chain_turn_and_what_needs_me_keep_the_generic_rank(tmp_path):
@@ -3370,3 +3376,339 @@ def test_a_show_me_reference_that_matches_nothing_stays_a_plain_line(line):
         o.startswith("agent> Nothing I showed answers to") for o in after(out, line)
     )
     assert "escalate" not in api.names()
+
+
+# --- O2: an opening that picks up from last time --------------------------------------
+
+
+def start_opening(api, clock=None, keys=("who", "", "")):
+    st, out = seat(api, list(keys), clock=clock)
+    assert st.run() == 0
+    n = next(i for i, o in enumerate(out) if o.startswith("served ▶"))
+    return api, out, [o for o in out[:n] if o.startswith("agent> ")][-1]
+
+
+def test_opening_picks_up_from_the_sealed_snapshot_and_the_pool_count():
+    api = FakeApi(resume=resumed(), pooled=pool_of("proposal:aaa", "proposal:bbb"))
+    _a, out, line = start_opening(api)
+    assert line == (
+        f"agent> Morning. Picking up from the sealed snapshot {SEALED} "
+        "(rows up to 41); 2 proposals still pooled from earlier runs."
+    )
+    assert "agent · code · no model, nothing served" in out
+
+
+def test_opening_with_nothing_sealed_and_nothing_pooled_is_a_plain_line():
+    _a, _o, line = start_opening(FakeApi())
+    assert line == (
+        "agent> Morning. No snapshot has been sealed yet, so I'm scoping fresh; "
+        "nothing is pooled from earlier runs."
+    )
+
+
+def test_opening_one_pooled_is_singular():
+    _a, _o, line = start_opening(FakeApi(pooled=pool_of("proposal:aaa")))
+    assert "; 1 proposal still pooled from earlier runs." in line
+
+
+def test_opening_keeps_the_three_states_apart():
+    def boom(*a, **k):
+        raise RuntimeError("no such verb")
+
+    lines = {
+        "resume-none+empty": start_opening(FakeApi())[2],
+        "resume-down": start_opening(FakeApi(resume=boom))[2],
+        "resume-refused": start_opening(
+            FakeApi(resume={"refused": "box won't open", "code": 2})
+        )[2],
+        "pool-down": start_opening(FakeApi(pooled=boom))[2],
+        "pool-refused": start_opening(FakeApi(pooled={"refused": "x", "code": 2}))[2],
+        "pool-full": start_opening(FakeApi(pooled=pool_of("proposal:aaa")))[2],
+    }
+    assert (
+        "couldn't read the last sealed snapshot, so I'm scoping fresh"
+        in lines["resume-down"]
+    )
+    assert lines["resume-down"].split("; ")[1] == (
+        "nothing is pooled from earlier runs."
+    )
+    assert lines["resume-refused"] == lines["resume-down"]
+    assert (
+        "I couldn't read the pool, so I can't say what is still pooled"
+        in lines["pool-down"]
+    )
+    assert lines["pool-refused"] == lines["pool-down"]
+    assert "nothing is pooled" not in lines["pool-down"]  # down is never empty
+    assert "No snapshot has been sealed yet" in lines["pool-down"]
+    assert len(set(lines.values())) == 4  # none, down, pool-down, pool-full differ
+
+
+def test_opening_carries_the_one_morning_and_the_first_reply_does_not_repeat_it():
+    pieces = [piece("local", "answered", rows=[ROW])]
+    api = FakeApi(escalate=chain_result(*pieces))
+    st, out = seat(api, ["who", "", "status of the build", ""])
+    st.run()
+    agent = [o for o in out if o.startswith("agent> ")]
+    greeted = [o for o in agent if "Morning." in o]
+    assert len(greeted) == 1 and "scoping fresh" in greeted[0]
+
+
+def test_opening_afternoon_has_no_greeting_and_still_says_the_state():
+    _a, _o, line = start_opening(FakeApi(), clock=lambda: "15:02")
+    assert line.startswith("agent> No snapshot has been sealed yet")
+
+
+def test_opening_makes_no_api_call_of_its_own_and_asks_no_model():
+    asked = []
+    api = FakeApi(resume=resumed(), pooled=pool_of("proposal:aaa"))
+    st, out = seat(api, ["", ""], say=lambda p: asked.append(p) or "x")
+    st.run()
+    assert api.names().count("resume") == 1
+    assert api.names().count("pooled") == 2  # the start read, and the close-out's
+    assert asked == []
+    assert not {n for n in api.names() if "seal" in n or "mint" in n or "take" in n}
+
+
+def test_opening_is_not_said_when_nothing_is_served():
+    st, out = seat(FakeApi(scope={"refused": "no open box", "code": 2}), ["who"])
+    st.run()
+    assert not any("scoping fresh" in o or "Picking up" in o for o in out)
+
+
+# --- O4: a closing that carries over --------------------------------------------------
+
+
+def closing_of(out):
+    """The closing line: the last agent sentence of the run."""
+    return [o for o in out if o.startswith("agent> ")][-1]
+
+
+def test_closing_says_what_stays_pooled_for_next_time():
+    api = FakeApi(pooled=pool_of("proposal:aaa", "proposal:bbb"))
+    st, out = seat(api, ["who", "", ""], deposit=FakeDeposit(DEPOSITED))
+    assert st.run() == 0
+    assert closing_of(out) == "agent> 2 proposals stay pooled for next time."
+    # beside the one seal offer, after it
+    assert len(offers(out)) == 1
+    assert max(i for i, o in enumerate(out) if "seal ↗" in o) < len(out) - 1
+
+
+def test_closing_one_pooled_is_singular():
+    st, out = seat(FakeApi(pooled=pool_of("proposal:aaa")), ["who", "", ""])
+    st.run()
+    assert closing_of(out) == "agent> 1 proposal stays pooled for next time."
+
+
+def test_closing_empty_pool_is_its_own_line():
+    st, out = seat(FakeApi(), ["who", "", ""])
+    st.run()
+    assert closing_of(out) == "agent> Nothing stays pooled for next time."
+
+
+@pytest.mark.parametrize(
+    "bad",
+    [RuntimeError("no such verb"), {"refused": "box won't open", "code": 2}, "junk"],
+)
+def test_closing_unreadable_pool_is_never_said_as_empty(bad):
+    calls = []
+
+    def pooled(*a, **k):
+        calls.append(1)
+        if len(calls) == 1:  # the start read answers; the close-out read fails
+            return pool_of()
+        if isinstance(bad, BaseException):
+            raise bad
+        return bad
+
+    st, out = seat(FakeApi(pooled=pooled), ["who", "", ""])
+    assert st.run() == 0
+    line = closing_of(out)
+    assert line == (
+        "agent> I couldn't read the pool, so I can't say what stays pooled "
+        "for next time."
+    )
+    assert "Nothing stays pooled" not in text(out)
+
+
+def test_closing_is_said_on_every_way_out_and_writes_nothing():
+    dep = FakeDeposit()
+    for keys in (["who", "", ""], ["who", "", "bye"], ["who", ""]):  # empty, bye, EOF
+        api = FakeApi(pooled=pool_of("proposal:aaa"))
+        st, out = seat(api, keys, deposit=dep)
+        assert st.run() == 0
+        assert closing_of(out) == "agent> 1 proposal stays pooled for next time."
+        assert not {n for n in api.names() if "seal" in n or "mint" in n or "take" in n}
+    assert all(
+        len(p["pooled"]) == 1 for p in dep.pools
+    )  # the deposit saw the same pool
+
+
+def test_closing_on_ctrl_c_still_carries_over():
+    def read_c(prompt):
+        if prompt.startswith("chain"):
+            raise KeyboardInterrupt
+        return {"scope ▶ group by (enter = who): ": "who"}.get(prompt, "")
+
+    out: list[str] = []
+    st = s.Seat(
+        bot(FakeApi(pooled=pool_of("proposal:aaa"))),
+        cfg="cfg",
+        deposit=FakeDeposit(),
+        read=read_c,
+        write=out.append,
+        color=False,
+        clock=lambda: "09:14",
+    )
+    assert st.run() == 0
+    assert closing_of(out) == "agent> 1 proposal stays pooled for next time."
+
+
+def test_closing_after_a_deposit_error_still_counts_the_pool():
+    dep = FakeDeposit({"state": "unreachable", "reason": "no willow-mcp"})
+    st, out = seat(
+        FakeApi(pooled=pool_of("proposal:aaa")), ["who", "", ""], deposit=dep
+    )
+    st.run()
+    assert closing_of(out) == "agent> 1 proposal stays pooled for next time."
+    assert len(dep.pools) == 1  # the one deposit; the closing did not add another
+
+
+# --- O3: the model sees the thread ------------------------------------------------------
+
+H1, H2, H3, H4 = "a" * 64, "c" * 64, "e" * 64, "f" * 64
+ID1, ID2, ID3 = H1[:12], H2[:12], H3[:12]
+
+
+def threaded_run(say, tasks=("first task", "second task"), hashes=(H1, H2, H3, H4)):
+    """A run of several chain turns, each answering one different piece."""
+    calls = []
+
+    def esc(*a, **k):
+        calls.append(1)
+        return chain_result(piece("local", "answered", h=hashes[len(calls) - 1]))
+
+    api = FakeApi(escalate=esc)
+    st, out = seat(api, ["who", "", *tasks, ""], say=say)
+    assert st.run() == 0
+    return st, out
+
+
+def thread_say(make):
+    def say(prompt):
+        say.prompts.append(prompt)
+        # the tags under "Boxes:" (this page's), not the thread's
+        page = prompt.split("Boxes:")[1]
+        tags = [ln[1 : ln.index("]")] for ln in page.splitlines() if ln[:1] == "["]
+        return make(*tags)
+
+    say.prompts = []
+    return say
+
+
+def threaded(a, b, extra=""):
+    return f"Looks like both answered 1, escalated 0 [{a}] and local: d [{b}]{extra}."
+
+
+def test_the_first_prompt_has_no_thread_and_the_second_carries_the_first_reply():
+    say = thread_say(threaded)
+    threaded_run(say)
+    assert "Earlier in this conversation" not in say.prompts[0]
+    p = say.prompts[1]
+    assert "Earlier in this conversation" in p
+    thread = p.split("Boxes:")[0]
+    assert "The human asked earlier: first task" in thread
+    assert f"[{ID1}] routine pass: local: d" in thread
+    assert "[b5] routine pass: answered 1, escalated 0" in thread
+    assert thread.index("asked earlier: first task") < thread.index(
+        "asked: second task"
+    )
+    assert f"[{ID1}]" not in p.split("Boxes:")[1]  # the current page lists its own
+
+
+def test_the_thread_is_capped_at_the_last_two_replies():
+    say = thread_say(threaded)
+    tasks = ("first task", "second task", "third task", "fourth task")
+    threaded_run(say, tasks=tasks)
+    third = say.prompts[2].split("Boxes:")[0]
+    assert "first task" in third and "second task" in third  # two replies back
+    fourth = say.prompts[3].split("Boxes:")[0]
+    assert "first task" not in fourth and "second task" in fourth
+    assert say_mod.THREAD_TURNS == 2
+    assert f"[{ID1}]" not in fourth and f"[{ID2}]" in fourth
+
+
+def test_a_cite_to_a_box_from_an_earlier_turn_of_this_run_passes():
+    say = thread_say(lambda a, b: threaded(a, b, f", still local: d [{ID1}]"))
+    _st, out = threaded_run(say)
+    t = text(out)
+    assert f"agent · {MODEL} · said 2 boxes" in out
+    sentence = next(o for o in out if o.endswith(f"still local: d [{ID1}]."))
+    assert sentence.startswith("agent> Looks like both")
+    assert "[struck]" not in t.split("you: second task")[1]
+    # the first turn cited nothing earlier and failed nothing either
+    assert t.count("✓ every cite was served · ✓ every box cited") == 2
+
+
+def test_a_cite_to_a_box_never_shown_is_struck_and_the_code_sentence_stands():
+    say = thread_say(lambda a, b: threaded(a, b, ", still local: d [zz9zz9zz9zz9]"))
+    _st, out = threaded_run(say)
+    second = text(out).split("you: second task")[1]
+    assert "agent> ~~Looks like both" in second and "[struck]" in second
+    assert "✗ every cite was served" in second
+    assert GOOD_CODE in out  # the code sentence beneath it
+
+
+def test_a_cite_to_a_box_older_than_the_thread_is_not_served():
+    # shown this run (turn one) but out of the prompt's window by turn four
+    say = thread_say(lambda a, b: threaded(a, b, f", still local: d [{ID1}]"))
+    tasks = ("first task", "second task", "third task", "fourth task")
+    _st, out = threaded_run(say, tasks=tasks)
+    fourth = text(out).split("you: fourth task")[1]
+    assert "✗ every cite was served" in fourth and "[struck]" in fourth
+    third = text(out).split("you: third task")[1].split("you: fourth task")[0]
+    assert "✗ every cite was served" not in third  # still in the window then
+
+
+def test_a_box_from_a_previous_run_is_never_served():
+    # run one shows ID1; a fresh Seat (run two) has no thread, so a cite to it is
+    # a cite to a box that run never showed
+    threaded_run(thread_say(threaded))
+    say = thread_say(lambda a, b: threaded(a, b, f", still local: d [{ID1}]"))
+    _st, out = threaded_run(say, tasks=("only task",), hashes=(H2,))
+    assert "Earlier in this conversation" not in say.prompts[0]
+    assert "✗ every cite was served" in text(out) and "[struck]" in text(out)
+
+
+def test_every_box_cited_is_about_the_current_page_only():
+    # cites the earlier box and one current box, omits the other current box
+    say = thread_say(
+        lambda a, b: (
+            f"Looks like answered 1, escalated 0 [{a}], still local: d [{ID1}]."
+        )
+    )
+    _st, out = threaded_run(say)
+    second = text(out).split("you: second task")[1]
+    assert "✗ every box cited" in second and "[struck]" in second
+
+
+def test_the_code_only_path_is_unaffected_by_the_thread():
+    st, out = threaded_run(None)
+    assert text(out).count("code · said 2 boxes, no model asked") == 2
+    assert GOOD_CODE in out
+    assert [e[0] for e in st.exchanges] == ["first task", "second task"]
+
+
+def test_an_earlier_boxs_facts_count_only_when_the_sentence_cites_it():
+    old = bx.Box("b1", "block", "blocked", "PR 712 waiting", "126 tests pass")
+    new = bx.Box("b2", "pass", "routine pass", "answered 1")
+    ok = "PR 712 is still waiting [b1] and answered 1 [b2]."
+    assert say_mod.passed(say_mod.run_checks(ok, [new], earlier=[old]))
+    # the fact of the earlier box, said without its tag
+    bare = "PR 712 is still waiting and answered 1 [b2]."
+    assert say_mod.run_checks(bare, [new], earlier=[old])[2] is False
+    # and not at all when it is not an earlier box
+    assert say_mod.run_checks(ok, [new])[0] is False
+    # a quote is the current line's alone
+    q = 'PR 712 is still waiting [b1] and "answered 1" [b2].'
+    assert say_mod.run_checks(q, [new], "answered 1", earlier=[old])[3] is True
+    assert say_mod.run_checks(q, [new], "", earlier=[old])[3] is False

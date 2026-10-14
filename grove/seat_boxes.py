@@ -314,6 +314,44 @@ def plural(n: int, one: str, many: str = "") -> str:
     return f"{n} {one if n == 1 else many or one + 's'}"
 
 
+def opening(resume: tuple, pool: tuple, greet: str = "") -> str:
+    """The run's one opening sentence, from what ``api.resume`` and
+    ``api.pooled`` already returned (no call of its own). ``resume`` is
+    ``("sealed", subject, upto)``, ``("none",)`` or ``("unreachable",)``; ``pool``
+    is ``("populated", n)``, ``("empty",)`` or ``("unreachable",)``. Each state
+    has its own clause, so an unreadable resume or pool is never said as
+    "nothing to pick up". ``greet`` leads it, once per run."""
+    if resume[0] == "sealed":
+        upto = f" (rows up to {resume[2]})" if resume[2] is not None else ""
+        head = f"Picking up from the sealed snapshot {resume[1]}{upto}"
+    elif resume[0] == "none":
+        head = "No snapshot has been sealed yet, so I'm scoping fresh"
+    else:
+        head = "I couldn't read the last sealed snapshot, so I'm scoping fresh"
+    if pool[0] == "populated":
+        tail = f"{plural(pool[1], 'proposal')} still pooled from earlier runs"
+    elif pool[0] == "empty":
+        tail = "nothing is pooled from earlier runs"
+    else:
+        tail = "I couldn't read the pool, so I can't say what is still pooled"
+    text = terminate(f"{head}; {tail}")
+    return f"{greet} {text}".strip() if greet else text
+
+
+def carry_over(pool: tuple) -> str:
+    """The closing sentence: what stays pooled for next time, from the pool
+    ``api.pooled`` read at check-out. ``("populated", n)``, ``("empty",)`` or
+    ``("unreachable",)``, each said differently."""
+    if pool[0] == "populated":
+        n = pool[1]
+        return (
+            f"{plural(n, 'proposal')} stay{'s' if n == 1 else ''} pooled for next time."
+        )
+    if pool[0] == "empty":
+        return "Nothing stays pooled for next time."
+    return "I couldn't read the pool, so I can't say what stays pooled for next time."
+
+
 def bare(text: str) -> str:
     """``text`` without the one full stop ``terminate`` may have added."""
     return text[:-1] if text.endswith(".") else text

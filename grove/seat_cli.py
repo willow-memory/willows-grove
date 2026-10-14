@@ -41,6 +41,15 @@ The stages, in order, each shown in the prompt (``scope ▶``):
                subjects). Populated, empty, or ``unreachable`` (a raise or a
                missing ``pooled`` on an older willow-bot); it seals and
                deposits nothing, and the resume snapshot is unchanged by it
+    opening    ONE code sentence that picks up from last time, said from what
+               resume and pooled already returned (no call of its own, no model,
+               no row): "Picking up from the sealed snapshot serve:... (rows up
+               to N); 2 proposals still pooled from earlier runs." Each of
+               nothing sealed, an unreadable resume, a pool that is empty, and a
+               pool that cannot be read has its own clause, so an unreadable
+               read is never said as "nothing to pick up". It carries the run's
+               one ``Morning.`` (before noon), so the first reply does not say
+               it again. The resume call returns no date, so none is named
     served     api.serve is the silent start-check: it serves only a scope a
                past human seal already covers (three states, never collapsed),
                after one prompt, ``cap in characters (enter = 48000)``; an
@@ -54,7 +63,12 @@ The stages, in order, each shown in the prompt (``scope ▶``):
     checkout   api.checkout, on exit, EOF or Ctrl-C alike; then the pool is
                deposited into Nestor as drafts (willow-mcp's
                ``onescript_deposit``, injectable) and ONE ``seal ↗`` offer
-               points at the Nestor UI, the only place a seal is made
+               points at the Nestor UI, the only place a seal is made. Last,
+               ONE code sentence says what stays pooled for next time ("2
+               proposals stay pooled for next time."), from the pool that
+               close-out already read: ``populated``, ``empty`` ("Nothing stays
+               pooled") or ``unreachable`` ("I couldn't read the pool") each
+               said differently. It seals, deposits and writes nothing more
 
 The seat never seals: no prompt asks for one, it holds no key, and the deposit
 only proposes. When it served a pinned snapshot and the record has grown, the
@@ -70,11 +84,17 @@ against the boxes: every cite served, every box cited, nothing the boxes lack,
 the human's words quoted exactly. A sentence that fails a check is shown
 struck and replaced by the sentence code composes from box facts plus fixed
 glue, which is also what stands when the model can't be reached (an
-``unreachable`` card, never a crash). With no ``say`` the seat is code only.
+``unreachable`` card, never a crash). The model also sees the thread: the last two replies of this run (their boxes
+with tags, and the human's lines as context only), so a sentence can say "that"
+or "still"; a cite to one of those earlier boxes was served, a cite to any
+other box (never shown, out of that window, or from a previous run) is not, and
+``every box cited`` stays about the current page. With no ``say`` the seat is
+code only, and the thread changes nothing there.
 A chain turn ranks its boxes (a heads-up first, then needs you, blocked,
 decided, changed, routine pass) and shows two at a time (``more?``) from that
-order. The code sentence is a short sentence per box; it opens ``Morning.`` on
-the run's first reply when the turn's clock time is before noon; a stage whose
+order. The code sentence is a short sentence per box; the run's one
+``Morning.`` (before noon, by the turn's clock time) goes on the opening sentence,
+or on the first reply when there was no opening; a stage whose
 card is ``empty`` or ``unreachable`` also says so in a plain code line. Small
 talk is answered by code (greetings, ``ok``, ``thanks``, ``later``, and ``help``,
 a fixed line of what the seat understands; ``bye``, ``done`` and ``quit`` check
@@ -154,6 +174,7 @@ from typing import Any
 from grove.seat_boxes import (
     Box,
     cap,
+    carry_over,
     compose,
     human_line,
     checks_line,
@@ -163,6 +184,7 @@ from grove.seat_boxes import (
     legend,
     looks_like_ref,
     matches,
+    opening,
     parse_follow,
     pile_header,
     plural,
@@ -183,6 +205,7 @@ from grove.seat_say import (
     CHECK_NAMES,
     MODEL,
     SayUnreachable,
+    THREAD_TURNS,
     build_prompt,
     ollama_probe,
     ollama_say,
@@ -567,6 +590,14 @@ class Seat:
         self.sealed: dict | None = None
         #: The grown scope's subject when it differs from the sealed one.
         self.grown: str | None = None
+        #: What ``api.resume`` and ``api.pooled`` said at start, for the one
+        #: opening sentence (``seat_boxes.opening``); nothing is read again.
+        #: What this run has said, newest last: (the human's line, the boxes).
+        #: The last ``THREAD_TURNS`` go to the model as the thread; it dies with
+        #: the Seat, so a box from a previous run is never in it.
+        self.exchanges: list[tuple[str, list[Box]]] = []
+        self.start_resume: tuple = ("none",)
+        self.start_pool: tuple = ("unreachable",)
 
     # -- the stream: cards, replies, the human's line
 
@@ -649,6 +680,8 @@ class Seat:
         can't be reached is an ``unreachable`` card and code's stands. Code's
         sentence is composed either way and is never a crash."""
         n = len(batch)
+        earlier = self.exchanges[-THREAD_TURNS:]
+        self.exchanges.append((human, list(batch)))
         code = compose(
             batch,
             first=first,
@@ -670,7 +703,7 @@ class Seat:
         )
         try:
             sentence = " ".join(
-                str(self.say(build_prompt(batch, human, first))).split()
+                str(self.say(build_prompt(batch, human, first, earlier))).split()
             )
             state, why = ("populated", "") if sentence else ("empty", "said nothing")
         except Exception as e:  # noqa: BLE001 - a model problem is a state, not a crash
@@ -686,7 +719,13 @@ class Seat:
                 [say_line(code)],
                 cards=[self.state_card("say", state, f"{self.model}: {why}")],
             )
-        results = run_checks(sentence, batch, human, self.bot.claims)
+        results = run_checks(
+            sentence,
+            batch,
+            human,
+            self.bot.claims,
+            earlier=[b for _, boxes in earlier for b in boxes],
+        )
         if passed(results):
             return Said(
                 batch,
@@ -988,17 +1027,21 @@ class Seat:
         except (EOFError, KeyboardInterrupt):
             raise
         except Exception as e:  # noqa: BLE001 - older willow-bot, or a read failure
+            self.start_resume = ("unreachable",)
             self.show(
                 self.gone("resume", f"{type(e).__name__}: {e}; scoping fresh instead")
             )
             return False
         if not isinstance(res, dict) or "refused" in res:
             why = res.get("refused") if isinstance(res, dict) else "not a record"
+            self.start_resume = ("unreachable",)
             self.show(self.gone("resume", f"{why}; scoping fresh instead"))
             return False
         spec, subject = res.get("spec"), res.get("subject")
         if not isinstance(spec, dict) or not subject:
+            self.start_resume = ("none",)
             return False  # {resume: None}: nothing sealed yet, today's bootstrap
+        self.start_resume = ("sealed", str(subject), spec.get("upto"))
         self.sealed = {"spec": spec, "subject": str(subject)}
         self.spec = spec
         self.pile_n = (
@@ -1028,16 +1071,20 @@ class Seat:
         except (EOFError, KeyboardInterrupt):
             raise
         except Exception as e:  # noqa: BLE001 - older willow-bot, or a read failure
+            self.start_pool = ("unreachable",)
             return self.show(self.gone(label, f"{type(e).__name__}: {e}"))
         got = pool.get("pooled") if isinstance(pool, dict) else None
         if not isinstance(pool, dict) or "refused" in pool or not isinstance(got, list):
             why = pool.get("refused") if isinstance(pool, dict) else None
+            self.start_pool = ("unreachable",)
             return self.show(self.gone(label, str(why or "not a pool record")))
         items = [p for p in got if isinstance(p, dict)]
         if not items:
+            self.start_pool = ("empty",)
             return self.show(
                 self.state_card(label, "empty", "nothing pooled from earlier runs")
             )
+        self.start_pool = ("populated", len(items))
         names = [str(p.get("subject") or p.get("path") or "?") for p in items]
         more = f" (+{len(names) - 2} more)" if len(names) > 2 else ""
         self.show(
@@ -1048,6 +1095,15 @@ class Seat:
                 f"{len(items)} from earlier runs, unsealed",
                 f"{'; '.join(names[:2])}{more}\nseal in Nestor; the seat seals nothing",
             )
+        )
+
+    def open_with(self) -> None:
+        """The run's one opening sentence, said by code from what resume and
+        pooled already returned (``seat_boxes.opening``): no api call, no model,
+        no row. It carries the run's one ``Morning.`` when it is before noon, so
+        the first reply does not say it again."""
+        self.code_reply(
+            opening(self.start_resume, self.start_pool, self.greeting(self.clock()))
         )
 
     def grown_scope(self) -> None:
@@ -1277,16 +1333,29 @@ class Seat:
         self.close_out()
 
     def close_out(self) -> None:
-        """Deposit the pool as Nestor drafts, then make the one seal offer."""
+        """Deposit the pool as Nestor drafts, make the one seal offer, then say
+        what stays pooled for next time (``seat_boxes.carry_over``): one code
+        sentence from the pool this close-out already read, in its own
+        ``populated``, ``empty`` or ``unreachable`` clause. It seals, deposits
+        and writes nothing beyond what the close-out already does."""
+        self.carry: tuple = ("unreachable",)
+        try:
+            self.deposit_pool()
+        finally:
+            self.code_reply(carry_over(self.carry))
+
+    def deposit_pool(self) -> None:
         try:
             pool = self.api.pooled(self.cfg)
         except Exception as e:  # noqa: BLE001 - the close-out must not raise
             self.show(self.gone("pool", f"{type(e).__name__}: {e}"))
             return self.offer_grown()
-        items = [p for p in pool.get("pooled") or [] if isinstance(p, dict)]
-        if "refused" in pool:
-            self.show(self.gone("pool", str(pool["refused"])))
+        if not isinstance(pool, dict) or "refused" in pool:
+            why = pool.get("refused") if isinstance(pool, dict) else "not a pool record"
+            self.show(self.gone("pool", str(why)))
             return self.offer_grown()
+        items = [p for p in pool.get("pooled") or [] if isinstance(p, dict)]
+        self.carry = ("populated", len(items)) if items else ("empty",)
         try:
             got = self.deposit(pool)
         except Exception as e:  # noqa: BLE001 - the close-out must not raise
@@ -1350,6 +1419,7 @@ class Seat:
         try:
             if self.resume() or self.scope():
                 self.pooled_at_start()
+                self.open_with()
                 if self.served():
                     while task := self.ask("chain", "task (empty to check out): "):
                         if _talk(task) in FAREWELLS:  # like an empty line
