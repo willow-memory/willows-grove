@@ -84,7 +84,12 @@ against the boxes: every cite served, every box cited, nothing the boxes lack,
 the human's words quoted exactly. A sentence that fails a check is shown
 struck and replaced by the sentence code composes from box facts plus fixed
 glue, which is also what stands when the model can't be reached (an
-``unreachable`` card, never a crash). With no ``say`` the seat is code only.
+``unreachable`` card, never a crash). The model also sees the thread: the last two replies of this run (their boxes
+with tags, and the human's lines as context only), so a sentence can say "that"
+or "still"; a cite to one of those earlier boxes was served, a cite to any
+other box (never shown, out of that window, or from a previous run) is not, and
+``every box cited`` stays about the current page. With no ``say`` the seat is
+code only, and the thread changes nothing there.
 A chain turn ranks its boxes (a heads-up first, then needs you, blocked,
 decided, changed, routine pass) and shows two at a time (``more?``) from that
 order. The code sentence is a short sentence per box; the run's one
@@ -200,6 +205,7 @@ from grove.seat_say import (
     CHECK_NAMES,
     MODEL,
     SayUnreachable,
+    THREAD_TURNS,
     build_prompt,
     ollama_probe,
     ollama_say,
@@ -586,6 +592,10 @@ class Seat:
         self.grown: str | None = None
         #: What ``api.resume`` and ``api.pooled`` said at start, for the one
         #: opening sentence (``seat_boxes.opening``); nothing is read again.
+        #: What this run has said, newest last: (the human's line, the boxes).
+        #: The last ``THREAD_TURNS`` go to the model as the thread; it dies with
+        #: the Seat, so a box from a previous run is never in it.
+        self.exchanges: list[tuple[str, list[Box]]] = []
         self.start_resume: tuple = ("none",)
         self.start_pool: tuple = ("unreachable",)
 
@@ -670,6 +680,8 @@ class Seat:
         can't be reached is an ``unreachable`` card and code's stands. Code's
         sentence is composed either way and is never a crash."""
         n = len(batch)
+        earlier = self.exchanges[-THREAD_TURNS:]
+        self.exchanges.append((human, list(batch)))
         code = compose(
             batch,
             first=first,
@@ -691,7 +703,7 @@ class Seat:
         )
         try:
             sentence = " ".join(
-                str(self.say(build_prompt(batch, human, first))).split()
+                str(self.say(build_prompt(batch, human, first, earlier))).split()
             )
             state, why = ("populated", "") if sentence else ("empty", "said nothing")
         except Exception as e:  # noqa: BLE001 - a model problem is a state, not a crash
@@ -707,7 +719,13 @@ class Seat:
                 [say_line(code)],
                 cards=[self.state_card("say", state, f"{self.model}: {why}")],
             )
-        results = run_checks(sentence, batch, human, self.bot.claims)
+        results = run_checks(
+            sentence,
+            batch,
+            human,
+            self.bot.claims,
+            earlier=[b for _, boxes in earlier for b in boxes],
+        )
         if passed(results):
             return Said(
                 batch,

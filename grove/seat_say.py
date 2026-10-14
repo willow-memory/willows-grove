@@ -22,6 +22,16 @@ the function ``Run.say`` wraps) when the seat hands it in, and fails if that
 gate finds a quote it can't verify. The gate has no notion of box cites, so
 cites, coverage and invented facts are checked here.
 
+The thread: the prompt carries the last ``THREAD_TURNS`` replies of this run
+(the boxes with their tags, and the human's lines as context only), so a
+sentence can say "that" or "still". The checks stay as strict. A cite to one of
+those earlier boxes was served (earlier in this run, and in the prompt); a cite
+to any other tag, a box never shown or one from a previous run (a Seat holds
+no thread across runs), is not served and fails. ``every box cited`` is about the
+current page's boxes only. An earlier box's facts count toward ``nothing the
+boxes lack`` only when the sentence cites it, so an earlier fact cannot be said
+without its tag. Quotes still come from the current line alone.
+
 Voice: the Willow persona (``personas/willow.md``, voice only, do not emote)
 reaches the model as ``VOICE``, scoped to the glue words. It changes no fact,
 and a word outside the boxes and the fixed glue fails ``nothing the boxes
@@ -44,6 +54,8 @@ from grove.seat_boxes import GLUE, KINDS, Box, short
 MODEL = os.environ.get("GROVE_SAY_MODEL") or "qwen3:4b"
 DEFAULT_HOST = "127.0.0.1:11434"
 DEFAULT_SAY_TIMEOUT = 300.0
+#: How many earlier replies of this run the prompt carries (the thread).
+THREAD_TURNS = 2
 
 
 def say_timeout(environ: dict | None = None) -> float:
@@ -194,7 +206,33 @@ def fact(b: Box) -> str:
     return f"{name}: {short(b.value)}{detail}"
 
 
-def build_prompt(boxes: list[Box], human: str, first: bool = True) -> str:
+def thread_lines(earlier: list[tuple[str, list[Box]]]) -> list[str]:
+    """The earlier replies as the prompt carries them: the human's line (once
+    while it repeats across pages) and the boxes with their tags."""
+    if not earlier:
+        return []
+    out = [
+        "Earlier in this conversation, for context only: you may refer back "
+        "to these with that or still, and cite one only by its tag below. "
+        "Never quote the human from here."
+    ]
+    last = None
+    for human, boxes in earlier:
+        if human and human != last:
+            out.append(f"The human asked earlier: {human}")
+        last = human or last
+        out += [f"[{b.id}] {fact(b)}" for b in boxes]
+    return out
+
+
+def build_prompt(
+    boxes: list[Box],
+    human: str,
+    first: bool = True,
+    earlier: list[tuple[str, list[Box]]] | None = None,
+) -> str:
+    """The prompt for one page. ``earlier`` is this run's last ``THREAD_TURNS``
+    replies as (the human's line, boxes), oldest first; none on the first."""
     lines = [f"[{b.id}] {fact(b)}" for b in boxes]
     return "\n".join(
         [
@@ -208,6 +246,7 @@ def build_prompt(boxes: list[Box], human: str, first: bool = True) -> str:
             "Free words, and only these: " + ", ".join(GLUE) + ".",
             "Quote the human only word for word, in double quotes, or not at all.",
             "Reply with the sentence only." + ("" if first else " It continues."),
+            *thread_lines(earlier or []),
             f"The human asked: {human}",
             "Boxes:",
             *lines,
@@ -243,17 +282,26 @@ def _bare(sentence: str) -> str:
     return re.sub(r"['’]s\b", "", CITE.sub(" ", sentence))
 
 
-def check_cites_served(sentence: str, boxes: list[Box]) -> bool:
-    """Every ``[id]`` the sentence cites is a box that was served."""
-    return set(CITE.findall(sentence)) <= {b.id for b in boxes}
+def check_cites_served(
+    sentence: str, boxes: list[Box], earlier: list[Box] | None = None
+) -> bool:
+    """Every ``[id]`` the sentence cites is a box that was served: one of this
+    page's boxes, or one of the ``earlier`` boxes of this run's thread."""
+    served = {b.id for b in boxes} | {b.id for b in earlier or []}
+    return set(CITE.findall(sentence)) <= served
 
 
 def check_boxes_cited(sentence: str, boxes: list[Box]) -> bool:
-    """Every served box is cited."""
+    """Every box of the current page is cited (earlier ones are optional)."""
     return {b.id for b in boxes} <= set(CITE.findall(sentence))
 
 
-def check_nothing_lacking(sentence: str, boxes: list[Box], human: str = "") -> bool:
+def check_nothing_lacking(
+    sentence: str,
+    boxes: list[Box],
+    human: str = "",
+    earlier: list[Box] | None = None,
+) -> bool:
     """Every number is a box's number; every word is a box's, glue, or a
     function word, in any script (accents folded; a letter the box vocab lacks
     fails closed). A span quoted verbatim from the human is their own words,
@@ -262,6 +310,10 @@ def check_nothing_lacking(sentence: str, boxes: list[Box], human: str = "") -> b
     human's gets no pass. A sentence with no word at all (only cites and
     punctuation) is not one."""
     text = _fold(_bare(sentence))
+    # an earlier box's facts count only when the sentence cites it
+    now = {b.id for b in boxes}
+    cited = set(CITE.findall(sentence))
+    boxes = [*boxes, *(b for b in earlier or [] if b.id in cited and b.id not in now)]
     facts = " ".join(f"{b.label} {fact(b)} {b.detail}" for b in boxes)
     facts = _fold(re.sub(r"['’]s\b", "", facts))
     words = [w for w in WORD.findall(text) if len(w) > 1 or not w.isascii()]
@@ -308,12 +360,14 @@ def run_checks(
     boxes: list[Box],
     human: str = "",
     claims: Callable[[str, dict], list[dict]] | None = None,
+    earlier: list[Box] | None = None,
 ) -> list[bool | str]:
-    """The four results, in ``CHECK_NAMES`` order: True, False, or ``"na"``."""
+    """The four results, in ``CHECK_NAMES`` order: True, False, or ``"na"``.
+    ``earlier`` is the boxes of this run's thread the prompt carried."""
     return [
-        check_cites_served(sentence, boxes),
+        check_cites_served(sentence, boxes, earlier),
         check_boxes_cited(sentence, boxes),
-        check_nothing_lacking(sentence, boxes, human),
+        check_nothing_lacking(sentence, boxes, human, earlier),
         check_quotes(sentence, human, claims),
     ]
 

@@ -3571,3 +3571,144 @@ def test_closing_after_a_deposit_error_still_counts_the_pool():
     st.run()
     assert closing_of(out) == "agent> 1 proposal stays pooled for next time."
     assert len(dep.pools) == 1  # the one deposit; the closing did not add another
+
+
+# --- O3: the model sees the thread ------------------------------------------------------
+
+H1, H2, H3, H4 = "a" * 64, "c" * 64, "e" * 64, "f" * 64
+ID1, ID2, ID3 = H1[:12], H2[:12], H3[:12]
+
+
+def threaded_run(say, tasks=("first task", "second task"), hashes=(H1, H2, H3, H4)):
+    """A run of several chain turns, each answering one different piece."""
+    calls = []
+
+    def esc(*a, **k):
+        calls.append(1)
+        return chain_result(piece("local", "answered", h=hashes[len(calls) - 1]))
+
+    api = FakeApi(escalate=esc)
+    st, out = seat(api, ["who", "", *tasks, ""], say=say)
+    assert st.run() == 0
+    return st, out
+
+
+def thread_say(make):
+    def say(prompt):
+        say.prompts.append(prompt)
+        # the tags under "Boxes:" (this page's), not the thread's
+        page = prompt.split("Boxes:")[1]
+        tags = [ln[1 : ln.index("]")] for ln in page.splitlines() if ln[:1] == "["]
+        return make(*tags)
+
+    say.prompts = []
+    return say
+
+
+def threaded(a, b, extra=""):
+    return f"Looks like both answered 1, escalated 0 [{a}] and local: d [{b}]{extra}."
+
+
+def test_the_first_prompt_has_no_thread_and_the_second_carries_the_first_reply():
+    say = thread_say(threaded)
+    threaded_run(say)
+    assert "Earlier in this conversation" not in say.prompts[0]
+    p = say.prompts[1]
+    assert "Earlier in this conversation" in p
+    thread = p.split("Boxes:")[0]
+    assert "The human asked earlier: first task" in thread
+    assert f"[{ID1}] routine pass: local: d" in thread
+    assert "[b5] routine pass: answered 1, escalated 0" in thread
+    assert thread.index("asked earlier: first task") < thread.index(
+        "asked: second task"
+    )
+    assert f"[{ID1}]" not in p.split("Boxes:")[1]  # the current page lists its own
+
+
+def test_the_thread_is_capped_at_the_last_two_replies():
+    say = thread_say(threaded)
+    tasks = ("first task", "second task", "third task", "fourth task")
+    threaded_run(say, tasks=tasks)
+    third = say.prompts[2].split("Boxes:")[0]
+    assert "first task" in third and "second task" in third  # two replies back
+    fourth = say.prompts[3].split("Boxes:")[0]
+    assert "first task" not in fourth and "second task" in fourth
+    assert say_mod.THREAD_TURNS == 2
+    assert f"[{ID1}]" not in fourth and f"[{ID2}]" in fourth
+
+
+def test_a_cite_to_a_box_from_an_earlier_turn_of_this_run_passes():
+    say = thread_say(lambda a, b: threaded(a, b, f", still local: d [{ID1}]"))
+    _st, out = threaded_run(say)
+    t = text(out)
+    assert f"agent · {MODEL} · said 2 boxes" in out
+    sentence = next(o for o in out if o.endswith(f"still local: d [{ID1}]."))
+    assert sentence.startswith("agent> Looks like both")
+    assert "[struck]" not in t.split("you: second task")[1]
+    # the first turn cited nothing earlier and failed nothing either
+    assert t.count("✓ every cite was served · ✓ every box cited") == 2
+
+
+def test_a_cite_to_a_box_never_shown_is_struck_and_the_code_sentence_stands():
+    say = thread_say(lambda a, b: threaded(a, b, ", still local: d [zz9zz9zz9zz9]"))
+    _st, out = threaded_run(say)
+    second = text(out).split("you: second task")[1]
+    assert "agent> ~~Looks like both" in second and "[struck]" in second
+    assert "✗ every cite was served" in second
+    assert GOOD_CODE in out  # the code sentence beneath it
+
+
+def test_a_cite_to_a_box_older_than_the_thread_is_not_served():
+    # shown this run (turn one) but out of the prompt's window by turn four
+    say = thread_say(lambda a, b: threaded(a, b, f", still local: d [{ID1}]"))
+    tasks = ("first task", "second task", "third task", "fourth task")
+    _st, out = threaded_run(say, tasks=tasks)
+    fourth = text(out).split("you: fourth task")[1]
+    assert "✗ every cite was served" in fourth and "[struck]" in fourth
+    third = text(out).split("you: third task")[1].split("you: fourth task")[0]
+    assert "✗ every cite was served" not in third  # still in the window then
+
+
+def test_a_box_from_a_previous_run_is_never_served():
+    # run one shows ID1; a fresh Seat (run two) has no thread, so a cite to it is
+    # a cite to a box that run never showed
+    threaded_run(thread_say(threaded))
+    say = thread_say(lambda a, b: threaded(a, b, f", still local: d [{ID1}]"))
+    _st, out = threaded_run(say, tasks=("only task",), hashes=(H2,))
+    assert "Earlier in this conversation" not in say.prompts[0]
+    assert "✗ every cite was served" in text(out) and "[struck]" in text(out)
+
+
+def test_every_box_cited_is_about_the_current_page_only():
+    # cites the earlier box and one current box, omits the other current box
+    say = thread_say(
+        lambda a, b: (
+            f"Looks like answered 1, escalated 0 [{a}], still local: d [{ID1}]."
+        )
+    )
+    _st, out = threaded_run(say)
+    second = text(out).split("you: second task")[1]
+    assert "✗ every box cited" in second and "[struck]" in second
+
+
+def test_the_code_only_path_is_unaffected_by_the_thread():
+    st, out = threaded_run(None)
+    assert text(out).count("code · said 2 boxes, no model asked") == 2
+    assert GOOD_CODE in out
+    assert [e[0] for e in st.exchanges] == ["first task", "second task"]
+
+
+def test_an_earlier_boxs_facts_count_only_when_the_sentence_cites_it():
+    old = bx.Box("b1", "block", "blocked", "PR 712 waiting", "126 tests pass")
+    new = bx.Box("b2", "pass", "routine pass", "answered 1")
+    ok = "PR 712 is still waiting [b1] and answered 1 [b2]."
+    assert say_mod.passed(say_mod.run_checks(ok, [new], earlier=[old]))
+    # the fact of the earlier box, said without its tag
+    bare = "PR 712 is still waiting and answered 1 [b2]."
+    assert say_mod.run_checks(bare, [new], earlier=[old])[2] is False
+    # and not at all when it is not an earlier box
+    assert say_mod.run_checks(ok, [new])[0] is False
+    # a quote is the current line's alone
+    q = 'PR 712 is still waiting [b1] and "answered 1" [b2].'
+    assert say_mod.run_checks(q, [new], "answered 1", earlier=[old])[3] is True
+    assert say_mod.run_checks(q, [new], "", earlier=[old])[3] is False
