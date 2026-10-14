@@ -3408,6 +3408,20 @@ def test_a_pair_that_shares_a_status_word_says_it(kind):
     assert got == "PR 0 and PR 1 are both open."
 
 
+@pytest.mark.parametrize("kind", ["pr", "pass"])
+def test_a_shared_last_word_that_is_not_a_status_gets_the_fixed_word(kind):
+    word = bx.RUN_VERB[kind]
+    two = [
+        bx.Box("b1", kind, "x", "local: a short answer"),
+        bx.Box("b2", kind, "x", "local: another answer"),
+    ]
+    got = bx.compose(two, page=0, look=False, rush=False)
+    assert got == f"Local: a short answer and local: another answer are both {word}."
+    three = [bx.Box(f"b{i}", kind, "x", f"table {i} rows") for i in range(3)]
+    got = bx.compose(three, page=0, look=False, rush=False)
+    assert got == f"Table 0 rows, table 1 rows and table 2 rows are all {word}."
+
+
 def test_a_count_box_is_never_grouped_with_other_boxes():
     """The store's count is said on its own, before a pair or a run."""
     count = bx.Box("n1", "pass", "count", "14 sealed, 3 open", role="count")
