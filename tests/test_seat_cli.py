@@ -3261,3 +3261,14 @@ def test_a_run_of_three_that_shares_a_status_word_says_it(kind):
     assert "all" not in bx.compose(
         one, page=0, look=False, rush=False
     )  # a pair keeps both
+
+
+def test_unmatched_show_falls_back_to_box_ids_and_skips_counts():
+    boxes = [
+        bx.Box("n4ee2a", "pr", "changed", "Tony (draft)", role="draft"),
+        bx.Box("n9", "pass", "routine pass", "14 sealed", role="count"),
+        bx.Box("n76c05", "pr", "changed", "la casa (draft)", role="draft"),
+    ]
+    assert s.Seat.unmatched("show me 14", "14", boxes) == (
+        'Nothing I showed answers to "14"; I showed: n4ee2a, n76c05.'
+    )

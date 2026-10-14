@@ -156,6 +156,7 @@ from grove.seat_boxes import (
     checks_line,
     chips,
     clause,
+    COUNTED,
     legend,
     matches,
     parse_follow,
@@ -864,10 +865,15 @@ class Seat:
     def unmatched(task: str, arg: str, boxes: list[Box]) -> str:
         """``show me X`` / ``open X`` that no shown box answers to: a fixed code
         line (the human's words quoted exactly, then up to ``UNMATCHED_LIST``
-        refs of what was shown and a count of the rest), never the chain."""
+        refs of what was shown, a box's own id when it has no better ref, and a count
+        of the rest), never the chain."""
         m = SHOW_RAW.fullmatch(task.strip())
         said = m[1] if m else arg
-        refs = list(dict.fromkeys(r for b in boxes for r in ref_tokens(b)[:1]))
+        refs = list(
+            dict.fromkeys(
+                (ref_tokens(b) or [b.id])[0] for b in boxes if b.role not in COUNTED
+            )
+        )
         head = f'Nothing I showed answers to "{said}"'
         if not refs:
             return terminate(head)
