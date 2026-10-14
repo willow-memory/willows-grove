@@ -2,6 +2,14 @@
 
 All notable changes land here per INVARIANTS.md §3. Format follows Keep a Changelog v1.1.0.
 
+## [0.24.1](https://github.com/willow-memory/willows-grove/compare/v0.24.0...v0.24.1) (2026-10-14)
+
+
+### Fixed
+
+* **seat:** a shared last word is a verb only when it is a status word ([9a53fe0](https://github.com/willow-memory/willows-grove/commit/9a53fe082741c4ba22373ce3cca3ba971204057d))
+* **seat:** a shared last word is a verb only when it is a status word ([#152](https://github.com/willow-memory/willows-grove/issues/152)) ([27c3347](https://github.com/willow-memory/willows-grove/commit/27c3347d5849cae5e6ffa0500f0b5849551ed74c))
+
 ## [0.24.0](https://github.com/willow-memory/willows-grove/compare/v0.23.0...v0.24.0) (2026-10-14)
 
 
