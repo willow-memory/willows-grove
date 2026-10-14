@@ -2,6 +2,20 @@
 
 All notable changes land here per INVARIANTS.md §3. Format follows Keep a Changelog v1.1.0.
 
+## [0.24.0](https://github.com/willow-memory/willows-grove/compare/v0.23.0...v0.24.0) (2026-10-14)
+
+
+### Added
+
+* **seat:** the opening says when the human sealed ([6517f46](https://github.com/willow-memory/willows-grove/commit/6517f463555e9c5aa0b253b4bfe4024ff8a5ef4a))
+
+
+### Fixed
+
+* **seat:** no repeated lines, the chain count said alone, and the opening names the seal date ([#150](https://github.com/willow-memory/willows-grove/issues/150)) ([bcae31a](https://github.com/willow-memory/willows-grove/commit/bcae31a07b0a2de2689d03ab73d5585c093378d7))
+* **seat:** the chain's count box is a count and is said on its own ([480bf21](https://github.com/willow-memory/willows-grove/commit/480bf212e44061bc5c1e52d79300fca23e15bc60))
+* **seat:** the opening and closing do not repeat what a stage's plain line said ([7826292](https://github.com/willow-memory/willows-grove/commit/7826292e00d9234e8da8bd1bce4bea0797bcc72b))
+
 ## [0.23.0](https://github.com/willow-memory/willows-grove/compare/v0.22.0...v0.23.0) (2026-10-14)
 
 
