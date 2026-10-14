@@ -536,6 +536,8 @@ def _run(group: list[Box]) -> list[Part]:
     for i, b in enumerate(group):
         sep = ", " if i < len(group) - 2 else " and "
         parts += [(_val(b.value), b.id)] + ([(sep, None)] if i < len(group) - 1 else [])
+    if group[0].kind == "dec":  # a run of decided items says so, as a pair does
+        parts.append((" are all decided", None))
     return parts
 
 

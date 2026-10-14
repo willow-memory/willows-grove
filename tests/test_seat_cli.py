@@ -3186,3 +3186,9 @@ def test_a_store_turn_asked_again_replays_what_was_shown(tmp_path):
     p = big_store(tmp_path)
     _api, out = nestor_run(["where are we", "", "", "where are we"], p)
     assert "as noted at" in text(out)
+
+
+def test_a_run_of_three_decided_boxes_has_a_verb():
+    dec = [bx.Box(f"d{i}", "dec", "sealed", f"a{i} → b{i}") for i in range(3)]
+    got = bx.compose(dec, page=0, look=False, rush=False)
+    assert got == "A0 → b0, a1 → b1 and a2 → b2 are all decided."
