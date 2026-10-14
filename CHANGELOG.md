@@ -64,6 +64,7 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 - **seat:** draft pairs and lists have a verb and keep the `(draft)` marker, after the sketch: "Tony (draft) is waiting.", "Both drafts are waiting: X (draft) and Y (draft).", "The drafts are waiting: X (draft), Y (draft) and Z (draft)."; a waiting draft is never calm, so no `Looks like` or `No rush.` is said over one (`Box.role == "draft"`).
 - **seat:** a counted `more` box is said apart as a count, never paired into a decided or changed fact: "10 more sealed are in the store.", "1 more draft or change is in the store." (it used to read "me hago cargo → I understand and 10 more sealed are both decided"). The seat marks these boxes by what the reader built (`Box.role` `more`, `draft`, `count`, set in `grove/seat_nestor.py`), not by their words; the store's count is its own sentence.
 - **seat:** the store's count and a `more` box are never a `show me` ref: `ref_tokens` is empty for them, so no `[show me 14]` chip is built from "14 sealed, ..." and `show me 14` does not open the count box (it still opens by its own box id).
+- **seat:** `where are we` takes two `more?` presses on the shoebox instead of six: page one is the count plus the first four open items (waiting drafts, then refusals), and a store turn pages four boxes at a time (`STORE_PAGE`); the chain's two-box `PAGE`, `more?`, chips, follow-ups, ordinals and "as noted at" replay are unchanged.
 
 ## [0.19.0](https://github.com/willow-memory/willows-grove/compare/v0.18.0...v0.19.0) (2026-10-11)
 

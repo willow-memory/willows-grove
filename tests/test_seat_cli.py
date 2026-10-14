@@ -2997,21 +2997,21 @@ def test_lead_rank_is_count_then_drafts_then_refusals_then_decided(tmp_path):
     assert lead_rank(down.boxes) == down.boxes  # a heads-up still leads alone
 
 
-def test_where_are_we_opens_with_the_count_alone_then_the_drafts(tmp_path):
+def test_where_are_we_opens_with_the_count_then_the_open_items(tmp_path):
     p = fixture_store(tmp_path, "w.db")
     before = hashlib.sha256(p.read_bytes()).hexdigest()
-    api, out = nestor_run(["where are we", "", "", ""], p)
+    api, out = nestor_run(["where are we"], p)
     t = text(out)
     first = after(out, "where are we")
     assert first[0].startswith("+- [routine pass] nestor store")  # the count first
     said = next(o for o in first if o.startswith("agent> "))
-    assert said == "agent> Morning. 1 sealed, 1 draft, 2 rejected (fixture)."
-    assert "said 1 box, no model asked" in text(first)
+    assert said.startswith("agent> Morning. 1 sealed, 1 draft, 2 rejected (fixture). ")
+    assert "Adios (draft) is waiting." in said  # a draft, never a fact
+    assert "said 5 boxes, no model asked" in t and "more?" not in t  # one page
     assert "Looks like" not in t and "No rush" not in t  # a refusal is in the store
-    assert not any("[blocked]" in o for o in first)  # the refusals come after
-    nxt = after(out, "more")
-    assert nxt[0].startswith("+- [changed] draft, waiting (fixture)")  # the open one
-    assert "(draft)" in text(nxt) and "escalate" not in api.names()
+    drafts = t.index("[changed] draft, waiting")
+    assert t.index("[routine pass]") < drafts < t.index("[blocked]")
+    assert "escalate" not in api.names()
     assert hashlib.sha256(p.read_bytes()).hexdigest() == before  # still read-only
 
 
@@ -3024,7 +3024,9 @@ def test_the_count_page_keeps_no_rush_when_the_store_holds_no_refusal(tmp_path):
     )
     _api, out = nestor_run(["where are we"], p)
     said = next(o for o in after(out, "where are we") if o.startswith("agent> "))
-    assert said == "agent> Morning. 1 sealed (fixture). No rush."
+    assert (
+        said == "agent> Morning. 1 sealed (fixture). Hola → Hello is decided. No rush."
+    )
 
 
 def test_a_chain_turn_and_what_needs_me_keep_the_generic_rank(tmp_path):
@@ -3139,3 +3141,48 @@ def test_show_me_a_count_does_not_open_the_count_box(tmp_path):
     _api, out = nestor_run(["where are we", "show me 1"], p)
     got = after(out, "show me 1")
     assert not any(o.startswith("+- [routine pass] nestor store") for o in got)
+
+
+def big_store(tmp_path):
+    rows = [pair(n, f"s{n}", f"t{n}", reason=f"r{n}.") for n in range(1, 11)]
+    rows += [
+        pair(20 + n, f"d{n}", f"e{n}", status="draft", reason=f"why {n}.")
+        for n in range(1, 4)
+    ]
+    rej = [
+        (f"r{n}", f"q{n}", "es", "en", f"t{n}", "ana", f"no {n}.", f"2026-02-0{n}", "")
+        for n in range(1, 3)
+    ]
+    return make(tmp_path / "big.db", rows, rej, schema=(PAIRS, REJS))
+
+
+def test_where_are_we_on_a_big_store_takes_two_more_presses_not_six(tmp_path):
+    p = big_store(tmp_path)
+    before = hashlib.sha256(p.read_bytes()).hexdigest()
+    _api, out = nestor_run(["where are we", "", "", "the second one"], p)
+    asks = [o for o in out if o.startswith("more? ▶")]
+    assert len(asks) == 2  # page one, then two more pages
+    first = after(out, "where are we")
+    assert first[0].startswith("+- [routine pass] nestor store")  # the count first
+    shown = [o for o in first if o.startswith("+- [")]
+    assert len(shown) == 1 + s.STORE_PAGE  # the count plus one store page
+    assert sum(o.startswith("+- [changed] draft, waiting") for o in first) == 3
+    said = next(o for o in first if o.startswith("agent> "))
+    assert "The drafts are waiting: d1 (draft), d2 (draft) and d3 (draft)." in said
+    nxt = after(out, "more")
+    assert sum(o.startswith("+- [") for o in nxt) == s.STORE_PAGE
+    ordinal = after(out, "the second one")
+    assert ordinal[0].startswith("+- [changed] draft, waiting")  # counts shown boxes
+    assert hashlib.sha256(p.read_bytes()).hexdigest() == before
+
+
+def test_the_chain_keeps_its_two_boxes_a_page():
+    assert s.PAGE == 2 and s.STORE_PAGE > s.PAGE
+    t = s.Turn("t", [bx.Box(f"b{i}", "dec", "d", f"v{i}") for i in range(5)])
+    assert [len(t.take()) for _ in range(3)] == [2, 2, 1]
+
+
+def test_a_store_turn_asked_again_replays_what_was_shown(tmp_path):
+    p = big_store(tmp_path)
+    _api, out = nestor_run(["where are we", "", "", "where are we"], p)
+    assert "as noted at" in text(out)

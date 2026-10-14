@@ -198,6 +198,10 @@ NESTOR_UI = "http://127.0.0.1:8765"
 NO_DEPOSIT = "deposit unavailable here: willow-mcp not on the path"
 #: Boxes a reply shows before ``more?``.
 PAGE = 2
+#: Boxes a store turn (``where are we``) shows per page, and with the count on
+#: its first page: the count plus ``STORE_PAGE`` open items, then ``STORE_PAGE``
+#: at a time. The chain's ``PAGE`` is unchanged.
+STORE_PAGE = 4
 #: What code answers to small talk: no boxes, nothing served, no model. The
 #: words are the sketch's glue ("Anytime.", "Got it.") or fixed code lines.
 HELLO = "Hello. Give me a task, or say help."
@@ -475,16 +479,18 @@ class Turn:
     at: str
     rest: list[Box]
     shown: list[Said] = field(default_factory=list)
-    #: A store turn that opens with its count alone (one box on page one) and
-    #: says it plainly (no ``Looks like``); ``rush=False``: ``No rush.`` is not
+    #: A store turn that opens with its count and the first open items
+    #: (``STORE_PAGE`` + 1 boxes on page one) and says it plainly (no ``Looks like``); ``rush=False``: ``No rush.`` is not
     #: said over a store that holds a refusal.
     lead: bool = False
     rush: bool = True
 
     def take(self) -> list[Box]:
-        """The next page off ``rest``: ``PAGE`` boxes, or the one count box on
-        a lead turn's first page."""
-        n = 1 if self.lead and not self.shown else PAGE
+        """The next page off ``rest``: ``PAGE`` boxes; on a lead (store) turn
+        the count plus ``STORE_PAGE`` open items first, then ``STORE_PAGE``."""
+        n = PAGE
+        if self.lead:
+            n = STORE_PAGE + (0 if self.shown else 1)
         batch, self.rest = self.rest[:n], self.rest[n:]
         return batch
 
@@ -737,11 +743,13 @@ class Seat:
         work on them. The path is the config's ``nestor_db`` (``api.default_
         nestor_db()``). Not configured, missing or not a store: one
         ``unreachable`` box, said in its plain line; a store with no rows:
-        ``empty``. No chain, no record row, nothing written. "Where are we" opens with the
-        store's count alone (one box on page one: "14 sealed, 3 drafts, 2 rejected
-        (fixture)", said plainly, no ``Looks like``, and no ``No rush.`` over a
-        store that holds a refusal), then the waiting drafts, the refusals, the
-        decided and the other changes (``seat_nestor.lead_rank``, after the
+        ``empty``. No chain, no record row, nothing written. "Where are we" opens
+        with the store's count and the first open items (page one: the count
+        box plus ``STORE_PAGE`` boxes, "14 sealed, 3 drafts, 2 rejected (fixture)"
+        said plainly as its own sentence, no ``Looks like``, and no ``No rush.``
+        over a store that holds a refusal or a waiting draft), then the waiting
+        drafts, the refusals, the decided and the other changes, ``STORE_PAGE``
+        a page (``seat_nestor.lead_rank``, after the
         shoebox sketch); ``more?`` and ``go on`` page that order. ``what needs me``
         raises the waiting drafts to ``needs you`` and shows only those (and a
         heads-up); a draft stays marked a draft, never a fact."""
