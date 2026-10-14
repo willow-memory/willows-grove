@@ -2355,9 +2355,56 @@ def test_go_on_shows_the_next_page_by_code_then_says_nothing_is_left():
 
 def test_a_follow_up_with_no_reply_before_it_goes_to_the_chain_as_today():
     api = FakeApi()
-    st, out = seat(api, ["who", "", "why", "show me 712", ""])
+    st, out = seat(api, ["who", "", "show me 712", ""])
     st.run()
-    assert api.names().count("escalate") == 2
+    assert api.names().count("escalate") == 1  # no turn yet: it is a task
+
+
+def test_show_me_that_no_shown_box_answers_to_is_a_plain_line_not_the_chain():
+    """T1: after a turn, ``show me 14`` is a follow-up that found nothing: one
+    code line quoting the words, listing what was shown; no escalate, no model."""
+    api, out = thread_run(["status of the build", *ALL, "show me 14"])
+    got = after(out, "show me 14")
+    assert got[-1] == (
+        'agent> Nothing I showed answers to "14"; I showed: b5, 712, b1, 127 and 1 more.'
+    )
+    assert "agent · code · no model, nothing served" in got
+    assert "escalate" not in api.names()
+    assert not any(o.startswith("+-") for o in got)  # no card, no row
+
+
+@pytest.mark.parametrize(
+    "line,said",
+    [
+        ("Open Tony?", "Tony"),
+        ("show 9999", "9999"),
+        ("SHOW ME  the Stack!", "the Stack"),
+    ],
+)
+def test_unmatched_show_forms_quote_the_words_exactly(line, said):
+    api, out = thread_run(["status of the build", *ALL, line])
+    got = after(out, line)
+    assert any(
+        o.startswith(f'agent> Nothing I showed answers to "{said}"') for o in got
+    )
+    assert api.names().count("escalate") == 0
+
+
+def test_unmatched_show_lists_a_few_refs_and_counts_the_rest():
+    boxes = [bx.Box(f"b{n}", "pass", "routine pass", f"check {n}") for n in range(1, 8)]
+    line = s.Seat.unmatched("show me zzz", "zzz", boxes)
+    assert line == (
+        'Nothing I showed answers to "zzz"; I showed: b1, b2, b3, b4 and 3 more.'
+    )
+    assert s.Seat.unmatched("open x", "x", []) == 'Nothing I showed answers to "x".'
+
+
+def test_unmatched_show_after_a_store_turn_is_also_a_plain_line(tmp_path):
+    p = fixture_store(tmp_path, "s.db")
+    api, out = nestor_run(["where are we", "show me 99999"], p)
+    got = after(out, "show me 99999")
+    assert any(o.startswith('agent> Nothing I showed answers to "99999"') for o in got)
+    assert "escalate" not in api.names()
 
 
 def test_a_line_that_resolves_to_nothing_goes_to_the_chain_as_today():
@@ -2373,7 +2420,8 @@ def test_a_line_that_resolves_to_nothing_goes_to_the_chain_as_today():
         st.converse(task, demo_boxes()[:2], task),
     )
     st.run()
-    assert calls == ["status of the build", "show me the stack", "b99", "the sky"]
+    # "show me the stack" is a follow-up that found nothing: a code line (T1)
+    assert calls == ["status of the build", "b99", "the sky"]
 
 
 def test_asked_again_still_replays_and_a_follow_up_leaves_no_row():

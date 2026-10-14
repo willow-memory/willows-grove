@@ -94,9 +94,11 @@ said them, provenance such as an origin left to the card but a fixture still
 marked ``(fixture)``; a box with nothing but provenance says there is no more);
 ``go on`` / ``more`` / ``next`` show the next page (by code, no model) or say
 nothing is left. An ordinal past what was shown, or a ref that fits two boxes,
-is a plain line, never a guess. None of these asks a model, calls
-``api.escalate`` or writes a row; a line that matches nothing goes to the chain
-as before. A sentence never ends ``.".`` (``terminate``). A ``show me`` ref is a number of two digits or more, an id-like
+is a plain line, never a guess, and so is ``show me X`` / ``open X`` / ``show X``
+that no shown box answers to ("Nothing I showed answers to "14"; I showed: ..."):
+once a turn has been shown it is a follow-up, not a task. None of these asks a
+model, calls ``api.escalate`` or writes a row; any other line that matches
+nothing (and ``show me X`` before any turn) goes to the chain as before. A sentence never ends ``.".`` (``terminate``). A ``show me`` ref is a number of two digits or more, an id-like
 token (``PR 712``) or a short box id (``b4``), never the first words of a value;
 with none, no ``show me`` chip. ``No rush.`` is said at most once per turn, and
 the chain's ``answered N, escalated M`` is said as a sentence, never after a
@@ -161,6 +163,7 @@ from grove.seat_boxes import (
     plural,
     plain_line,
     rank,
+    ref_tokens,
     terminate,
     render_box,
     say_line,
@@ -202,6 +205,10 @@ PAGE = 2
 #: its first page: the count plus ``STORE_PAGE`` open items, then ``STORE_PAGE``
 #: at a time. The chain's ``PAGE`` is unchanged.
 STORE_PAGE = 4
+#: How many refs an unmatched ``show me X`` line lists before "and N more".
+UNMATCHED_LIST = 4
+#: The typed ``show me X`` / ``show X`` / ``open X`` with the human's own case.
+SHOW_RAW = re.compile(r"(?i)(?:show me|show|open)\s+(.+?)[\s?!.]*")
 #: What code answers to small talk: no boxes, nothing served, no model. The
 #: words are the sketch's glue ("Anytime.", "Got it.") or fixed code lines.
 HELLO = "Hello. Give me a task, or say help."
@@ -801,7 +808,11 @@ class Seat:
     def follow_up(self, task: str) -> bool:
         """Resolve a typed line against the last reply by fixed rules, in code:
         no model, no ``api.escalate``, no record row. False: not one, the line
-        goes to the chain as before."""
+        goes to the chain as before. A ``show me X`` / ``open X`` / ``show X``
+        that no shown box answers to is a follow-up that found nothing: a plain
+        code line (``unmatched``), never the chain. With no previous turn there
+        is nothing to resolve against and the line is a task, so it goes to the
+        chain."""
         th = self.thread
         got = parse_follow(task) if th else None
         if th is None or got is None:
@@ -837,6 +848,8 @@ class Seat:
             hits = [b for b in boxes if b.id.lower() == arg]
             found = hits[0] if len(hits) == 1 else None
         if found is None:
+            if kind == "ref" and prefixed:  # clearly a follow-up, nothing to open
+                return self.said(task, self.unmatched(task, arg, boxes))
             return False
         th.focus = found
         self.you(task)
@@ -846,6 +859,21 @@ class Seat:
             self.show(found, plain=False)
             self.code_reply(self.open_sentence(found))
         return True
+
+    @staticmethod
+    def unmatched(task: str, arg: str, boxes: list[Box]) -> str:
+        """``show me X`` / ``open X`` that no shown box answers to: a fixed code
+        line (the human's words quoted exactly, then up to ``UNMATCHED_LIST``
+        refs of what was shown and a count of the rest), never the chain."""
+        m = SHOW_RAW.fullmatch(task.strip())
+        said = m[1] if m else arg
+        refs = list(dict.fromkeys(r for b in boxes for r in ref_tokens(b)[:1]))
+        head = f'Nothing I showed answers to "{said}"'
+        if not refs:
+            return terminate(head)
+        shown, rest = refs[:UNMATCHED_LIST], len(refs) - UNMATCHED_LIST
+        tail = ", ".join(shown) + (f" and {rest} more" if rest > 0 else "")
+        return terminate(f"{head}; I showed: {tail}")
 
     def said(self, task: str, text: str) -> bool:
         self.you(task)
