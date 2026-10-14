@@ -485,8 +485,8 @@ def _fact(b: Box) -> str:
     """A box's value as a sentence part. The chain's ``answered N, escalated
     M`` said alone reads ``The chain answered N and escalated M`` (label, numbers
     and verbs from the box; ``The`` and ``and`` are fixed words), never a bare
-    count; any other value is itself. In a pair or a list it stays as the box
-    has it."""
+    count; any other value is itself. The seat gives that summary ``role="count"``,
+    so it is always said alone, never in a pair or a list."""
     v = _val(b.value)
     m = CHAIN_COUNT.fullmatch(v)
     if m and b.kind == "pass" and len(_val(b.label).split()) == 1:

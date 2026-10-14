@@ -128,8 +128,10 @@ model, calls ``api.escalate`` or writes a row; any other line that matches
 nothing (and ``show me X`` before any turn) goes to the chain as before. A sentence never ends ``.".`` (``terminate``). A ``show me`` ref is a number of two digits or more, an id-like
 token (``PR 712``) or a short box id (``b4``), never the first words of a value;
 with none, no ``show me`` chip. ``No rush.`` is said at most once per turn, and
-the chain's ``answered N, escalated M`` is said as a sentence, never after a
-``Heads up:``. Under ``NO_COLOR`` or a non-tty the cards are plain ASCII with
+the chain's ``answered N, escalated M`` is said as a sentence of its own ("The
+chain answered 1 and escalated 0."), never after a ``Heads up:`` and never
+grouped into a pair or a run with a piece: its box carries ``role="count"``, as
+the Nestor store's count does. Under ``NO_COLOR`` or a non-tty the cards are plain ASCII with
 no escape codes.
 
 ``where are we`` and ``what needs me`` are not chain tasks: they are answered
@@ -1246,11 +1248,16 @@ class Seat:
             return
         pieces = res.get("pieces", [])
         if pieces:
+            # role "count": the summary is a count of pieces, not a piece, so it
+            # is said on its own ("The chain answered 1 and escalated 0.") and
+            # never paired or run with a piece, as the store's count is not
             boxes = [
-                self.card(
+                Box(
+                    self.nid(),
                     "pass",
                     "chain",
                     f"answered {res.get('answered', 0)}, escalated {res.get('escalated', 0)}",
+                    role="count",
                 )
             ]
             boxes += [self.piece_box(p) for p in pieces]

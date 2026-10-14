@@ -852,9 +852,7 @@ def test_the_launcher_reports_no_willow_bot(tmp_path):
 # --- 3b-ii: the local model's sentence, the four checks, the fallback -------------
 
 MODEL = say_mod.MODEL
-GOOD_CODE = (
-    "agent> Looks like answered 1, escalated 0 and local: d are both routine. No rush."
-)
+GOOD_CODE = "agent> Looks like the chain answered 1 and escalated 0. Local: d. No rush."
 
 
 def tagged(make):
@@ -3804,3 +3802,60 @@ def test_an_earlier_boxs_facts_count_only_when_the_sentence_cites_it():
     q = 'PR 712 is still waiting [b1] and "answered 1" [b2].'
     assert say_mod.run_checks(q, [new], "answered 1", earlier=[old])[3] is True
     assert say_mod.run_checks(q, [new], "", earlier=[old])[3] is False
+
+
+# --- the chain's count is said on its own, never paired with a piece ---------------
+
+
+def chain_sentences(*pieces_, keys=("who", "", "task", "", "", "")):
+    st, out = seat(FakeApi(escalate=chain_result(*pieces_)), list(keys))
+    st.run()
+    return [o for o in out if o.startswith("agent> ")][1:-1]
+
+
+def test_the_chain_count_is_a_count_box_and_is_said_alone():
+    api = FakeApi(escalate=chain_result(piece("local", "answered")))
+    st, _out = seat(api, [])
+    seen = []
+    st.converse = lambda key, boxes, human="", **k: seen.extend(boxes)
+    st.chain("task")
+    assert [b.role for b in seen] == ["count", ""]
+    assert seen[0].value == "answered 1, escalated 0"
+    # a lone answered piece: the count is a sentence, the piece its own
+    assert chain_sentences(piece("local", "answered")) == [
+        "agent> Looks like the chain answered 1 and escalated 0. Local: d. No rush."
+    ]
+    # never "answered 1, escalated 0 and local: d are both routine"
+    assert not any("are both" in s for s in chain_sentences(piece("local", "answered")))
+
+
+def test_the_chain_count_never_joins_a_pair_or_a_run_but_pieces_still_pair():
+    count = bx.Box("c", "pass", "chain", "answered 1, escalated 0", role="count")
+    p1 = bx.Box("p1", "pass", "local", "local: a", "")
+    p2 = bx.Box("p2", "pass", "local", "d0: b", "")
+    for boxes in ([count, p1], [p1, count], [count, p1, p2], [p1, count, p2]):
+        t = bx.compose(boxes, look=False)
+        assert "answered 1 and escalated 0" in t and "both" not in t.split(".")[0]
+        assert "answered 1, escalated 0 and" not in t
+    # the pieces after the count are still paired by their kind's verb
+    assert (
+        bx.compose([p1, p2])
+        == "Looks like local: a and d0: b are both routine. No rush."
+    )
+    # three pieces: the count and the first piece, then the other two as a pair
+    got = chain_sentences(
+        piece("local", "answered", h="a" * 64),
+        piece("local", "answered", h="b" * 64),
+        piece("local", "answered", h="c" * 64),
+    )
+    assert got[0].startswith("agent> Looks like the chain answered 3 and escalated 0.")
+    assert got[1] == "agent> Oh, and local: d and local: d are both routine."
+
+
+def test_the_chain_count_is_not_a_show_me_ref():
+    st, out = seat(
+        FakeApi(escalate=chain_result(piece("local", "answered"))),
+        ["who", "", "task", "", "show me 1", ""],
+    )
+    st.run()
+    assert not any(o.startswith("chips:") and "show me" in o for o in out)
