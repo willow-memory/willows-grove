@@ -35,6 +35,15 @@ a typed line as a follow-up (``show me 712``, ``open 712``, a box id, ``the
 second one``, ``that``, ``why``, ``go on``); the seat resolves it against the
 last reply's boxes by fixed rules, in code.
 
+A sentence lowercases a first word only when it is a known common word
+(``lead``: ``STARTERS``, ``VERBS``), so a name keeps its capital; ``You need
+to <verb>`` is said only of a value that starts with a task verb. A box's
+``role`` (``draft``, ``more``, ``count``, set by the reader) decides how it is
+said: a draft is ``X (draft) is waiting`` (a pair ``Both drafts are waiting:
+X and Y``, never a bare list), a ``more`` box is a count apart (``10 more
+sealed are in the store``), and neither the count nor a ``more`` box is ever a
+``show me`` ref (``COUNTED``).
+
 A count code says is pluralised (``plural``: ``1 box``, ``2 boxes``).
 A sentence code ends is ended once (``terminate``): a quoted reason that ends
 ``."`` is not followed by a second full stop. ``why_sentence`` says the reason
@@ -94,6 +103,11 @@ class Box:
     value: str
     detail: str = ""
     state: str = "populated"
+    #: What the box is, structurally, when its kind does not say: ``draft`` (a
+    #: waiting draft, never a fact), ``more`` (a count of rows not shown) or
+    #: ``count`` (the store's summary). Set by the reader that builds the box,
+    #: never guessed from its words; ``""`` for every other box.
+    role: str = ""
 
 
 def use_color(stream: object = None, environ: dict | None = None) -> bool:
@@ -243,13 +257,37 @@ def _val(text: str) -> str:
     return short(" ".join(str(text).split())).rstrip(".")
 
 
+#: Words a sentence may start with that lose their capital mid-sentence: a
+#: closed list of common sentence-starters (never a name, so ``Tony`` stays
+#: ``Tony``) and the task verbs a needs-you value may start with.
+STARTERS = frozenset(
+    "the a an this that these those it its both there here some one".split()
+)
+VERBS = frozenset(
+    """add answer approve ask book call cancel check choose click close confirm
+    create decide delete download email enter fix forward grant install join
+    label merge move open pay phone pick pull push read reject reopen reply
+    review rerun restart rotate run schedule seal send sign submit tell test
+    unseal update upload verify write ratify""".split()
+)
+
+
 def lead(text: str) -> str:
-    """Lowercase a sentence's first word when it is only capitalized (Ratify,
-    Phone), never an acronym, a name with a digit, or ``I``."""
+    """Lowercase a sentence's first word only when it is a known common word
+    (``STARTERS`` or ``VERBS``: Ratify, Phone, The), so a name (``Tony``), an
+    acronym, a word with a digit and ``I`` keep their capital."""
     w = text.split(" ", 1)[0]
     if len(w) > 1 and w[0].isupper() and w[1:].isalpha() and w[1:].islower():
-        return w[0].lower() + text[1:]
+        if w.lower() in STARTERS | VERBS:
+            return w[0].lower() + text[1:]
     return text
+
+
+def is_verb_phrase(text: str) -> bool:
+    """A value that starts with a known task verb, so ``You need to <it>``
+    reads; a name, a count or a draft does not."""
+    words = text.split()
+    return len(words) > 1 and words[0].lower() in VERBS and lead(text) != text
 
 
 def cap(text: str) -> str:
@@ -421,9 +459,13 @@ def _fact(b: Box) -> str:
 def _single(b: Box) -> list[Part]:
     v = _val(b.value)
     tail = _tail(b)
+    if b.role == "more":  # a count of rows not shown, never a decided/changed item
+        return [(f"{v} {'is' if v.startswith('1 ') else 'are'} in the store", b.id)]
+    if b.role == "draft":  # a draft is never a fact, nor a task to "do"
+        return [(f"{v} is waiting{' on you' if b.kind == 'you' else ''}", b.id)]
     if b.kind == "you":
         words = v.split()
-        if len(words) > 1 and lead(v) != v:
+        if is_verb_phrase(v):
             return [(f"You need to {lead(v)}", b.id)]
         if len(words) > SHORT_YOU_WORDS or INNER_PUNCT.search(v):
             return [("This needs you: ", None), (v, b.id)]  # no dangling suffix
@@ -449,6 +491,13 @@ def clause(box: Box) -> str:
 def _pair(a: Box, b: Box) -> list[Part]:
     """Two boxes of one kind in one phrase, with ``both``."""
     va, vb = _val(a.value), _val(b.value)
+    if a.role == "draft" and a.kind != "you":
+        return [
+            ("Both drafts are waiting: ", None),
+            (va, a.id),
+            (" and ", None),
+            (vb, b.id),
+        ]
     if a.kind == "you":
         return [
             ("Both need you: ", None),
@@ -482,6 +531,8 @@ def _run(group: list[Box]) -> list[Part]:
     if len(group) == 2:
         return _pair(*group)
     parts: list[Part] = []
+    if group[0].role == "draft":
+        parts.append(("The drafts are waiting: ", None))
     for i, b in enumerate(group):
         sep = ", " if i < len(group) - 2 else " and "
         parts += [(_val(b.value), b.id)] + ([(sep, None)] if i < len(group) - 1 else [])
@@ -535,15 +586,19 @@ def compose(
             continue
         j = i
         while (
-            j < len(boxes) and boxes[j].state == "populated" and boxes[j].kind == b.kind
+            j < len(boxes)
+            and boxes[j].state == "populated"
+            and (boxes[j].kind, boxes[j].role == "draft") == (b.kind, b.role == "draft")
+            and "more" not in (b.role, boxes[j].role)
         ):
             j += 1
+        j = max(j, i + 1)
         group = boxes[i:j]
         i = j
-        if b.kind in ("you", "block") and len(group) > 2:
+        if b.role == "more" or (b.kind in ("you", "block") and len(group) > 2):
             sents += [(_single(g), "hard") for g in group]
         else:
-            soft = b.kind not in ("you", "block")
+            soft = b.kind not in ("you", "block") and b.role not in ("draft", "count")
             sents.append((_run(group), "soft" if soft else "hard"))
     # fold neighbouring soft sentences into one, joined by "; "
     folded: list[tuple[list[Part], str]] = []
@@ -571,7 +626,11 @@ def compose(
             flagged = True
         out.append(parts)
         hot_at.append(hot)
-    calm = not broken and not bad and not any(b.kind in ("you", "block") for b in boxes)
+    calm = (
+        not broken
+        and not bad
+        and not any(b.kind in ("you", "block") or b.role == "draft" for b in boxes)
+    )
     kinds_ok = all(b.kind in ("dec", "pr", "pass") for b in boxes)
     prefix = ""
     if page > 0:
@@ -634,6 +693,10 @@ class Chips:
         return "chips: " + " ".join(f"[{c}]" for c in self.labels())
 
 
+#: Roles that are a count of things, not a thing: never a ``show me`` ref.
+COUNTED = ("count", "more")
+
+
 def _label(text: str) -> str:
     return _UNSAFE.sub("", _val(text)).strip()
 
@@ -669,6 +732,8 @@ def matches(box: Box, text: str) -> bool:
     want = " ".join(_words(text))
     if not want:
         return False
+    if box.role in COUNTED:  # a count names no item: only its own id opens it
+        return want == box.id.lower()
     ids = {" ".join(_words(m)) for m in ID_TOKEN.findall(str(box.value))}
     if want == box.id.lower() or want in NUMBER.findall(str(box.value)) or want in ids:
         return True
@@ -691,6 +756,8 @@ def ref_tokens(box: Box) -> list[str]:
     from the value (``712``), an id-like token from it (``PR 712``), then the
     box's own short id (``b4``). Never the first words of a value. ``[]`` when
     the box has none."""
+    if box.role in COUNTED:
+        return []
     value = str(box.value)
     out = REF_NUMBER.findall(value) + ID_TOKEN.findall(value)
     if SHORT_ID.fullmatch(box.id):
@@ -726,7 +793,10 @@ def chips(boxes: list[Box]) -> Chips:
             (
                 b
                 for b in boxes
-                if b.state == "populated" and b.detail and not options(b)
+                if b.state == "populated"
+                and b.detail
+                and not options(b)
+                and b.role not in COUNTED
             ),
             key=lambda b: b.kind != "block",  # stable: rank order within
         )

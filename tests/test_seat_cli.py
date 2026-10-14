@@ -3041,13 +3041,101 @@ def test_lead_rank_puts_a_heads_up_first_and_a_more_box_last_in_its_group():
 
     mk = bx.Box
     boxes = [
-        mk("a", "dec", "more · 4 shown", "11 more sealed"),
+        mk("a", "dec", "more · 4 shown", "11 more sealed", role="more"),
         mk("b", "dec", "sealed by x", "s1 → t1"),
-        mk("c", "pr", "more · 4 shown", "2 more drafts or changes"),
+        mk("c", "pr", "more · 4 shown", "2 more drafts or changes", role="more"),
         mk("d", "pr", "changed", "c1"),
-        mk("e", "pr", "draft, waiting", "d1 (draft)"),
+        mk("e", "pr", "draft, waiting", "d1 (draft)", role="draft"),
         mk("f", "block", "a no", "r1"),
         mk("g", "pass", "nestor store", "3 sealed"),
         mk("h", "pass", "nestor store", "unreachable — gone", state="unreachable"),
     ]
     assert [b.id for b in lead_rank(boxes)] == list("hgefbadc")
+
+
+# --- names keep their capital; drafts and counts are not said as facts -------------------
+
+
+def _draft(i, value, kind="pr"):
+    return bx.Box(i, kind, "draft, waiting", f"{value} (draft)", role="draft")
+
+
+def test_a_name_keeps_its_capital_and_only_known_words_lose_theirs():
+    assert bx.lead("Tony (draft)") == "Tony (draft)"
+    assert bx.lead("Tony → Antonio") == "Tony → Antonio"
+    assert bx.lead("Ratify the work order") == "ratify the work order"
+    assert bx.lead("The house") == "the house" and bx.lead("PR 712") == "PR 712"
+    assert bx.lead("I understand") == "I understand"
+    say = bx.compose(
+        [_draft("a", "Ana"), bx.Box("b", "dec", "d", "Tony → Antonio")], False
+    )
+    assert "Tony → Antonio" in say and "tony" not in say
+
+
+def test_you_need_to_is_said_only_of_a_verb_phrase_never_a_draft_or_a_name():
+    ok = bx.compose([bx.Box("b1", "you", "x", "Ratify the work order")])
+    assert ok == "You need to ratify the work order."
+    one = bx.compose([_draft("a", "Tony", "you")])
+    assert one == "Tony (draft) is waiting on you."
+    assert (
+        bx.compose([bx.Box("b1", "you", "x", "Tony Smith")]) == "Tony Smith needs you."
+    )
+    the = bx.compose([bx.Box("b1", "you", "x", "The roof")])
+    assert "need to" not in the  # a starter that is not a verb
+    page = bx.compose([_draft("a", "Tony", "you")], False, page=1)
+    assert page == "Oh, and Tony (draft) is waiting on you."
+    assert "need to" not in page
+
+
+def test_draft_pairs_and_lists_have_a_verb_and_keep_the_draft_marker():
+    one = bx.compose([_draft("a", "Tony")])
+    assert one == "Tony (draft) is waiting."
+    two = bx.compose([_draft("a", "Ana"), _draft("b", "Luz")])
+    assert two == "Both drafts are waiting: Ana (draft) and Luz (draft)."
+    three = bx.compose([_draft("a", "Ana"), _draft("b", "Luz"), _draft("c", "Eva")])
+    assert three == "The drafts are waiting: Ana (draft), Luz (draft) and Eva (draft)."
+    later = bx.compose([_draft("a", "Ana"), _draft("b", "Luz")], False, page=2)
+    assert later.startswith("Also, both drafts are waiting: Ana (draft)")
+    both_you = bx.compose([_draft("a", "Ana", "you"), _draft("b", "Luz", "you")])
+    assert both_you == "Both need you: Ana (draft) and Luz (draft)."
+
+
+def test_a_more_box_is_a_count_said_apart_never_paired_into_a_fact():
+    more = bx.Box("m", "dec", "more · 4 shown", "10 more sealed", role="more")
+    dec = bx.Box("d", "dec", "sealed", "me hago cargo → I understand")
+    got = bx.compose([dec, more], page=0, look=False)
+    assert got == (
+        "Me hago cargo → I understand is decided. 10 more sealed are in the store."
+        " No rush."
+    )
+    one = bx.Box("m", "pr", "more · 1 shown", "1 more draft or change", role="more")
+    chg = bx.Box("c", "pr", "changed", 'x: "a" was replaced')
+    got = bx.compose([chg, one], page=0, look=False)
+    assert "both" not in got and "1 more draft or change is in the store." in got
+    two = bx.compose([more, bx.Box("n", "pr", "more", "2 more drafts", role="more")])
+    assert "both" not in two and "are decided" not in two
+
+
+def test_the_count_and_more_boxes_are_never_a_show_me_ref():
+    count = bx.Box(
+        "nd1", "pass", "nestor store", "14 sealed, 3 drafts", "x", role="count"
+    )
+    more = bx.Box(
+        "nm2", "dec", "more · 4 shown", "10 more sealed", "older", role="more"
+    )
+    other = bx.Box("n123", "dec", "sealed", "a → b", "sealed by ana")
+    assert bx.ref_tokens(count) == [] and bx.ref_tokens(more) == []
+    assert bx.chips([count, more]).show == ""
+    assert bx.chips([count, more, other]).show == "show me n123"
+    assert not bx.matches(count, "14") and not bx.matches(more, "10")
+    assert not bx.matches(count, "14 sealed") and bx.matches(count, "nd1")
+    # the same value on an ordinary box is still a ref
+    plain = bx.Box("b9", "pass", "tests", "14 sealed", "d")
+    assert bx.ref_tokens(plain)[0] == "14" and bx.matches(plain, "14")
+
+
+def test_show_me_a_count_does_not_open_the_count_box(tmp_path):
+    p = fixture_store(tmp_path, "s.db")
+    _api, out = nestor_run(["where are we", "show me 1"], p)
+    got = after(out, "show me 1")
+    assert not any(o.startswith("+- [routine pass] nestor store") for o in got)
