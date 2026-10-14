@@ -524,20 +524,40 @@ def _pair(a: Box, b: Box) -> list[Part]:
     return [("both ", None), (va, a.id), (" and ", None), (vb, b.id)]
 
 
+#: The neutral verb a run of three or more says when its values share no word.
+RUN_VERB = {"dec": "decided", "pr": "changed", "pass": "routine"}
+
+
 def _run(group: list[Box]) -> list[Part]:
-    """A run of one kind: one box, a pair, or (decided, changed, pass) a list."""
+    """A run of one kind: one box, a pair, or (decided, changed, pass) a list.
+    A list of three or more ends with a verb, as a pair does: ``are all <word>``
+    where the word is the last word every value shares (``PR 1, PR 2 and PR 3
+    are all open``), else the kind's fixed word (``RUN_VERB``: decided, changed,
+    routine). A draft run says ``The drafts are waiting:`` instead."""
     if len(group) == 1:
         return _single(group[0])
     if len(group) == 2:
         return _pair(*group)
     parts: list[Part] = []
-    if group[0].role == "draft":
+    draft = group[0].role == "draft"
+    vals = [_val(b.value) for b in group]
+    end = RUN_VERB.get(group[0].kind, "") if not draft else ""
+    if group[0].kind != "dec" and not draft:
+        words = [v.split() for v in vals]
+        last = words[0][-1]
+        if (
+            all(len(w) > 1 and w[-1].lower() == last.lower() for w in words)
+            and last.isalpha()
+            and len(last) > 2
+        ):
+            vals, end = [" ".join(w[:-1]) for w in words], last
+    if draft:
         parts.append(("The drafts are waiting: ", None))
     for i, b in enumerate(group):
         sep = ", " if i < len(group) - 2 else " and "
-        parts += [(_val(b.value), b.id)] + ([(sep, None)] if i < len(group) - 1 else [])
-    if group[0].kind == "dec":  # a run of decided items says so, as a pair does
-        parts.append((" are all decided", None))
+        parts += [(vals[i], b.id)] + ([(sep, None)] if i < len(group) - 1 else [])
+    if end:
+        parts.append((f" are all {end}", None))
     return parts
 
 
@@ -560,7 +580,8 @@ def compose(
     A short sentence per box, in the order given (``rank`` puts the pressing
     ones first): ``You need to ratify the work order. PR 712's still waiting,
     126 tests pass.`` Decided, changed and routine boxes share one
-    ``;``-joined sentence, and two of a kind say ``both``. ``greet`` opens it
+    ``;``-joined sentence, two of a kind say ``both`` and three or more end
+    ``are all <word>`` (``_run``). ``greet`` opens it
     (``Morning.``); a page after the first opens ``Oh, and`` (the second) or
     ``Also,`` (later); ``Looks like`` opens a first page that is all routine;
     ``Heads up:`` precedes a problem or an unreachable box, whose plain line

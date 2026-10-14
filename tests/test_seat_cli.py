@@ -3240,3 +3240,24 @@ def test_a_run_of_three_decided_boxes_has_a_verb():
     dec = [bx.Box(f"d{i}", "dec", "sealed", f"a{i} → b{i}") for i in range(3)]
     got = bx.compose(dec, page=0, look=False, rush=False)
     assert got == "A0 → b0, a1 → b1 and a2 → b2 are all decided."
+
+
+@pytest.mark.parametrize("kind,word", [("pr", "changed"), ("pass", "routine")])
+def test_a_run_of_three_changed_or_routine_boxes_has_a_verb(kind, word):
+    mixed = [
+        bx.Box(f"b{i}", kind, "x", v)
+        for i, v in enumerate(["PR 1 open", "PR 2 merged", "tests ok"])
+    ]
+    got = bx.compose(mixed, page=0, look=False, rush=False)
+    assert got == f"PR 1 open, PR 2 merged and tests ok are all {word}."
+
+
+@pytest.mark.parametrize("kind", ["pr", "pass"])
+def test_a_run_of_three_that_shares_a_status_word_says_it(kind):
+    same = [bx.Box(f"b{i}", kind, "x", f"PR {i} open") for i in range(3)]
+    got = bx.compose(same, page=0, look=False, rush=False)
+    assert got == "PR 0, PR 1 and PR 2 are all open."
+    one = [bx.Box(f"b{i}", kind, "x", f"PR {i} open") for i in range(2)]
+    assert "all" not in bx.compose(
+        one, page=0, look=False, rush=False
+    )  # a pair keeps both
