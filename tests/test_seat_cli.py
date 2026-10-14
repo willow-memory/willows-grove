@@ -3303,3 +3303,53 @@ def test_a_count_box_is_never_grouped_with_other_boxes():
             assert "14 sealed, 3 open and" not in got
             assert "and 14 sealed" not in got
             assert ", 14 sealed" not in got
+
+
+@pytest.mark.parametrize(
+    "target,ref",
+    [
+        ("14", True),
+        ("9999", True),
+        ("PR 712", True),
+        ("#714", True),
+        ("ABC-123", True),
+        ("b4", True),
+        ("n4ee2a", True),
+        ("pull request #714", True),
+        ("the 5th one", True),
+        ("the stack", True),
+        ("Tony", True),
+        ("the tests that failed", False),
+        ("the failing tests from yesterday", False),
+        ("me the tests that failed 14", False),
+        ("", False),
+    ],
+)
+def test_a_show_me_target_is_a_reference_or_a_task(target, ref):
+    assert bx.looks_like_ref(target) is ref
+
+
+def test_a_show_me_task_after_a_turn_still_reaches_the_chain():
+    """U2: a longer show-me that matches no box reads as a task, not a ref."""
+    calls = []
+    api = FakeApi()
+    st, out = seat(
+        api, ["who", "", "status of the build", "show me the tests that failed", ""]
+    )
+    st.chain = lambda task: (
+        calls.append(task),
+        st.you(task),
+        st.converse(task, demo_boxes()[:2], task),
+    )
+    st.run()
+    assert calls == ["status of the build", "show me the tests that failed"]
+    assert not any("Nothing I showed answers" in o for o in out)
+
+
+@pytest.mark.parametrize("line", ["show me 14", "open #999", "show me PR 99999"])
+def test_a_show_me_reference_that_matches_nothing_stays_a_plain_line(line):
+    api, out = thread_run(["status of the build", *ALL, line])
+    assert any(
+        o.startswith("agent> Nothing I showed answers to") for o in after(out, line)
+    )
+    assert "escalate" not in api.names()

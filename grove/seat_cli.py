@@ -95,8 +95,11 @@ marked ``(fixture)``; a box with nothing but provenance says there is no more);
 ``go on`` / ``more`` / ``next`` show the next page (by code, no model) or say
 nothing is left. An ordinal past what was shown, or a ref that fits two boxes,
 is a plain line, never a guess, and so is ``show me X`` / ``open X`` / ``show X``
-that no shown box answers to ("Nothing I showed answers to "14"; I showed: ..."):
-once a turn has been shown it is a follow-up, not a task. None of these asks a
+that no shown box answers to when X reads as a reference (a number, an id-like
+token such as ``PR 712``, ``#714`` or ``ABC-123``, a box id, an ordinal, or a
+phrase of at most two words): "Nothing I showed answers to "14"; I showed: ...".
+A longer X ("show me the tests that failed") reads as a task and goes to the
+chain (``seat_boxes.looks_like_ref``). None of these plain lines asks a
 model, calls ``api.escalate`` or writes a row; any other line that matches
 nothing (and ``show me X`` before any turn) goes to the chain as before. A sentence never ends ``.".`` (``terminate``). A ``show me`` ref is a number of two digits or more, an id-like
 token (``PR 712``) or a short box id (``b4``), never the first words of a value;
@@ -158,6 +161,7 @@ from grove.seat_boxes import (
     clause,
     COUNTED,
     legend,
+    looks_like_ref,
     matches,
     parse_follow,
     pile_header,
@@ -217,7 +221,8 @@ HELP = (
     'Give me a task and the chain takes it. "where are we" and "what needs me" '
     "are read from your Nestor store (read-only). "
     'After a reply you can say "show me 712", "why", '
-    '"the second one" or "go on". "thanks" and "later" are only '
+    '"the second one" or "go on"; a longer "show me ..." is a task for the chain. '
+    '"thanks" and "later" are only '
     'acknowledged; an empty line, "bye", "done" or "quit" checks out.'
 )
 #: A line the seat answers from the Nestor store, not the chain (matched whole,
@@ -810,10 +815,12 @@ class Seat:
         """Resolve a typed line against the last reply by fixed rules, in code:
         no model, no ``api.escalate``, no record row. False: not one, the line
         goes to the chain as before. A ``show me X`` / ``open X`` / ``show X``
-        that no shown box answers to is a follow-up that found nothing: a plain
-        code line (``unmatched``), never the chain. With no previous turn there
-        is nothing to resolve against and the line is a task, so it goes to the
-        chain."""
+        that no shown box answers to splits on its target
+        (``seat_boxes.looks_like_ref``): a reference (a number, an id-like
+        token, a box id, an ordinal or a phrase of at most two words) is a
+        follow-up that found nothing, a plain code line (``unmatched``); a
+        longer phrase reads as a task and goes to the chain. With no previous
+        turn there is nothing to resolve against and the line is a task."""
         th = self.thread
         got = parse_follow(task) if th else None
         if th is None or got is None:
@@ -849,7 +856,8 @@ class Seat:
             hits = [b for b in boxes if b.id.lower() == arg]
             found = hits[0] if len(hits) == 1 else None
         if found is None:
-            if kind == "ref" and prefixed:  # clearly a follow-up, nothing to open
+            if kind == "ref" and prefixed and looks_like_ref(arg):
+                # a reference that found nothing; a longer phrase is a task
                 return self.said(task, self.unmatched(task, arg, boxes))
             return False
         th.focus = found

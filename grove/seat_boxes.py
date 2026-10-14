@@ -840,6 +840,32 @@ def _fold(text: str) -> str:
     return t.rstrip("?!. ")
 
 
+#: Most words a ``show me`` target may have and still read as a reference.
+REF_WORDS = 2
+#: A numbered reference with up to two words before it (``pr 712``, ``#714``,
+#: ``abc-123``, ``pull request #714``) or an ordinal figure (``the 5th one``).
+NUMBERED = re.compile(
+    r"(?:[a-z]+[ -]){0,2}#?\d[\w.-]*|(?:the\s+)?\d+(?:st|nd|rd|th)(?:\s+one)?"
+)
+
+
+def looks_like_ref(target: str) -> bool:
+    """Whether the text after ``show me`` / ``open`` reads as a reference to
+    something shown, not a task. A reference is the whole target being a number
+    or an id-like token (``NUMBERED``: ``14``, ``PR 712``, ``#714``,
+    ``ABC-123``, ``n4ee2a``, ``pull request #714``, ``the 5th one``), an
+    ordinal (``ORDINAL``), or a short phrase of at most ``REF_WORDS`` words
+    (``the stack``). Anything longer (``the tests that failed``) reads as a
+    task, even if a number is in it. Deterministic; only the words decide."""
+    t = _fold(target)
+    return bool(
+        t
+        and (
+            len(t.split()) <= REF_WORDS or NUMBERED.fullmatch(t) or ORDINAL.fullmatch(t)
+        )
+    )
+
+
 def parse_follow(line: str) -> tuple[str, str, bool] | None:
     """A typed line read as a follow-up: ``(kind, arg, prefixed)`` or None.
     Kinds: ``more``, ``why``, ``that``, ``ord`` (arg the 0-based index) and
