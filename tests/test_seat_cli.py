@@ -2086,20 +2086,112 @@ def test_empty_and_unreachable_have_their_own_plain_lines():
 
 
 def test_a_stage_that_is_unreachable_or_empty_also_says_so_in_words():
+    """A stage no sentence covers says its state in a plain line. (The pool at
+    start and check-out and the resume are covered by the opening and closing
+    sentences instead: see ``test_a_card_the_opening_says_has_no_plain_line``.)"""
+    st, out = seat(
+        FakeApi(scope={"spec": {}, "subject": "serve:x", "ids": [], "stack": []}),
+        ["who"],
+    )
+    st.run()
+    assert "[empty] scope" in text(out)
+    assert "agent> Scope is empty: no table matches; nothing to serve." in out
+    assert "I can't read" not in text(out)
+
+
+def agent_lines(out):
+    return [o for o in out if o.startswith("agent> ")]
+
+
+def test_a_card_the_opening_says_has_no_plain_line():
     def boom(*a, **k):
         raise RuntimeError("pool db down")
 
-    st, out = seat(FakeApi(pooled=boom), ["who"])
-    st.run()
-    t = text(out)
-    assert "[unreachable] still pooled" in t
-    assert (
-        "agent> I can't read the record right now. RuntimeError: pool db down." in out
+    def start(api):
+        """The lines up to the served stage: the cards, the plain lines and the
+        opening."""
+        _a, out, _line = start_opening(api)
+        return out[: next(i for i, o in enumerate(out) if o.startswith("served ▶"))]
+
+    # pool empty at start: the card stays, "Still pooled is empty" is not said
+    head = start(FakeApi())
+    assert "[empty] still pooled" in text(head)
+    assert not any("Still pooled is empty" in o for o in head)
+    assert sum("nothing is pooled from earlier runs" in o for o in head) == 1
+    assert sum("nothing pooled from earlier runs" in o for o in head) == 1  # card
+    # unreadable pool: the reason stays on the card, the words are said once
+    head = start(FakeApi(pooled=boom))
+    assert "[unreachable] still pooled" in text(head)
+    assert "unreachable — RuntimeError: pool db down" in text(head)
+    assert not any("can't read the record" in o for o in head)
+    assert sum("couldn't read the pool" in o for o in agent_lines(head)) == 1
+    # unreadable resume: same
+    head = start(FakeApi(resume=boom))
+    assert "[unreachable] resume" in text(head)
+    assert not any("can't read the record" in o for o in head)
+    assert sum("couldn't read the last sealed snapshot" in o for o in head) == 1
+
+
+def test_an_unreadable_resume_with_no_opening_is_still_said_once_in_words():
+    def boom(*a, **k):
+        raise RuntimeError("no such verb")
+
+    st, out = seat(
+        FakeApi(resume=boom, scope={"refused": "no open box", "code": 2}), ["who"]
     )
-    st, out = seat(FakeApi(pooled={"pooled": []}), ["who"])
     st.run()
-    assert "agent> Still pooled is empty: nothing pooled from earlier runs." in out
-    assert "I can't read" not in text(out)
+    said = [o for o in agent_lines(out) if "no such verb" in o]
+    assert said == [
+        "agent> I can't read the record right now. RuntimeError: no such verb; "
+        "scoping fresh instead."
+    ]
+    assert not any("couldn't read" in o for o in out)  # no opening was said
+
+
+def test_a_closing_card_the_closing_says_has_no_plain_line():
+    # empty pool, empty deposit: "Nothing stays pooled" says it, once
+    st, out = seat(FakeApi(), ["who", "", ""])
+    st.run()
+    assert "[empty] deposit" in text(out)
+    assert not any("Deposit is empty" in o for o in out)
+    assert closing_of(out) == "agent> Nothing stays pooled for next time."
+    # unreadable pool at check-out: the card, then the closing in words, once
+    calls = []
+
+    def pooled(*a, **k):
+        calls.append(1)
+        if len(calls) > 1:
+            raise RuntimeError("pool db down")
+        return pool_of()
+
+    st, out = seat(FakeApi(pooled=pooled), ["who", "", ""])
+    st.run()
+    assert "[unreachable] pool" in text(out)
+    assert not any("can't read the record" in o for o in out)
+    assert sum("couldn't read the pool" in o for o in agent_lines(out)) == 1
+    # a populated pool whose deposit failed is a different fact: still said
+    st, out = seat(
+        FakeApi(pooled=pool_of("proposal:aaa")),
+        ["who", "", ""],
+        deposit=FakeDeposit({"state": "unreachable", "reason": "no key"}),
+    )
+    st.run()
+    assert "agent> I can't read the record right now. No key." in out
+    assert closing_of(out) == "agent> 1 proposal stays pooled for next time."
+
+
+def test_each_unreachable_read_is_said_in_words_exactly_once():
+    def boom(*a, **k):
+        raise RuntimeError("x")
+
+    st, out = seat(FakeApi(resume=boom, pooled=boom), ["who", "", ""])
+    st.run()
+    words = [o for o in agent_lines(out) if "read" in o]
+    assert len(words) == 2  # the opening (both reads) and the closing (the pool)
+    assert "couldn't read the last sealed snapshot" in words[0]
+    assert "couldn't read the pool" in words[0]
+    assert "couldn't read the pool" in words[1]
+    assert not any("can't read the record" in o for o in out)
 
 
 def test_the_greeting_is_once_per_run_before_noon_from_the_injected_clock():

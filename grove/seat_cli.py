@@ -95,7 +95,11 @@ decided, changed, routine pass) and shows two at a time (``more?``) from that
 order. The code sentence is a short sentence per box; the run's one
 ``Morning.`` (before noon, by the turn's clock time) goes on the opening sentence,
 or on the first reply when there was no opening; a stage whose
-card is ``empty`` or ``unreachable`` also says so in a plain code line. Small
+card is ``empty`` or ``unreachable`` also says so in a plain code line, except
+where the opening or the closing sentence already says that same state (the
+resume and still-pooled cards at start, the pool and an empty deposit at
+check-out): the card stays, the plain line is held back, so the fact is not said
+twice and an unreachable read is still said in words exactly once. Small
 talk is answered by code (greetings, ``ok``, ``thanks``, ``later``, and ``help``,
 a fixed line of what the seat understands; ``bye``, ``done`` and ``quit`` check
 out like an empty line), and a task asked again is shown again from the pile,
@@ -584,6 +588,13 @@ class Seat:
         self.pile_n: int | None = 0
         self._n = 0
         self.greeted = False  # the run's one time-of-day greeting
+        #: Set when the opening sentence was said. Until then an unreachable
+        #: resume is held (``held``) so the opening can say it once.
+        self.opened = False
+        #: A resume that could not be read: its card is shown without its plain
+        #: line because the opening says it; if the run ends before the opening
+        #: (the scope stage failed), ``run`` says the held plain line instead.
+        self.held: Box | None = None
         #: The last reply (chain turns only), for follow-ups and chip choices.
         self.thread: Thread | None = None
         #: The sealed snapshot being served ({spec, subject}), else None.
@@ -1028,14 +1039,14 @@ class Seat:
             raise
         except Exception as e:  # noqa: BLE001 - older willow-bot, or a read failure
             self.start_resume = ("unreachable",)
-            self.show(
+            self.hold(
                 self.gone("resume", f"{type(e).__name__}: {e}; scoping fresh instead")
             )
             return False
         if not isinstance(res, dict) or "refused" in res:
             why = res.get("refused") if isinstance(res, dict) else "not a record"
             self.start_resume = ("unreachable",)
-            self.show(self.gone("resume", f"{why}; scoping fresh instead"))
+            self.hold(self.gone("resume", f"{why}; scoping fresh instead"))
             return False
         spec, subject = res.get("spec"), res.get("subject")
         if not isinstance(spec, dict) or not subject:
@@ -1072,17 +1083,20 @@ class Seat:
             raise
         except Exception as e:  # noqa: BLE001 - older willow-bot, or a read failure
             self.start_pool = ("unreachable",)
-            return self.show(self.gone(label, f"{type(e).__name__}: {e}"))
+            return self.show(self.gone(label, f"{type(e).__name__}: {e}"), plain=False)
         got = pool.get("pooled") if isinstance(pool, dict) else None
         if not isinstance(pool, dict) or "refused" in pool or not isinstance(got, list):
             why = pool.get("refused") if isinstance(pool, dict) else None
             self.start_pool = ("unreachable",)
-            return self.show(self.gone(label, str(why or "not a pool record")))
+            return self.show(
+                self.gone(label, str(why or "not a pool record")), plain=False
+            )
         items = [p for p in got if isinstance(p, dict)]
         if not items:
             self.start_pool = ("empty",)
             return self.show(
-                self.state_card(label, "empty", "nothing pooled from earlier runs")
+                self.state_card(label, "empty", "nothing pooled from earlier runs"),
+                plain=False,
             )
         self.start_pool = ("populated", len(items))
         names = [str(p.get("subject") or p.get("path") or "?") for p in items]
@@ -1097,11 +1111,21 @@ class Seat:
             )
         )
 
+    def hold(self, box: Box) -> None:
+        """Show an unreadable resume's card without its plain line: the opening
+        sentence says it (``I couldn't read the last sealed snapshot``), once.
+        The box is kept so ``run`` can say its plain line if no opening comes."""
+        self.held = box
+        self.show(box, plain=False)
+
     def open_with(self) -> None:
         """The run's one opening sentence, said by code from what resume and
         pooled already returned (``seat_boxes.opening``): no api call, no model,
         no row. It carries the run's one ``Morning.`` when it is before noon, so
-        the first reply does not say it again."""
+        the first reply does not say it again. It also says the resume and pool
+        states the cards before it showed, so those cards' plain lines are not
+        said as well (the same fact once)."""
+        self.opened = True
         self.code_reply(
             opening(self.start_resume, self.start_pool, self.greeting(self.clock()))
         )
@@ -1337,7 +1361,9 @@ class Seat:
         what stays pooled for next time (``seat_boxes.carry_over``): one code
         sentence from the pool this close-out already read, in its own
         ``populated``, ``empty`` or ``unreachable`` clause. It seals, deposits
-        and writes nothing beyond what the close-out already does."""
+        and writes nothing beyond what the close-out already does. A pool card
+        it already says (unreadable, or an empty deposit of an empty pool) has no
+        plain line of its own, so the fact is said once."""
         self.carry: tuple = ("unreachable",)
         try:
             self.deposit_pool()
@@ -1348,12 +1374,12 @@ class Seat:
         try:
             pool = self.api.pooled(self.cfg)
         except Exception as e:  # noqa: BLE001 - the close-out must not raise
-            self.show(self.gone("pool", f"{type(e).__name__}: {e}"))
-            return self.offer_grown()
+            self.show(self.gone("pool", f"{type(e).__name__}: {e}"), plain=False)
+            return self.offer_grown()  # the closing sentence says it
         if not isinstance(pool, dict) or "refused" in pool:
             why = pool.get("refused") if isinstance(pool, dict) else "not a pool record"
-            self.show(self.gone("pool", str(why)))
-            return self.offer_grown()
+            self.show(self.gone("pool", str(why)), plain=False)
+            return self.offer_grown()  # the closing sentence says it
         items = [p for p in pool.get("pooled") or [] if isinstance(p, dict)]
         self.carry = ("populated", len(items)) if items else ("empty",)
         try:
@@ -1362,7 +1388,12 @@ class Seat:
             got = {"state": "unreachable", "reason": f"{type(e).__name__}: {e}"}
         state = got.get("state")
         if state != "populated":
-            self.show(self.state_card("deposit", state, got.get("reason", "")))
+            # an empty deposit of an empty pool is what the closing says
+            # ("Nothing stays pooled"): the card stays, the plain line waits
+            self.show(
+                self.state_card("deposit", state, got.get("reason", "")),
+                plain=not (state == "empty" and self.carry == ("empty",)),
+            )
             if state != "empty":  # nothing went in; show what is pooled
                 for p in items:
                     self.show(
@@ -1441,6 +1472,8 @@ class Seat:
             self.write("")
             return 0
         finally:
+            if self.held is not None and not self.opened:
+                self.code_reply(plain_line(self.held))  # no opening: say it here
             self.grown_scope()
             self.checkout()
 
