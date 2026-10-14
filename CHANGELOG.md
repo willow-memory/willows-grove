@@ -2,6 +2,40 @@
 
 All notable changes land here per INVARIANTS.md §3. Format follows Keep a Changelog v1.1.0.
 
+## [0.23.0](https://github.com/willow-memory/willows-grove/compare/v0.22.0...v0.23.0) (2026-10-14)
+
+
+### Added
+
+* **seat:** check-out says what stays pooled for next time ([4621975](https://github.com/willow-memory/willows-grove/commit/46219758ba61e6251117f3e4e699e311d5259fac))
+* **seat:** chips from the boxes, chip answers, follow-ups resolved against the last turn ([11f3090](https://github.com/willow-memory/willows-grove/commit/11f3090f7ab858a9805ef172e4485e2d206f0eb2))
+* **seat:** greetings, acknowledgements, help and farewells are answered by code ([1f08219](https://github.com/willow-memory/willows-grove/commit/1f082190307bcd946c6f9f10cb0f897934622f86))
+* **seat:** read a Nestor store as boxes (read-only) ([ed77297](https://github.com/willow-memory/willows-grove/commit/ed77297fa797b57f00b3c47f22d6669a79ed5379))
+* **seat:** the CLI seat converses like the box-stream demo, and reads a Nestor store ([#147](https://github.com/willow-memory/willows-grove/issues/147)) ([3efcd2c](https://github.com/willow-memory/willows-grove/commit/3efcd2c67a439d6c868ebb0b80b312e32b60e78f))
+* **seat:** the model sees the last two replies of the run ([57dd3fd](https://github.com/willow-memory/willows-grove/commit/57dd3fd9076e24ff1c5c1e4acfbc6590fc899ddb))
+* **seat:** the run opens with one sentence that picks up from last time ([9ab6dea](https://github.com/willow-memory/willows-grove/commit/9ab6dea490be6676fedca4e2356904bb3e04e871))
+* **seat:** the seat picks up from last time, carries the pool over, and the model sees the thread ([#148](https://github.com/willow-memory/willows-grove/issues/148)) ([044e4d1](https://github.com/willow-memory/willows-grove/commit/044e4d159ba267eb12d349fc108c8a7a71339f7a))
+* **seat:** where are we and what needs me are read from the Nestor store ([5b8b73b](https://github.com/willow-memory/willows-grove/commit/5b8b73b7cd1c324a413eb637180c076f40d91491))
+* **seat:** where are we leads with the store's count, then what is open ([9558651](https://github.com/willow-memory/willows-grove/commit/955865180a7c51caa9ed36f09ae03edb07e8ec48))
+* **seat:** where are we pages four boxes at a time, count plus open items first ([8990518](https://github.com/willow-memory/willows-grove/commit/89905186f304adf8d5161a68e89e696093ac5723))
+
+
+### Fixed
+
+* **seat:** a failed check-in line is blocked, not a routine pass ([3e11168](https://github.com/willow-memory/willows-grove/commit/3e1116807cbc18395df11c37eec83cb8272ad8e3))
+* **seat:** a pair of changed or routine boxes has a verb; the count is never grouped ([efb4e5c](https://github.com/willow-memory/willows-grove/commit/efb4e5c4731b49c05cfe494dd6b9ddfa82863ac9))
+* **seat:** a run of three changed or routine boxes has a verb ([54a6bb4](https://github.com/willow-memory/willows-grove/commit/54a6bb46780cc702a633f54517f3a42605f4765f))
+* **seat:** a run of three decided boxes has a verb ([cb0e981](https://github.com/willow-memory/willows-grove/commit/cb0e981528c4dd0be94d5df3991d029f1c197c97))
+* **seat:** a show-me that reads as a task reaches the chain after a turn ([d86136e](https://github.com/willow-memory/willows-grove/commit/d86136e49065dae331fe0a514d9cfdd57f4534a1))
+* **seat:** an unmatched "show me X" is a plain code line, not an escalation ([de46023](https://github.com/willow-memory/willows-grove/commit/de4602356c608900df7c882ca9278b16e9e8b9b2))
+* **seat:** counts the code says are pluralised (1 box, 2 boxes, 1 row) ([6c448cb](https://github.com/willow-memory/willows-grove/commit/6c448cb587dae541a8044f6523f221d6bf1e42ef))
+* **seat:** names keep their capital, drafts and counts are not said as facts ([cdcda7d](https://github.com/willow-memory/willows-grove/commit/cdcda7dde4b817a44aaf7d24606e203cf0ad0400))
+* **seat:** phrasing on real data - needs-you values, show-me refs, chain count, one No rush per turn ([08da613](https://github.com/willow-memory/willows-grove/commit/08da613fa252de9858df06b3f51b620f35bc6915))
+* **seat:** stage prompts state their default; a refused answer is said plainly and re-asked ([2a5c1d2](https://github.com/willow-memory/willows-grove/commit/2a5c1d22651077b6e1927060b05b6f34500fe237))
+* **seat:** the gate checks the venv the seat runs in ([5ca6114](https://github.com/willow-memory/willows-grove/commit/5ca61142ee4590a47ea47bab1d9209c605012269))
+* **seat:** the unmatched show-me line lists box ids when a box has no better ref ([9cf4ad1](https://github.com/willow-memory/willows-grove/commit/9cf4ad154c9ab9bc81b7107891f85cf985b71711))
+* **seat:** why says the reason, not every detail line; no doubled full stop ([f5e342c](https://github.com/willow-memory/willows-grove/commit/f5e342c4a1001c3d898838e15727fdc7b9d1d2dd))
+
 ## [0.22.0](https://github.com/willow-memory/willows-grove/compare/v0.21.0...v0.22.0) (2026-10-13)
 
 
