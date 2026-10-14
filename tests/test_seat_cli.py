@@ -14,6 +14,7 @@ import re
 import shutil
 import subprocess
 import sys
+from datetime import date
 
 import pytest
 
@@ -107,6 +108,7 @@ def seat(
     color=False,
     clock=None,
     say=None,
+    today=None,
 ):
     out: list[str] = []
     it = iter(keys)
@@ -128,6 +130,7 @@ def seat(
         write=out.append,
         color=color,
         clock=clock or (lambda: "09:14"),
+        today=today or (lambda: date(2026, 10, 14)),
     )
     return st, out
 
@@ -852,9 +855,7 @@ def test_the_launcher_reports_no_willow_bot(tmp_path):
 # --- 3b-ii: the local model's sentence, the four checks, the fallback -------------
 
 MODEL = say_mod.MODEL
-GOOD_CODE = (
-    "agent> Looks like answered 1, escalated 0 and local: d are both routine. No rush."
-)
+GOOD_CODE = "agent> Looks like the chain answered 1 and escalated 0. Local: d. No rush."
 
 
 def tagged(make):
@@ -2086,20 +2087,112 @@ def test_empty_and_unreachable_have_their_own_plain_lines():
 
 
 def test_a_stage_that_is_unreachable_or_empty_also_says_so_in_words():
+    """A stage no sentence covers says its state in a plain line. (The pool at
+    start and check-out and the resume are covered by the opening and closing
+    sentences instead: see ``test_a_card_the_opening_says_has_no_plain_line``.)"""
+    st, out = seat(
+        FakeApi(scope={"spec": {}, "subject": "serve:x", "ids": [], "stack": []}),
+        ["who"],
+    )
+    st.run()
+    assert "[empty] scope" in text(out)
+    assert "agent> Scope is empty: no table matches; nothing to serve." in out
+    assert "I can't read" not in text(out)
+
+
+def agent_lines(out):
+    return [o for o in out if o.startswith("agent> ")]
+
+
+def test_a_card_the_opening_says_has_no_plain_line():
     def boom(*a, **k):
         raise RuntimeError("pool db down")
 
-    st, out = seat(FakeApi(pooled=boom), ["who"])
-    st.run()
-    t = text(out)
-    assert "[unreachable] still pooled" in t
-    assert (
-        "agent> I can't read the record right now. RuntimeError: pool db down." in out
+    def start(api):
+        """The lines up to the served stage: the cards, the plain lines and the
+        opening."""
+        _a, out, _line = start_opening(api)
+        return out[: next(i for i, o in enumerate(out) if o.startswith("served ▶"))]
+
+    # pool empty at start: the card stays, "Still pooled is empty" is not said
+    head = start(FakeApi())
+    assert "[empty] still pooled" in text(head)
+    assert not any("Still pooled is empty" in o for o in head)
+    assert sum("nothing is pooled from earlier runs" in o for o in head) == 1
+    assert sum("nothing pooled from earlier runs" in o for o in head) == 1  # card
+    # unreadable pool: the reason stays on the card, the words are said once
+    head = start(FakeApi(pooled=boom))
+    assert "[unreachable] still pooled" in text(head)
+    assert "unreachable — RuntimeError: pool db down" in text(head)
+    assert not any("can't read the record" in o for o in head)
+    assert sum("couldn't read the pool" in o for o in agent_lines(head)) == 1
+    # unreadable resume: same
+    head = start(FakeApi(resume=boom))
+    assert "[unreachable] resume" in text(head)
+    assert not any("can't read the record" in o for o in head)
+    assert sum("couldn't read the last sealed snapshot" in o for o in head) == 1
+
+
+def test_an_unreadable_resume_with_no_opening_is_still_said_once_in_words():
+    def boom(*a, **k):
+        raise RuntimeError("no such verb")
+
+    st, out = seat(
+        FakeApi(resume=boom, scope={"refused": "no open box", "code": 2}), ["who"]
     )
-    st, out = seat(FakeApi(pooled={"pooled": []}), ["who"])
     st.run()
-    assert "agent> Still pooled is empty: nothing pooled from earlier runs." in out
-    assert "I can't read" not in text(out)
+    said = [o for o in agent_lines(out) if "no such verb" in o]
+    assert said == [
+        "agent> I can't read the record right now. RuntimeError: no such verb; "
+        "scoping fresh instead."
+    ]
+    assert not any("couldn't read" in o for o in out)  # no opening was said
+
+
+def test_a_closing_card_the_closing_says_has_no_plain_line():
+    # empty pool, empty deposit: "Nothing stays pooled" says it, once
+    st, out = seat(FakeApi(), ["who", "", ""])
+    st.run()
+    assert "[empty] deposit" in text(out)
+    assert not any("Deposit is empty" in o for o in out)
+    assert closing_of(out) == "agent> Nothing stays pooled for next time."
+    # unreadable pool at check-out: the card, then the closing in words, once
+    calls = []
+
+    def pooled(*a, **k):
+        calls.append(1)
+        if len(calls) > 1:
+            raise RuntimeError("pool db down")
+        return pool_of()
+
+    st, out = seat(FakeApi(pooled=pooled), ["who", "", ""])
+    st.run()
+    assert "[unreachable] pool" in text(out)
+    assert not any("can't read the record" in o for o in out)
+    assert sum("couldn't read the pool" in o for o in agent_lines(out)) == 1
+    # a populated pool whose deposit failed is a different fact: still said
+    st, out = seat(
+        FakeApi(pooled=pool_of("proposal:aaa")),
+        ["who", "", ""],
+        deposit=FakeDeposit({"state": "unreachable", "reason": "no key"}),
+    )
+    st.run()
+    assert "agent> I can't read the record right now. No key." in out
+    assert closing_of(out) == "agent> 1 proposal stays pooled for next time."
+
+
+def test_each_unreachable_read_is_said_in_words_exactly_once():
+    def boom(*a, **k):
+        raise RuntimeError("x")
+
+    st, out = seat(FakeApi(resume=boom, pooled=boom), ["who", "", ""])
+    st.run()
+    words = [o for o in agent_lines(out) if "read" in o]
+    assert len(words) == 2  # the opening (both reads) and the closing (the pool)
+    assert "couldn't read the last sealed snapshot" in words[0]
+    assert "couldn't read the pool" in words[0]
+    assert "couldn't read the pool" in words[1]
+    assert not any("can't read the record" in o for o in out)
 
 
 def test_the_greeting_is_once_per_run_before_noon_from_the_injected_clock():
@@ -3712,3 +3805,152 @@ def test_an_earlier_boxs_facts_count_only_when_the_sentence_cites_it():
     q = 'PR 712 is still waiting [b1] and "answered 1" [b2].'
     assert say_mod.run_checks(q, [new], "answered 1", earlier=[old])[3] is True
     assert say_mod.run_checks(q, [new], "", earlier=[old])[3] is False
+
+
+# --- the chain's count is said on its own, never paired with a piece ---------------
+
+
+def chain_sentences(*pieces_, keys=("who", "", "task", "", "", "")):
+    st, out = seat(FakeApi(escalate=chain_result(*pieces_)), list(keys))
+    st.run()
+    return [o for o in out if o.startswith("agent> ")][1:-1]
+
+
+def test_the_chain_count_is_a_count_box_and_is_said_alone():
+    api = FakeApi(escalate=chain_result(piece("local", "answered")))
+    st, _out = seat(api, [])
+    seen = []
+    st.converse = lambda key, boxes, human="", **k: seen.extend(boxes)
+    st.chain("task")
+    assert [b.role for b in seen] == ["count", ""]
+    assert seen[0].value == "answered 1, escalated 0"
+    # a lone answered piece: the count is a sentence, the piece its own
+    assert chain_sentences(piece("local", "answered")) == [
+        "agent> Looks like the chain answered 1 and escalated 0. Local: d. No rush."
+    ]
+    # never "answered 1, escalated 0 and local: d are both routine"
+    assert not any("are both" in s for s in chain_sentences(piece("local", "answered")))
+
+
+def test_the_chain_count_never_joins_a_pair_or_a_run_but_pieces_still_pair():
+    count = bx.Box("c", "pass", "chain", "answered 1, escalated 0", role="count")
+    p1 = bx.Box("p1", "pass", "local", "local: a", "")
+    p2 = bx.Box("p2", "pass", "local", "d0: b", "")
+    for boxes in ([count, p1], [p1, count], [count, p1, p2], [p1, count, p2]):
+        t = bx.compose(boxes, look=False)
+        assert "answered 1 and escalated 0" in t and "both" not in t.split(".")[0]
+        assert "answered 1, escalated 0 and" not in t
+    # the pieces after the count are still paired by their kind's verb
+    assert (
+        bx.compose([p1, p2])
+        == "Looks like local: a and d0: b are both routine. No rush."
+    )
+    # three pieces: the count and the first piece, then the other two as a pair
+    got = chain_sentences(
+        piece("local", "answered", h="a" * 64),
+        piece("local", "answered", h="b" * 64),
+        piece("local", "answered", h="c" * 64),
+    )
+    assert got[0].startswith("agent> Looks like the chain answered 3 and escalated 0.")
+    assert got[1] == "agent> Oh, and local: d and local: d are both routine."
+
+
+def test_the_chain_count_is_not_a_show_me_ref():
+    st, out = seat(
+        FakeApi(escalate=chain_result(piece("local", "answered"))),
+        ["who", "", "task", "", "show me 1", ""],
+    )
+    st.run()
+    assert not any(o.startswith("chips:") and "show me" in o for o in out)
+
+
+# --- the opening names when the human sealed ---------------------------------------
+
+
+def sealed_opening(sealed_at="2026-10-12T08:30:00Z", **kw):
+    res = resumed() if sealed_at is None else resumed(sealed_at=sealed_at)
+    api = FakeApi(resume=res, pooled=pool_of("proposal:aaa"))
+    st, out = seat(api, ["", ""], **kw)
+    st.run()
+    n = next(i for i, o in enumerate(out) if o.startswith("served ▶"))
+    return [o for o in out[:n] if o.startswith("agent> ")][-1]
+
+
+def test_opening_names_the_day_the_human_sealed():
+    # the stamp is UTC with an explicit Z; its date is read as written
+    assert sealed_opening() == (
+        f"agent> Morning. Picking up from the snapshot you sealed on 12 October "
+        f"({SEALED}, rows up to 41); 1 proposal still pooled from earlier runs."
+    )
+    # late in the UTC day stays that UTC day: no conversion to a local zone
+    assert "on 12 October (" in sealed_opening("2026-10-12T23:59:59Z")
+    assert "on 13 October (" in sealed_opening("2026-10-13T00:00:00Z")
+
+
+def test_opening_same_day_seal_is_earlier_today():
+    line = sealed_opening("2026-10-14T01:02:03Z")
+    assert "the snapshot you sealed earlier today (" in line
+    assert " on " not in line.split("(")[0]
+
+
+def test_opening_other_year_names_the_year_and_a_future_stamp_its_date():
+    assert "sealed on 31 December 2025 (" in sealed_opening("2025-12-31T10:00:00Z")
+    assert "sealed on 15 October (" in sealed_opening("2026-10-15T10:00:00Z")
+
+
+def test_opening_without_sealed_at_is_todays_wording_and_invents_no_date():
+    line = sealed_opening(None)
+    assert line == (
+        f"agent> Morning. Picking up from the sealed snapshot {SEALED} "
+        "(rows up to 41); 1 proposal still pooled from earlier runs."
+    )
+
+
+@pytest.mark.parametrize(
+    "bad",
+    [
+        None,
+        "",
+        "yesterday",
+        "2026-10-12",
+        "2026-10-12T08:30:00",  # no zone
+        "2026-10-12T08:30:00+02:00",  # an offset: not the record's form
+        "2026-10-12T08:30:00.123Z",
+        "2026-13-45T99:99:99Z",
+        20261012,
+        ["2026-10-12T08:30:00Z"],
+    ],
+)
+def test_opening_with_an_unreadable_sealed_at_says_no_date(bad):
+    line = sealed_opening(bad)
+    assert "the sealed snapshot" in line
+    assert "you sealed" not in line and "earlier today" not in line
+
+
+def test_the_seal_date_comes_from_the_return_not_the_clock():
+    # the same stamp reads the same whatever "today" is, except earlier-today
+    a = sealed_opening("2026-10-12T08:30:00Z", today=lambda: date(2026, 10, 20))
+    b = sealed_opening("2026-10-12T08:30:00Z", today=lambda: date(2026, 10, 14))
+    assert a == b
+    assert "sealed on 12 October (" in a
+
+    # an unreachable resume invents no date either
+    def boom(*a, **k):
+        raise RuntimeError("x")
+
+    st, out = seat(FakeApi(resume=boom), ["", ""])
+    st.run()
+    assert not any("you sealed" in o for o in out)
+
+
+def test_sealed_on_is_pure_and_total():
+    d = date(2026, 10, 14)
+    assert bx.sealed_on("2026-10-14T00:00:00Z", d) == "earlier today"
+    assert bx.sealed_on("2026-01-01T00:00:00Z", d) == "on 1 January"
+    assert bx.sealed_on("2026-01-01T00:00:00Z") == "on 1 January 2026"
+    assert bx.sealed_on(None, d) == ""
+    assert bx.sealed_on("garbage", d) == ""
+    # opening() stays total for a short resume tuple (the three-item form)
+    assert "the sealed snapshot serve:x (rows up to 3)" in bx.opening(
+        ("sealed", "serve:x", 3), ("empty",)
+    )

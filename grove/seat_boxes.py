@@ -60,6 +60,7 @@ import os
 import re
 import sys
 from dataclasses import dataclass, field
+from datetime import date, datetime
 
 #: The only free words in a sentence (``GLUE`` in the web sketch).
 GLUE = (
@@ -314,16 +315,63 @@ def plural(n: int, one: str, many: str = "") -> str:
     return f"{n} {one if n == 1 else many or one + 's'}"
 
 
-def opening(resume: tuple, pool: tuple, greet: str = "") -> str:
+#: The record's own stamp, ``api._now()`` in willow-bot: UTC, whole seconds, and
+#: the zone written out as a trailing ``Z`` (``2026-10-12T08:30:00Z``). Only
+#: this exact form is read; any other shape (no ``Z``, an offset, a bare date,
+#: not a string) is no date, never a guess.
+SEAL_STAMP = "%Y-%m-%dT%H:%M:%SZ"
+MONTHS = (
+    "January February March April May June July "
+    "August September October November December"
+).split()
+
+
+def sealed_on(stamp: object, today: date | None = None) -> str:
+    """When the human sealed, said humanly, from ``api.resume``'s ``sealed_at``
+    (the seal row's own stamp) and nothing else: ``earlier today`` when the
+    stamp's date is ``today``, else ``on 12 October`` (``on 12 October 2025``
+    when the year is not ``today``'s, or when ``today`` is not given). The stamp
+    is UTC (its ``Z`` is explicit) and its date is read as written, not
+    converted to a local zone; ``today`` is the UTC date and only chooses
+    between "earlier today" and the date. A stamp in the future of ``today`` is
+    said as its date. ``""`` for a missing or unreadable stamp: no date is
+    invented."""
+    if not isinstance(stamp, str):
+        return ""
+    try:
+        day = datetime.strptime(stamp, SEAL_STAMP).date()
+    except ValueError:
+        return ""
+    if today is not None and day == today:
+        return "earlier today"
+    named = f"{day.day} {MONTHS[day.month - 1]}"
+    if today is None or day.year != today.year:
+        named += f" {day.year}"
+    return f"on {named}"
+
+
+def opening(
+    resume: tuple, pool: tuple, greet: str = "", today: date | None = None
+) -> str:
     """The run's one opening sentence, from what ``api.resume`` and
     ``api.pooled`` already returned (no call of its own). ``resume`` is
-    ``("sealed", subject, upto)``, ``("none",)`` or ``("unreachable",)``; ``pool``
-    is ``("populated", n)``, ``("empty",)`` or ``("unreachable",)``. Each state
-    has its own clause, so an unreadable resume or pool is never said as
-    "nothing to pick up". ``greet`` leads it, once per run."""
+    ``("sealed", subject, upto[, sealed_at])``, ``("none",)`` or
+    ``("unreachable",)``; ``pool`` is ``("populated", n)``, ``("empty",)`` or
+    ``("unreachable",)``. Each state has its own clause, so an unreadable
+    resume or pool is never said as "nothing to pick up". A sealed snapshot
+    with a readable ``sealed_at`` names when it was sealed (``sealed_on``): "the
+    snapshot you sealed on 12 October (serve:abc, rows up to 41)"; without one
+    (an older willow-bot, or a stamp that doesn't read) it is the plain "the
+    sealed snapshot serve:abc (rows up to 41)", no date. ``greet`` leads it,
+    once per run."""
     if resume[0] == "sealed":
-        upto = f" (rows up to {resume[2]})" if resume[2] is not None else ""
-        head = f"Picking up from the sealed snapshot {resume[1]}{upto}"
+        when = sealed_on(resume[3], today) if len(resume) > 3 else ""
+        if when:
+            rows = f", rows up to {resume[2]}" if resume[2] is not None else ""
+            head = f"Picking up from the snapshot you sealed {when} ({resume[1]}{rows})"
+        else:
+            upto = f" (rows up to {resume[2]})" if resume[2] is not None else ""
+            head = f"Picking up from the sealed snapshot {resume[1]}{upto}"
     elif resume[0] == "none":
         head = "No snapshot has been sealed yet, so I'm scoping fresh"
     else:
@@ -485,8 +533,8 @@ def _fact(b: Box) -> str:
     """A box's value as a sentence part. The chain's ``answered N, escalated
     M`` said alone reads ``The chain answered N and escalated M`` (label, numbers
     and verbs from the box; ``The`` and ``and`` are fixed words), never a bare
-    count; any other value is itself. In a pair or a list it stays as the box
-    has it."""
+    count; any other value is itself. The seat gives that summary ``role="count"``,
+    so it is always said alone, never in a pair or a list."""
     v = _val(b.value)
     m = CHAIN_COUNT.fullmatch(v)
     if m and b.kind == "pass" and len(_val(b.label).split()) == 1:
