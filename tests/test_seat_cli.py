@@ -14,6 +14,7 @@ import re
 import shutil
 import subprocess
 import sys
+from datetime import date
 
 import pytest
 
@@ -107,6 +108,7 @@ def seat(
     color=False,
     clock=None,
     say=None,
+    today=None,
 ):
     out: list[str] = []
     it = iter(keys)
@@ -128,6 +130,7 @@ def seat(
         write=out.append,
         color=color,
         clock=clock or (lambda: "09:14"),
+        today=today or (lambda: date(2026, 10, 14)),
     )
     return st, out
 
@@ -3859,3 +3862,95 @@ def test_the_chain_count_is_not_a_show_me_ref():
     )
     st.run()
     assert not any(o.startswith("chips:") and "show me" in o for o in out)
+
+
+# --- the opening names when the human sealed ---------------------------------------
+
+
+def sealed_opening(sealed_at="2026-10-12T08:30:00Z", **kw):
+    res = resumed() if sealed_at is None else resumed(sealed_at=sealed_at)
+    api = FakeApi(resume=res, pooled=pool_of("proposal:aaa"))
+    st, out = seat(api, ["", ""], **kw)
+    st.run()
+    n = next(i for i, o in enumerate(out) if o.startswith("served ▶"))
+    return [o for o in out[:n] if o.startswith("agent> ")][-1]
+
+
+def test_opening_names_the_day_the_human_sealed():
+    # the stamp is UTC with an explicit Z; its date is read as written
+    assert sealed_opening() == (
+        f"agent> Morning. Picking up from the snapshot you sealed on 12 October "
+        f"({SEALED}, rows up to 41); 1 proposal still pooled from earlier runs."
+    )
+    # late in the UTC day stays that UTC day: no conversion to a local zone
+    assert "on 12 October (" in sealed_opening("2026-10-12T23:59:59Z")
+    assert "on 13 October (" in sealed_opening("2026-10-13T00:00:00Z")
+
+
+def test_opening_same_day_seal_is_earlier_today():
+    line = sealed_opening("2026-10-14T01:02:03Z")
+    assert "the snapshot you sealed earlier today (" in line
+    assert " on " not in line.split("(")[0]
+
+
+def test_opening_other_year_names_the_year_and_a_future_stamp_its_date():
+    assert "sealed on 31 December 2025 (" in sealed_opening("2025-12-31T10:00:00Z")
+    assert "sealed on 15 October (" in sealed_opening("2026-10-15T10:00:00Z")
+
+
+def test_opening_without_sealed_at_is_todays_wording_and_invents_no_date():
+    line = sealed_opening(None)
+    assert line == (
+        f"agent> Morning. Picking up from the sealed snapshot {SEALED} "
+        "(rows up to 41); 1 proposal still pooled from earlier runs."
+    )
+
+
+@pytest.mark.parametrize(
+    "bad",
+    [
+        None,
+        "",
+        "yesterday",
+        "2026-10-12",
+        "2026-10-12T08:30:00",  # no zone
+        "2026-10-12T08:30:00+02:00",  # an offset: not the record's form
+        "2026-10-12T08:30:00.123Z",
+        "2026-13-45T99:99:99Z",
+        20261012,
+        ["2026-10-12T08:30:00Z"],
+    ],
+)
+def test_opening_with_an_unreadable_sealed_at_says_no_date(bad):
+    line = sealed_opening(bad)
+    assert "the sealed snapshot" in line
+    assert "you sealed" not in line and "earlier today" not in line
+
+
+def test_the_seal_date_comes_from_the_return_not_the_clock():
+    # the same stamp reads the same whatever "today" is, except earlier-today
+    a = sealed_opening("2026-10-12T08:30:00Z", today=lambda: date(2026, 10, 20))
+    b = sealed_opening("2026-10-12T08:30:00Z", today=lambda: date(2026, 10, 14))
+    assert a == b
+    assert "sealed on 12 October (" in a
+
+    # an unreachable resume invents no date either
+    def boom(*a, **k):
+        raise RuntimeError("x")
+
+    st, out = seat(FakeApi(resume=boom), ["", ""])
+    st.run()
+    assert not any("you sealed" in o for o in out)
+
+
+def test_sealed_on_is_pure_and_total():
+    d = date(2026, 10, 14)
+    assert bx.sealed_on("2026-10-14T00:00:00Z", d) == "earlier today"
+    assert bx.sealed_on("2026-01-01T00:00:00Z", d) == "on 1 January"
+    assert bx.sealed_on("2026-01-01T00:00:00Z") == "on 1 January 2026"
+    assert bx.sealed_on(None, d) == ""
+    assert bx.sealed_on("garbage", d) == ""
+    # opening() stays total for a short resume tuple (the three-item form)
+    assert "the sealed snapshot serve:x (rows up to 3)" in bx.opening(
+        ("sealed", "serve:x", 3), ("empty",)
+    )

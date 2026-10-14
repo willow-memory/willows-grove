@@ -49,7 +49,16 @@ The stages, in order, each shown in the prompt (``scope ▶``):
                pool that cannot be read has its own clause, so an unreadable
                read is never said as "nothing to pick up". It carries the run's
                one ``Morning.`` (before noon), so the first reply does not say
-               it again. The resume call returns no date, so none is named
+               it again. When ``api.resume`` returns ``sealed_at`` (the seal
+               row's own stamp, UTC with an explicit ``Z``, as willow-bot's
+               record writes it) the sentence says when the human sealed:
+               "the snapshot you sealed on 12 October (serve:..., rows up to
+               N)", or "earlier today" when the stamp's UTC date is today's
+               (``seat_boxes.sealed_on``). The date is the record's, read as
+               written, never converted to a local zone and never from the
+               clock (the clock only picks "earlier today" over the date). An
+               older willow-bot with no ``sealed_at``, or a stamp that doesn't
+               read, keeps the plain "the sealed snapshot serve:..." wording
     served     api.serve is the silent start-check: it serves only a scope a
                past human seal already covers (three states, never collapsed),
                after one prompt, ``cap in characters (enter = 48000)``; an
@@ -173,6 +182,7 @@ import time
 import tomllib
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
+from datetime import date, datetime, timezone
 from importlib import metadata
 from pathlib import Path
 from typing import Any
@@ -574,6 +584,7 @@ class Seat:
         write: Callable[[str], None] = print,
         color: bool | None = None,
         clock: Callable[[], str] = lambda: time.strftime("%H:%M"),
+        today: Callable[[], date] = lambda: datetime.now(timezone.utc).date(),
     ):
         self.bot, self.api, self.cfg = bot, bot.api, cfg
         self.ratatosk = resolve_ratatosk()
@@ -584,6 +595,9 @@ class Seat:
         self.read, self.write = read, write
         self.color = use_color() if color is None else color
         self.clock = clock
+        #: The UTC date, only to choose "earlier today" over a date when the
+        #: opening names the seal; the seal's date itself is the record's.
+        self.today = today
         self.doc: dict | None = None
         self.pending: list[dict] = []  # passes not yet shown; the pool keeps them
         self.turns: dict[str, Turn] = {}  # the pile of what was asked and said
@@ -1054,7 +1068,12 @@ class Seat:
         if not isinstance(spec, dict) or not subject:
             self.start_resume = ("none",)
             return False  # {resume: None}: nothing sealed yet, today's bootstrap
-        self.start_resume = ("sealed", str(subject), spec.get("upto"))
+        self.start_resume = (
+            "sealed",
+            str(subject),
+            spec.get("upto"),
+            res.get("sealed_at"),  # the seal row's own stamp; absent on an older bot
+        )
         self.sealed = {"spec": spec, "subject": str(subject)}
         self.spec = spec
         self.pile_n = (
@@ -1129,7 +1148,12 @@ class Seat:
         said as well (the same fact once)."""
         self.opened = True
         self.code_reply(
-            opening(self.start_resume, self.start_pool, self.greeting(self.clock()))
+            opening(
+                self.start_resume,
+                self.start_pool,
+                self.greeting(self.clock()),
+                self.today(),
+            )
         )
 
     def grown_scope(self) -> None:
