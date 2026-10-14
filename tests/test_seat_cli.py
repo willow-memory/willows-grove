@@ -650,7 +650,7 @@ def test_more_shows_the_next_boxes_and_declining_keeps_them_in_the_pile():
     _api, out = rich_run()
     t = text(out)
     assert t.count("more? ▶") == 1 and "you: more" in out
-    assert "agent> Oh, and both local: d and d0: d. No rush." in t
+    assert "agent> Oh, and local: d and d0: d are both routine. No rush." in t
     _api2, out2 = rich_run(keys=["who", "", "the task", "later", ""])
     assert "agent> Got it. It stays in the pile." in out2
     assert "agent> Oh, and" not in text(out2)  # the rest stayed in the pile
@@ -848,7 +848,8 @@ def test_the_launcher_reports_no_willow_bot(tmp_path):
 
 MODEL = say_mod.MODEL
 GOOD_CODE = (
-    "agent> Morning. Looks like both answered 1, escalated 0 and local: d. No rush."
+    "agent> Morning. Looks like answered 1, escalated 0 and local: d are both routine. "
+    "No rush."
 )
 
 
@@ -2747,7 +2748,7 @@ def test_no_rush_is_said_at_most_once_per_turn():
     st.chain = chain
     st.run()
     assert text(out).count("No rush") == 1
-    assert bx.compose(boxes[:2], rush=False).endswith("fine 2.")
+    assert bx.compose(boxes[:2], rush=False).endswith("are both routine.")
     assert bx.compose(boxes[:2]).endswith("No rush.")
 
 
@@ -3272,3 +3273,33 @@ def test_unmatched_show_falls_back_to_box_ids_and_skips_counts():
     assert s.Seat.unmatched("show me 14", "14", boxes) == (
         'Nothing I showed answers to "14"; I showed: n4ee2a, n76c05.'
     )
+
+
+@pytest.mark.parametrize("kind,word", [("pr", "changed"), ("pass", "routine")])
+def test_a_pair_of_changed_or_routine_boxes_has_a_verb(kind, word):
+    two = [
+        bx.Box(f"b{i}", kind, "x", v) for i, v in enumerate(["PR 1 open", "tests ok"])
+    ]
+    got = bx.compose(two, page=0, look=False, rush=False)
+    assert got == f"PR 1 open and tests ok are both {word}."
+    assert bx.RUN_VERB[kind] == word  # one source of truth with a run
+
+
+@pytest.mark.parametrize("kind", ["pr", "pass"])
+def test_a_pair_that_shares_a_status_word_says_it(kind):
+    two = [bx.Box(f"b{i}", kind, "x", f"PR {i} open") for i in range(2)]
+    got = bx.compose(two, page=0, look=False, rush=False)
+    assert got == "PR 0 and PR 1 are both open."
+
+
+def test_a_count_box_is_never_grouped_with_other_boxes():
+    """The store's count is said on its own, before a pair or a run."""
+    count = bx.Box("n1", "pass", "count", "14 sealed, 3 open", role="count")
+    for others in (1, 2, 3):
+        rest = [bx.Box(f"b{i}", "pass", "x", f"check {i} ok") for i in range(others)]
+        for order in ([count, *rest], [*rest, count]):
+            got = bx.compose(order, page=0, look=False, rush=False)
+            assert "14 sealed, 3 open" in got
+            assert "14 sealed, 3 open and" not in got
+            assert "and 14 sealed" not in got
+            assert ", 14 sealed" not in got

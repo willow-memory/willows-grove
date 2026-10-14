@@ -488,8 +488,18 @@ def clause(box: Box) -> str:
     return "".join(t for t, _ in _single(box))
 
 
+#: The neutral verb a pair or a run of three or more says when its values share
+#: no word. One source: ``BOTH`` (you, block, dec) covers the pressing kinds,
+#: this the changed and routine ones, and a pair reads it too.
+RUN_VERB = {"dec": "decided", "pr": "changed", "pass": "routine"}
+
+
 def _pair(a: Box, b: Box) -> list[Part]:
-    """Two boxes of one kind in one phrase, with ``both``."""
+    """Two boxes of one kind in one phrase, with ``both``: ``are both <word>``
+    where the word is the last word the values share, else the kind's fixed
+    word (``BOTH``, else ``RUN_VERB``: changed, routine). A pair always ends
+    with a verb; only a kind with no fixed word at all keeps a leading
+    ``both``."""
     va, vb = _val(a.value), _val(b.value)
     if a.role == "draft" and a.kind != "you":
         return [
@@ -514,18 +524,10 @@ def _pair(a: Box, b: Box) -> list[Part]:
             (" ".join(wb[:-1]), b.id),
             (f" are both {wa[-1]}", None),
         ]
-    if a.kind in BOTH:
-        return [
-            (va, a.id),
-            (" and ", None),
-            (vb, b.id),
-            (f" are both {BOTH[a.kind]}", None),
-        ]
+    verb = BOTH.get(a.kind) or RUN_VERB.get(a.kind)
+    if verb:
+        return [(va, a.id), (" and ", None), (vb, b.id), (f" are both {verb}", None)]
     return [("both ", None), (va, a.id), (" and ", None), (vb, b.id)]
-
-
-#: The neutral verb a run of three or more says when its values share no word.
-RUN_VERB = {"dec": "decided", "pr": "changed", "pass": "routine"}
 
 
 def _run(group: list[Box]) -> list[Part]:
@@ -612,13 +614,15 @@ def compose(
             j < len(boxes)
             and boxes[j].state == "populated"
             and (boxes[j].kind, boxes[j].role == "draft") == (b.kind, b.role == "draft")
-            and "more" not in (b.role, boxes[j].role)
+            and not {"more", "count"} & {b.role, boxes[j].role}
         ):
             j += 1
         j = max(j, i + 1)
         group = boxes[i:j]
         i = j
-        if b.role == "more" or (b.kind in ("you", "block") and len(group) > 2):
+        if b.role in ("more", "count") or (
+            b.kind in ("you", "block") and len(group) > 2
+        ):
             sents += [(_single(g), "hard") for g in group]
         else:
             soft = b.kind not in ("you", "block") and b.role not in ("draft", "count")
