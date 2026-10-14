@@ -8,6 +8,7 @@ printed and which api calls it made.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import shutil
@@ -573,6 +574,11 @@ def test_a_colored_card_is_the_plain_card_with_escapes():
     assert "38;2;230;179;76" in hot  # needs-you is the sun
 
 
+def chip_at(out, start=0):
+    """Index of the first chip row at or after ``start``."""
+    return next(i for i in range(start, len(out)) if out[i].startswith("chips:"))
+
+
 def lines_ok(out):
     """Every printed line is a card row, a reply line, the human's, or chrome."""
     ok = ("+", "|", ":", "!", "agent ·", "agent>", "you:")
@@ -630,8 +636,13 @@ def test_a_reply_is_boxes_then_one_sentence_from_the_boxes():
     t = text(out)
     assert "agent · code · said 2 boxes, no model asked" in t
     first = next(o for o in out if o.startswith("agent> "))
-    # "escalated 1" is a problem count: no reassurance over it (3b-ii, Loki F-low)
-    assert first == "agent> Looks like both answered 2, escalated 1 and local: d."
+    # "escalated 1" is still a problem count (no reassurance over it, 3b-ii,
+    # Loki F-low), but the chain summary is said as a sentence, with no
+    # "Heads up:" before a bare count (F6)
+    assert first == (
+        "agent> Morning. Local: d is still blocked, reason: local_escalate. "
+        "The chain answered 2 and escalated 1."
+    )
     assert out.index("agent · code · said 2 boxes, no model asked") < out.index(first)
 
 
@@ -639,7 +650,7 @@ def test_more_shows_the_next_boxes_and_declining_keeps_them_in_the_pile():
     _api, out = rich_run()
     t = text(out)
     assert t.count("more? ▶") == 1 and "you: more" in out
-    assert "agent> Oh, and local: d is still blocked and d0: d." in t
+    assert "agent> Oh, and local: d and d0: d are both routine. No rush." in t
     _api2, out2 = rich_run(keys=["who", "", "the task", "later", ""])
     assert "agent> Got it. It stays in the pile." in out2
     assert "agent> Oh, and" not in text(out2)  # the rest stayed in the pile
@@ -662,7 +673,7 @@ def test_a_question_asked_again_is_shown_from_the_pile_with_its_timestamp():
     api = FakeApi(escalate=chain_result(*pieces))
     st, out = seat(
         api,
-        ["who", "", "where are we", "Where  are we", ""],
+        ["who", "", "status of the build", "Status  of the build", ""],
         clock=lambda: next(ticks),
     )
     st.run()
@@ -670,10 +681,10 @@ def test_a_question_asked_again_is_shown_from_the_pile_with_its_timestamp():
     stamp = "as noted at 09:14 · same boxes, nothing new since"
     assert out.count(stamp) == 1
     cards = lambda block: [o for o in block if o[:1] in "+|"]  # noqa: E731
-    i1 = out.index("you: where are we")
+    i1 = out.index("you: status of the build")
     i2 = out.index(stamp)
-    first_cards = cards(out[i1 : out.index(s.CHIPS, i1)])
-    assert first_cards and cards(out[i2 : out.index(s.CHIPS, i2)]) == first_cards
+    first_cards = cards(out[i1 : chip_at(out, i1)])
+    assert first_cards and cards(out[i2 : chip_at(out, i2)]) == first_cards
     assert "agent · code · shown again from the pile, no model asked now" in out
     assert "09:40" not in text(out)  # the second asking did not restamp
 
@@ -684,13 +695,16 @@ def test_the_sentence_is_glue_plus_box_facts_only():
     c = bx.Box("b3", "pr", "changed", "PR 127 open")
     d = bx.Box("b4", "pr", "changed", "PR 714 open")
     assert bx.compose([a, b]) == (
-        "Looks like Ratify the work order needs you and PR 712 waiting is still blocked."
+        "You need to ratify the work order. PR 712's still waiting."
     )
+    assert bx.compose([a, b], greet="Morning.").startswith("Morning. You need")
     assert bx.compose([c, d], first=False) == (
-        "Oh, and both PR 127 open and PR 714 open. No rush."
+        "Oh, and PR 127 and PR 714 are both open. No rush."
     )
+    assert bx.compose([c, d], page=2).startswith("Also, PR 127")
+    assert bx.compose([c, d]) == "Looks like PR 127 and PR 714 are both open. No rush."
     down = bx.Box("b5", "pass", "served", "unreachable — no key", state="unreachable")
-    assert bx.compose([down]) == "Heads up: served is unreachable — no key."
+    assert bx.compose([down]) == "Heads up: I can't read the record right now. No key."
     assert bx.compose([]) == ""
     for word in ("morning", "still", "both", "heads up", "no rush", "looks like"):
         assert word in bx.GLUE
@@ -833,7 +847,10 @@ def test_the_launcher_reports_no_willow_bot(tmp_path):
 # --- 3b-ii: the local model's sentence, the four checks, the fallback -------------
 
 MODEL = say_mod.MODEL
-GOOD_CODE = "agent> Looks like both answered 1, escalated 0 and local: d. No rush."
+GOOD_CODE = (
+    "agent> Morning. Looks like answered 1, escalated 0 and local: d are both routine. "
+    "No rush."
+)
 
 
 def tagged(make):
@@ -915,7 +932,8 @@ def test_each_check_catches_its_violation_and_code_replaces_the_sentence(which):
     marks = [c.strip()[0] for c in chips.removeprefix("checks:").split(" · ")]
     assert marks[idx] == "✗" and marks.count("✗") == 1, chips
     assert out.index(struck) < out.index(GOOD_CODE)  # the code sentence beneath it
-    assert [o for o in out if o.startswith("agent> ") and "~~" not in o] == [GOOD_CODE]
+    said = [o for o in out if o.startswith("agent> ") and "~~" not in o]
+    assert [o for o in said if " is empty" not in o] == [GOOD_CODE]  # stage lines aside
 
 
 def test_an_invented_word_fails_nothing_the_boxes_lack_so_voice_cannot_add_a_fact():
@@ -1100,7 +1118,7 @@ def test_asked_again_replays_the_model_reply_without_asking_the_model():
     ticks = iter(["09:14", "09:40", "09:41"])
     api = FakeApi(escalate=chain_result(piece("local", "answered")))
     out: list[str] = []
-    keys = iter(["who", "", "where are we", "Where  are we", ""])
+    keys = iter(["who", "", "status of the build", "Status  of the build", ""])
 
     def read(prompt):
         out.append(prompt)
@@ -1898,3 +1916,1457 @@ def test_pooled_at_start_a_non_record_answer_is_unreachable():
     st.pooled_at_start()
     assert pooled_card(out).splitlines()[0].startswith("+!")
     assert "not a pool record" in text(out)
+
+
+# --- step 1: rank, per-kind phrasing, glue, greeting, plain lines -------------------
+
+DEMO = {
+    "b1": bx.Box(
+        "b1",
+        "dec",
+        "decided",
+        "Phone only proposes",
+        "seal in Nestor on the box · recorded",
+    ),
+    "b2": bx.Box("b2", "pr", "changed", "PR #127 open", "grid rows JE–JI · baton 9"),
+    "b3": bx.Box("b3", "pr", "changed", "PR #714 open", "untracks 3 bytecode files"),
+    "b4": bx.Box(
+        "b4", "block", "blocked", "PR 712 waiting", "broker verb · 126 tests pass"
+    ),
+    "b5": bx.Box(
+        "b5", "you", "needs you", "Ratify the work order", "local-flow-and-ui §7"
+    ),
+}
+
+
+def demo(*ids):
+    return [DEMO[i] for i in ids]
+
+
+def test_rank_is_needs_you_blocked_decided_changed_pass_stable_heads_up_first():
+    p1 = bx.Box("p1", "pass", "x", "ok")
+    p2 = bx.Box("p2", "pass", "x", "ok2")
+    down = bx.Box("d", "pass", "served", "unreachable — no key", state="unreachable")
+    gap = bx.Box("g", "pass", "chain", "empty — none", state="empty")
+    odd = bx.Box("o", "weird", "x", "v")
+    got = bx.rank(
+        [
+            p1,
+            odd,
+            DEMO["b2"],
+            p2,
+            DEMO["b1"],
+            DEMO["b4"],
+            down,
+            DEMO["b5"],
+            gap,
+            DEMO["b3"],
+        ]
+    )
+    assert [b.id for b in got] == [
+        "d",
+        "g",
+        "b5",
+        "b4",
+        "b1",
+        "b2",
+        "b3",
+        "p1",
+        "p2",
+        "o",
+    ]
+
+
+def test_the_demo_scenes_read_like_the_sketch():
+    assert bx.compose(demo("b5", "b4"), greet="Morning.") == (
+        "Morning. You need to ratify the work order. PR 712's still waiting, 126 tests pass."
+    )
+    assert bx.compose(demo("b1", "b2", "b3"), first=False) == (
+        "Oh, and phone only proposes is decided and recorded; "
+        "PR #127 and PR #714 are both open. No rush."
+    )
+
+
+def sketch_glue(html: str) -> tuple[str, ...]:
+    """The free glue words a box-stream sketch declares (``const GLUE = [...]``);
+    a sketch with no such list is a failure, never an empty tuple."""
+    found = re.search(r"const GLUE = \[(.*?)\];", html)
+    assert found, "the sketch declares no GLUE list"
+    return tuple(re.findall(r"'([^']+)'", found.group(1)))
+
+
+def test_sketch_glue_catches_a_planted_drift():
+    """Planted: a sketch whose list drifts from the seat's reads as different,
+    and a sketch with no list fails rather than passing as empty."""
+    assert sketch_glue("const GLUE = ['morning', 'oh'];") == ("morning", "oh")
+    drifted = "const GLUE = [" + ", ".join(f"'{w}'" for w in bx.GLUE[:-1]) + "];"
+    assert sketch_glue(drifted) != bx.GLUE
+    with pytest.raises(AssertionError):
+        sketch_glue("const OTHER = ['morning'];")
+
+
+def test_glue_is_the_sketchs_list_and_the_model_may_use_exactly_it():
+    html = (s.GROVE_ROOT / "web/demo/box-stream/box-stream-v1.3.html").read_text(
+        "utf-8"
+    )
+    assert sketch_glue(html) == bx.GLUE
+    assert say_mod.GLUE is bx.GLUE
+    prompt = say_mod.build_prompt(demo("b5"), "where are we")
+    assert "Free words, and only these: " + ", ".join(bx.GLUE) in prompt
+
+
+SETS = [
+    ("b5", "b4"),
+    ("b1", "b2", "b3"),
+    ("b2", "b3"),
+    ("b5",),
+    ("b4", "b1"),
+    ("b5", "b4", "b1", "b2", "b3"),
+]
+
+
+@pytest.mark.parametrize("ids", SETS)
+@pytest.mark.parametrize("page", [0, 1, 2])
+def test_the_code_sentence_passes_the_checks_a_model_sentence_faces(ids, page):
+    """Cited, the code sentence passes all four checks. Uncited (as it is
+    shown today), cites-served and quotes pass, nothing-lacking passes, and
+    only ``every box cited`` is False (there is no tag to find)."""
+    boxes = bx.rank(demo(*ids))
+    cited = bx.compose(
+        boxes, page=page, greet="Morning." if not page else "", cite=True
+    )
+    assert say_mod.passed(say_mod.run_checks(cited, boxes, "where are we")), cited
+    assert say_mod.run_checks(cited, boxes)[3] == "na"
+    plain = bx.compose(boxes, page=page)
+    r = say_mod.run_checks(plain, boxes, "where are we")
+    assert r == [True, False, True, "na"], plain
+
+
+def test_a_made_up_fact_would_not_pass_the_same_check():
+    boxes = demo("b5", "b4")
+    s_ = bx.compose(boxes, cite=True).replace("126", "140")
+    assert say_mod.run_checks(s_, boxes)[2] is False
+
+
+def test_empty_and_unreachable_have_their_own_plain_lines():
+    down = bx.Box(
+        "b1",
+        "pass",
+        "served",
+        "unreachable — The box wasn't found.",
+        state="unreachable",
+    )
+    gap = bx.Box(
+        "b2",
+        "pass",
+        "still pooled",
+        "empty — nothing pooled from earlier runs",
+        state="empty",
+    )
+    assert (
+        bx.plain_line(down)
+        == "I can't read the record right now. The box wasn't found."
+    )
+    assert (
+        bx.plain_line(gap) == "Still pooled is empty: nothing pooled from earlier runs."
+    )
+    assert bx.plain_line(DEMO["b5"]) == ""
+    assert bx.compose([down]).startswith("Heads up: I can't read the record right now.")
+    assert "can't read" not in bx.compose([gap]) and "No rush" not in bx.compose([gap])
+    assert bx.compose([gap]) != bx.compose([down])
+    assert all(ord(c) < 128 for c in bx.plain_line(down) + bx.plain_line(gap))
+
+
+def test_a_stage_that_is_unreachable_or_empty_also_says_so_in_words():
+    def boom(*a, **k):
+        raise RuntimeError("pool db down")
+
+    st, out = seat(FakeApi(pooled=boom), ["who"])
+    st.run()
+    t = text(out)
+    assert "[unreachable] still pooled" in t
+    assert (
+        "agent> I can't read the record right now. RuntimeError: pool db down." in out
+    )
+    st, out = seat(FakeApi(pooled={"pooled": []}), ["who"])
+    st.run()
+    assert "agent> Still pooled is empty: nothing pooled from earlier runs." in out
+    assert "I can't read" not in text(out)
+
+
+def test_the_greeting_is_once_per_run_before_noon_from_the_injected_clock():
+    for at, greets in (("09:14", True), ("13:05", False), ("garbled", False)):
+        st, out = seat(FakeApi(), ["", ""], clock=lambda at=at: at)
+        st.converse("k1", demo("b5", "b4", "b1"), "q")  # two pages: PAGE=2
+        st.converse("k2", demo("b1"), "q")
+        said = [o for o in out if o.startswith("agent> ")]
+        assert sum("Morning." in o for o in said) == (1 if greets else 0), (at, said)
+        assert (not greets) or "Morning." in said[0]
+
+
+def test_converse_ranks_then_pages_the_ranked_list():
+    st, out = seat(
+        FakeApi(),
+        [""],
+    )
+    p = bx.Box("p", "pass", "x", "fine")
+    st.converse("k", [p, DEMO["b1"], DEMO["b4"], DEMO["b5"]], "q")
+    heads = [o for o in out if o.startswith(("+-", "+.", "+!"))]
+    assert [h.split("] ")[0] for h in heads[:2]] == ["+- [needs you", "+- [blocked"]
+    said = [o for o in out if o.startswith("agent> ")]
+    assert said[0].startswith("agent> Morning. You need to ratify")
+    assert said[1].startswith("agent> Oh, and phone only proposes is decided")
+
+
+# --- chips, chip answers and follow-ups ------------------------------------------
+
+
+def demo_boxes():
+    return [
+        bx.Box("b1", "dec", "decided", "phone only proposes", "recorded"),
+        bx.Box("b2", "pr", "changed", "PR #127 open", "grid rows JE–JI · baton 9"),
+        bx.Box("b3", "pr", "changed", "PR #714 open", "untracks 3 bytecode files"),
+        bx.Box(
+            "b4", "block", "blocked", "PR 712 waiting", "broker verb · 126 tests pass"
+        ),
+        bx.Box(
+            "b5", "you", "needs you", "Ratify the work order", "local-flow-and-ui §7"
+        ),
+    ]
+
+
+GATE = [
+    bx.Box("c1", "block", "step", "Check-in hard-closed", "the box did not open"),
+    bx.Box("c2", "block", "gate", "ruff 0.16.10", "installed in the venv"),
+    bx.Box(
+        "c5",
+        "you",
+        "needs you",
+        "Pick one",
+        "put it back · keep as a grant · block · stop",
+    ),
+]
+
+
+def thread_run(keys, boxes=None, **kw):
+    """A run whose chain turns are fixed boxes, so a follow-up has something to
+    resolve against. ``api.escalate`` must never be called by a follow-up."""
+    api = FakeApi()
+    st, out = seat(api, ["who", "", *keys, ""], **kw)
+
+    def chain(task):
+        st.you(task)
+        st.converse(s._norm(task), list(boxes or demo_boxes()), task)
+
+    st.chain = chain
+    st.run()
+    return api, out
+
+
+ALL = ["", ""]  # accept both more? prompts: the whole demo list is shown
+
+
+def chips_of(out):
+    return [o for o in out if o.startswith("chips:")]
+
+
+def after(out, you, nth=0):
+    """The lines printed after the human's ``you: <you>`` (the nth time)."""
+    i = [k for k, o in enumerate(out) if o == f"you: {you}"][nth]
+    nxt = next(
+        (j for j in range(i + 1, len(out)) if out[j].startswith(("you:", "chain ▶"))),
+        len(out),
+    )
+    return out[i + 1 : nxt]
+
+
+def test_the_chip_row_comes_from_the_boxes_just_shown():
+    row = bx.chips(bx.rank(demo_boxes())).row()
+    assert row == "chips: [show me 712] [later] [thanks]"  # the blocked box, by number
+    assert bx.chips(GATE).row() == (
+        "chips: [put it back] [keep as a grant] [block] [stop] [later] [thanks]"
+    )
+    assert (
+        bx.chips([bx.Box("b1", "pass", "x", "fine")]).row() == "chips: [later] [thanks]"
+    )
+
+
+def test_a_ref_must_be_unique_and_comes_only_from_the_boxs_own_value():
+    twin = [
+        bx.Box("b1", "block", "blocked", "PR 712 waiting", "why"),
+        bx.Box("b2", "block", "blocked", "PR 712 held", "why"),
+    ]
+    assert bx.chips(twin).show == "show me b1"  # number shared: the box id, not words
+    same = [
+        bx.Box("zzz", "block", "x", "PR 7 waiting", "d"),
+        bx.Box("yyy", "pr", "x", "PR 7 waiting", "d"),
+    ]
+    assert bx.chips(same).show == ""  # nothing names one box alone: no chip
+
+
+def test_a_ref_is_a_number_an_id_like_token_or_the_box_id_never_first_words():
+    d0 = bx.Box(
+        "b7116acfef88",
+        "you",
+        "escalated",
+        "d0: the scope is 'empty': nothing served",
+        "r",
+    )
+    assert bx.ref_tokens(d0) == []  # no number, no id token, a hash id: no chip
+    assert bx.chips([d0]).show == ""
+    assert bx.chips([d0]).row() == "chips: [later] [thanks]"
+    one = bx.Box("zz", "block", "x", "step 7 of 9 waiting", "d")
+    assert bx.ref_tokens(one) == []  # one digit is no ref
+    ver = bx.Box("zz", "block", "x", "ruff 0.16.10 missing", "d")
+    assert bx.ref_tokens(ver) == []  # parts of a version are no ref
+    hexish = bx.Box("zz", "block", "x", "run 7476c1338860 held", "d")
+    assert bx.ref_tokens(hexish) == []
+    pr = bx.Box("b4", "block", "x", "PR 712 waiting", "d")
+    assert bx.ref_tokens(pr) == ["712", "PR 712", "b4"]
+    assert bx.ref_tokens(bx.Box("zz", "pr", "x", "PR #714 open"))[:1] == ["714"]
+    twin = [pr, bx.Box("b5", "block", "x", "Issue 712 held", "d")]
+    assert bx.unique_ref(pr, twin) == "PR 712"  # the number is shared, the token isn't
+    assert bx.matches(pr, "pr 712") and not bx.matches(twin[1], "pr 712")
+
+
+def test_options_need_three_short_digitless_parts_and_the_row_is_capped():
+    two = bx.Box("b1", "you", "needs you", "Ratify", "local-flow · section seven")
+    assert bx.options(two) == []
+    digits = bx.Box("b1", "you", "needs you", "Ratify", "a · b · section 7")
+    assert bx.options(digits) == []
+    many = bx.Box("b1", "you", "x", "Pick", " · ".join(f"opt{c}" for c in "abcdefg"))
+    assert len(bx.chips([many]).labels()) == bx.CHIP_CAP
+    blk = bx.Box("b2", "block", "x", "PR 9 waiting", "detail")
+    full = bx.Box("b1", "you", "x", "Pick", "one · two · three · four")
+    assert bx.chips([full, blk]).show == ""  # choices fill the row: no show me
+    dup = bx.Box("b1", "you", "x", "Pick", "One · one · later · thanks · two")
+    assert bx.options(dup) == ["One", "two"]
+
+
+def test_the_chip_row_is_ascii_safe_of_control_and_bracket_characters():
+    odd = bx.Box("b1", "you", "x", "Pick", "[red]\x1b one · two\x07 · three")
+    row = bx.chips([odd]).row()
+    assert "\x1b" not in row and "\x07" not in row and "[[" not in row
+
+
+def test_a_reply_ends_with_its_chips_and_a_choice_is_only_acknowledged():
+    api, out = thread_run(["check in", "", "put it back", "block"], boxes=GATE)
+    assert chips_of(out)[0].startswith("chips: [put it back] [keep as a grant]")
+    assert after(out, "put it back") == [
+        "agent · code · no model, nothing served",
+        "agent> Got it: put it back.",
+    ]
+    assert api.names().count("escalate") == 0
+    # the row is spent once a choice is made: a second goes to the chain as today
+    assert "agent> Got it: block." not in out
+
+
+def test_thanks_and_later_after_a_reply_are_answered_by_code():
+    api, out = thread_run(["status of the build", "thanks", "later"])
+    assert "agent> Anytime." in out and "agent> Got it. It stays in the pile." in out
+    assert "escalate" not in api.names()
+
+
+def test_a_choice_not_offered_is_not_taken_for_one():
+    _api, out = thread_run(["status of the build", "put it back"])
+    assert not any("Got it: put it back" in o for o in out)
+
+
+def test_show_me_a_ref_shows_the_box_again_in_full_with_a_code_sentence():
+    api, out = thread_run(["status of the build", *ALL, "show me 712"])
+    got = after(out, "show me 712")
+    assert got[0].startswith("+- [blocked] blocked  b4")
+    assert "| PR 712 waiting" in got and "| broker verb · 126 tests pass" in got
+    assert got[-2:] == [
+        "agent · code · no model, nothing served",
+        "agent> PR 712's still waiting, 126 tests pass.",
+    ]
+    assert "escalate" not in api.names()
+
+
+@pytest.mark.parametrize("line", ["open 712", "B4", "show me b4", "Show me 712?"])
+def test_open_and_a_box_id_name_the_same_box(line):
+    _api, out = thread_run(["status of the build", *ALL, line])
+    assert after(out, line)[0].startswith("+- [blocked] blocked  b4")
+
+
+def test_ordinals_count_the_boxes_the_last_reply_showed():
+    _api, out = thread_run(["status of the build", *ALL, "the second one"])
+    assert after(out, "the second one")[0].startswith("+- [blocked] blocked  b4")
+    _api, out = thread_run(["status of the build", *ALL, "the first"])
+    assert after(out, "the first")[0].startswith("+- [needs you] needs you  b5")
+
+
+def test_that_is_the_first_of_the_last_page_then_the_box_last_opened():
+    _api, out = thread_run(["status of the build", "n", "that"])
+    assert after(out, "that")[0].startswith("+- [needs you] needs you  b5")
+    _api, out = thread_run(
+        ["status of the build", *ALL, "that"]
+    )  # the last page: b3 alone
+    assert after(out, "that")[0].startswith("+- [changed] changed  b3")
+    _api, out = thread_run(["status of the build", *ALL, "show me 712", "that one"])
+    assert after(out, "that one")[0].startswith("+- [blocked] blocked  b4")
+
+
+@pytest.mark.parametrize("line", ["why", "Why?", "what's that", "tell me more"])
+def test_why_says_the_boxs_detail_by_code(line):
+    api, out = thread_run(["status of the build", *ALL, "show me 712", line])
+    got = after(out, line)
+    assert got == [
+        "agent · code · no model, nothing served",
+        "agent> Broker verb, 126 tests pass.",
+    ]
+    assert "escalate" not in api.names()
+
+
+def test_why_on_a_box_without_detail_says_so_and_on_a_bare_state_says_its_reason():
+    boxes = [bx.Box("b1", "dec", "decided", "phone only proposes")]
+    _api, out = thread_run(["status of the build", "why"], boxes=boxes)
+    assert (
+        "agent> Phone only proposes is decided. Nothing more is on the record for it."
+        in out
+    )
+    down = [bx.Box("b1", "pass", "served", "unreachable — no key", state="unreachable")]
+    _api, out = thread_run(["status of the build", "why"], boxes=down)
+    assert f"agent> {bx.CANT_READ}. No key." in out
+
+
+def test_an_ordinal_past_what_was_shown_is_a_plain_line_never_a_guess():
+    boxes = demo_boxes()[:3]  # 3 boxes: pages of two, one box left behind more?
+    _api, out = thread_run(["status of the build", "n", "the third one"], boxes=boxes)
+    got = after(out, "the third one")
+    assert got[-1].startswith("agent> I showed 2 boxes (")
+    assert got[-1].endswith("so there is no third one.")
+    assert not any(o.startswith("+-") for o in got)
+
+
+def test_a_ref_that_fits_two_boxes_is_said_not_guessed():
+    boxes = [
+        bx.Box("b1", "block", "x", "PR 712 waiting", "d"),
+        bx.Box("b2", "pr", "x", "PR 712 open", "d"),
+    ]
+    api, out = thread_run(["status of the build", "show me 712"], boxes=boxes)
+    got = after(out, "show me 712")
+    assert got[-1] == 'agent> "712" fits 2 boxes: b1: PR 712 waiting; b2: PR 712 open.'
+    assert "escalate" not in api.names()
+
+
+def test_go_on_shows_the_next_page_by_code_then_says_nothing_is_left():
+    # decline the first more? so the pile keeps the rest, then ask for it
+    api, out = thread_run(["status of the build", "n", "go on", "go on", "next"])
+    first = after(out, "go on")
+    assert "agent · code · said 2 boxes, no model asked" in first
+    assert (
+        "agent> Oh, and phone only proposes is decided and recorded; PR #127 open. No rush."
+        in first
+    )
+    assert chips_of(first) == []  # one box still behind it
+    last = after(out, "go on", 1)
+    assert any("b3" in o for o in last) and "agent> Also, PR #714 open." in last
+    assert chips_of(last)  # the pile is empty: the row is offered
+    assert after(out, "next") == [
+        "agent · code · no model, nothing served",
+        "agent> Nothing more in the pile.",
+    ]
+    assert "escalate" not in api.names()
+
+
+def test_a_follow_up_with_no_reply_before_it_goes_to_the_chain_as_today():
+    api = FakeApi()
+    st, out = seat(api, ["who", "", "show me 712", ""])
+    st.run()
+    assert api.names().count("escalate") == 1  # no turn yet: it is a task
+
+
+def test_show_me_that_no_shown_box_answers_to_is_a_plain_line_not_the_chain():
+    """T1: after a turn, ``show me 14`` is a follow-up that found nothing: one
+    code line quoting the words, listing what was shown; no escalate, no model."""
+    api, out = thread_run(["status of the build", *ALL, "show me 14"])
+    got = after(out, "show me 14")
+    assert got[-1] == (
+        'agent> Nothing I showed answers to "14"; I showed: b5, 712, b1, 127 and 1 more.'
+    )
+    assert "agent · code · no model, nothing served" in got
+    assert "escalate" not in api.names()
+    assert not any(o.startswith("+-") for o in got)  # no card, no row
+
+
+@pytest.mark.parametrize(
+    "line,said",
+    [
+        ("Open Tony?", "Tony"),
+        ("show 9999", "9999"),
+        ("SHOW ME  the Stack!", "the Stack"),
+    ],
+)
+def test_unmatched_show_forms_quote_the_words_exactly(line, said):
+    api, out = thread_run(["status of the build", *ALL, line])
+    got = after(out, line)
+    assert any(
+        o.startswith(f'agent> Nothing I showed answers to "{said}"') for o in got
+    )
+    assert api.names().count("escalate") == 0
+
+
+def test_unmatched_show_lists_a_few_refs_and_counts_the_rest():
+    boxes = [bx.Box(f"b{n}", "pass", "routine pass", f"check {n}") for n in range(1, 8)]
+    line = s.Seat.unmatched("show me zzz", "zzz", boxes)
+    assert line == (
+        'Nothing I showed answers to "zzz"; I showed: b1, b2, b3, b4 and 3 more.'
+    )
+    assert s.Seat.unmatched("open x", "x", []) == 'Nothing I showed answers to "x".'
+
+
+def test_unmatched_show_after_a_store_turn_is_also_a_plain_line(tmp_path):
+    p = fixture_store(tmp_path, "s.db")
+    api, out = nestor_run(["where are we", "show me 99999"], p)
+    got = after(out, "show me 99999")
+    assert any(o.startswith('agent> Nothing I showed answers to "99999"') for o in got)
+    assert "escalate" not in api.names()
+
+
+def test_a_line_that_resolves_to_nothing_goes_to_the_chain_as_today():
+    calls = []
+    api = FakeApi()
+    st, out = seat(
+        api,
+        ["who", "", "status of the build", "show me the stack", "b99", "the sky", ""],
+    )
+    st.chain = lambda task: (
+        st.you(task),
+        calls.append(task),
+        st.converse(task, demo_boxes()[:2], task),
+    )
+    st.run()
+    # "show me the stack" is a follow-up that found nothing: a code line (T1)
+    assert calls == ["status of the build", "b99", "the sky"]
+
+
+def test_asked_again_still_replays_and_a_follow_up_leaves_no_row():
+    ticks = iter(["09:14", "09:40", "09:41"])
+    api, out = thread_run(
+        ["status of the build", *ALL, "show me 712", "Status  of the build", "why"],
+        clock=lambda: next(ticks),
+    )
+    assert "as noted at 09:14 · same boxes, nothing new since" in out
+    writes = {"take_proposals", "checkin", "checkout", "escalate"}
+    assert not [n for n in api.names() if n == "escalate" or n == "take_proposals"]
+    assert writes  # (the only api calls are the stages around the turns)
+
+
+def test_a_follow_up_never_asks_the_model():
+    asked = []
+
+    def sayer(prompt):
+        asked.append(prompt)
+        return "x"
+
+    _api, out = thread_run(
+        ["status of the build", "n", "go on", "show me 712", "why", "the first one"],
+        say=sayer,
+    )
+    assert len(asked) == 1  # only the first reply's sentence; none for the follow-ups
+
+
+# --- the gate's venv is the seat's venv (F1) ------------------------------------------
+
+
+def _py(path):
+    path.mkdir(parents=True)
+    (path / "python3").write_text("", encoding="utf-8")
+
+
+def rv(env, tmp_path, prefix="/usr", base="/usr"):
+    return s.resolve_venv(env, prefix, base, tmp_path / "grove")
+
+
+def test_gate_venv_is_the_running_venv_when_the_interpreter_is_one(tmp_path):
+    home = tmp_path / "home"
+    _py(home / "venvs" / "willow-bot" / "bin")  # the legacy one exists too
+    env = {"WILLOW_HOME": str(home)}
+    got = rv(env, tmp_path, prefix=str(tmp_path / "run"), base="/usr")
+    assert got == tmp_path / "run"
+
+
+def test_gate_venv_follows_the_launcher_order_outside_a_venv(tmp_path):
+    home = tmp_path / "home"
+    new = home / "willow-bot" / "venvs" / "willow-bot"
+    old = home / "venvs" / "willow-bot"
+    mine = tmp_path / "mine"
+    env = {"WILLOW_HOME": str(home), "GROVE_VENV": str(mine)}
+    _py(old / "bin")
+    assert rv(env, tmp_path) == old  # legacy, when it is all there is
+    _py(new / "bin")
+    assert rv(env, tmp_path) == new  # D2 beats legacy
+    _py(mine / "bin")
+    assert rv(env, tmp_path) == mine  # GROVE_VENV beats both
+
+
+def test_gate_venv_skips_a_grove_venv_with_no_python_and_ends_at_dot_venv(tmp_path):
+    home = tmp_path / "home"
+    env = {"WILLOW_HOME": str(home), "GROVE_VENV": str(tmp_path / "gone")}
+    _py(tmp_path / "grove" / ".venv" / "bin")
+    assert rv(env, tmp_path) == tmp_path / "grove" / ".venv"
+
+
+def test_gate_venv_with_nothing_is_the_d2_path_not_the_legacy_one(tmp_path):
+    env = {"WILLOW_HOME": str(tmp_path / "home")}
+    want = tmp_path / "home" / "willow-bot" / "venvs" / "willow-bot"
+    assert rv(env, tmp_path) == want
+
+
+def test_config_hands_the_gate_the_resolved_venv(tmp_path, monkeypatch):
+    home = tmp_path / "home"
+    new = home / "willow-bot" / "venvs" / "willow-bot"
+    _py(new / "bin")
+    monkeypatch.setenv("WILLOW_HOME", str(home))
+    monkeypatch.delenv("GROVE_VENV", raising=False)
+    monkeypatch.setattr(sys, "prefix", sys.base_prefix)
+
+    class Cfg:
+        def __init__(self, **kw):
+            self.__dict__.update(kw)
+
+    api = FakeApi()
+    api.Config = Cfg
+    api.default_keyring = lambda: None
+    api.default_nestor_db = lambda: None
+    cfg = s.config(bot(api), tmp_path / "bot", tmp_path / "grove")
+    assert cfg.venv == new
+
+
+# --- check-in cards take their kind from the row's status (F2) -------------------------
+
+TESTS_LINE = "tests: onescript: failed: 23 failed, 375 passed, 10 skipped in 16.03s"
+TOOL_LINE = "toolchain: ruff: can't run on the box: not installed; pinned 0.16.7"
+GATES = [
+    {"gate": "tests", "where": "onescript", "verdict": "failing",
+     "why": "failed: 23 failed, 375 passed, 10 skipped in 16.03s"},
+    {"gate": "toolchain", "where": "ruff", "verdict": "unreachable",
+     "why": "can't run on the box: not installed; pinned 0.16.7"},
+    {"gate": "freshness", "where": "g", "verdict": "satisfied", "why": "3 ahead"},
+]  # fmt: skip
+
+
+def checkin_cards(report):
+    api = FakeApi(checkin={"report": report})
+    st, out = seat(api, [])
+    st.run()
+    return text(out)
+
+
+def test_a_failed_test_run_in_the_check_in_is_blocked_not_a_routine_pass():
+    out = checkin_cards(
+        {"hard_close": True, "lines": [TESTS_LINE, TOOL_LINE], "gates": GATES}
+    )
+    assert "[blocked] check-in" in out
+    assert "[routine pass] check-in" not in out
+    assert out.count("[blocked] check-in") == 3  # two lines + the HARD CLOSE card
+
+
+def test_a_record_break_line_of_a_hard_close_is_blocked_too():
+    out = checkin_cards({"hard_close": True, "lines": ["record: broken at n=4"]})
+    assert "[blocked] check-in" in out
+
+
+def test_a_clean_check_in_line_stays_a_routine_pass():
+    out = checkin_cards({"hard_close": False, "lines": ["probes: 4/4"]})
+    assert "[routine pass] check-in" in out
+
+
+def test_checkin_kind_reads_the_gate_verdict_not_the_words():
+    ok = {"gate": "tests", "where": "x", "verdict": "satisfied", "why": "failed 0"}
+    rep = {"hard_close": False, "gates": [ok]}
+    assert s.checkin_kind("tests: x: failed 0", rep) == "pass"
+    bad = {**ok, "verdict": "failing"}
+    assert s.checkin_kind("tests: x: failed 0", {"gates": [bad]}) == "block"
+
+
+# --- the stage prompts: defaults stated, a refused answer said plainly (F4) ---------------
+
+BY_REFUSAL = (
+    "group by one or more of ('who', 'what', 'when', 'where'), got ('where are we',)"
+)
+
+
+def scope_says(res_ok):
+    """A scope api that refuses any ``by`` outside the four words."""
+
+    def call(cfg, by=(), **_):
+        if any(w not in ("who", "what", "when", "where") for w in by):
+            return {"refused": BY_REFUSAL, "code": 1}
+        return res_ok
+
+    return call
+
+
+def test_the_prompts_state_their_defaults_plainly():
+    api = FakeApi()
+    _st, out = seat(api, ["", ""])
+    _st.run()
+    assert "scope ▶ group by (enter = who): " in out
+    assert "served ▶ cap in characters (enter = 48000): " in out
+
+
+def test_a_refused_group_by_is_said_plainly_and_asked_again_not_unreachable():
+    api = FakeApi()
+    api.res["scope"] = scope_says(api.res["scope"])
+    st, out = seat(api, ["where are we", "", ""])
+    assert st.run() == 0
+    body = text(out)
+    assert 'Group by takes who, what, when or where; you said "where are we".' in body
+    assert "[unreachable]" not in body and "can't read the record" not in body
+    assert sum(1 for o in out if o.startswith("scope ▶")) == 2  # asked again
+    assert "serve" in api.names()  # and then the run went on
+
+
+def test_group_by_words_are_trimmed_and_enter_takes_the_default():
+    api = FakeApi()
+    api.res["scope"] = scope_says(api.res["scope"])
+    st, _out = seat(api, ["who, what", "", ""])
+    st.run()
+    assert [c for c in api.calls if c[0] == "scope"][0][2]["by"] == ["who", "what"]
+
+
+def test_any_other_scope_refusal_stays_a_refused_card():
+    api = FakeApi(scope={"refused": "no open box", "code": 2})
+    st, out = seat(api, [""])
+    assert st.run() == 0
+    assert "[unreachable] refused" in text(out) and "Group by takes" not in text(out)
+
+
+def test_a_cap_that_is_not_a_whole_number_is_said_plainly_and_asked_again():
+    api = FakeApi()
+    st, out = seat(api, ["", "lots", "0", "-5", "100", ""])
+    assert st.run() == 0
+    body = text(out)
+    assert 'The cap takes a whole number, 1 or more; you said "lots".' in body
+    assert 'you said "0"' in body and 'you said "-5"' in body
+    assert "[blocked]" not in body
+    assert [c for c in api.calls if c[0] == "serve"][0][2]["max_chars"] == 100
+
+
+# --- small talk: greetings, acknowledgements, help, farewells (F5) ------------------------
+
+
+def talk(*lines):
+    api = FakeApi()
+    st, out = seat(api, ["", "", *lines, ""])
+    assert st.run() == 0
+    return api, text(out)
+
+
+@pytest.mark.parametrize(
+    "word", ["hi", "Hello", "hey", "morning", "Good morning", "hi!"]
+)
+def test_a_greeting_is_answered_by_code_not_the_chain(word):
+    api, out = talk(word)
+    assert s.HELLO in out and "escalate" not in api.names()
+
+
+@pytest.mark.parametrize("word", ["ok", "okay", "cool", "got it", "sure"])
+def test_an_acknowledgement_is_answered_by_code_not_the_chain(word):
+    api, out = talk(word)
+    assert "agent> Got it." in out and "escalate" not in api.names()
+
+
+@pytest.mark.parametrize("word", ["help", "what can you do", "What can you do?"])
+def test_help_lists_what_the_seat_understands_in_a_fixed_line(word):
+    api, out = talk(word)
+    assert s.HELP in out and "escalate" not in api.names()
+    for part in ('"where are we"', "show me", "why", "second one", "go on", "later"):
+        assert part in s.HELP
+
+
+@pytest.mark.parametrize("word", ["bye", "done", "quit", "Bye!"])
+def test_a_farewell_checks_out_like_an_empty_line(word):
+    api = FakeApi()
+    st, out = seat(api, ["", "", word, "never read"])
+    assert st.run() == 0
+    assert api.names()[-2:] == ["checkout", "pooled"]
+    assert "escalate" not in api.names() and f"you: {word}" in out
+    assert not any(o.startswith("chain ▶") for o in out[out.index(f"you: {word}") :])
+
+
+def test_small_talk_replies_use_only_glue_or_fixed_lines():
+    for reply in s.SMALL_TALK.values():
+        assert reply in (s.HELLO, s.HELP, "Anytime.", "Got it.", s.STAY)
+    glue = {g.capitalize() for g in bx.GLUE}
+    assert {"Anytime", "Got it"} <= glue
+
+
+def test_declining_more_still_says_the_pile_keeps_it():
+    api = FakeApi(
+        escalate={
+            "task": "t",
+            "answered": 3,
+            "escalated": 0,
+            "pieces": [
+                {"piece": f"p{i}" * 8, "label": f"L{i}", "rung": "d0",
+                 "outcome": "answered", "detail": f"d{i}"}
+                for i in range(3)
+            ],
+        }
+    )  # fmt: skip
+    st, out = seat(api, ["", "", "task", "ok", ""])
+    st.run()
+    assert f"agent> {s.STAY}" in out
+
+
+# --- phrasing on real data (F6) -----------------------------------------------------------
+
+LONG_YOU = bx.Box(
+    "b7116acfef88",
+    "you",
+    "escalated:empty_scope",
+    "d0: the scope is 'empty': the scope has no human seal over this exact set; "
+    "nothing served",
+    "reason: empty_scope",
+)
+CHAIN = bx.Box("b4", "pass", "chain", "answered 0, escalated 1")
+
+
+def test_a_long_needs_you_value_is_not_given_a_dangling_suffix():
+    said = bx.compose([LONG_YOU])
+    assert said.startswith("This needs you: d0: the scope is 'empty'")
+    assert "nothing served needs you" not in said and said.endswith("nothing served.")
+    assert bx.cap(bx.clause(LONG_YOU)).startswith("This needs you: ")
+
+
+def test_a_short_needs_you_value_keeps_its_suffix_and_a_verb_phrase_its_lead():
+    assert bx.compose([bx.Box("b1", "you", "x", "PR 712")]) == "PR 712 needs you."
+    got = bx.compose([bx.Box("b1", "you", "x", "Ratify the work order")])
+    assert got == "You need to ratify the work order."
+    comma = bx.Box("b1", "you", "x", "PR 712, 713")
+    assert "needs you: PR 712, 713" in bx.compose([comma])
+
+
+def test_the_chain_count_is_a_sentence_and_never_a_heads_up_over_a_bare_count():
+    got = bx.compose([LONG_YOU, CHAIN])
+    assert "The chain answered 0 and escalated 1." in got
+    assert "Heads up: answered" not in got and "Heads up" not in got
+    assert "No rush" not in got  # an escalation is still no calm
+    assert bx.compose([CHAIN]) == "The chain answered 0 and escalated 1."
+    calm = bx.Box("b2", "pass", "chain", "answered 2, escalated 0")
+    assert bx.compose([calm]).endswith("the chain answered 2 and escalated 0. No rush.")
+    still = bx.Box("b3", "pass", "check", "3 failed")
+    assert "Heads up: " in bx.compose([still])  # a real problem still is one
+
+
+def test_no_rush_is_said_at_most_once_per_turn():
+    boxes = [bx.Box(f"b{i}", "pass", "x", f"fine {i}") for i in range(1, 5)]
+    api = FakeApi()
+    st, out = seat(api, ["who", "", "task", "", ""])
+
+    def chain(task):
+        st.you(task)
+        st.converse(s._norm(task), list(boxes), task)
+
+    st.chain = chain
+    st.run()
+    assert text(out).count("No rush") == 1
+    assert bx.compose(boxes[:2], rush=False).endswith("are both routine.")
+    assert bx.compose(boxes[:2]).endswith("No rush.")
+
+
+# --- "where are we" / "what needs me": the Nestor store, read-only -----------------------
+
+from types import SimpleNamespace  # noqa: E402
+
+from tests.test_seat_nestor import PAIRS, REJS, make, pair  # noqa: E402
+
+
+def nestor_run(keys, path):
+    api = FakeApi()
+    st, out = seat(api, ["who", "", *keys, ""])
+    st.cfg = SimpleNamespace(nestor_db=path)
+    assert st.run() == 0
+    return api, out
+
+
+def small_store(tmp_path):
+    rows = [
+        pair(1, "Hola", "Hello", reason="Settled it once."),
+        pair(2, "Adios", "Bye", status="draft", reason="Not sure yet."),
+    ]
+    rej = ("r1", "hola", "es", "en", "Howdy", "ana", "Too American.", "2026-02-01", "")
+    return make(tmp_path / "n.db", rows, [rej], schema=(PAIRS, REJS))
+
+
+def test_where_are_we_unconfigured_is_unreachable_and_never_the_chain():
+    api, out = nestor_run(["where are we"], None)
+    body = text(out)
+    assert "+! [unreachable] nestor store" in body and "nestor store  nstate" in body
+    assert "I can't read the record right now. No Nestor store is configured" in body
+    assert "escalate" not in api.names()
+
+
+def test_where_are_we_reads_the_store_and_follow_ups_work_on_its_boxes(tmp_path):
+    p = small_store(tmp_path)
+    before = p.read_bytes()
+    api, out = nestor_run(["Where are we?", "", "the second one", "why", "go on"], p)
+    body = text(out)
+    assert "[blocked]" in body and '"Howdy" for hola' in body
+    assert "Adios (draft)" in body and "(fixture)" in body
+    assert "escalate" not in api.names()
+    assert "Hola → Hello" in body  # opened by 'the second one' or 'go on'
+    assert 'reason: "Too American."' in body or "Too American." in body
+    assert p.read_bytes() == before  # the seat wrote nothing to the store
+
+
+def test_where_are_we_empty_store_is_empty_not_unreachable(tmp_path):
+    p = make(tmp_path / "e.db", schema=(PAIRS, REJS))
+    _api, out = nestor_run(["where are we"], p)
+    body = text(out)
+    assert "+. [empty]" in body and "Nestor store is empty" in body
+    assert "[unreachable]" not in body
+
+
+def test_where_are_we_missing_file_says_the_path(tmp_path):
+    _api, out = nestor_run(["where are we"], tmp_path / "gone.db")
+    assert "no Nestor store at" in text(out) and "gone.db" in text(out)
+
+
+def test_what_needs_me_lists_only_the_waiting_drafts_as_drafts(tmp_path):
+    api, out = nestor_run(["what needs me?"], small_store(tmp_path))
+    body = text(out)
+    assert "[needs you]" in body and "Adios (draft)" in body
+    assert "[blocked]" not in body and "[decided]" not in body
+    assert "agent> " in body and "Adios → Bye" not in body
+    assert "escalate" not in api.names()
+
+
+def test_what_needs_me_with_nothing_waiting_says_so(tmp_path):
+    p = make(tmp_path / "d.db", [pair(1, "Hola", "Hello")], schema=(PAIRS, REJS))
+    _api, out = nestor_run(["what needs me"], p)
+    assert s.NOTHING_WAITING in text(out) and "[needs you]" not in text(out)
+
+
+def test_asking_again_after_the_store_changed_is_a_fresh_read(tmp_path):
+    p = small_store(tmp_path)
+    api = FakeApi()
+    st, out = seat(api, ["who", "", "where are we", "", "where are we", "", ""])
+    st.cfg = SimpleNamespace(nestor_db=p)
+    orig = st.nestor
+    calls = []
+
+    def nestor(task):
+        if calls:  # the store grows between the two asks
+            import sqlite3
+
+            con = sqlite3.connect(p)
+            con.execute("DELETE FROM tm_rejections")
+            con.commit()
+            con.close()
+        calls.append(task)
+        orig(task)
+
+    st.nestor = nestor
+    st.run()
+    body = text(out)
+    assert "same boxes, nothing new since" not in body
+    assert body.count("[blocked]") == 1  # the second read lost the rejection
+
+
+def test_help_mentions_the_store_turn():
+    assert '"where are we"' in s.HELP and '"what needs me"' in s.HELP
+    assert "Nestor" in s.HELP
+
+
+# --- why: the reason, said naturally; no doubled full stop -------------------------------
+
+
+def fixture_store(tmp_path, name="f.db"):
+    rows = [
+        pair(1, "Hola", "Hello", reason="Settled it once.", origin="fixture:demo"),
+        pair(
+            2,
+            "Adios",
+            "Bye",
+            status="draft",
+            reason="Leaving it.",
+            origin="fixture:demo",
+        ),
+    ]
+    rej = (
+        "r1",
+        "hola",
+        "es",
+        "en",
+        "Howdy",
+        "ana",
+        "Not little. Never.",
+        "2026-02-01",
+        "",
+    )
+    ny = (
+        "r2",
+        "casa",
+        "es",
+        "en",
+        "the house",
+        "ana",
+        "Guessing.",
+        "2026-02-02",
+        "the photo",
+    )
+    return make(tmp_path / name, rows, [rej, ny], schema=(PAIRS, REJS))
+
+
+def why_of(tmp_path, which):
+    from grove.seat_nestor import read_store
+
+    path = fixture_store(tmp_path, f"f{len(list(tmp_path.iterdir()))}.db")
+    box = next(b for b in read_store(path).boxes if which(b))
+    return s.Seat.detail_sentence(box)
+
+
+def test_why_on_a_no_is_who_said_no_and_her_words_exactly(tmp_path):
+    got = why_of(tmp_path, lambda b: b.label.startswith("a no"))
+    assert got == 'Ana said no: "Not little. Never." (fixture).'
+    assert '"Not little. Never."' in got  # her words, exact
+    assert "origin" not in got and "never serve" not in got
+
+
+def test_why_keeps_the_fixture_marker_when_it_drops_the_provenance_line(tmp_path):
+    for which in (lambda b: b.kind == "dec", lambda b: b.label.startswith("not yet")):
+        got = why_of(tmp_path, which)
+        assert got.endswith("(fixture).") and "origin" not in got
+
+
+def test_why_on_a_seal_a_not_yet_and_a_draft(tmp_path):
+    seal = why_of(tmp_path, lambda b: b.kind == "dec")
+    assert seal == 'Ana sealed it: "Settled it once." (fixture).'
+    ny = why_of(tmp_path, lambda b: b.label.startswith("not yet"))
+    assert (
+        ny.startswith('Ana said not yet: "Guessing."')
+        and 'Reopen when: "the photo"' in ny
+    )
+    dr = why_of(tmp_path, lambda b: "draft" in b.label)
+    assert 'Reason: "Leaving it."' in dr and "nobody has confirmed it" in dr
+
+
+def test_why_on_a_chain_box_is_its_reason_with_no_provenance_noise():
+    b = bx.Box("b1", "block", "x", "scope held", "reason: empty_scope")
+    assert s.Seat.detail_sentence(b) == "Reason: empty_scope."
+
+
+@pytest.mark.parametrize(
+    "text",
+    ['She said "Go."', 'Is it "ready?"', "Done!", "Plain", "Wait (really).", ""],
+)
+def test_terminate_never_doubles_the_end(text):
+    got = bx.terminate(text)
+    assert not got.endswith(('.".', '?".', '!".', "..")) and got.startswith(text)
+    assert bx.terminate(got) == got
+
+
+def test_a_quoted_reason_ending_a_value_is_not_followed_by_a_second_full_stop():
+    q = bx.Box("b1", "pass", "x", 'she wrote "done."')
+    assert bx.compose([q], rush=False) == 'Looks like she wrote "done."'
+    assert s.Seat.open_sentence(q) == 'She wrote "done."'
+    two = bx.compose([q, bx.Box("b2", "you", "y", 'sign "here?"')])
+    assert '".' not in two.replace('."', "").replace('?"', "") and not two.endswith(
+        '".'
+    )
+    gone = bx.Box("b3", "pass", "x", 'unreachable — said "no."', state="unreachable")
+    assert bx.plain_line(gone).endswith('Said "no."')
+    assert bx.compose([gone]).endswith('Said "no."')
+
+
+def test_a_chip_choice_ending_in_a_quote_is_acknowledged_without_a_second_stop():
+    box = bx.Box("b1", "you", "x", "Pick", 'say "ok." · say "no." · say "later."')
+    _api, out = thread_run(["status of the build", 'say "ok."'], boxes=[box])
+    assert 'agent> Got it: say "ok."' in out and 'agent> Got it: say "ok.".' not in out
+
+
+# --- counts code says are pluralised ("1 box", "2 boxes") --------------------------------
+
+
+@pytest.mark.parametrize(
+    "n, got", [(0, "0 boxes"), (1, "1 box"), (2, "2 boxes"), (10, "10 boxes")]
+)
+def test_plural_says_one_box_and_n_boxes(n, got):
+    assert bx.plural(n, "box", "boxes") == got
+    assert bx.pile_header(n) == f"the pile · {got} on the record"
+    assert bx.plural(1, "row") == "1 row" and bx.plural(3, "row") == "3 rows"
+
+
+def test_the_who_line_says_one_box_when_a_page_holds_one():
+    boxes = demo_boxes()[:3]  # pages of two: the second page is one box
+    _api, out = thread_run(
+        ["status of the build", "", "status of the build", ""], boxes=boxes
+    )
+    t = text(out)
+    assert "agent · code · said 2 boxes, no model asked" in t
+    assert t.count("agent · code · said 1 box, no model asked") == 1
+    assert "shown again from the pile" in t  # the replay who-line carries no count
+    assert "1 boxes" not in t
+
+
+def test_a_one_row_table_and_a_one_draft_deposit_are_not_plural():
+    assert s.row_count(1) == "1 row" and s.row_count(136) == "136 rows"
+    assert s.row_count("?") == "? rows"
+
+
+def test_ten_more_sealed_and_one_more_in_the_pile_read_right(tmp_path):
+    rows = [pair(n, f"s{n}", f"t{n}", reason=f"r{n}.") for n in range(1, 16)]
+    p = make(tmp_path / "t.db", rows, [], schema=(PAIRS, REJS))
+    from grove.seat_nestor import read_store
+
+    vals = [b.value for b in read_store(p).boxes]
+    assert "11 more sealed" in vals
+    one = make(tmp_path / "o.db", rows[:5], [], schema=(PAIRS, REJS))
+    assert "1 more sealed" in [b.value for b in read_store(one).boxes]
+
+
+def test_one_more_rejection_and_one_box_shown_are_singular(tmp_path):
+    from grove.seat_nestor import read_store
+
+    rej = [
+        (f"r{n}", f"q{n}", "es", "en", f"t{n}", "ana", f"no {n}.", f"2026-02-0{n}", "")
+        for n in range(1, 6)
+    ]
+    p = make(tmp_path / "r.db", [], rej, schema=(PAIRS, REJS))
+    vals = [b.value for b in read_store(p).boxes]
+    assert "2 more rejections" in vals
+    p2 = make(tmp_path / "r2.db", [], rej[:4], schema=(PAIRS, REJS))
+    assert "1 more rejection" in [b.value for b in read_store(p2).boxes]
+    one = [bx.Box("b1", "dec", "decided", "phone only proposes", "recorded")]
+    _api, out = thread_run(["status of the build", "the third one"], boxes=one)
+    assert (
+        "agent> I showed 1 box (b1: phone only proposes), so there is no third one."
+        in out
+    )
+
+
+# --- "where are we" leads with the count, then what is open (the shoebox sketch) ---------
+
+
+def test_lead_rank_is_count_then_drafts_then_refusals_then_decided(tmp_path):
+    from grove.seat_nestor import lead_rank, read_store
+
+    got = read_store(fixture_store(tmp_path, "l.db"))
+    order = [b.label.split(" ·")[0].split(" (")[0] for b in lead_rank(got.boxes)]
+    assert order == [
+        "nestor store",
+        "draft, waiting",
+        "a no",
+        "not yet",
+        "sealed by ana",
+    ]
+    generic = [
+        b.kind for b in got.boxes
+    ]  # the reading itself is still the generic rank
+    assert generic == ["block", "block", "dec", "pr", "pass"]
+    down = read_store(tmp_path / "nope.db")
+    assert lead_rank(down.boxes) == down.boxes  # a heads-up still leads alone
+
+
+def test_where_are_we_opens_with_the_count_then_the_open_items(tmp_path):
+    p = fixture_store(tmp_path, "w.db")
+    before = hashlib.sha256(p.read_bytes()).hexdigest()
+    api, out = nestor_run(["where are we"], p)
+    t = text(out)
+    first = after(out, "where are we")
+    assert first[0].startswith("+- [routine pass] nestor store")  # the count first
+    said = next(o for o in first if o.startswith("agent> "))
+    assert said.startswith("agent> Morning. 1 sealed, 1 draft, 2 rejected (fixture). ")
+    assert "Adios (draft) is waiting." in said  # a draft, never a fact
+    assert "said 5 boxes, no model asked" in t and "more?" not in t  # one page
+    assert "Looks like" not in t and "No rush" not in t  # a refusal is in the store
+    drafts = t.index("[changed] draft, waiting")
+    assert t.index("[routine pass]") < drafts < t.index("[blocked]")
+    assert "escalate" not in api.names()
+    assert hashlib.sha256(p.read_bytes()).hexdigest() == before  # still read-only
+
+
+def test_the_count_page_keeps_no_rush_when_the_store_holds_no_refusal(tmp_path):
+    p = make(
+        tmp_path / "c.db",
+        [pair(1, "Hola", "Hello", reason="Once.")],
+        [],
+        schema=(PAIRS, REJS),
+    )
+    _api, out = nestor_run(["where are we"], p)
+    said = next(o for o in after(out, "where are we") if o.startswith("agent> "))
+    assert (
+        said == "agent> Morning. 1 sealed (fixture). Hola → Hello is decided. No rush."
+    )
+
+
+def test_a_chain_turn_and_what_needs_me_keep_the_generic_rank(tmp_path):
+    p = fixture_store(tmp_path, "n.db")
+    _api, out = nestor_run(["what needs me"], p)
+    first = after(out, "what needs me")
+    assert first[0].startswith("+- [needs you] draft, waiting")
+    _api, out = thread_run(["status of the build"])  # a chain turn: generic rank
+    assert after(out, "status of the build")[0].startswith("+- [needs you]")
+
+
+def test_lead_rank_puts_a_heads_up_first_and_a_more_box_last_in_its_group():
+    from grove.seat_nestor import lead_rank
+
+    mk = bx.Box
+    boxes = [
+        mk("a", "dec", "more · 4 shown", "11 more sealed", role="more"),
+        mk("b", "dec", "sealed by x", "s1 → t1"),
+        mk("c", "pr", "more · 4 shown", "2 more drafts or changes", role="more"),
+        mk("d", "pr", "changed", "c1"),
+        mk("e", "pr", "draft, waiting", "d1 (draft)", role="draft"),
+        mk("f", "block", "a no", "r1"),
+        mk("g", "pass", "nestor store", "3 sealed"),
+        mk("h", "pass", "nestor store", "unreachable — gone", state="unreachable"),
+    ]
+    assert [b.id for b in lead_rank(boxes)] == list("hgefbadc")
+
+
+# --- names keep their capital; drafts and counts are not said as facts -------------------
+
+
+def _draft(i, value, kind="pr"):
+    return bx.Box(i, kind, "draft, waiting", f"{value} (draft)", role="draft")
+
+
+def test_a_name_keeps_its_capital_and_only_known_words_lose_theirs():
+    assert bx.lead("Tony (draft)") == "Tony (draft)"
+    assert bx.lead("Tony → Antonio") == "Tony → Antonio"
+    assert bx.lead("Ratify the work order") == "ratify the work order"
+    assert bx.lead("The house") == "the house" and bx.lead("PR 712") == "PR 712"
+    assert bx.lead("I understand") == "I understand"
+    say = bx.compose(
+        [_draft("a", "Ana"), bx.Box("b", "dec", "d", "Tony → Antonio")], False
+    )
+    assert "Tony → Antonio" in say and "tony" not in say
+
+
+def test_you_need_to_is_said_only_of_a_verb_phrase_never_a_draft_or_a_name():
+    ok = bx.compose([bx.Box("b1", "you", "x", "Ratify the work order")])
+    assert ok == "You need to ratify the work order."
+    one = bx.compose([_draft("a", "Tony", "you")])
+    assert one == "Tony (draft) is waiting on you."
+    assert (
+        bx.compose([bx.Box("b1", "you", "x", "Tony Smith")]) == "Tony Smith needs you."
+    )
+    the = bx.compose([bx.Box("b1", "you", "x", "The roof")])
+    assert "need to" not in the  # a starter that is not a verb
+    page = bx.compose([_draft("a", "Tony", "you")], False, page=1)
+    assert page == "Oh, and Tony (draft) is waiting on you."
+    assert "need to" not in page
+
+
+def test_draft_pairs_and_lists_have_a_verb_and_keep_the_draft_marker():
+    one = bx.compose([_draft("a", "Tony")])
+    assert one == "Tony (draft) is waiting."
+    two = bx.compose([_draft("a", "Ana"), _draft("b", "Luz")])
+    assert two == "Both drafts are waiting: Ana (draft) and Luz (draft)."
+    three = bx.compose([_draft("a", "Ana"), _draft("b", "Luz"), _draft("c", "Eva")])
+    assert three == "The drafts are waiting: Ana (draft), Luz (draft) and Eva (draft)."
+    later = bx.compose([_draft("a", "Ana"), _draft("b", "Luz")], False, page=2)
+    assert later.startswith("Also, both drafts are waiting: Ana (draft)")
+    both_you = bx.compose([_draft("a", "Ana", "you"), _draft("b", "Luz", "you")])
+    assert both_you == "Both need you: Ana (draft) and Luz (draft)."
+
+
+def test_a_more_box_is_a_count_said_apart_never_paired_into_a_fact():
+    more = bx.Box("m", "dec", "more · 4 shown", "10 more sealed", role="more")
+    dec = bx.Box("d", "dec", "sealed", "me hago cargo → I understand")
+    got = bx.compose([dec, more], page=0, look=False)
+    assert got == (
+        "Me hago cargo → I understand is decided. 10 more sealed are in the store."
+        " No rush."
+    )
+    one = bx.Box("m", "pr", "more · 1 shown", "1 more draft or change", role="more")
+    chg = bx.Box("c", "pr", "changed", 'x: "a" was replaced')
+    got = bx.compose([chg, one], page=0, look=False)
+    assert "both" not in got and "1 more draft or change is in the store." in got
+    two = bx.compose([more, bx.Box("n", "pr", "more", "2 more drafts", role="more")])
+    assert "both" not in two and "are decided" not in two
+
+
+def test_the_count_and_more_boxes_are_never_a_show_me_ref():
+    count = bx.Box(
+        "nd1", "pass", "nestor store", "14 sealed, 3 drafts", "x", role="count"
+    )
+    more = bx.Box(
+        "nm2", "dec", "more · 4 shown", "10 more sealed", "older", role="more"
+    )
+    other = bx.Box("n123", "dec", "sealed", "a → b", "sealed by ana")
+    assert bx.ref_tokens(count) == [] and bx.ref_tokens(more) == []
+    assert bx.chips([count, more]).show == ""
+    assert bx.chips([count, more, other]).show == "show me n123"
+    assert not bx.matches(count, "14") and not bx.matches(more, "10")
+    assert not bx.matches(count, "14 sealed") and bx.matches(count, "nd1")
+    # the same value on an ordinary box is still a ref
+    plain = bx.Box("b9", "pass", "tests", "14 sealed", "d")
+    assert bx.ref_tokens(plain)[0] == "14" and bx.matches(plain, "14")
+
+
+def test_show_me_a_count_does_not_open_the_count_box(tmp_path):
+    p = fixture_store(tmp_path, "s.db")
+    _api, out = nestor_run(["where are we", "show me 1"], p)
+    got = after(out, "show me 1")
+    assert not any(o.startswith("+- [routine pass] nestor store") for o in got)
+
+
+def big_store(tmp_path):
+    rows = [pair(n, f"s{n}", f"t{n}", reason=f"r{n}.") for n in range(1, 11)]
+    rows += [
+        pair(20 + n, f"d{n}", f"e{n}", status="draft", reason=f"why {n}.")
+        for n in range(1, 4)
+    ]
+    rej = [
+        (f"r{n}", f"q{n}", "es", "en", f"t{n}", "ana", f"no {n}.", f"2026-02-0{n}", "")
+        for n in range(1, 3)
+    ]
+    return make(tmp_path / "big.db", rows, rej, schema=(PAIRS, REJS))
+
+
+def test_where_are_we_on_a_big_store_takes_two_more_presses_not_six(tmp_path):
+    p = big_store(tmp_path)
+    before = hashlib.sha256(p.read_bytes()).hexdigest()
+    _api, out = nestor_run(["where are we", "", "", "the second one"], p)
+    asks = [o for o in out if o.startswith("more? ▶")]
+    assert len(asks) == 2  # page one, then two more pages
+    first = after(out, "where are we")
+    assert first[0].startswith("+- [routine pass] nestor store")  # the count first
+    shown = [o for o in first if o.startswith("+- [")]
+    assert len(shown) == 1 + s.STORE_PAGE  # the count plus one store page
+    assert sum(o.startswith("+- [changed] draft, waiting") for o in first) == 3
+    said = next(o for o in first if o.startswith("agent> "))
+    assert "The drafts are waiting: d1 (draft), d2 (draft) and d3 (draft)." in said
+    nxt = after(out, "more")
+    assert sum(o.startswith("+- [") for o in nxt) == s.STORE_PAGE
+    ordinal = after(out, "the second one")
+    assert ordinal[0].startswith("+- [changed] draft, waiting")  # counts shown boxes
+    assert hashlib.sha256(p.read_bytes()).hexdigest() == before
+
+
+def test_the_chain_keeps_its_two_boxes_a_page():
+    assert s.PAGE == 2 and s.STORE_PAGE > s.PAGE
+    t = s.Turn("t", [bx.Box(f"b{i}", "dec", "d", f"v{i}") for i in range(5)])
+    assert [len(t.take()) for _ in range(3)] == [2, 2, 1]
+
+
+def test_a_store_turn_asked_again_replays_what_was_shown(tmp_path):
+    p = big_store(tmp_path)
+    _api, out = nestor_run(["where are we", "", "", "where are we"], p)
+    assert "as noted at" in text(out)
+
+
+def test_a_run_of_three_decided_boxes_has_a_verb():
+    dec = [bx.Box(f"d{i}", "dec", "sealed", f"a{i} → b{i}") for i in range(3)]
+    got = bx.compose(dec, page=0, look=False, rush=False)
+    assert got == "A0 → b0, a1 → b1 and a2 → b2 are all decided."
+
+
+@pytest.mark.parametrize("kind,word", [("pr", "changed"), ("pass", "routine")])
+def test_a_run_of_three_changed_or_routine_boxes_has_a_verb(kind, word):
+    mixed = [
+        bx.Box(f"b{i}", kind, "x", v)
+        for i, v in enumerate(["PR 1 open", "PR 2 merged", "tests ok"])
+    ]
+    got = bx.compose(mixed, page=0, look=False, rush=False)
+    assert got == f"PR 1 open, PR 2 merged and tests ok are all {word}."
+
+
+@pytest.mark.parametrize("kind", ["pr", "pass"])
+def test_a_run_of_three_that_shares_a_status_word_says_it(kind):
+    same = [bx.Box(f"b{i}", kind, "x", f"PR {i} open") for i in range(3)]
+    got = bx.compose(same, page=0, look=False, rush=False)
+    assert got == "PR 0, PR 1 and PR 2 are all open."
+    one = [bx.Box(f"b{i}", kind, "x", f"PR {i} open") for i in range(2)]
+    assert "all" not in bx.compose(
+        one, page=0, look=False, rush=False
+    )  # a pair keeps both
+
+
+def test_unmatched_show_falls_back_to_box_ids_and_skips_counts():
+    boxes = [
+        bx.Box("n4ee2a", "pr", "changed", "Tony (draft)", role="draft"),
+        bx.Box("n9", "pass", "routine pass", "14 sealed", role="count"),
+        bx.Box("n76c05", "pr", "changed", "la casa (draft)", role="draft"),
+    ]
+    assert s.Seat.unmatched("show me 14", "14", boxes) == (
+        'Nothing I showed answers to "14"; I showed: n4ee2a, n76c05.'
+    )
+
+
+@pytest.mark.parametrize("kind,word", [("pr", "changed"), ("pass", "routine")])
+def test_a_pair_of_changed_or_routine_boxes_has_a_verb(kind, word):
+    two = [
+        bx.Box(f"b{i}", kind, "x", v) for i, v in enumerate(["PR 1 open", "tests ok"])
+    ]
+    got = bx.compose(two, page=0, look=False, rush=False)
+    assert got == f"PR 1 open and tests ok are both {word}."
+    assert bx.RUN_VERB[kind] == word  # one source of truth with a run
+
+
+@pytest.mark.parametrize("kind", ["pr", "pass"])
+def test_a_pair_that_shares_a_status_word_says_it(kind):
+    two = [bx.Box(f"b{i}", kind, "x", f"PR {i} open") for i in range(2)]
+    got = bx.compose(two, page=0, look=False, rush=False)
+    assert got == "PR 0 and PR 1 are both open."
+
+
+def test_a_count_box_is_never_grouped_with_other_boxes():
+    """The store's count is said on its own, before a pair or a run."""
+    count = bx.Box("n1", "pass", "count", "14 sealed, 3 open", role="count")
+    for others in (1, 2, 3):
+        rest = [bx.Box(f"b{i}", "pass", "x", f"check {i} ok") for i in range(others)]
+        for order in ([count, *rest], [*rest, count]):
+            got = bx.compose(order, page=0, look=False, rush=False)
+            assert "14 sealed, 3 open" in got
+            assert "14 sealed, 3 open and" not in got
+            assert "and 14 sealed" not in got
+            assert ", 14 sealed" not in got
+
+
+@pytest.mark.parametrize(
+    "target,ref",
+    [
+        ("14", True),
+        ("9999", True),
+        ("PR 712", True),
+        ("#714", True),
+        ("ABC-123", True),
+        ("b4", True),
+        ("n4ee2a", True),
+        ("pull request #714", True),
+        ("the 5th one", True),
+        ("the stack", True),
+        ("Tony", True),
+        ("the tests that failed", False),
+        ("the failing tests from yesterday", False),
+        ("me the tests that failed 14", False),
+        ("", False),
+    ],
+)
+def test_a_show_me_target_is_a_reference_or_a_task(target, ref):
+    assert bx.looks_like_ref(target) is ref
+
+
+def test_a_show_me_task_after_a_turn_still_reaches_the_chain():
+    """U2: a longer show-me that matches no box reads as a task, not a ref."""
+    calls = []
+    api = FakeApi()
+    st, out = seat(
+        api, ["who", "", "status of the build", "show me the tests that failed", ""]
+    )
+    st.chain = lambda task: (
+        calls.append(task),
+        st.you(task),
+        st.converse(task, demo_boxes()[:2], task),
+    )
+    st.run()
+    assert calls == ["status of the build", "show me the tests that failed"]
+    assert not any("Nothing I showed answers" in o for o in out)
+
+
+@pytest.mark.parametrize("line", ["show me 14", "open #999", "show me PR 99999"])
+def test_a_show_me_reference_that_matches_nothing_stays_a_plain_line(line):
+    api, out = thread_run(["status of the build", *ALL, line])
+    assert any(
+        o.startswith("agent> Nothing I showed answers to") for o in after(out, line)
+    )
+    assert "escalate" not in api.names()

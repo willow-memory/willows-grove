@@ -22,20 +22,30 @@ calls ``api.checkin``: only a session does, and that writes record rows.
 
 The stages, in order, each shown in the prompt (``scope ▶``):
 
-    checkin    api.checkin: the record, the probes, the four gates
+    checkin    api.checkin: the record, the probes, the four gates; a line of a
+               failed, not-installed or hard-closed check-in is a ``blocked``
+               card, never a ``routine pass`` (``checkin_kind``)
     resume     api.resume: the newest human-sealed scope, spec pinned at its
                ``upto``. Found, the seat serves that snapshot and skips the
                group-by prompt, so the subject holds still while the desk adds
                rows. None, a fresh scope as below. Raises or missing (an older
                willow-bot): an ``unreachable`` card, then the fresh scope
-    scope      api.scope proposes a stack and names its subject; no prompt
+    scope      api.scope proposes a stack and names its subject, after one
+               prompt, ``group by (enter = who)``. Enter takes the default; an
+               answer the api refuses as a usage error is said in a plain code
+               line ("Group by takes who, what, when or where; you said ...")
+               and asked again, never an ``unreachable`` card. Any other
+               refusal is the ``refused`` card as before
     pooled     api.pooled, read once for display: ONE ``still pooled`` card for
                the proposals earlier runs left unsealed (count, a couple of
                subjects). Populated, empty, or ``unreachable`` (a raise or a
                missing ``pooled`` on an older willow-bot); it seals and
                deposits nothing, and the resume snapshot is unchanged by it
     served     api.serve is the silent start-check: it serves only a scope a
-               past human seal already covers (three states, never collapsed)
+               past human seal already covers (three states, never collapsed),
+               after one prompt, ``cap in characters (enter = 48000)``; an
+               answer that is not a whole number of 1 or more is said in a
+               plain code line and asked again (no card, no state)
     chain      api.escalate: D0 code, then the hash record, then a local rung
     flowering  for a piece the chain left, one cloud turn on the human's yes:
                ``ratatosk --onescript --class flowering`` (the ladder picks
@@ -61,10 +71,52 @@ the human's words quoted exactly. A sentence that fails a check is shown
 struck and replaced by the sentence code composes from box facts plus fixed
 glue, which is also what stands when the model can't be reached (an
 ``unreachable`` card, never a crash). With no ``say`` the seat is code only.
-A chain turn shows two boxes at a time (``more?``), small talk is answered by
-code, and a task asked again is shown again from the pile, stamped with when it
-was first said. Under ``NO_COLOR`` or a non-tty the cards are plain ASCII with
+A chain turn ranks its boxes (a heads-up first, then needs you, blocked,
+decided, changed, routine pass) and shows two at a time (``more?``) from that
+order. The code sentence is a short sentence per box; it opens ``Morning.`` on
+the run's first reply when the turn's clock time is before noon; a stage whose
+card is ``empty`` or ``unreachable`` also says so in a plain code line. Small
+talk is answered by code (greetings, ``ok``, ``thanks``, ``later``, and ``help``,
+a fixed line of what the seat understands; ``bye``, ``done`` and ``quit`` check
+out like an empty line), and a task asked again is shown again from the pile,
+stamped with when it was first said.
+
+A reply ends with a row of chips built from the boxes it showed
+(``seat_boxes.chips``): ``show me <ref>`` for a box worth opening, the options a
+needs-you box carries, and always ``later`` and ``thanks``. The seat keeps the
+last reply (``Thread``) and answers a typed line against it in code, before the
+chain: a chip choice is acknowledged (``Got it: <choice>.``, nothing recorded
+or sealed, the row spent); ``show me 712`` / ``open 712`` / a box id / ``the
+second one`` / ``that`` show that box again with its full detail and a code
+sentence; ``why`` / ``what's that`` / ``tell me more`` say the reason
+(``seat_boxes.why_sentence``: the human's own words quoted exactly and led by who
+said them, provenance such as an origin left to the card but a fixture still
+marked ``(fixture)``; a box with nothing but provenance says there is no more);
+``go on`` / ``more`` / ``next`` show the next page (by code, no model) or say
+nothing is left. An ordinal past what was shown, or a ref that fits two boxes,
+is a plain line, never a guess, and so is ``show me X`` / ``open X`` / ``show X``
+that no shown box answers to when X reads as a reference (a number, an id-like
+token such as ``PR 712``, ``#714`` or ``ABC-123``, a box id, an ordinal, or a
+phrase of at most two words): "Nothing I showed answers to "14"; I showed: ...".
+A longer X ("show me the tests that failed") reads as a task and goes to the
+chain (``seat_boxes.looks_like_ref``). None of these plain lines asks a
+model, calls ``api.escalate`` or writes a row; any other line that matches
+nothing (and ``show me X`` before any turn) goes to the chain as before. A sentence never ends ``.".`` (``terminate``). A ``show me`` ref is a number of two digits or more, an id-like
+token (``PR 712``) or a short box id (``b4``), never the first words of a value;
+with none, no ``show me`` chip. ``No rush.`` is said at most once per turn, and
+the chain's ``answered N, escalated M`` is said as a sentence, never after a
+``Heads up:``. Under ``NO_COLOR`` or a non-tty the cards are plain ASCII with
 no escape codes.
+
+``where are we`` and ``what needs me`` are not chain tasks: they are answered
+from the Nestor store at the config's ``nestor_db`` (``api.default_nestor_db()``,
+``$WILLOW_NESTOR_DB`` / ``$NESTOR_DB``), read-only, by ``grove/seat_nestor.py``,
+then said through the same ranked converse, so ``show me``, ``why``, ``the
+second one`` and ``go on`` work on them. No path, a missing file or a file that
+is not a Nestor store is one ``unreachable`` box (never ``empty``, which is a
+store that was read and holds nothing); no chain runs and no row is written.
+``what needs me`` shows only the waiting drafts (marked drafts), else says
+nothing is waiting. A ``fixture:`` origin stays on the card.
 
 The operator, 2026-10-09: "The deterministic chain runs, esclates to local
 models if need be, then to the cloud models"; "It should live in the grove,
@@ -72,6 +124,10 @@ along side the web and apk"; "not anthropic. there is already routing in the
 crown. Agent agnostic". Two chain rules hold here too: a piece code cut as
 over its cap never reaches a model, and an empty or unreachable scope is
 escalated by code, never handed to one.
+
+The gate's toolchain check looks in the venv the seat runs in
+(``resolve_venv``): the running interpreter's venv when it is one, else the
+launcher's order (``GROVE_VENV``, the D2 bot venv, the legacy one, ``./.venv``).
 
 willow-bot is found at ``WILLOW_BOT_ROOT``, else beside this repo
 (``../willow-bot``), the way the one script finds this repo.
@@ -82,6 +138,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -96,17 +153,32 @@ from typing import Any
 
 from grove.seat_boxes import (
     Box,
+    cap,
     compose,
     human_line,
     checks_line,
+    chips,
+    clause,
+    COUNTED,
     legend,
+    looks_like_ref,
+    matches,
+    parse_follow,
     pile_header,
+    plural,
+    plain_line,
+    rank,
+    ref_tokens,
+    terminate,
     render_box,
     say_line,
     struck_line,
     use_color,
     who_line,
+    why_sentence,
+    _val,
 )
+from grove.seat_nestor import lead_rank, read_store
 from grove.seat_say import (
     CHECK_NAMES,
     MODEL,
@@ -118,25 +190,62 @@ from grove.seat_say import (
     run_checks,
 )
 
+ORD = ("first", "second", "third", "fourth")
 GROVE_ROOT = Path(__file__).resolve().parent.parent
 ESCALATE_PATH = "ESCALATE"
 #: Reasons a flowering turn may not take: code decided these, no model.
 NO_FLOWER = frozenset({"cap", "empty_scope"})
 DEFAULT_MAX_CHARS = 48_000
+#: The group-by prompt's default.
+DEFAULT_BY = "who"
+#: The one script's refusal of a group-by it doesn't take (``serve.py``): the
+#: names it takes are read from it, so the seat holds no second list.
+GROUP_BY_REFUSAL = re.compile(r"group by one or more of \((?P<names>[^)]*)\)")
 FLOWER_TIMEOUT = 300.0
 NESTOR_UI = "http://127.0.0.1:8765"
 NO_DEPOSIT = "deposit unavailable here: willow-mcp not on the path"
 #: Boxes a reply shows before ``more?``.
 PAGE = 2
-#: What code answers to small talk: no boxes, nothing served.
+#: Boxes a store turn (``where are we``) shows per page, and with the count on
+#: its first page: the count plus ``STORE_PAGE`` open items, then ``STORE_PAGE``
+#: at a time. The chain's ``PAGE`` is unchanged.
+STORE_PAGE = 4
+#: How many refs an unmatched ``show me X`` line lists before "and N more".
+UNMATCHED_LIST = 4
+#: The typed ``show me X`` / ``show X`` / ``open X`` with the human's own case.
+SHOW_RAW = re.compile(r"(?i)(?:show me|show|open)\s+(.+?)[\s?!.]*")
+#: What code answers to small talk: no boxes, nothing served, no model. The
+#: words are the sketch's glue ("Anytime.", "Got it.") or fixed code lines.
+HELLO = "Hello. Give me a task, or say help."
+HELP = (
+    'Give me a task and the chain takes it. "where are we" and "what needs me" '
+    "are read from your Nestor store (read-only). "
+    'After a reply you can say "show me 712", "why", '
+    '"the second one" or "go on"; a longer "show me ..." is a task for the chain. '
+    '"thanks" and "later" are only '
+    'acknowledged; an empty line, "bye", "done" or "quit" checks out.'
+)
+#: A line the seat answers from the Nestor store, not the chain (matched whole,
+#: after ``_talk``): the store's whole state, or only what waits on the human.
+WHERE_ARE_WE = frozenset({"where are we", "where am i", "whats waiting"})
+WHAT_NEEDS_ME = frozenset({"what needs me", "what needs you"})
 SMALL_TALK = {
     "thanks": "Anytime.",
     "thank you": "Anytime.",
     "later": "Got it. It stays in the pile.",
+    **dict.fromkeys(("hi", "hello", "hey", "morning", "good morning"), HELLO),
+    **dict.fromkeys(("ok", "okay", "cool", "got it", "sure"), "Got it."),
+    **dict.fromkeys(("help", "what can you do"), HELP),
 }
+#: The small talk that answers a ``more?`` it declines (the rest says ``STAY``).
+THANKS_LATER = ("thanks", "thank you", "later")
+#: Said like an empty line: check out.
+FAREWELLS = frozenset({"bye", "done", "quit"})
 MORE_YES = frozenset({"", "m", "more", "y", "yes"})
 STAY = "Got it. It stays in the pile."
-CHIPS = "chips: [later] [thanks]"
+NOTHING_MORE = "Nothing more in the pile."
+NO_DETAIL = "Nothing more is on the record for it."
+NOTHING_WAITING = "Nothing in the Nestor store is waiting on you."
 
 
 class SeatUnavailable(Exception):
@@ -178,9 +287,42 @@ def load_bot(root: Path) -> Bot:
     )
 
 
+def resolve_venv(
+    environ: dict | None = None,
+    prefix: str | None = None,
+    base_prefix: str | None = None,
+    grove: Path = GROVE_ROOT,
+) -> Path:
+    """The venv the gate's toolchain check (``Config.venv``) looks in: the one
+    the seat runs in. When the running interpreter is a venv, that venv (the
+    launcher ``scripts/grove-seat`` already chose it by seal D2, so the gate
+    and the seat can't disagree); otherwise the launcher's own order:
+    ``GROVE_VENV``, ``$WILLOW_HOME/willow-bot/venvs/willow-bot`` (D2), the
+    legacy ``$WILLOW_HOME/venvs/willow-bot``, ``<grove>/.venv``, each only if
+    it has a ``bin/python3``. With none, the D2 path, so a missing toolchain
+    is reported against the place it belongs."""
+    env = os.environ if environ is None else environ
+    prefix = sys.prefix if prefix is None else prefix
+    base_prefix = sys.base_prefix if base_prefix is None else base_prefix
+    if prefix != base_prefix:
+        return Path(prefix)
+    willow = env.get("WILLOW_HOME", "")
+    new = Path(willow).expanduser() / "willow-bot" / "venvs" / "willow-bot"
+    cands = []
+    if env.get("GROVE_VENV"):
+        cands.append(Path(env["GROVE_VENV"]).expanduser())
+    if willow:
+        cands += [new, Path(willow).expanduser() / "venvs" / "willow-bot"]
+    cands.append(grove / ".venv")
+    found = next((c for c in cands if (c / "bin" / "python3").is_file()), None)
+    if found:
+        return found
+    home = Path(willow or "~").expanduser()
+    return home / "willow-bot" / "venvs" / "willow-bot"
+
+
 def config(bot: Bot, root: Path, grove: Path = GROVE_ROOT):
     """The Config the one script's own CLI builds, with the same defaults."""
-    home = Path(os.environ.get("WILLOW_HOME", "~")).expanduser()
     return bot.api.Config(
         box=root / ".flow" / "onescript",
         keys=root / ".flow" / "onescript-keys" / "keys.json",
@@ -188,7 +330,7 @@ def config(bot: Bot, root: Path, grove: Path = GROVE_ROOT):
         ci=grove / ".github" / "workflows" / "tests.yml",
         root=root,
         grove=grove,
-        venv=home / "venvs" / "willow-bot",
+        venv=resolve_venv(grove=grove),
         keyring=bot.api.default_keyring(),
         nestor_db=bot.api.default_nestor_db(),
     )
@@ -281,6 +423,12 @@ def willow_mcp_deposit(app_id: str = "willow") -> Callable[[dict], dict]:
 # --- the seat ------------------------------------------------------------------
 
 
+def row_count(rows: object) -> str:
+    """A table's row count as the stack gave it, ``1 row`` not ``1 rows``; a
+    value that is not a whole number is said as it came."""
+    return plural(rows, "row") if isinstance(rows, int) else f"{rows} rows"
+
+
 def three_state(state: str | None, why: str = "") -> str:
     if state == "populated":
         return "populated"
@@ -289,8 +437,36 @@ def three_state(state: str | None, why: str = "") -> str:
     return f"unreachable — {why or 'no answer'}"
 
 
+#: A gate verdict that is not a pass: the check-in line it made is a ``block``.
+GATE_BAD = frozenset({"failing", "unreachable"})
+
+
+def checkin_kind(line: str, rep: dict) -> str:
+    """The card kind of one check-in line, from the row's own status and never
+    from a default. The one script writes a line only for a problem
+    (``hard_close`` is "there are lines"), as ``<gate>: <where>: <why>`` for a
+    gate. So: a line made by a ``failing`` or ``unreachable`` gate (a failed
+    test run, a toolchain that isn't installed) is ``block``; any other line of
+    a hard-closed report (a record break, a turn never closed) is ``block``;
+    a line of a report that did not hard-close, from a gate whose verdict is
+    not bad, is ``pass``."""
+    for g in rep.get("gates") or []:
+        if (
+            isinstance(g, dict)
+            and line == f"{g.get('gate')}: {g.get('where')}: {g.get('why')}"
+        ):
+            return "block" if g.get("verdict") in GATE_BAD else "pass"
+    return "block" if rep.get("hard_close") else "pass"
+
+
 def _norm(text: str) -> str:
     return " ".join(text.lower().split())
+
+
+def _talk(text: str) -> str:
+    """A line as small talk is matched: ``_norm`` without a closing ``?!.``
+    (a curly or straight apostrophe is dropped, so ``what's`` is ``whats``)."""
+    return _norm(text).replace("'", "").replace("’", "").rstrip("?!. ")
 
 
 @dataclass
@@ -316,6 +492,43 @@ class Turn:
     at: str
     rest: list[Box]
     shown: list[Said] = field(default_factory=list)
+    #: A store turn that opens with its count and the first open items
+    #: (``STORE_PAGE`` + 1 boxes on page one) and says it plainly (no ``Looks like``); ``rush=False``: ``No rush.`` is not
+    #: said over a store that holds a refusal.
+    lead: bool = False
+    rush: bool = True
+
+    def take(self) -> list[Box]:
+        """The next page off ``rest``: ``PAGE`` boxes; on a lead (store) turn
+        the count plus ``STORE_PAGE`` open items first, then ``STORE_PAGE``."""
+        n = PAGE
+        if self.lead:
+            n = STORE_PAGE + (0 if self.shown else 1)
+        batch, self.rest = self.rest[:n], self.rest[n:]
+        return batch
+
+    def said_rush(self) -> bool:
+        """``No rush.`` was already said on a page of this turn (it is said
+        once per turn), whoever's sentence has it."""
+        return any(
+            "no rush" in ln.lower()
+            for said in self.shown
+            for ln in (*said.lines, *said.tail)
+        )
+
+
+@dataclass
+class Thread:
+    """The last reply, kept so a follow-up can be resolved against it: its
+    turn (every box shown so far, and what waits behind ``more?``), the chip
+    choices it offered, and the box last opened (``focus``)."""
+
+    turn: Turn
+    choices: list[str] = field(default_factory=list)
+    focus: Box | None = None
+
+    def boxes(self) -> list[Box]:
+        return [b for said in self.turn.shown for b in said.batch]
 
 
 class Seat:
@@ -347,6 +560,9 @@ class Seat:
         self.turns: dict[str, Turn] = {}  # the pile of what was asked and said
         self.pile_n: int | None = 0
         self._n = 0
+        self.greeted = False  # the run's one time-of-day greeting
+        #: The last reply (chain turns only), for follow-ups and chip choices.
+        self.thread: Thread | None = None
         #: The sealed snapshot being served ({spec, subject}), else None.
         self.sealed: dict | None = None
         #: The grown scope's subject when it differs from the sealed one.
@@ -365,9 +581,14 @@ class Seat:
         for ln in text.split("\n"):
             self.write(ln)
 
-    def show(self, *boxes: Box) -> None:
+    def show(self, *boxes: Box, plain: bool = True) -> None:
+        """The cards. A stage's ``empty`` or ``unreachable`` card is also said
+        in a plain code line (``plain``); a reply's cards are not, since the
+        reply's sentence already says them."""
         for b in boxes:
             self.put(render_box(b, self.color))
+            if plain and b.state != "populated":
+                self.code_reply(plain_line(b))
 
     def card(
         self, kind: str, label: str, value: str, detail: str = "", id: str = ""
@@ -389,7 +610,7 @@ class Seat:
         """A reply: boxes, who said the sentence, the sentence, its check chips
         and any code sentence that replaced a struck one. ``at`` is set when it
         is shown again from the pile."""
-        self.show(*said.batch, *said.cards)
+        self.show(*said.batch, *said.cards, plain=False)
         who = said.replay_who.format(at=at) if at else said.who
         self.write(who_line(who, self.color))
         for ln in said.lines:
@@ -400,18 +621,47 @@ class Seat:
         for ln in said.tail:
             self.write(ln)
 
-    def speak(self, batch: list[Box], first: bool, human: str) -> Said:
+    def greeting(self, at: str) -> str:
+        """``Morning.`` on the run's first reply when it is before noon, once.
+        Read from the turn's own clock time, so a test's clock decides it; any
+        other hour, or a time that doesn't parse, says no greeting."""
+        if self.greeted:
+            return ""
+        self.greeted = True
+        try:
+            return "Morning." if 0 <= int(at.split(":")[0]) < 12 else ""
+        except ValueError:
+            return ""
+
+    def speak(
+        self,
+        batch: list[Box],
+        first: bool,
+        human: str,
+        page: int = 0,
+        at: str = "",
+        model: bool = True,
+        rush: bool = True,
+        look: bool = True,
+    ) -> Said:
         """One reply's sentence. The model says it and code checks it; a
         sentence that fails a check is struck and code's stands; a model that
         can't be reached is an ``unreachable`` card and code's stands. Code's
         sentence is composed either way and is never a crash."""
         n = len(batch)
-        code = compose(batch, first=first)
+        code = compose(
+            batch,
+            first=first,
+            page=page,
+            greet=self.greeting(at) if first else "",
+            rush=rush,
+            look=look,
+        )
         again = "{at}"
-        if self.say is None:
+        if self.say is None or not model:
             return Said(
                 batch,
-                f"code · said {n} boxes, no model asked",
+                f"code · said {plural(n, 'box', 'boxes')}, no model asked",
                 "code · shown again from the pile, no model asked now",
                 [say_line(code)],
             )
@@ -431,7 +681,7 @@ class Seat:
         if state != "populated":
             return Said(
                 batch,
-                f"code · {self.model} {state} · said {n} boxes by code",
+                f"code · {self.model} {state} · said {plural(n, 'box', 'boxes')} by code",
                 "code · shown again from the pile, no model asked now",
                 [say_line(code)],
                 cards=[self.state_card("say", state, f"{self.model}: {why}")],
@@ -440,7 +690,7 @@ class Seat:
         if passed(results):
             return Said(
                 batch,
-                f"{self.model} · said {n} boxes",
+                f"{self.model} · said {plural(n, 'box', 'boxes')}",
                 replay,
                 [say_line(sentence)],
                 checks=results,
@@ -458,33 +708,244 @@ class Seat:
         self.write(who_line("code · no model, nothing served", self.color))
         self.write(say_line(text))
 
-    def converse(self, key: str, boxes: list[Box], human: str = "") -> None:
+    def converse(
+        self,
+        key: str,
+        boxes: list[Box],
+        human: str = "",
+        *,
+        lead: bool = False,
+        rush: bool = True,
+    ) -> None:
         """A turn's reply: the boxes, then one sentence over them (the model's
         if it passed its checks, else code's). Asked again, the same boxes and
         sentence come back from the pile with when they were first said;
         nothing is recomputed and no model is asked."""
         turn = self.turns.get(key)
         if turn is None:
-            turn = self.turns[key] = Turn(self.clock(), list(boxes))
+            # a lead turn arrives in its own order (``lead_rank``), not re-ranked
+            turn = self.turns[key] = Turn(
+                self.clock(), list(boxes) if lead else rank(boxes), lead=lead, rush=rush
+            )
         else:
             self.write(f"as noted at {turn.at} · same boxes, nothing new since")
             for said in turn.shown:
                 self.emit(said, turn.at)
+        self.thread = thread = Thread(turn)
         while turn.rest:
             if turn.shown and not self.more(len(turn.rest)):
                 return
-            batch, turn.rest = turn.rest[:PAGE], turn.rest[PAGE:]
-            said = self.speak(batch, not turn.shown, human)
+            batch = turn.take()
+            said = self.speak(
+                batch,
+                not turn.shown,
+                human,
+                page=len(turn.shown),
+                at=turn.at,
+                rush=turn.rush and not turn.said_rush(),
+                look=not turn.lead,
+            )
             turn.shown.append(said)
             self.emit(said)
-        self.write(CHIPS)
+        self.offer(thread)
+
+    def nestor(self, task: str) -> None:
+        """ "Where are we" / "what needs me": the Nestor store read read-only
+        (``grove/seat_nestor.py``) into boxes, then the same ranked converse as
+        a chain turn, so ``show me``, ``why``, ``the second one`` and ``go on``
+        work on them. The path is the config's ``nestor_db`` (``api.default_
+        nestor_db()``). Not configured, missing or not a store: one
+        ``unreachable`` box, said in its plain line; a store with no rows:
+        ``empty``. No chain, no record row, nothing written. "Where are we" opens
+        with the store's count and the first open items (page one: the count
+        box plus ``STORE_PAGE`` boxes, "14 sealed, 3 drafts, 2 rejected (fixture)"
+        said plainly as its own sentence, no ``Looks like``, and no ``No rush.``
+        over a store that holds a refusal or a waiting draft), then the waiting
+        drafts, the refusals, the decided and the other changes, ``STORE_PAGE``
+        a page (``seat_nestor.lead_rank``, after the
+        shoebox sketch); ``more?`` and ``go on`` page that order. ``what needs me``
+        raises the waiting drafts to ``needs you`` and shows only those (and a
+        heads-up); a draft stays marked a draft, never a fact."""
+        self.you(task)
+        path = getattr(self.cfg, "nestor_db", None)
+        asked = _talk(task) in WHAT_NEEDS_ME
+        got = read_store(path, drafts_as="you" if asked else "pr")
+        boxes = got.boxes
+        if asked and got.state == "populated":
+            boxes = [b for b in boxes if b.kind == "you"]
+            if not boxes:
+                return self.code_reply(NOTHING_WAITING)
+        try:
+            st = Path(path).stat()
+            sig = f"{st.st_mtime_ns}:{st.st_size}"
+        except (OSError, TypeError):
+            sig = got.state  # a store that can't be read has no version
+        lead = not asked and got.state == "populated"
+        self.converse(
+            f"nestor:{'needs' if asked else 'where'}:{path}:{sig}",
+            lead_rank(boxes) if lead else boxes,
+            task,
+            lead=lead,
+            rush=not got.counts.get("rejected"),
+        )
+
+    def offer(self, thread: Thread) -> None:
+        """The chip row for what the turn showed. Its choices are remembered so
+        a typed one is acknowledged, nothing more."""
+        got = chips(thread.boxes())
+        thread.choices = got.choices
+        self.write(got.row())
+
+    def choice(self, task: str) -> bool:
+        """A typed line that is a choice chip just offered: acknowledged by
+        code, never sent to the chain. It changes no record, seals nothing and
+        writes no row; the row is spent."""
+        th = self.thread
+        hit = next(
+            (c for c in (th.choices if th else []) if _norm(c) == _norm(task)), ""
+        )
+        if not hit:
+            return False
+        self.you(task)
+        self.code_reply(terminate(f"Got it: {hit}"))
+        th.choices = []
+        return True
+
+    def follow_up(self, task: str) -> bool:
+        """Resolve a typed line against the last reply by fixed rules, in code:
+        no model, no ``api.escalate``, no record row. False: not one, the line
+        goes to the chain as before. A ``show me X`` / ``open X`` / ``show X``
+        that no shown box answers to splits on its target
+        (``seat_boxes.looks_like_ref``): a reference (a number, an id-like
+        token, a box id, an ordinal or a phrase of at most two words) is a
+        follow-up that found nothing, a plain code line (``unmatched``); a
+        longer phrase reads as a task and goes to the chain. With no previous
+        turn there is nothing to resolve against and the line is a task."""
+        th = self.thread
+        got = parse_follow(task) if th else None
+        if th is None or got is None:
+            return False
+        kind, arg, prefixed = got
+        boxes = th.boxes()
+        if kind == "more":
+            self.you(task)
+            self.go_on(th)
+            return True
+        found: Box | None = None
+        if kind == "ord":
+            n = int(arg)
+            if n >= len(boxes):
+                return self.said(
+                    task, terminate(f"{self.only(boxes)}, so there is no {ORD[n]} one")
+                )
+            found = boxes[n]
+        elif kind in ("that", "why"):
+            last = th.turn.shown[-1].batch if th.turn.shown else []
+            found = th.focus or (last[0] if last else None)
+        elif prefixed:
+            hits = [b for b in boxes if matches(b, arg)]
+            if len(hits) > 1:
+                return self.said(
+                    task,
+                    terminate(
+                        f'"{arg}" fits {plural(len(hits), "box", "boxes")}: {self.list_of(hits)}'
+                    ),
+                )
+            found = hits[0] if hits else None
+        else:
+            hits = [b for b in boxes if b.id.lower() == arg]
+            found = hits[0] if len(hits) == 1 else None
+        if found is None:
+            if kind == "ref" and prefixed and looks_like_ref(arg):
+                # a reference that found nothing; a longer phrase is a task
+                return self.said(task, self.unmatched(task, arg, boxes))
+            return False
+        th.focus = found
+        self.you(task)
+        if kind == "why":
+            self.code_reply(self.detail_sentence(found))
+        else:
+            self.show(found, plain=False)
+            self.code_reply(self.open_sentence(found))
+        return True
+
+    @staticmethod
+    def unmatched(task: str, arg: str, boxes: list[Box]) -> str:
+        """``show me X`` / ``open X`` that no shown box answers to: a fixed code
+        line (the human's words quoted exactly, then up to ``UNMATCHED_LIST``
+        refs of what was shown, a box's own id when it has no better ref, and a count
+        of the rest), never the chain."""
+        m = SHOW_RAW.fullmatch(task.strip())
+        said = m[1] if m else arg
+        refs = list(
+            dict.fromkeys(
+                (ref_tokens(b) or [b.id])[0] for b in boxes if b.role not in COUNTED
+            )
+        )
+        head = f'Nothing I showed answers to "{said}"'
+        if not refs:
+            return terminate(head)
+        shown, rest = refs[:UNMATCHED_LIST], len(refs) - UNMATCHED_LIST
+        tail = ", ".join(shown) + (f" and {rest} more" if rest > 0 else "")
+        return terminate(f"{head}; I showed: {tail}")
+
+    def said(self, task: str, text: str) -> bool:
+        self.you(task)
+        self.code_reply(text)
+        return True
+
+    @staticmethod
+    def list_of(boxes: list[Box]) -> str:
+        return "; ".join(f"{b.id}: {_val(b.value)}" for b in boxes)
+
+    def only(self, boxes: list[Box]) -> str:
+        n = len(boxes)
+        return f"I showed {plural(n, 'box', 'boxes')} ({self.list_of(boxes)})"
+
+    @staticmethod
+    def open_sentence(box: Box) -> str:
+        """A box said once more: its own phrase, from its own facts."""
+        return terminate(cap(clause(box)))
+
+    @staticmethod
+    def detail_sentence(box: Box) -> str:
+        """``why``: the reason, said naturally (``why_sentence``): the human's
+        own quoted words led by who said them, provenance left to the card but
+        a fixture still marked ``(fixture)``. With nothing but provenance or
+        no detail, the box's own phrase and a line saying there is no more."""
+        if box.state != "populated":
+            return plain_line(box)
+        got = why_sentence(box)
+        return got or f"{terminate(cap(clause(box)))} {NO_DETAIL}"
+
+    def go_on(self, th: Thread) -> None:
+        """The next page of the last reply, said by code (no model is asked), or
+        a line saying nothing is left."""
+        turn = th.turn
+        if not turn.rest:
+            return self.code_reply(NOTHING_MORE)
+        batch = turn.take()
+        said = self.speak(
+            batch,
+            False,
+            "",
+            page=len(turn.shown),
+            at=turn.at,
+            model=False,
+            rush=turn.rush and not turn.said_rush(),
+            look=not turn.lead,
+        )
+        turn.shown.append(said)
+        self.emit(said)
+        if not turn.rest:
+            self.offer(th)
 
     def more(self, left: int) -> bool:
         ans = self.ask("more?", f"{left} more in the pile [enter = show, else keep]: ")
         self.you(ans or "more")
         if _norm(ans) in MORE_YES:
             return True
-        self.code_reply(SMALL_TALK.get(_norm(ans), STAY))
+        self.code_reply(SMALL_TALK[_talk(ans)] if _talk(ans) in THANKS_LATER else STAY)
         return False
 
     def refused(self, res: dict) -> bool:
@@ -504,7 +965,7 @@ class Seat:
             return False
         rep = res["report"]
         for line in rep.get("lines", []):
-            self.show(self.card("pass", "check-in", str(line)))
+            self.show(self.card(checkin_kind(str(line), rep), "check-in", str(line)))
         if rep.get("hard_close"):
             self.show(
                 self.card(
@@ -611,8 +1072,14 @@ class Seat:
             self.grown = str(now)
 
     def scope(self) -> bool:
-        by = self.ask("scope", "group by [who]: ") or "who"
-        res = self.api.scope(self.cfg, by=[w for w in by.split(",") if w])
+        while True:
+            by = self.ask("scope", f"group by (enter = {DEFAULT_BY}): ") or DEFAULT_BY
+            words = [w.strip() for w in by.split(",") if w.strip()]
+            res = self.api.scope(self.cfg, by=words or [DEFAULT_BY])
+            usage = self.bad_group_by(res, by)
+            if not usage:
+                break
+            self.code_reply(usage)  # the human's answer was refused: say so, re-ask
         if self.refused(res):
             return False
         if not res.get("ids"):
@@ -623,7 +1090,7 @@ class Seat:
         for t in res.get("stack", []):
             self.show(
                 self.card(
-                    "pass", "table", str(t["name"]), f"{t['rows']} rows", t["id"][:12]
+                    "pass", "table", str(t["name"]), row_count(t["rows"]), t["id"][:12]
                 )
             )
         self.show(self.card("pass", "subject", str(res["subject"])))
@@ -633,13 +1100,36 @@ class Seat:
         self.spec = res["spec"]
         return True
 
+    @staticmethod
+    def bad_group_by(res: dict, said: str) -> str:
+        """The plain line for a refusal that is the human's answer at the
+        group-by prompt (a usage error, read from the refusal's own words): the
+        words it takes, and what was said. ``""`` for any other refusal, which
+        stays a ``refused`` card; the stage is not unreachable for a typo."""
+        got = GROUP_BY_REFUSAL.search(str(res.get("refused", "")))
+        if not got:
+            return ""
+        names = re.findall(r"[\w-]+", got["names"])
+        if not names:
+            return ""
+        head = ", ".join(names[:-1]) + (" or " if len(names) > 1 else "") + names[-1]
+        return f'Group by takes {head}; you said "{said}".'
+
     def served(self) -> bool:
-        raw = self.ask("served", f"cap in characters [{DEFAULT_MAX_CHARS}]: ")
-        try:
-            cap = int(raw) if raw else DEFAULT_MAX_CHARS
-        except ValueError:
-            self.show(self.card("block", "served", "not a whole number"))
-            return self.served()
+        while True:
+            raw = self.ask(
+                "served", f"cap in characters (enter = {DEFAULT_MAX_CHARS}): "
+            )
+            if not raw:
+                cap = DEFAULT_MAX_CHARS
+            elif raw.isascii() and raw.isdigit() and int(raw) >= 1:
+                cap = int(raw)
+            else:  # the human's answer, said as it is; no card, no state
+                self.code_reply(
+                    f'The cap takes a whole number, 1 or more; you said "{raw}".'
+                )
+                continue
+            break
         res = self.api.serve(self.cfg, self.spec, max_chars=cap)
         if self.refused(res):
             return False
@@ -811,7 +1301,13 @@ class Seat:
                     )
             return self.offer_grown()
         drafts = got.get("deposited") or []
-        self.show(self.card("dec", "deposit", f"{len(drafts)} in Nestor as drafts"))
+        self.show(
+            self.card(
+                "dec",
+                "deposit",
+                f"{len(drafts)} in Nestor as {'a draft' if len(drafts) == 1 else 'drafts'}",
+            )
+        )
         for d in drafts:
             if d.get("status") == "error":
                 self.show(
@@ -856,9 +1352,17 @@ class Seat:
                 self.pooled_at_start()
                 if self.served():
                     while task := self.ask("chain", "task (empty to check out): "):
-                        if _norm(task) in SMALL_TALK:  # small talk: code, no boxes
+                        if _talk(task) in FAREWELLS:  # like an empty line
                             self.you(task)
-                            self.code_reply(SMALL_TALK[_norm(task)])
+                            break
+                        if _talk(task) in SMALL_TALK:  # small talk: code, no boxes
+                            self.you(task)
+                            self.code_reply(SMALL_TALK[_talk(task)])
+                            continue
+                        if self.choice(task) or self.follow_up(task):
+                            continue  # code answered it: no chain, no model
+                        if _talk(task) in WHERE_ARE_WE | WHAT_NEEDS_ME:
+                            self.nestor(task)  # the store, read-only: no chain
                             continue
                         self.chain(task)
                         self.proposals()
