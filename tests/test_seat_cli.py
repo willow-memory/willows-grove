@@ -937,8 +937,8 @@ def test_each_check_catches_its_violation_and_code_replaces_the_sentence(which):
     assert marks[idx] == "✗" and marks.count("✗") == 1, chips
     assert out.index(struck) < out.index(GOOD_CODE)  # the code sentence beneath it
     said = [o for o in out if o.startswith("agent> ") and "~~" not in o]
-    # stage lines and the opening (O2) aside
-    assert [o for o in said if " is empty" not in o and "scoping fresh" not in o] == [
+    # stage lines, the opening (O2) and the closing (O4) aside
+    assert [o for o in said if " is empty" not in o and "pooled" not in o] == [
         GOOD_CODE
     ]
 
@@ -3473,3 +3473,101 @@ def test_opening_is_not_said_when_nothing_is_served():
     st, out = seat(FakeApi(scope={"refused": "no open box", "code": 2}), ["who"])
     st.run()
     assert not any("scoping fresh" in o or "Picking up" in o for o in out)
+
+
+# --- O4: a closing that carries over --------------------------------------------------
+
+
+def closing_of(out):
+    """The closing line: the last agent sentence of the run."""
+    return [o for o in out if o.startswith("agent> ")][-1]
+
+
+def test_closing_says_what_stays_pooled_for_next_time():
+    api = FakeApi(pooled=pool_of("proposal:aaa", "proposal:bbb"))
+    st, out = seat(api, ["who", "", ""], deposit=FakeDeposit(DEPOSITED))
+    assert st.run() == 0
+    assert closing_of(out) == "agent> 2 proposals stay pooled for next time."
+    # beside the one seal offer, after it
+    assert len(offers(out)) == 1
+    assert max(i for i, o in enumerate(out) if "seal ↗" in o) < len(out) - 1
+
+
+def test_closing_one_pooled_is_singular():
+    st, out = seat(FakeApi(pooled=pool_of("proposal:aaa")), ["who", "", ""])
+    st.run()
+    assert closing_of(out) == "agent> 1 proposal stays pooled for next time."
+
+
+def test_closing_empty_pool_is_its_own_line():
+    st, out = seat(FakeApi(), ["who", "", ""])
+    st.run()
+    assert closing_of(out) == "agent> Nothing stays pooled for next time."
+
+
+@pytest.mark.parametrize(
+    "bad",
+    [RuntimeError("no such verb"), {"refused": "box won't open", "code": 2}, "junk"],
+)
+def test_closing_unreadable_pool_is_never_said_as_empty(bad):
+    calls = []
+
+    def pooled(*a, **k):
+        calls.append(1)
+        if len(calls) == 1:  # the start read answers; the close-out read fails
+            return pool_of()
+        if isinstance(bad, BaseException):
+            raise bad
+        return bad
+
+    st, out = seat(FakeApi(pooled=pooled), ["who", "", ""])
+    assert st.run() == 0
+    line = closing_of(out)
+    assert line == (
+        "agent> I couldn't read the pool, so I can't say what stays pooled "
+        "for next time."
+    )
+    assert "Nothing stays pooled" not in text(out)
+
+
+def test_closing_is_said_on_every_way_out_and_writes_nothing():
+    dep = FakeDeposit()
+    for keys in (["who", "", ""], ["who", "", "bye"], ["who", ""]):  # empty, bye, EOF
+        api = FakeApi(pooled=pool_of("proposal:aaa"))
+        st, out = seat(api, keys, deposit=dep)
+        assert st.run() == 0
+        assert closing_of(out) == "agent> 1 proposal stays pooled for next time."
+        assert not {n for n in api.names() if "seal" in n or "mint" in n or "take" in n}
+    assert all(
+        len(p["pooled"]) == 1 for p in dep.pools
+    )  # the deposit saw the same pool
+
+
+def test_closing_on_ctrl_c_still_carries_over():
+    def read_c(prompt):
+        if prompt.startswith("chain"):
+            raise KeyboardInterrupt
+        return {"scope ▶ group by (enter = who): ": "who"}.get(prompt, "")
+
+    out: list[str] = []
+    st = s.Seat(
+        bot(FakeApi(pooled=pool_of("proposal:aaa"))),
+        cfg="cfg",
+        deposit=FakeDeposit(),
+        read=read_c,
+        write=out.append,
+        color=False,
+        clock=lambda: "09:14",
+    )
+    assert st.run() == 0
+    assert closing_of(out) == "agent> 1 proposal stays pooled for next time."
+
+
+def test_closing_after_a_deposit_error_still_counts_the_pool():
+    dep = FakeDeposit({"state": "unreachable", "reason": "no willow-mcp"})
+    st, out = seat(
+        FakeApi(pooled=pool_of("proposal:aaa")), ["who", "", ""], deposit=dep
+    )
+    st.run()
+    assert closing_of(out) == "agent> 1 proposal stays pooled for next time."
+    assert len(dep.pools) == 1  # the one deposit; the closing did not add another

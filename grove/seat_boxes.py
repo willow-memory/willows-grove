@@ -338,6 +338,20 @@ def opening(resume: tuple, pool: tuple, greet: str = "") -> str:
     return f"{greet} {text}".strip() if greet else text
 
 
+def carry_over(pool: tuple) -> str:
+    """The closing sentence: what stays pooled for next time, from the pool
+    ``api.pooled`` read at check-out. ``("populated", n)``, ``("empty",)`` or
+    ``("unreachable",)``, each said differently."""
+    if pool[0] == "populated":
+        n = pool[1]
+        return (
+            f"{plural(n, 'proposal')} stay{'s' if n == 1 else ''} pooled for next time."
+        )
+    if pool[0] == "empty":
+        return "Nothing stays pooled for next time."
+    return "I couldn't read the pool, so I can't say what stays pooled for next time."
+
+
 def bare(text: str) -> str:
     """``text`` without the one full stop ``terminate`` may have added."""
     return text[:-1] if text.endswith(".") else text

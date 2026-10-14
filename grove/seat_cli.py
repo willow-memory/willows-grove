@@ -63,7 +63,12 @@ The stages, in order, each shown in the prompt (``scope ▶``):
     checkout   api.checkout, on exit, EOF or Ctrl-C alike; then the pool is
                deposited into Nestor as drafts (willow-mcp's
                ``onescript_deposit``, injectable) and ONE ``seal ↗`` offer
-               points at the Nestor UI, the only place a seal is made
+               points at the Nestor UI, the only place a seal is made. Last,
+               ONE code sentence says what stays pooled for next time ("2
+               proposals stay pooled for next time."), from the pool that
+               close-out already read: ``populated``, ``empty`` ("Nothing stays
+               pooled") or ``unreachable`` ("I couldn't read the pool") each
+               said differently. It seals, deposits and writes nothing more
 
 The seat never seals: no prompt asks for one, it holds no key, and the deposit
 only proposes. When it served a pinned snapshot and the record has grown, the
@@ -164,6 +169,7 @@ from typing import Any
 from grove.seat_boxes import (
     Box,
     cap,
+    carry_over,
     compose,
     human_line,
     checks_line,
@@ -1309,16 +1315,29 @@ class Seat:
         self.close_out()
 
     def close_out(self) -> None:
-        """Deposit the pool as Nestor drafts, then make the one seal offer."""
+        """Deposit the pool as Nestor drafts, make the one seal offer, then say
+        what stays pooled for next time (``seat_boxes.carry_over``): one code
+        sentence from the pool this close-out already read, in its own
+        ``populated``, ``empty`` or ``unreachable`` clause. It seals, deposits
+        and writes nothing beyond what the close-out already does."""
+        self.carry: tuple = ("unreachable",)
+        try:
+            self.deposit_pool()
+        finally:
+            self.code_reply(carry_over(self.carry))
+
+    def deposit_pool(self) -> None:
         try:
             pool = self.api.pooled(self.cfg)
         except Exception as e:  # noqa: BLE001 - the close-out must not raise
             self.show(self.gone("pool", f"{type(e).__name__}: {e}"))
             return self.offer_grown()
-        items = [p for p in pool.get("pooled") or [] if isinstance(p, dict)]
-        if "refused" in pool:
-            self.show(self.gone("pool", str(pool["refused"])))
+        if not isinstance(pool, dict) or "refused" in pool:
+            why = pool.get("refused") if isinstance(pool, dict) else "not a pool record"
+            self.show(self.gone("pool", str(why)))
             return self.offer_grown()
+        items = [p for p in pool.get("pooled") or [] if isinstance(p, dict)]
+        self.carry = ("populated", len(items)) if items else ("empty",)
         try:
             got = self.deposit(pool)
         except Exception as e:  # noqa: BLE001 - the close-out must not raise
