@@ -1987,12 +1987,29 @@ def test_the_demo_scenes_read_like_the_sketch():
     )
 
 
+def sketch_glue(html: str) -> tuple[str, ...]:
+    """The free glue words a box-stream sketch declares (``const GLUE = [...]``);
+    a sketch with no such list is a failure, never an empty tuple."""
+    found = re.search(r"const GLUE = \[(.*?)\];", html)
+    assert found, "the sketch declares no GLUE list"
+    return tuple(re.findall(r"'([^']+)'", found.group(1)))
+
+
+def test_sketch_glue_catches_a_planted_drift():
+    """Planted: a sketch whose list drifts from the seat's reads as different,
+    and a sketch with no list fails rather than passing as empty."""
+    assert sketch_glue("const GLUE = ['morning', 'oh'];") == ("morning", "oh")
+    drifted = "const GLUE = [" + ", ".join(f"'{w}'" for w in bx.GLUE[:-1]) + "];"
+    assert sketch_glue(drifted) != bx.GLUE
+    with pytest.raises(AssertionError):
+        sketch_glue("const OTHER = ['morning'];")
+
+
 def test_glue_is_the_sketchs_list_and_the_model_may_use_exactly_it():
     html = (s.GROVE_ROOT / "web/demo/box-stream/box-stream-v1.3.html").read_text(
         "utf-8"
     )
-    sketch = re.search(r"const GLUE = \[(.*?)\];", html).group(1)
-    assert tuple(re.findall(r"'([^']+)'", sketch)) == bx.GLUE
+    assert sketch_glue(html) == bx.GLUE
     assert say_mod.GLUE is bx.GLUE
     prompt = say_mod.build_prompt(demo("b5"), "where are we")
     assert "Free words, and only these: " + ", ".join(bx.GLUE) in prompt
