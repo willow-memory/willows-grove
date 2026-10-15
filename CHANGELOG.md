@@ -2,6 +2,18 @@
 
 All notable changes land here per INVARIANTS.md §3. Format follows Keep a Changelog v1.1.0.
 
+## [0.24.2](https://github.com/willow-memory/willows-grove/compare/v0.24.1...v0.24.2) (2026-10-15)
+
+
+### Fixed
+
+* **seat:** a reply that times out right after the local rung says what it may have waited on ([96de521](https://github.com/willow-memory/willows-grove/commit/96de521486531df7cd4d4225ba4c0ccfbbe8d8ff))
+* **seat:** an answer with no detail is not said as "Local:.", and a rung's failure shows its cause ([a64f002](https://github.com/willow-memory/willows-grove/commit/a64f00286d87672078cd9d1d9e44bf33e168a197))
+* **seat:** one model for now: the chain's local rung uses the reply model ([ece083e](https://github.com/willow-memory/willows-grove/commit/ece083e9d43b53ffa8ff21e8ed84f983467902f0))
+* **seat:** status questions are answered from the record and the store, not sent to the chain ([e40cc2a](https://github.com/willow-memory/willows-grove/commit/e40cc2a4d47fb002ef2b40b2c3dc931542d0f312))
+* **seat:** status questions read the record; no "Local:."; rung errors show their cause; short snapshot id ([#154](https://github.com/willow-memory/willows-grove/issues/154)) ([1a9b89a](https://github.com/willow-memory/willows-grove/commit/1a9b89ae51e930a4d3c7a16216da812f2120d691))
+* **seat:** the opening names the sealed snapshot in the short form the cards use ([90e48d6](https://github.com/willow-memory/willows-grove/commit/90e48d6677e2967ff65c15a74f1532d5ab09a07b))
+
 ## [Unreleased]
 
 ### Fixed
