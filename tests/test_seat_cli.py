@@ -1821,6 +1821,23 @@ def test_the_resolved_ratatosk_reaches_escalate_and_flowering(tmp_path, monkeypa
     assert esc and esc[0][2]["ratatosk"] == (str(rat),)
 
 
+@pytest.mark.parametrize("model", [s.MODEL, "qwen3:8b"])
+def test_the_chain_local_rung_uses_the_seats_one_model(model):
+    api = FakeApi()
+    st = s.Seat(
+        bot(api),
+        cfg="cfg",
+        deposit=FakeDeposit(),
+        read=lambda p: "",
+        write=lambda x: None,
+        color=False,
+        model=model,
+    )
+    st.chain("the task")
+    esc = [c for c in api.calls if c[0] == "escalate"]
+    assert esc and esc[0][2]["model"] == model
+
+
 def test_say_timeout_defaults_to_300_and_honors_the_env():
     assert say_mod.say_timeout({}) == 300.0
     assert say_mod.say_timeout({"GROVE_SAY_TIMEOUT": "45.5"}) == 45.5

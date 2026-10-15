@@ -65,6 +65,8 @@ The stages, in order, each shown in the prompt (``scope ▶``):
                answer that is not a whole number of 1 or more is said in a
                plain code line and asked again (no card, no state)
     chain      api.escalate: D0 code, then the hash record, then a local rung
+               on the seat's one model (the reply model: ``--model`` or
+               ``GROVE_SAY_MODEL``, default ``qwen3:4b``)
     flowering  for a piece the chain left, one cloud turn on the human's yes:
                ``ratatosk --onescript --class flowering`` (the ladder picks
                the provider), its rows judged by api.take_proposals
@@ -1370,6 +1372,7 @@ class Seat:
         res = self.api.escalate(
             self.cfg,
             task,
+            model=self.model,  # one model: the local rung uses the reply model
             piece_chars=self.bot.piece_chars,
             ratatosk=(self.ratatosk,),
         )
@@ -1688,8 +1691,9 @@ def parser() -> argparse.ArgumentParser:
     p.add_argument(
         "--model",
         metavar="NAME",
-        help=f"the reply model for this run (default {MODEL}, or GROVE_SAY_MODEL; "
-        "the flag wins over the env); not with --no-say",
+        help=f"the run's one model: it says the reply and is the chain's local rung "
+        f"(default {MODEL}, or GROVE_SAY_MODEL; the flag wins over the env); "
+        "not with --no-say",
     )
     return p
 
