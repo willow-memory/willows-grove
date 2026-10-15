@@ -6,6 +6,7 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Fixed
 
+- **seat:** status questions are answered from what the seat already has, not sent to the chain: "what is on the table (today)", "what is my next task", "what's next", "what do I need to do", "what needs me", "where are we" and the rest of a fixed list (`seat_record.STATUS_PHRASES`, `WHERE_PHRASES`; matched whole after normalisation, no substring or fuzzy match, no model) read the record's `NEEDS YOU` lines through willow-bot's new read-only `api.needs` (one `invocation` row per ask, no `reconcile` row) and, when `WILLOW_NESTOR_DB` names one, the Nestor store, merged into one box list so `show me`, `why`, `the second one` and `go on` work on them. Each source keeps its own state (`populated`, `empty`, `unreachable`); a Nestor store that is not configured is no longer an `unreachable` box when the record answered. A page leads with its heads-ups and counts, then `STORE_PAGE` items.
 - **seat:** the opening says the sealed snapshot in the short form the cards use (`serve:9439efcacd2c`, not the whole 64-character hash), with or without the seal date (`seat_boxes.opening` reads `short`).
 
 ## [0.24.1](https://github.com/willow-memory/willows-grove/compare/v0.24.0...v0.24.1) (2026-10-14)

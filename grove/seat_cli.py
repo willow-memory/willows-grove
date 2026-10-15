@@ -143,15 +143,28 @@ grouped into a pair or a run with a piece: its box carries ``role="count"``, as
 the Nestor store's count does. Under ``NO_COLOR`` or a non-tty the cards are plain ASCII with
 no escape codes.
 
-``where are we`` and ``what needs me`` are not chain tasks: they are answered
-from the Nestor store at the config's ``nestor_db`` (``api.default_nestor_db()``,
-``$WILLOW_NESTOR_DB`` / ``$NESTOR_DB``), read-only, by ``grove/seat_nestor.py``,
-then said through the same ranked converse, so ``show me``, ``why``, ``the
-second one`` and ``go on`` work on them. No path, a missing file or a file that
-is not a Nestor store is one ``unreachable`` box (never ``empty``, which is a
-store that was read and holds nothing); no chain runs and no row is written.
-``what needs me`` shows only the waiting drafts (marked drafts), else says
-nothing is waiting. A ``fixture:`` origin stays on the card.
+A status question is not a chain task. "What is on the table (today)", "what is
+my next task", "what's next", "what do I need to do", "what needs me", "where are
+we" and the rest of ``seat_record.STATUS_PHRASES`` / ``WHERE_PHRASES`` (matched
+whole, after normalisation: no substring, no fuzzy match, no model) are answered
+from what the seat already has, read-only, by ``Seat.status``: the record's
+``NEEDS YOU`` lines (``api.needs`` in willow-bot, the morning screen's section
+read without checking out; one ``invocation`` row per ask, the same row every
+api read writes, and no ``reconcile`` row) and, when ``api.default_nestor_db()``
+(``$WILLOW_NESTOR_DB`` / ``$NESTOR_DB``) names one, the Nestor store
+(``grove/seat_nestor.py``). The two are merged into one box list and said through
+the same ranked converse, so ``show me``, ``why``, ``the second one`` and ``go
+on`` work on them. Each source keeps its own state, ``populated``, ``empty`` or
+``unreachable``, never collapsed: an unreadable ``api.needs`` (raised, refused,
+or missing on an older willow-bot) is one ``unreachable`` box, a record with
+nothing waiting one ``empty`` box. A Nestor store that is not configured is not
+an ``unreachable`` read when the record answered: it adds no box, and the record
+card says only the record was read; a configured store that cannot be read is
+``unreachable`` as before. "Where are we" shows the store's whole state (count,
+waiting drafts, refusals, decided) beside the record's lines; the other status
+questions show only what waits on the human (the record's lines and the store's
+waiting drafts, marked drafts). A ``fixture:`` origin stays on the card. No chain
+runs, and nothing but the one ``invocation`` row is written.
 
 The operator, 2026-10-09: "The deterministic chain runs, esclates to local
 models if need be, then to the cloud models"; "It should live in the grove,
@@ -171,6 +184,7 @@ willow-bot is found at ``WILLOW_BOT_ROOT``, else beside this repo
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -217,6 +231,7 @@ from grove.seat_boxes import (
     _val,
 )
 from grove.seat_nestor import lead_rank, read_store
+from grove.seat_record import read_needs, status_kind
 from grove.seat_say import (
     CHECK_NAMES,
     MODEL,
@@ -257,17 +272,14 @@ SHOW_RAW = re.compile(r"(?i)(?:show me|show|open)\s+(.+?)[\s?!.]*")
 #: words are the sketch's glue ("Anytime.", "Got it.") or fixed code lines.
 HELLO = "Hello. Give me a task, or say help."
 HELP = (
-    'Give me a task and the chain takes it. "where are we" and "what needs me" '
-    "are read from your Nestor store (read-only). "
+    'Give me a task and the chain takes it. "what is on the table", "what needs '
+    'me", "what\'s next" and "where are we" are read from the record\'s needs-you '
+    "list and, when one is configured, your Nestor store (both read-only). "
     'After a reply you can say "show me 712", "why", '
     '"the second one" or "go on"; a longer "show me ..." is a task for the chain. '
     '"thanks" and "later" are only '
     'acknowledged; an empty line, "bye", "done" or "quit" checks out.'
 )
-#: A line the seat answers from the Nestor store, not the chain (matched whole,
-#: after ``_talk``): the store's whole state, or only what waits on the human.
-WHERE_ARE_WE = frozenset({"where are we", "where am i", "whats waiting"})
-WHAT_NEEDS_ME = frozenset({"what needs me", "what needs you"})
 SMALL_TALK = {
     "thanks": "Anytime.",
     "thank you": "Anytime.",
@@ -284,7 +296,6 @@ MORE_YES = frozenset({"", "m", "more", "y", "yes"})
 STAY = "Got it. It stays in the pile."
 NOTHING_MORE = "Nothing more in the pile."
 NO_DETAIL = "Nothing more is on the record for it."
-NOTHING_WAITING = "Nothing in the Nestor store is waiting on you."
 
 
 class SeatUnavailable(Exception):
@@ -531,8 +542,8 @@ class Turn:
     at: str
     rest: list[Box]
     shown: list[Said] = field(default_factory=list)
-    #: A store turn that opens with its count and the first open items
-    #: (``STORE_PAGE`` + 1 boxes on page one) and says it plainly (no ``Looks like``); ``rush=False``: ``No rush.`` is not
+    #: A store turn that opens with its heads-ups, its counts and the first open
+    #: items (those leading boxes plus ``STORE_PAGE`` on page one) and says it plainly (no ``Looks like``); ``rush=False``: ``No rush.`` is not
     #: said over a store that holds a refusal.
     lead: bool = False
     rush: bool = True
@@ -542,7 +553,16 @@ class Turn:
         the count plus ``STORE_PAGE`` open items first, then ``STORE_PAGE``."""
         n = PAGE
         if self.lead:
-            n = STORE_PAGE + (0 if self.shown else 1)
+            n = STORE_PAGE
+            if not self.shown:  # the heads-ups and counts that lead are not items
+                n += next(
+                    (
+                        i
+                        for i, b in enumerate(self.rest)
+                        if b.state == "populated" and b.role != "count"
+                    ),
+                    len(self.rest),
+                )
         batch, self.rest = self.rest[:n], self.rest[n:]
         return batch
 
@@ -815,44 +835,71 @@ class Seat:
             self.emit(said)
         self.offer(thread)
 
-    def nestor(self, task: str) -> None:
-        """ "Where are we" / "what needs me": the Nestor store read read-only
-        (``grove/seat_nestor.py``) into boxes, then the same ranked converse as
-        a chain turn, so ``show me``, ``why``, ``the second one`` and ``go on``
-        work on them. The path is the config's ``nestor_db`` (``api.default_
-        nestor_db()``). Not configured, missing or not a store: one
-        ``unreachable`` box, said in its plain line; a store with no rows:
-        ``empty``. No chain, no record row, nothing written. "Where are we" opens
-        with the store's count and the first open items (page one: the count
-        box plus ``STORE_PAGE`` boxes, "14 sealed, 3 drafts, 2 rejected (fixture)"
-        said plainly as its own sentence, no ``Looks like``, and no ``No rush.``
-        over a store that holds a refusal or a waiting draft), then the waiting
-        drafts, the refusals, the decided and the other changes, ``STORE_PAGE``
-        a page (``seat_nestor.lead_rank``, after the
-        shoebox sketch); ``more?`` and ``go on`` page that order. ``what needs me``
-        raises the waiting drafts to ``needs you`` and shows only those (and a
-        heads-up); a draft stays marked a draft, never a fact."""
+    def status(self, task: str) -> None:
+        """A status question ("what is on the table", "what's next", "what needs
+        me", "where are we": ``seat_record.status_kind``) answered from what the
+        seat already has, no chain and no model: the record's NEEDS YOU lines
+        (``api.needs``, one ``invocation`` row and nothing else) and, when one is
+        configured, the Nestor store (read-only), merged into one box list and
+        said through the same converse as a chain turn, so ``show me``, ``why``,
+        ``the second one`` and ``go on`` work on them.
+
+        Each source keeps its own state (``populated``, ``empty``,
+        ``unreachable``). A Nestor store that is not configured adds no box when
+        the record answered (the record's first box says only the record was
+        read); with the record also unreachable it is the ``unreachable`` box it
+        always was. A configured store is read as before. "Where are we" opens
+        with the counts and the first open items (page one: the counts plus
+        ``STORE_PAGE`` boxes, said plainly, no ``Looks like``, and no ``No
+        rush.`` over a store that holds a refusal or a waiting draft), then the
+        waiting drafts, the refusals, the decided and the other changes
+        (``seat_nestor.lead_rank``); every other status question shows only what
+        waits on the human: the record's lines and the store's waiting drafts
+        (raised to ``needs you``, still marked drafts), and says so in an
+        ``empty`` box when the store holds none. ``more?`` and ``go on`` page
+        that order."""
         self.you(task)
         path = getattr(self.cfg, "nestor_db", None)
-        asked = _talk(task) in WHAT_NEEDS_ME
-        got = read_store(path, drafts_as="you" if asked else "pr")
-        boxes = got.boxes
-        if asked and got.state == "populated":
-            boxes = [b for b in boxes if b.kind == "you"]
-            if not boxes:
-                return self.code_reply(NOTHING_WAITING)
-        try:
-            st = Path(path).stat()
-            sig = f"{st.st_mtime_ns}:{st.st_size}"
-        except (OSError, TypeError):
-            sig = got.state  # a store that can't be read has no version
-        lead = not asked and got.state == "populated"
+        asked = status_kind(task) == "needs"
+        rec = read_needs(self.api, self.cfg)
+        boxes = list(rec.boxes)
+        counts: dict[str, int] = {}
+        if path is not None and str(path).strip():
+            got = read_store(path, drafts_as="you" if asked else "pr")
+            counts = got.counts
+            theirs = got.boxes
+            if asked and got.state == "populated":
+                theirs = [b for b in theirs if b.kind == "you"] or [
+                    Box(
+                        "nwait",
+                        "pass",
+                        "nestor drafts",
+                        "empty — none waiting on you",
+                        state="empty",
+                    )
+                ]
+            boxes += theirs
+            try:
+                st = Path(path).stat()
+                sig = f"{st.st_mtime_ns}:{st.st_size}"
+            except (OSError, TypeError):
+                sig = got.state  # a store that can't be read has no version
+        else:
+            sig = "none"
+            if rec.state == "unreachable":  # nothing answered: say both
+                boxes += read_store(None).boxes
+            else:
+                rec.boxes[0].detail = "\n".join(
+                    [d for d in (rec.boxes[0].detail,) if d]
+                    + ["no Nestor store is configured, so only the record was read"]
+                )
+        seen = hashlib.sha1("|".join(f"{b.id}{b.value}" for b in rec.boxes).encode())
         self.converse(
-            f"nestor:{'needs' if asked else 'where'}:{path}:{sig}",
-            lead_rank(boxes) if lead else boxes,
+            f"status:{status_kind(task)}:{path}:{sig}:{seen.hexdigest()[:10]}",
+            lead_rank(sorted(boxes, key=open_tier)),
             task,
-            lead=lead,
-            rush=not got.counts.get("rejected"),
+            lead=any(b.state == "populated" for b in boxes),
+            rush=not counts.get("rejected"),
         )
 
     def offer(self, thread: Thread) -> None:
@@ -1493,8 +1540,8 @@ class Seat:
                             continue
                         if self.choice(task) or self.follow_up(task):
                             continue  # code answered it: no chain, no model
-                        if _talk(task) in WHERE_ARE_WE | WHAT_NEEDS_ME:
-                            self.nestor(task)  # the store, read-only: no chain
+                        if status_kind(task):
+                            self.status(task)  # the record and the store: no chain
                             continue
                         self.chain(task)
                         self.proposals()
@@ -1507,6 +1554,22 @@ class Seat:
                 self.code_reply(plain_line(self.held))  # no opening: say it here
             self.grown_scope()
             self.checkout()
+
+
+def open_tier(b: Box) -> int:
+    """Where a box stands among what waits on the human in a status turn:
+    proposals first, then the store's waiting drafts, then any other record
+    line, then the re-checks (the many), so the first page shows both sources.
+    Every other box is tier 0 and keeps its place (the sort is stable)."""
+    if b.state != "populated":
+        return 0
+    if b.kind == "you" and b.label == "proposal":
+        return 1
+    if b.role == "draft" or (b.kind == "you" and b.role == "more"):
+        return 2
+    if b.kind == "you" and b.label == "record":
+        return 3
+    return 4 if b.kind == "you" and b.label == "re-check" else 0
 
 
 def _is_row(r: object) -> bool:

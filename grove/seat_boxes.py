@@ -431,6 +431,13 @@ def plain_line(box: Box) -> str:
 PROVENANCE = re.compile(
     r"^(?:origin\b|fiction, not a real trail|.*\bthe store holds fixture rows\b)", re.I
 )
+#: A detail line that is not the reason and not fiction either: a record
+#: proposal's ``own_idea:`` mark and the record count's own notes. The card keeps
+#: them; ``why`` leaves them out and does not mark the box a fixture.
+NOTE = re.compile(
+    r"^(?:own_idea:|from the record's NEEDS YOU|no Nestor store is configured\b)",
+    re.I,
+)
 #: Detail lines that name who decided (the speaker of a reason), by form.
 SPEAKER_NO = re.compile(r"^a no from (?P<who>.+?)(?::|$)", re.I)
 SPEAKER_BY = re.compile(r"^rejected by (?P<who>.+)$", re.I)
@@ -461,7 +468,7 @@ def why_sentence(box: Box) -> str:
     for ln in lines:
         m = SPEAKER_NO.match(ln) or SPEAKER_BY.match(ln) or SPEAKER_SEAL.match(ln)
         who = cap(m["who"]) if m and m["who"].lower() != NOBODY else ""
-        if PROVENANCE.match(ln):
+        if PROVENANCE.match(ln) or NOTE.match(ln):
             continue
         if SPEAKER_NO.match(ln):
             head = head or (f"{who} said no" if who else "A no")

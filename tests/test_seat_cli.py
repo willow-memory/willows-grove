@@ -46,6 +46,7 @@ class FakeApi:
                 "stack": [{"name": "who=human", "id": "t1" * 8, "rows": 2}],
             },
             "pooled": {"pooled": [], "count": 0, "code": 0},
+            "needs": {"needs": [], "count": 0, "code": 0},
             "resume": {"resume": None, "code": 0},
             "serve": {"doc": DOC, "state": "populated", "why": ""},
             "escalate": {
@@ -2885,6 +2886,21 @@ def nestor_run(keys, path):
     return api, out
 
 
+def store_cards(lines):
+    """A turn's printed lines without the record's own ``empty`` card, which
+    these store tests (a FakeApi whose record holds nothing) all lead with."""
+    out, skip = [], False
+    for ln in lines:
+        if ln.startswith("+. [empty] record  rstate"):
+            skip = True
+        elif skip and ln.startswith(":"):
+            continue
+        else:
+            skip = False
+            out.append(ln)
+    return out
+
+
 def small_store(tmp_path):
     rows = [
         pair(1, "Hola", "Hello", reason="Settled it once."),
@@ -2894,12 +2910,17 @@ def small_store(tmp_path):
     return make(tmp_path / "n.db", rows, [rej], schema=(PAIRS, REJS))
 
 
-def test_where_are_we_unconfigured_is_unreachable_and_never_the_chain():
+def test_where_are_we_with_no_store_is_the_records_answer_never_the_chain():
+    # the record answered (here: nothing waits), so a store that is not
+    # configured is not an "unreachable" box; the card says only the record was read
     api, out = nestor_run(["where are we"], None)
     body = text(out)
-    assert "+! [unreachable] nestor store" in body and "nestor store  nstate" in body
-    assert "I can't read the record right now. No Nestor store is configured" in body
+    assert "+. [empty] record  rstate" in body
+    assert "no Nestor store is configured, so only the record was read" in body
+    assert "[unreachable]" not in body and "nstate" not in body
+    assert "agent> Record is empty: nothing on the record waits on you." in body
     assert "escalate" not in api.names()
+    assert api.names().count("needs") == 1
 
 
 def test_where_are_we_reads_the_store_and_follow_ups_work_on_its_boxes(tmp_path):
@@ -2940,7 +2961,11 @@ def test_what_needs_me_lists_only_the_waiting_drafts_as_drafts(tmp_path):
 def test_what_needs_me_with_nothing_waiting_says_so(tmp_path):
     p = make(tmp_path / "d.db", [pair(1, "Hola", "Hello")], schema=(PAIRS, REJS))
     _api, out = nestor_run(["what needs me"], p)
-    assert s.NOTHING_WAITING in text(out) and "[needs you]" not in text(out)
+    body = text(out)
+    # two empties, each its own card: the record's and the store's waiting drafts
+    assert "+. [empty] record  rstate" in body
+    assert "+. [empty] nestor drafts  nwait" in body and "none waiting on you" in body
+    assert "[needs you]" not in body and "[unreachable]" not in body
 
 
 def test_asking_again_after_the_store_changed_is_a_fresh_read(tmp_path):
@@ -2948,10 +2973,10 @@ def test_asking_again_after_the_store_changed_is_a_fresh_read(tmp_path):
     api = FakeApi()
     st, out = seat(api, ["who", "", "where are we", "", "where are we", "", ""])
     st.cfg = SimpleNamespace(nestor_db=p)
-    orig = st.nestor
+    orig = st.status
     calls = []
 
-    def nestor(task):
+    def status(task):
         if calls:  # the store grows between the two asks
             import sqlite3
 
@@ -2962,7 +2987,7 @@ def test_asking_again_after_the_store_changed_is_a_fresh_read(tmp_path):
         calls.append(task)
         orig(task)
 
-    st.nestor = nestor
+    st.status = status
     st.run()
     body = text(out)
     assert "same boxes, nothing new since" not in body
@@ -3169,12 +3194,17 @@ def test_where_are_we_opens_with_the_count_then_the_open_items(tmp_path):
     before = hashlib.sha256(p.read_bytes()).hexdigest()
     api, out = nestor_run(["where are we"], p)
     t = text(out)
-    first = after(out, "where are we")
+    first = store_cards(after(out, "where are we"))
     assert first[0].startswith("+- [routine pass] nestor store")  # the count first
     said = next(o for o in first if o.startswith("agent> "))
-    assert said.startswith("agent> 1 sealed, 1 draft, 2 rejected (fixture). ")
+    assert said.startswith(
+        "agent> Record is empty: nothing on the record waits on you. "
+        "1 sealed, 1 draft, 2 rejected (fixture). "
+    )
     assert "Adios (draft) is waiting." in said  # a draft, never a fact
-    assert "said 5 boxes, no model asked" in t and "more?" not in t  # one page
+    assert (
+        "said 6 boxes, no model asked" in t and "more?" not in t
+    )  # one page: the record card and the five
     assert "Looks like" not in t and "No rush" not in t  # a refusal is in the store
     drafts = t.index("[changed] draft, waiting")
     assert t.index("[routine pass]") < drafts < t.index("[blocked]")
@@ -3191,13 +3221,17 @@ def test_the_count_page_keeps_no_rush_when_the_store_holds_no_refusal(tmp_path):
     )
     _api, out = nestor_run(["where are we"], p)
     said = next(o for o in after(out, "where are we") if o.startswith("agent> "))
-    assert said == "agent> 1 sealed (fixture). Hola → Hello is decided. No rush."
+    # the empty record card is a heads-up, so no "No rush."
+    assert said == (
+        "agent> Record is empty: nothing on the record waits on you. "
+        "1 sealed (fixture). Hola → Hello is decided."
+    )
 
 
 def test_a_chain_turn_and_what_needs_me_keep_the_generic_rank(tmp_path):
     p = fixture_store(tmp_path, "n.db")
     _api, out = nestor_run(["what needs me"], p)
-    first = after(out, "what needs me")
+    first = store_cards(after(out, "what needs me"))
     assert first[0].startswith("+- [needs you] draft, waiting")
     _api, out = thread_run(["status of the build"])  # a chain turn: generic rank
     assert after(out, "status of the build")[0].startswith("+- [needs you]")
@@ -3324,11 +3358,13 @@ def big_store(tmp_path):
 def test_where_are_we_on_a_big_store_takes_two_more_presses_not_six(tmp_path):
     p = big_store(tmp_path)
     before = hashlib.sha256(p.read_bytes()).hexdigest()
-    _api, out = nestor_run(["where are we", "", "", "the second one"], p)
+    _api, out = nestor_run(["where are we", "", "", "the third one"], p)
     asks = [o for o in out if o.startswith("more? ▶")]
     assert len(asks) == 2  # page one, then two more pages
     first = after(out, "where are we")
-    assert first[0].startswith("+- [routine pass] nestor store")  # the count first
+    assert first[0].startswith("+. [empty] record")  # the record's heads-up leads
+    first = store_cards(first)
+    assert first[0].startswith("+- [routine pass] nestor store")  # then the count
     shown = [o for o in first if o.startswith("+- [")]
     assert len(shown) == 1 + s.STORE_PAGE  # the count plus one store page
     assert sum(o.startswith("+- [changed] draft, waiting") for o in first) == 3
@@ -3336,8 +3372,9 @@ def test_where_are_we_on_a_big_store_takes_two_more_presses_not_six(tmp_path):
     assert "The drafts are waiting: d1 (draft), d2 (draft) and d3 (draft)." in said
     nxt = after(out, "more")
     assert sum(o.startswith("+- [") for o in nxt) == s.STORE_PAGE
-    ordinal = after(out, "the second one")
-    assert ordinal[0].startswith("+- [changed] draft, waiting")  # counts shown boxes
+    ordinal = after(out, "the third one")
+    # counts shown boxes: the record's empty card, the count, then the first draft
+    assert ordinal[0].startswith("+- [changed] draft, waiting")
     assert hashlib.sha256(p.read_bytes()).hexdigest() == before
 
 
@@ -3988,3 +4025,270 @@ def test_sealed_on_is_pure_and_total():
     assert "the sealed snapshot serve:x (rows up to 3)" in bx.opening(
         ("sealed", "serve:x", 3), ("empty",)
     )
+
+
+# --- a status question is answered from the record's NEEDS YOU (and the store) ----------
+
+from grove import seat_record as srec  # noqa: E402
+
+RECORD_NEEDS = [
+    "proposal · own_idea: no · who-ran-it · link_fail · a cite is not in the served file",
+    "proposal · own_idea: no · port 8767 · pass",
+    *(
+        f"re-check row {n} (write) · made by run version 7e6157d7be41, now 21a0b50e23f7"
+        for n in (9, 20, 49, 54, 86)
+    ),
+]
+
+
+def needs_of(lines=RECORD_NEEDS):
+    return {"needs": list(lines), "count": len(lines), "code": 0}
+
+
+def status_run(keys, api=None, path=None):
+    api = api or FakeApi(needs=needs_of())
+    st, out = seat(api, ["who", "", *keys, ""])
+    st.cfg = SimpleNamespace(nestor_db=path)
+    assert st.run() == 0
+    return api, out
+
+
+@pytest.mark.parametrize(
+    "line, kind",
+    [
+        ("what is on the table today?", "needs"),
+        ("What's on the table", "needs"),
+        ("what’s on the table?", "needs"),
+        ("what is on my plate", "needs"),
+        ("what is my next task", "needs"),
+        ("what's next", "needs"),
+        ("what is next, please", "needs"),
+        ("ok so what's next?", "needs"),
+        ("what do I need to do today", "needs"),
+        ("what should I do next", "needs"),
+        ("what needs me", "needs"),
+        ("What needs me right now?", "needs"),
+        ("what is waiting on me", "needs"),
+        ("where are we", "where"),
+        ("Where are we?", "where"),
+        ("status", "where"),
+    ],
+)
+def test_status_phrases_are_matched_whole_after_normalisation(line, kind):
+    assert srec.status_kind(line) == kind
+
+
+@pytest.mark.parametrize(
+    "line",
+    [
+        "what is on the table in table 3 of the file",
+        "what is the next task in the served file",
+        "what is next to the door",
+        "where are we in the second table",
+        "tell me what is on the table",
+        "what is the color of the night sky",
+        "whats",
+        "",
+    ],
+)
+def test_a_line_that_only_contains_a_status_phrase_is_still_a_task(line):
+    assert srec.status_kind(line) is None
+
+
+def test_the_morning_questions_read_the_record_and_never_the_chain():
+    api, out = status_run(["what is on the table today?", "", "what is my next task"])
+    body = text(out)
+    assert "escalate" not in api.names()
+    assert api.names().count("needs") == 2  # one invocation row each, no other call
+    assert "7 waiting on you: 2 proposals, 5 re-checks" in body
+    assert "proposal who-ran-it: link_fail" in body
+    assert "re-check row 9 (write)" in body
+    assert "[unreachable]" not in body and "rung" not in body
+
+
+def test_the_records_boxes_are_needs_you_cards_with_the_lines_own_parts():
+    _api, out = status_run(["what is on the table"])
+    got = after(out, "what is on the table")
+    assert got[0].startswith("+- [routine pass] record  r")
+    assert got[1:4] == [
+        "| 7 waiting on you: 2 proposals, 5 re-checks",
+        "| from the record's NEEDS YOU, read without checking out",
+        "| no Nestor store is configured, so only the record was read",
+    ]
+    t = "\n".join(got)
+    assert "[needs you] proposal" in t and "| own_idea: no" in t
+    assert "| reason: a cite is not in the served file" in t
+    assert "| made by run version 7e6157d7be41, now 21a0b50e23f7" in t
+
+
+def test_follow_ups_work_on_the_records_boxes():
+    api, out = status_run(
+        [
+            "what is on the table",
+            "",
+            "the second one",
+            "why",
+            "show me 20",
+            "show me row 49",
+            "go on",
+        ]
+    )
+    assert "escalate" not in api.names()
+    said = lambda you: next(  # noqa: E731
+        o for o in after(out, you) if o.startswith("agent> ")
+    )
+    assert said("the second one") == (
+        "agent> This needs you: proposal who-ran-it: link_fail."
+    )
+    assert said("why") == "agent> Reason: a cite is not in the served file."
+    assert said("show me 20") == "agent> This needs you: re-check row 20 (write)."
+    assert any("re-check row 49 (write)" in o for o in after(out, "show me row 49"))
+    assert said("go on") == "agent> Nothing more in the pile."
+
+
+def test_every_page_is_said_from_its_boxes_and_the_rest_waits_behind_more():
+    _api, out = status_run(["what needs me", ""])
+    first = after(out, "what needs me")
+    assert sum(o.startswith("+- [needs you]") for o in first) == 4  # STORE_PAGE
+    assert any(o.startswith("more? ▶ 3 more") for o in first)
+    said = [o for o in first if o.startswith("agent> ")]
+    assert said and "re-check row 49" not in said[0]
+    assert any("re-check row 86 (write)" in o for o in out)  # after "more"
+
+
+def test_an_unconfigured_store_does_not_make_the_turn_unreachable():
+    for kind in ("what is on the table", "where are we"):
+        _api, out = status_run([kind])
+        body = text(out)
+        assert "[unreachable]" not in body and "nstate" not in body
+        assert "No Nestor store is configured" not in body
+
+
+def test_a_record_with_nothing_waiting_is_empty_not_unreachable():
+    api = FakeApi(needs=needs_of([]))
+    _a, out = status_run(["what's next"], api)
+    body = text(out)
+    assert "+. [empty] record  rstate" in body
+    assert "agent> Record is empty: nothing on the record waits on you." in body
+    assert "[unreachable]" not in body and "escalate" not in api.names()
+
+
+@pytest.mark.parametrize(
+    "res",
+    [
+        RuntimeError("boom"),
+        {"refused": "no law", "code": 2},
+        {"needs": "not a list"},
+        "nope",
+    ],
+)
+def test_an_unreadable_record_is_unreachable_with_its_reason_and_the_store_still_answers(
+    tmp_path, res
+):
+    def needs(*a, **k):
+        if isinstance(res, Exception):
+            raise res
+        return res
+
+    p = small_store(tmp_path)
+    api = FakeApi(needs=needs)
+    _a, out = status_run(["what needs me"], api, p)
+    body = text(out)
+    assert "+! [unreachable] record  rstate" in body
+    assert "I can't read the record right now." in body
+    assert "Adios (draft)" in body  # the store's own answer, still given
+    assert "escalate" not in api.names()
+
+
+def test_nothing_answering_says_both_unreachable():
+    api = FakeApi(needs=lambda *a, **k: (_ for _ in ()).throw(KeyError("needs")))
+    _a, out = status_run(["what is on the table"], api)
+    body = text(out)
+    assert "+! [unreachable] record  rstate" in body
+    assert "+! [unreachable] nestor store  nstate" in body
+
+
+def test_an_older_willow_bot_with_no_needs_is_unreachable_and_says_so():
+    got = srec.read_needs(object(), None)
+    assert got.state == "unreachable" and "no needs read" in got.reason
+    assert got.boxes[0].state == "unreachable"
+
+
+def test_the_record_and_the_store_are_merged_each_in_its_own_state(tmp_path):
+    p = small_store(tmp_path)
+    before = hashlib.sha256(p.read_bytes()).hexdigest()
+    api, out = status_run(["what is on the table today?", "", "", "why"], None, p)
+    body = text(out)
+    assert "7 waiting on you: 2 proposals, 5 re-checks" in body
+    assert "Adios (draft)" in body and "[needs you] draft, waiting" in body
+    assert "[blocked]" not in body and "[decided]" not in body  # only what waits
+    assert "only the record was read" not in body  # the store was read as well
+    assert "escalate" not in api.names()
+    assert hashlib.sha256(p.read_bytes()).hexdigest() == before
+
+
+def test_where_are_we_shows_the_stores_whole_state_beside_the_record(tmp_path):
+    p = small_store(tmp_path)
+    _api, out = status_run(["where are we"], None, p)
+    body = text(out)
+    assert "7 waiting on you" in body and "1 sealed, 1 draft, 1 rejected" in body
+
+
+def test_a_record_that_changed_is_read_fresh_and_one_that_did_not_is_replayed():
+    lines = [RECORD_NEEDS[0]]
+    api = FakeApi(needs=lambda *a, **k: needs_of(lines))
+    st, out = seat(
+        api, ["who", "", "what is on the table", "what is on the table", "", ""]
+    )
+    st.cfg = SimpleNamespace(nestor_db=None)
+    orig = st.status
+    asks = []
+
+    def status(task):
+        if asks:
+            lines.append(RECORD_NEEDS[1])  # the record grows between the two asks
+        asks.append(task)
+        orig(task)
+
+    st.status = status
+    st.run()
+    body = text(out)
+    assert "same boxes, nothing new since" not in body
+    assert "1 waiting on you: 1 proposal" in body
+    assert "2 waiting on you: 2 proposals" in body
+
+
+def test_the_same_record_asked_twice_comes_back_from_the_pile():
+    api, out = status_run(["what is on the table", "", "what is on the table", ""])
+    assert "same boxes, nothing new since" in text(out)
+    assert api.names().count("needs") == 2 and "escalate" not in api.names()
+
+
+def test_the_seat_status_turn_writes_nothing_of_its_own():
+    api, _out = status_run(["what is on the table"])
+    assert [n for n in api.names() if n not in ("checkin", "resume", "scope")][:3] == [
+        "pooled",
+        "serve",
+        "needs",
+    ]
+
+
+def test_help_names_the_status_questions():
+    for phrase in ('"what is on the table"', '"what needs me"', '"where are we"'):
+        assert phrase in s.HELP
+
+
+def test_the_first_page_shows_both_sources_proposals_then_drafts_then_re_checks(
+    tmp_path,
+):
+    p = small_store(tmp_path)
+    _api, out = status_run(["what needs me", ""], None, p)
+    first = after(out, "what needs me")
+    cards = [o for o in first if o.startswith("+- [")]
+    assert [c.split("]")[1].split("  ")[0].strip() for c in cards[:5]] == [
+        "record",
+        "proposal",
+        "proposal",
+        "draft, waiting (fixture)",
+        "re-check",
+    ]
