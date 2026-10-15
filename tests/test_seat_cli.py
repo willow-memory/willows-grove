@@ -136,7 +136,9 @@ def seat(
     return st, out
 
 
-def piece(rung, outcome="escalated", reason="local_escalate", h="h" * 64, rows=()):
+def piece(
+    rung, outcome="escalated", reason="local_escalate", h="h" * 64, rows=(), detail="d"
+):
     return {
         "piece": h,
         "rung": rung,
@@ -144,7 +146,7 @@ def piece(rung, outcome="escalated", reason="local_escalate", h="h" * 64, rows=(
         "outcome": outcome,
         "label": outcome if outcome == "answered" else f"escalated:{reason}",
         "reason": reason,
-        "detail": "d",
+        "detail": detail,
         "cites": [],
         "rows": list(rows),
     }
@@ -4292,3 +4294,65 @@ def test_the_first_page_shows_both_sources_proposals_then_drafts_then_re_checks(
         "draft, waiting (fixture)",
         "re-check",
     ]
+
+
+# --- an answer with no detail is never said as "Local:." ---------------------------------
+
+
+def chain_said(*pieces_, keys=("task", "")):
+    api = FakeApi(escalate=chain_result(*pieces_))
+    st, out = seat(api, ["who", "", *keys, ""])
+    st.cfg = SimpleNamespace(nestor_db=None)
+    st.run()
+    return out
+
+
+def test_an_answered_piece_with_no_detail_says_its_first_claim():
+    row = {
+        "path": "table",
+        "data": "x",
+        "cites": ["t"],
+        "claim": "The  table\nholds 3 rows",
+    }
+    out = chain_said(piece("local", "answered", rows=[row], detail=""))
+    assert "| local: The table holds 3 rows" in out
+    assert not any(o.endswith("Local:.") or "Local:." in o for o in out)
+
+
+def test_a_long_claim_is_cut_to_the_cap_with_an_ellipsis():
+    row = {"path": "t", "data": "", "cites": ["t"], "claim": "word " * 100}
+    out = chain_said(piece("local", "answered", rows=[row], detail=""))
+    card = next(o for o in out if o.startswith("| local: word"))
+    assert len(card) == len("| local: ") + s.CLAIM_CHARS and card.endswith("…")
+
+
+@pytest.mark.parametrize(
+    "rows", [[], [{"claim": "", "data": ""}], [{"claim": None}], ["not a row"]]
+)
+def test_a_local_answer_with_nothing_to_say_is_said_plainly(rows):
+    out = chain_said(piece("local", "answered", rows=rows, detail=""))
+    assert "| the local model gave an empty answer" in out
+    said = [o for o in after(out, "task") if o.startswith("agent> ")]
+    assert " The local model gave an empty answer." in said[-1]
+    assert not any("Local:." in o for o in out)
+
+
+def test_willow_bots_silent_empty_answer_is_a_blocked_box_with_its_detail():
+    out = chain_said(
+        piece(
+            "local",
+            "escalated",
+            "silent",
+            detail="the local model gave an empty answer",
+        )
+    )
+    assert "| local: the local model gave an empty answer" in out
+    assert "| reason: silent" in out
+
+
+def test_a_rung_errors_stderr_tail_reaches_the_card_and_the_sentence():
+    why = "/v/bin/ratatosk exited 1: Traceback | model qwen3:4b not found"
+    out = chain_said(piece("local", "escalated", "rung_error", detail=why))
+    assert f"| local: {why}" in out
+    said = [o for o in after(out, "task") if o.startswith("agent> ")]
+    assert any("model qwen3:4b not found" in o for o in said)

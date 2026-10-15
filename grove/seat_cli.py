@@ -99,6 +99,12 @@ or "still"; a cite to one of those earlier boxes was served, a cite to any
 other box (never shown, out of that window, or from a previous run) is not, and
 ``every box cited`` stays about the current page. With no ``say`` the seat is
 code only, and the thread changes nothing there.
+A chain piece's box says ``<rung>: <detail>``: an escalated piece's detail is
+willow-bot's own (a rung that exited non-zero carries the end of its stderr, or of
+its stdout summary line, so "ratatosk exited 1" arrives with its cause); an answered piece carries none, so
+its box says its first row's claim (``CLAIM_CHARS``), and a local answer with no
+claim and no data is said plainly, "The local model gave an empty answer", never
+"Local:." (willow-bot now escalates such rows as ``silent`` with that detail).
 A chain turn ranks its boxes (a heads-up first, then needs you, blocked,
 decided, changed, routine pass) and shows two at a time (``more?``) from that
 order. The code sentence is a short sentence per box; the run's one
@@ -258,6 +264,11 @@ GROUP_BY_REFUSAL = re.compile(r"group by one or more of \((?P<names>[^)]*)\)")
 FLOWER_TIMEOUT = 300.0
 NESTOR_UI = "http://127.0.0.1:8765"
 NO_DEPOSIT = "deposit unavailable here: willow-mcp not on the path"
+#: The most of an answered piece's claim its box says.
+CLAIM_CHARS = 160
+#: A local or hash answer with no claim and no data, said plainly (willow-bot
+#: now escalates such rows as ``silent`` with this very detail).
+EMPTY_ANSWER = "the local model gave an empty answer"
 #: Boxes a reply shows before ``more?``.
 PAGE = 2
 #: Boxes a store turn (``where are we``) shows per page, and with the count on
@@ -1299,9 +1310,33 @@ class Seat:
         else:
             kind = "you" if p.get("reason") in NO_FLOWER else "block"
             detail = f"reason: {p.get('reason', p['label'])}"
-        return Box(
-            p["piece"][:12], kind, p["label"], f"{p['rung']}: {p['detail']}", detail
+        return Box(p["piece"][:12], kind, p["label"], self.piece_value(p), detail)
+
+    @staticmethod
+    def piece_value(p: dict) -> str:
+        """What a piece's box says: ``<rung>: <detail>``. An answered piece
+        carries no detail of its own (willow-bot leaves it empty), so it says its
+        first row's claim (``CLAIM_CHARS`` at most) in its place; a local or hash
+        answer with nothing to say, an empty claim and no data, is said plainly
+        ("the local model gave an empty answer"), never as ``Local:.``."""
+        rung, detail = p["rung"], str(p.get("detail") or "").strip()
+        if detail or p["outcome"] != "answered":
+            return f"{rung}: {detail}"
+        said = next(
+            (
+                " ".join(r[k].split())
+                for r in p.get("rows") or []
+                if isinstance(r, dict)
+                for k in ("claim", "answer")
+                if isinstance(r.get(k), str) and r[k].strip()
+            ),
+            "",
         )
+        if said:
+            if len(said) > CLAIM_CHARS:
+                said = said[: CLAIM_CHARS - 1] + "…"
+            return f"{rung}: {said}"
+        return EMPTY_ANSWER if rung != "d0" else f"{rung}: nothing to say"
 
     def chain(self, task: str) -> None:
         key = _norm(task)
