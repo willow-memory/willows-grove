@@ -2,6 +2,12 @@
 
 All notable changes land here per INVARIANTS.md §3. Format follows Keep a Changelog v1.1.0.
 
+## [Unreleased]
+
+### Fixed
+
+- **seat:** the opening says the sealed snapshot in the short form the cards use (`serve:9439efcacd2c`, not the whole 64-character hash), with or without the seal date (`seat_boxes.opening` reads `short`).
+
 ## [0.24.1](https://github.com/willow-memory/willows-grove/compare/v0.24.0...v0.24.1) (2026-10-14)
 
 

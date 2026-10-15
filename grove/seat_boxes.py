@@ -356,7 +356,8 @@ def opening(
     """The run's one opening sentence, from what ``api.resume`` and
     ``api.pooled`` already returned (no call of its own). ``resume`` is
     ``("sealed", subject, upto[, sealed_at])``, ``("none",)`` or
-    ``("unreachable",)``; ``pool`` is ``("populated", n)``, ``("empty",)`` or
+    ``("unreachable",)``; the subject is said in the short form the cards use
+    (``short``: a 64-hex hash is its first twelve characters); ``pool`` is ``("populated", n)``, ``("empty",)`` or
     ``("unreachable",)``. Each state has its own clause, so an unreadable
     resume or pool is never said as "nothing to pick up". A sealed snapshot
     with a readable ``sealed_at`` names when it was sealed (``sealed_on``): "the
@@ -368,10 +369,10 @@ def opening(
         when = sealed_on(resume[3], today) if len(resume) > 3 else ""
         if when:
             rows = f", rows up to {resume[2]}" if resume[2] is not None else ""
-            head = f"Picking up from the snapshot you sealed {when} ({resume[1]}{rows})"
+            head = f"Picking up from the snapshot you sealed {when} ({short(resume[1])}{rows})"
         else:
             upto = f" (rows up to {resume[2]})" if resume[2] is not None else ""
-            head = f"Picking up from the sealed snapshot {resume[1]}{upto}"
+            head = f"Picking up from the sealed snapshot {short(resume[1])}{upto}"
     elif resume[0] == "none":
         head = "No snapshot has been sealed yet, so I'm scoping fresh"
     else:

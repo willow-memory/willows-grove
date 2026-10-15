@@ -3901,6 +3901,26 @@ def test_opening_names_the_day_the_human_sealed():
     assert "on 13 October (" in sealed_opening("2026-10-13T00:00:00Z")
 
 
+FULL_SUBJECT = (
+    "serve:" + "9439efcacd2c441c3807dce2f2364895d428f59fb27799f56e89cd6607ec5121"
+)
+
+
+@pytest.mark.parametrize("sealed_at", ["2026-10-12T08:30:00Z", None])
+def test_opening_says_the_subject_in_the_short_form_the_cards_use(sealed_at):
+    # api.resume returns the whole 64-hex subject; the cards short() it, so the
+    # opening does too, with or without a seal date
+    res = resumed(subject=FULL_SUBJECT)
+    if sealed_at:
+        res["sealed_at"] = sealed_at
+    st, out = seat(FakeApi(resume=res, pooled=pool_of("proposal:aaa")), ["who", "", ""])
+    st.run()
+    n = next(i for i, o in enumerate(out) if o.startswith("served ▶"))
+    line = [o for o in out[:n] if o.startswith("agent> ")][-1]
+    assert "(serve:9439efcacd2c" in line or "snapshot serve:9439efcacd2c " in line
+    assert "9439efcacd2c4" not in line
+
+
 def test_opening_same_day_seal_is_earlier_today():
     line = sealed_opening("2026-10-14T01:02:03Z")
     assert "the snapshot you sealed earlier today (" in line
