@@ -93,7 +93,7 @@ against the boxes: every cite served, every box cited, nothing the boxes lack,
 the human's words quoted exactly. A sentence that fails a check is shown
 struck and replaced by the sentence code composes from box facts plus fixed
 glue, which is also what stands when the model can't be reached (an
-``unreachable`` card, never a crash). The model also sees the thread: the last two replies of this run (their boxes
+``unreachable`` card, never a crash; when it timed out right after the chain's local rung asked the same Ollama for a model, the card adds that as a maybe, ``queued_behind``). The model also sees the thread: the last two replies of this run (their boxes
 with tags, and the human's lines as context only), so a sentence can say "that"
 or "still"; a cite to one of those earlier boxes was served, a cite to any
 other box (never shown, out of that window, or from a previous run) is not, and
@@ -654,6 +654,10 @@ class Seat:
         #: The last ``THREAD_TURNS`` go to the model as the thread; it dies with
         #: the Seat, so a box from a previous run is never in it.
         self.exchanges: list[tuple[str, list[Box]]] = []
+        #: The models the chain's local rung asked of the Ollama for the chain
+        #: turn being said (empty otherwise): the one hint a reply model that
+        #: timed out gets (``Seat.queued_behind``).
+        self.rung_models: list[str] = []
         self.start_resume: tuple = ("none",)
         self.start_pool: tuple = ("unreachable",)
 
@@ -775,7 +779,11 @@ class Seat:
                 f"code · {self.model} {state} · said {plural(n, 'box', 'boxes')} by code",
                 "code · shown again from the pile, no model asked now",
                 [say_line(code)],
-                cards=[self.state_card("say", state, f"{self.model}: {why}")],
+                cards=[
+                    self.state_card(
+                        "say", state, f"{self.model}: {why}{self.queued_behind(why)}"
+                    )
+                ],
             )
         results = run_checks(
             sentence,
@@ -799,6 +807,21 @@ class Seat:
             [struck_line(sentence, self.color)],
             checks=results,
             tail=[say_line(code)],
+        )
+
+    def queued_behind(self, why: str) -> str:
+        """The likely cause, said as a maybe, when the reply model timed out right
+        after the chain's local rung asked the same Ollama for a model: Ollama
+        serves one model at a time on a small box, so the reply waited for the
+        rung's model to finish or unload. Nothing else timing out gets a hint,
+        and neither does a reply with no local rung before it. The facts are the
+        rung's own (``model`` on its pieces)."""
+        if not self.rung_models or "timed out" not in why.lower():
+            return ""
+        asked = ", ".join(self.rung_models)
+        return (
+            f" (the chain's local rung had just asked this Ollama for {asked}; "
+            "the reply may have waited behind it)"
         )
 
     def code_reply(self, text: str) -> None:
@@ -1372,7 +1395,17 @@ class Seat:
         for p in pieces:
             if p["outcome"] == "answered" and p["rung"] != "d0":
                 self.pending += [r for r in p.get("rows") or [] if _is_row(r)]
-        self.converse(key, boxes, task)
+        self.rung_models = sorted(
+            {
+                str(p["model"])
+                for p in pieces
+                if p.get("rung") == "local" and p.get("model")
+            }
+        )
+        try:
+            self.converse(key, boxes, task)
+        finally:
+            self.rung_models = []
         left = [p for p in pieces if p["outcome"] == "escalated"]
         if left:
             self.flowering(res["task"], left)

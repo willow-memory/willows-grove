@@ -4356,3 +4356,59 @@ def test_a_rung_errors_stderr_tail_reaches_the_card_and_the_sentence():
     assert f"| local: {why}" in out
     said = [o for o in after(out, "task") if o.startswith("agent> ")]
     assert any("model qwen3:4b not found" in o for o in said)
+
+
+# --- a reply model that times out right after the local rung ------------------------------
+
+
+def timeout_say(prompt):
+    raise say_mod.SayUnreachable(
+        "qwen3:4b at http://127.0.0.1:11434: TimeoutError: timed out"
+    )
+
+
+def test_a_reply_that_times_out_after_a_local_rung_names_the_likely_cause():
+    code, out, _api = model_run(timeout_say)
+    body = text(out)
+    assert code == 0 and "[unreachable] say" in body
+    assert (
+        "TimeoutError: timed out (the chain's local rung had just asked this Ollama for m;"
+        in body
+    )
+    assert "the reply may have waited behind it)" in body
+    assert f"agent · code · {MODEL} unreachable · said 2 boxes by code" in out
+    assert GOOD_CODE in out  # code's sentence stands, as for any unreachable model
+
+
+@pytest.mark.parametrize(
+    "got, boom",
+    [
+        (piece("d0", "answered"), timeout_say),  # no local request was made
+        (piece("hash", "answered"), timeout_say),  # reused from the record
+        (
+            piece("local", "answered"),
+            say_mod.SayUnreachable("qwen3:4b: connection refused"),
+        ),  # not a timeout
+    ],
+)
+def test_no_hint_without_a_local_rung_request_or_without_a_timeout(got, boom):
+    api = FakeApi(escalate=chain_result(got))
+    st, out = seat(api, ["who", "", "the task", ""], say=boom)
+    assert st.run() == 0
+    assert "just asked this Ollama" not in text(out)
+
+
+def test_the_hint_is_for_the_chain_turn_only_not_a_later_reply():
+    api = FakeApi(
+        escalate=chain_result(piece("local", "answered")),
+        needs={"needs": ["proposal · own_idea: no · p.md · pass"], "count": 1},
+    )
+    st, out = seat(
+        api, ["who", "", "the task", "what is on the table", ""], say=timeout_say
+    )
+    st.cfg = SimpleNamespace(nestor_db=None)
+    assert st.run() == 0
+    status = after(out, "what is on the table")
+    assert "[unreachable] say" in "\n".join(status)
+    assert "just asked this Ollama" not in "\n".join(status)
+    assert st.rung_models == []
