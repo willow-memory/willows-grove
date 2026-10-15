@@ -2,6 +2,16 @@
 
 All notable changes land here per INVARIANTS.md §3. Format follows Keep a Changelog v1.1.0.
 
+## [Unreleased]
+
+### Fixed
+
+- **seat:** one model for now: the chain's local rung runs on the seat's reply model (`--model`, else `GROVE_SAY_MODEL`, else `qwen3:4b`) instead of willow-bot's default `llama3.2:3b`, so a small box keeps one model loaded and the reply no longer waits behind a model swap (PR 154).
+- **seat:** a reply model that times out right after the chain's local rung asked the same Ollama for a model says so as a maybe ("the chain's local rung had just asked this Ollama for llama3.2:3b; the reply may have waited behind it"), from the pieces' own `model`; a timeout with no local rung before it, and any other unreachable reason, get no hint (`Seat.queued_behind`) (PR 154).
+- **seat:** a chain piece answered with no detail says its first row's claim instead of "Local:.", and a local answer with no claim and no data is said plainly ("The local model gave an empty answer."); willow-bot now escalates such rows as `silent` with that detail, and a rung that exits non-zero carries the end of its stderr, or of its stdout summary when stderr is empty (a turn that ended early says why only there: `end=timeout`; last two lines, control characters stripped, 240 characters at most), so "ratatosk exited 1" is no longer all the human sees (`Seat.piece_value`) (PR 154).
+- **seat:** status questions are answered from what the seat already has, not sent to the chain: "what is on the table (today)", "what is my next task", "what's next", "what do I need to do", "what needs me", "where are we" and the rest of a fixed list (`seat_record.STATUS_PHRASES`, `WHERE_PHRASES`; matched whole after normalisation, no substring or fuzzy match, no model) read the record's `NEEDS YOU` lines through willow-bot's new read-only `api.needs` (one `invocation` row per ask, no `reconcile` row) and, when `WILLOW_NESTOR_DB` names one, the Nestor store, merged into one box list so `show me`, `why`, `the second one` and `go on` work on them. Each source keeps its own state (`populated`, `empty`, `unreachable`); a Nestor store that is not configured is no longer an `unreachable` box when the record answered. A page leads with its heads-ups and counts, then `STORE_PAGE` items (PR 154).
+- **seat:** the opening says the sealed snapshot in the short form the cards use (`serve:9439efcacd2c`, not the whole 64-character hash), with or without the seal date (`seat_boxes.opening` reads `short`) (PR 154).
+
 ## [0.24.1](https://github.com/willow-memory/willows-grove/compare/v0.24.0...v0.24.1) (2026-10-14)
 
 
