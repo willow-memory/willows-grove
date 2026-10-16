@@ -1,0 +1,223 @@
+{
+ "world": "hasbeen.json",
+ "n": 500,
+ "policies": {
+  "suggested": {
+   "b2": {
+    "kind": "action",
+    "n": 500,
+    "predict_hit": 1.0,
+    "predict_unforeseen": 0.0,
+    "ent_need": [
+     "librarian",
+     "maker"
+    ],
+    "ent_authored_full": 0.544,
+    "ent_coded_full": 1.0,
+    "word_need": 10,
+    "by_path": {
+     "strong": {
+      "n": 272,
+      "ent_authored": [
+       "librarian",
+       "maker"
+      ],
+      "word_authored": 1
+     },
+     "miss": {
+      "n": 55,
+      "ent_authored": [
+       "maker"
+      ],
+      "word_authored": 0
+     },
+     "weak": {
+      "n": 173,
+      "ent_authored": [
+       "maker"
+      ],
+      "word_authored": 0
+     }
+    },
+    "ent_authored_mean": 0.772,
+    "ent_coded_mean": 1.0,
+    "word_authored_mean": 0.054,
+    "word_coded_mean": 0.1
+   },
+   "b3": {
+    "kind": "decision",
+    "n": 500,
+    "predict_hit": 0.0,
+    "predict_unforeseen": 1.0,
+    "ent_need": [
+     "architect"
+    ],
+    "ent_authored_full": 0.0,
+    "ent_coded_full": 1.0,
+    "word_need": 37,
+    "by_path": {
+     "strong-miss": {
+      "n": 48,
+      "ent_authored": [],
+      "word_authored": 2
+     },
+     "miss-miss": {
+      "n": 6,
+      "ent_authored": [],
+      "word_authored": 1
+     },
+     "strong-weak": {
+      "n": 103,
+      "ent_authored": [],
+      "word_authored": 3
+     },
+     "weak-weak": {
+      "n": 67,
+      "ent_authored": [],
+      "word_authored": 3
+     },
+     "strong-strong": {
+      "n": 121,
+      "ent_authored": [],
+      "word_authored": 2
+     },
+     "weak-strong": {
+      "n": 83,
+      "ent_authored": [],
+      "word_authored": 2
+     },
+     "miss-strong": {
+      "n": 27,
+      "ent_authored": [],
+      "word_authored": 1
+     },
+     "miss-weak": {
+      "n": 22,
+      "ent_authored": [],
+      "word_authored": 2
+     },
+     "weak-miss": {
+      "n": 23,
+      "ent_authored": [],
+      "word_authored": 2
+     }
+    },
+    "ent_authored_mean": 0.0,
+    "ent_coded_mean": 1.0,
+    "word_authored_mean": 0.061,
+    "word_coded_mean": 0.132
+   }
+  },
+  "random": {
+   "b2": {
+    "kind": "action",
+    "n": 500,
+    "predict_hit": 1.0,
+    "predict_unforeseen": 0.0,
+    "ent_need": [
+     "librarian",
+     "maker"
+    ],
+    "ent_authored_full": 0.422,
+    "ent_coded_full": 1.0,
+    "word_need": 10,
+    "by_path": {
+     "strong": {
+      "n": 211,
+      "ent_authored": [
+       "librarian",
+       "maker"
+      ],
+      "word_authored": 1
+     },
+     "weak": {
+      "n": 202,
+      "ent_authored": [
+       "maker"
+      ],
+      "word_authored": 0
+     },
+     "miss": {
+      "n": 87,
+      "ent_authored": [
+       "maker"
+      ],
+      "word_authored": 0
+     }
+    },
+    "ent_authored_mean": 0.711,
+    "ent_coded_mean": 1.0,
+    "word_authored_mean": 0.042,
+    "word_coded_mean": 0.1
+   },
+   "b3": {
+    "kind": "decision",
+    "n": 500,
+    "predict_hit": 0.0,
+    "predict_unforeseen": 1.0,
+    "ent_need": [
+     "architect"
+    ],
+    "ent_authored_full": 0.0,
+    "ent_coded_full": 1.0,
+    "word_need": 37,
+    "by_path": {
+     "strong-weak": {
+      "n": 75,
+      "ent_authored": [],
+      "word_authored": 3
+     },
+     "weak-weak": {
+      "n": 76,
+      "ent_authored": [],
+      "word_authored": 3
+     },
+     "miss-miss": {
+      "n": 12,
+      "ent_authored": [],
+      "word_authored": 1
+     },
+     "weak-strong": {
+      "n": 105,
+      "ent_authored": [],
+      "word_authored": 2
+     },
+     "strong-strong": {
+      "n": 105,
+      "ent_authored": [],
+      "word_authored": 2
+     },
+     "miss-strong": {
+      "n": 47,
+      "ent_authored": [],
+      "word_authored": 1
+     },
+     "miss-weak": {
+      "n": 28,
+      "ent_authored": [],
+      "word_authored": 2
+     },
+     "weak-miss": {
+      "n": 21,
+      "ent_authored": [],
+      "word_authored": 2
+     },
+     "strong-miss": {
+      "n": 31,
+      "ent_authored": [],
+      "word_authored": 2
+     }
+    },
+    "ent_authored_mean": 0.0,
+    "ent_coded_mean": 1.0,
+    "word_authored_mean": 0.059,
+    "word_coded_mean": 0.13
+   }
+  }
+ },
+ "hints": {
+  "b1": "Somewhere at the edge of things: Jules Okafor (works platform and records downstairs).",
+  "b2": "Somewhere at the edge of things: the Librarian (won't tell you anything without a citation).",
+  "b3": "Somewhere at the edge of things: the Architect (signs off like he thinks he's a god). And a claim the Architect made once, that nobody has checked since."
+ }
+}

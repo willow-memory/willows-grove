@@ -1,0 +1,18 @@
+{
+ "status": "DRAFT — an agent's reading of which outcomes set up the decision beat, written after reading all three worlds. A named human seals or corrects it.",
+ "setup": {
+  "Hasbeen — Late Shift": {
+   "b1-strong": "'someone who signs everything approved' -> the Architect's single sign-off",
+   "b2-weak":   "the claim marked provisional, a small flag stays lit -> a claim no one verified",
+   "b2-miss":   "Gerald checks, unasked -> 'no one has verified the tape since'"
+  },
+  "Ironworks — Last Pour": {
+   "b4-strong": "'the records have a hole in them... what it was shaped like' -> two strangers each holding half the map"
+  },
+  "Aetheris — The Waking Tide": {
+   "b1-strong": "'a name, or a claim of one' -> Maunder claims to be a person",
+   "b3-strong": "'hear what it is before you decide what it is' -> 'it is telling you what it IS'",
+   "b3-miss":   "'when it asks you who decides' -> the decision itself"
+  }
+ }
+}

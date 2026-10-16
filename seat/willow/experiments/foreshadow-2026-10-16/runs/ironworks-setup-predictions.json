@@ -1,0 +1,45 @@
+{
+ "decision": "b5",
+ "evidence": {
+  "b1-miss": [
+   "enough to"
+  ],
+  "b1-strong": [
+   "found it"
+  ],
+  "b3-strong": [
+   "the furnace"
+  ],
+  "b3-weak": [
+   "furnace is",
+   "the furnace"
+  ]
+ },
+ "p_any_setup": {
+  "random": 0.9423,
+  "suggested": 0.9444
+ },
+ "playable_beats": [
+  "b1",
+  "b2",
+  "b3",
+  "b4"
+ ],
+ "tags": {
+  "b1-miss": true,
+  "b1-strong": true,
+  "b1-weak": false,
+  "b2-miss": false,
+  "b2-strong": false,
+  "b2-weak": false,
+  "b3-miss": false,
+  "b3-strong": true,
+  "b3-weak": true,
+  "b4-miss": false,
+  "b4-strong": false,
+  "b4-weak": false
+ },
+ "world": "Ironworks \u2014 Last Pour",
+ "world_sha256": "a0e0655d2a09c754a1e0341a76874bcbc3aea81e7361a405aeee212015833983",
+ "written_at": "2026-10-16T23:05:43.937843+00:00"
+}

@@ -1,0 +1,480 @@
+{
+ "claims": [
+  {
+   "check": {
+    "kind": "carry",
+    "p": 0.7975,
+    "policy": "suggested",
+    "tag": "exposure",
+    "tol": 0.07
+   },
+   "claim": "79.7% of runs (suggested) carry at least one 'exposure' outcome before the decision; measured within 0.07.",
+   "id": "C-exposure-suggested"
+  },
+  {
+   "check": {
+    "kind": "carry",
+    "p": 0.6881,
+    "policy": "suggested",
+    "tag": "injury",
+    "tol": 0.07
+   },
+   "claim": "68.8% of runs (suggested) carry at least one 'injury' outcome before the decision; measured within 0.07.",
+   "id": "C-injury-suggested"
+  },
+  {
+   "check": {
+    "kind": "carry",
+    "p": 0.5833,
+    "policy": "suggested",
+    "tag": "insight",
+    "tol": 0.07
+   },
+   "claim": "58.3% of runs (suggested) carry at least one 'insight' outcome before the decision; measured within 0.07.",
+   "id": "C-insight-suggested"
+  },
+  {
+   "check": {
+    "kind": "carry",
+    "p": 0.6111,
+    "policy": "suggested",
+    "tag": "setback",
+    "tol": 0.07
+   },
+   "claim": "61.1% of runs (suggested) carry at least one 'setback' outcome before the decision; measured within 0.07.",
+   "id": "C-setback-suggested"
+  },
+  {
+   "check": {
+    "kind": "carry",
+    "p": 0.6111,
+    "policy": "suggested",
+    "tag": "trust",
+    "tol": 0.07
+   },
+   "claim": "61.1% of runs (suggested) carry at least one 'trust' outcome before the decision; measured within 0.07.",
+   "id": "C-trust-suggested"
+  },
+  {
+   "check": {
+    "beat": "b1",
+    "kind": "beat_probs",
+    "p": {
+     "miss": 0.08333333333333333,
+     "strong": 0.5833333333333334,
+     "weak": 0.3333333333333333
+    },
+    "policy": "suggested",
+    "tol": 0.05
+   },
+   "claim": "Beat b1 (suggested) odds strong/weak/miss = 0.583/0.333/0.083; measured within 0.05 each.",
+   "id": "A-b1-suggested"
+  },
+  {
+   "check": {
+    "beat": "b2",
+    "kind": "beat_probs",
+    "p": {
+     "miss": 0.16666666666666666,
+     "strong": 0.4166666666666667,
+     "weak": 0.4166666666666667
+    },
+    "policy": "suggested",
+    "tol": 0.05
+   },
+   "claim": "Beat b2 (suggested) odds strong/weak/miss = 0.417/0.417/0.167; measured within 0.05 each.",
+   "id": "A-b2-suggested"
+  },
+  {
+   "check": {
+    "beat": "b3",
+    "kind": "beat_probs",
+    "p": {
+     "miss": 0.16666666666666666,
+     "strong": 0.4166666666666667,
+     "weak": 0.4166666666666667
+    },
+    "policy": "suggested",
+    "tol": 0.05
+   },
+   "claim": "Beat b3 (suggested) odds strong/weak/miss = 0.417/0.417/0.167; measured within 0.05 each.",
+   "id": "A-b3-suggested"
+  },
+  {
+   "check": {
+    "beat": "b4",
+    "kind": "beat_probs",
+    "p": {
+     "miss": 0.08333333333333333,
+     "strong": 0.5833333333333334,
+     "weak": 0.3333333333333333
+    },
+    "policy": "suggested",
+    "tol": 0.05
+   },
+   "claim": "Beat b4 (suggested) odds strong/weak/miss = 0.583/0.333/0.083; measured within 0.05 each.",
+   "id": "A-b4-suggested"
+  },
+  {
+   "check": {
+    "kind": "carry",
+    "p": 0.7266,
+    "policy": "random",
+    "tag": "exposure",
+    "tol": 0.07
+   },
+   "claim": "72.7% of runs (random) carry at least one 'exposure' outcome before the decision; measured within 0.07.",
+   "id": "C-exposure-random"
+  },
+  {
+   "check": {
+    "kind": "carry",
+    "p": 0.7812,
+    "policy": "random",
+    "tag": "injury",
+    "tol": 0.07
+   },
+   "claim": "78.1% of runs (random) carry at least one 'injury' outcome before the decision; measured within 0.07.",
+   "id": "C-injury-random"
+  },
+  {
+   "check": {
+    "kind": "carry",
+    "p": 0.5,
+    "policy": "random",
+    "tag": "insight",
+    "tol": 0.07
+   },
+   "claim": "50.0% of runs (random) carry at least one 'insight' outcome before the decision; measured within 0.07.",
+   "id": "C-insight-random"
+  },
+  {
+   "check": {
+    "kind": "carry",
+    "p": 0.6875,
+    "policy": "random",
+    "tag": "setback",
+    "tol": 0.07
+   },
+   "claim": "68.8% of runs (random) carry at least one 'setback' outcome before the decision; measured within 0.07.",
+   "id": "C-setback-random"
+  },
+  {
+   "check": {
+    "kind": "carry",
+    "p": 0.6875,
+    "policy": "random",
+    "tag": "trust",
+    "tol": 0.07
+   },
+   "claim": "68.8% of runs (random) carry at least one 'trust' outcome before the decision; measured within 0.07.",
+   "id": "C-trust-random"
+  },
+  {
+   "check": {
+    "beat": "b1",
+    "kind": "beat_probs",
+    "p": {
+     "miss": 0.125,
+     "strong": 0.5,
+     "weak": 0.375
+    },
+    "policy": "random",
+    "tol": 0.05
+   },
+   "claim": "Beat b1 (random) odds strong/weak/miss = 0.500/0.375/0.125; measured within 0.05 each.",
+   "id": "A-b1-random"
+  },
+  {
+   "check": {
+    "beat": "b2",
+    "kind": "beat_probs",
+    "p": {
+     "miss": 0.125,
+     "strong": 0.5,
+     "weak": 0.375
+    },
+    "policy": "random",
+    "tol": 0.05
+   },
+   "claim": "Beat b2 (random) odds strong/weak/miss = 0.500/0.375/0.125; measured within 0.05 each.",
+   "id": "A-b2-random"
+  },
+  {
+   "check": {
+    "beat": "b3",
+    "kind": "beat_probs",
+    "p": {
+     "miss": 0.125,
+     "strong": 0.5,
+     "weak": 0.375
+    },
+    "policy": "random",
+    "tol": 0.05
+   },
+   "claim": "Beat b3 (random) odds strong/weak/miss = 0.500/0.375/0.125; measured within 0.05 each.",
+   "id": "A-b3-random"
+  },
+  {
+   "check": {
+    "beat": "b4",
+    "kind": "beat_probs",
+    "p": {
+     "miss": 0.125,
+     "strong": 0.5,
+     "weak": 0.375
+    },
+    "policy": "random",
+    "tol": 0.05
+   },
+   "claim": "Beat b4 (random) odds strong/weak/miss = 0.500/0.375/0.125; measured within 0.05 each.",
+   "id": "A-b4-random"
+  },
+  {
+   "check": {
+    "beat": "b2",
+    "kind": "pivot",
+    "scores": {
+     "b1": 0.8538,
+     "b2": 1.4834,
+     "b3": 1.4834,
+     "b4": 1.2807
+    }
+   },
+   "claim": "The pivot is b2: its outcomes differ most in what they change, weighted by roll uncertainty ({'b1': 0.8538, 'b2': 1.4834, 'b3': 1.4834, 'b4': 1.2807}).",
+   "id": "P-pivot"
+  },
+  {
+   "check": {
+    "beat": "b1",
+    "bucket": "strong",
+    "kind": "tags",
+    "tags": [
+     "exposure"
+    ]
+   },
+   "claim": "b1 strong changes: ['exposure'].",
+   "id": "T-b1-strong"
+  },
+  {
+   "check": {
+    "beat": "b1",
+    "bucket": "weak",
+    "kind": "tags",
+    "tags": [
+     "injury"
+    ]
+   },
+   "claim": "b1 weak changes: ['injury'].",
+   "id": "T-b1-weak"
+  },
+  {
+   "check": {
+    "beat": "b1",
+    "bucket": "miss",
+    "kind": "tags",
+    "tags": [
+     "injury"
+    ]
+   },
+   "claim": "b1 miss changes: ['injury'].",
+   "id": "T-b1-miss"
+  },
+  {
+   "check": {
+    "beat": "b2",
+    "bucket": "strong",
+    "kind": "tags",
+    "tags": [
+     "injury",
+     "setback"
+    ]
+   },
+   "claim": "b2 strong changes: ['injury', 'setback'].",
+   "id": "T-b2-strong"
+  },
+  {
+   "check": {
+    "beat": "b2",
+    "bucket": "weak",
+    "kind": "tags",
+    "tags": []
+   },
+   "claim": "b2 weak changes: ['nothing tagged'].",
+   "id": "T-b2-weak"
+  },
+  {
+   "check": {
+    "beat": "b2",
+    "bucket": "miss",
+    "kind": "tags",
+    "tags": [
+     "exposure"
+    ]
+   },
+   "claim": "b2 miss changes: ['exposure'].",
+   "id": "T-b2-miss"
+  },
+  {
+   "check": {
+    "beat": "b3",
+    "bucket": "strong",
+    "kind": "tags",
+    "tags": [
+     "trust"
+    ]
+   },
+   "claim": "b3 strong changes: ['trust'].",
+   "id": "T-b3-strong"
+  },
+  {
+   "check": {
+    "beat": "b3",
+    "bucket": "weak",
+    "kind": "tags",
+    "tags": [
+     "exposure"
+    ]
+   },
+   "claim": "b3 weak changes: ['exposure'].",
+   "id": "T-b3-weak"
+  },
+  {
+   "check": {
+    "beat": "b3",
+    "bucket": "miss",
+    "kind": "tags",
+    "tags": []
+   },
+   "claim": "b3 miss changes: ['nothing tagged'].",
+   "id": "T-b3-miss"
+  },
+  {
+   "check": {
+    "beat": "b4",
+    "bucket": "strong",
+    "kind": "tags",
+    "tags": [
+     "insight"
+    ]
+   },
+   "claim": "b4 strong changes: ['insight'].",
+   "id": "T-b4-strong"
+  },
+  {
+   "check": {
+    "beat": "b4",
+    "bucket": "weak",
+    "kind": "tags",
+    "tags": [
+     "setback",
+     "trust"
+    ]
+   },
+   "claim": "b4 weak changes: ['setback', 'trust'].",
+   "id": "T-b4-weak"
+  },
+  {
+   "check": {
+    "beat": "b4",
+    "bucket": "miss",
+    "kind": "tags",
+    "tags": [
+     "injury"
+    ]
+   },
+   "claim": "b4 miss changes: ['injury'].",
+   "id": "T-b4-miss"
+  }
+ ],
+ "lexicon": {
+  "exposure": [
+   "heard",
+   "\\bsound",
+   "echo",
+   "\\bnoise",
+   "beacon",
+   "clatter",
+   "groan",
+   "rings? through",
+   "\\bspotted",
+   "\\bcaught\\b",
+   "patrol",
+   "exposed",
+   "now knows",
+   "they heard",
+   "\\bsaw\\b",
+   "\\bseen\\b",
+   "alarm",
+   "gave away",
+   "carries"
+  ],
+  "injury": [
+   "bleed",
+   "blood",
+   "\\bhurt",
+   "wound",
+   "injur",
+   "goes down",
+   "\\bburn",
+   "\\bpain",
+   "limp",
+   "bruis",
+   "\\bknee\\b"
+  ],
+  "insight": [
+   "\\breads?\\b",
+   "surfaces",
+   "citation",
+   "timestamp",
+   "\\bmaps?\\b",
+   "\\bfinds?\\b",
+   "\\bfound\\b",
+   "\\blearns?",
+   "understand",
+   "\\brecord",
+   "\\bclue",
+   "realiz",
+   "names",
+   "follows"
+  ],
+  "setback": [
+   "\\bloses?\\b",
+   "\\blost\\b",
+   "chokes",
+   "salvage",
+   "malformed",
+   "\\bdrops?\\b",
+   "\\bclosed?\\b",
+   "insufficient",
+   "\\bflag",
+   "resist",
+   "stiff",
+   "misjudg",
+   "panic",
+   "freezes"
+  ],
+  "trust": [
+   "together",
+   "respect",
+   "\\bhelp",
+   "unasked",
+   "\\btrust",
+   "\\bagree",
+   "quietly",
+   "hands visible",
+   "\\bally"
+  ]
+ },
+ "playable_beats": [
+  "b1",
+  "b2",
+  "b3",
+  "b4"
+ ],
+ "tagger": "lexicon-v1 (Hasbeen + Ironworks vocabulary; no model reachable)",
+ "world": "Aetheris \u2014 The Waking Tide",
+ "world_file": "aetheris.json",
+ "world_sha256": "de28063d0cb4b519904d693445ba3af0224a2ad50a3a27a6750538ec5a099720",
+ "written_at": "2026-10-16T23:02:45.094225+00:00"
+}

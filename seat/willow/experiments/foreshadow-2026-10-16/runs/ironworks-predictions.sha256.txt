@@ -1,0 +1,12 @@
+5cbd117f6e5211363a6b71e6dcad0665f70e4e2e07d6a041f1518b53f5c6f783 ironworks-predictions.json
+  H1      [heuristic] The last action beat before the decision is the biggest swing (highest outcome entropy).
+  H2      [heuristic] The first action beat is the cast gate: its strong outcome introduces more new characters than any other single outcome.
+  H3      [heuristic] No path before the decision introduces the decision's proposer by name.
+  H4      [heuristic] At least one character is met only on a path that contains a miss (the valley holds unique content).
+  H5      [heuristic] The night 'holds together' (strong >= miss) on 85-92% of runs under the suggested approach.
+  H6      [heuristic] 20-45% of runs (suggested approach) reach the decision without meeting at least one unseated character who is met on some other path.
+  H7      [heuristic] A decision beat stops every run before the final scene: the last scene is unreachable without a human seal.
+  A-b1    [arithmetic] Beat b1 under the suggested approach (Grit): strong 0.583, weak 0.333, miss 0.083; measured within 0.05 each.
+  A-b2    [arithmetic] Beat b2 under the suggested approach (Cool): strong 0.417, weak 0.417, miss 0.167; measured within 0.05 each.
+  A-b3    [arithmetic] Beat b3 under the suggested approach (Weird): strong 0.417, weak 0.417, miss 0.167; measured within 0.05 each.
+  A-b4    [arithmetic] Beat b4 under the suggested approach (Cute): strong 0.417, weak 0.417, miss 0.167; measured within 0.05 each.
