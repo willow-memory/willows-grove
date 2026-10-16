@@ -22,6 +22,7 @@ Agent-reported; nothing here is ratified. Handoff:
 | `setup_pass.py`, `setup_probe.py` | The setup tag: does an outcome set up the decision beat? Phrase-match detector and probe |
 | `runs/` | Every run, prediction, grade and reference reading, as produced (the one-seat Ironworks run is kept: `*-v1-oneseat.json`) |
 | `table/` | The table session's record and ledger (fiction) |
+| `table/onescript_table.py` | Moves `table/record.md` into a one-script box (`table/box/`): `migrate`, then `propose` after the human seals the scope |
 
 ## §3 Run it
 
@@ -58,6 +59,23 @@ seals or corrects them, and every graded number moves with them.
 visitor from Buckhorn come to see "this here machine" that predicts the
 future); `table/record-session-0.md` is the reset first attempt. `table/ledger.json`
 holds proposals and predictions, out of the chat by the operator's rule.
+
+Since then the record is also a one-script record, `table/box/record.jsonl`
+(27 rows, chain unbroken). It holds a check-in with all four gates satisfied,
+then one desk `turn` per human line with the bite verbatim, then the scope card
+(`table/scope-card.json`, stack `who=desk`). `record.md` stays as it was.
+
+| Waiting | On |
+|---|---|
+| The scope's subject in `scope-card.json` | The human's seal (`python3 -m onescript seal serve:<hash>`, a proof or a Nestor pair) |
+| `table/pending.jsonl`: s1–s3 (sealed in chat), p1, p2 | That seal; then `onescript_table.py propose "<next line>"` serves the scope, cites it, and sends them through the next turn as proposals, each awaiting its own `proposal:<hash>` seal |
+| p3, p4 | Held out of pending: they rest on training (Q7) |
+| f1, f2 | Stay in `ledger.json`; one-script wagers are Q11 |
+
+The served view carries each line as a `turn_open` `intent` under `who=desk`.
+One-script records the desk that typed the turn, not the human. A sealed
+`world/*.md` lands in the box as a file, but its text is not in serve's
+`PAYLOAD`, so lore is still not served (Q4).
 Proposals p3, p4 and prediction f2 rest on the agent's training, not on anything
 served. Under one-script `serve` they would be struck (handoff §4).
 
