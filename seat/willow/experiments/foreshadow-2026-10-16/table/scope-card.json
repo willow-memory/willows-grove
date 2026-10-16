@@ -1,0 +1,23 @@
+{
+ "ids": [
+  "429251cf2b9f47baf19b8c9995818c85d19b19819bd2afb67944dde09cd2c218"
+ ],
+ "joins": {},
+ "spec": {
+  "by": [
+   "who"
+  ],
+  "match": {
+   "who": "desk"
+  },
+  "upto": 25
+ },
+ "stack": [
+  {
+   "id": "429251cf2b9f47baf19b8c9995818c85d19b19819bd2afb67944dde09cd2c218",
+   "name": "who=desk",
+   "rows": 8
+  }
+ ],
+ "subject": "serve:030895a45080c9cb2ca19c3a1bed1b1dde5787144ea89fa72cd83c6efeafdbac"
+}
