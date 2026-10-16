@@ -1,0 +1,3322 @@
+{
+ "world": "Ironworks \u2014 Last Pour",
+ "seats": [
+  "Sable Merin",
+  "Tel Vasik"
+ ],
+ "stats": [
+  {
+   "Grit": 3,
+   "Weird": 2,
+   "Cute": 2,
+   "Cool": 2
+  },
+  {
+   "Grit": 2,
+   "Weird": 2,
+   "Cute": 2,
+   "Cool": 3
+  }
+ ],
+ "n": 500,
+ "policies": {
+  "suggested": {
+   "swing": {
+    "b1": {
+     "entropy_bits": 1.281,
+     "max_bits": 1.585,
+     "outcome_casts": {
+      "strong": [],
+      "weak": [],
+      "miss": []
+     },
+     "cast_diverges": false,
+     "p_strong": 0.583,
+     "p_weak": 0.333,
+     "p_miss": 0.083,
+     "scene": 0
+    },
+    "b2": {
+     "entropy_bits": 1.281,
+     "max_bits": 1.585,
+     "outcome_casts": {
+      "strong": [
+       "tel"
+      ],
+      "weak": [
+       "tel"
+      ],
+      "miss": [
+       "tel"
+      ]
+     },
+     "cast_diverges": false,
+     "p_strong": 0.583,
+     "p_weak": 0.333,
+     "p_miss": 0.083,
+     "scene": 0
+    },
+    "b3": {
+     "entropy_bits": 1.483,
+     "max_bits": 1.585,
+     "outcome_casts": {
+      "strong": [
+       "furnace"
+      ],
+      "weak": [
+       "furnace"
+      ],
+      "miss": []
+     },
+     "cast_diverges": true,
+     "p_strong": 0.417,
+     "p_weak": 0.417,
+     "p_miss": 0.167,
+     "scene": 1
+    },
+    "b4": {
+     "entropy_bits": 1.483,
+     "max_bits": 1.585,
+     "outcome_casts": {
+      "strong": [
+       "furnace",
+       "tel"
+      ],
+      "weak": [
+       "tel"
+      ],
+      "miss": [
+       "furnace",
+       "tel"
+      ]
+     },
+     "cast_diverges": true,
+     "p_strong": 0.417,
+     "p_weak": 0.417,
+     "p_miss": 0.167,
+     "scene": 1
+    }
+   },
+   "paths": [
+    {
+     "path": "strong-strong-strong-strong",
+     "p": 0.0591,
+     "curve": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.068,
+     "runs": 34
+    },
+    {
+     "path": "strong-strong-strong-weak",
+     "p": 0.0591,
+     "curve": [
+      1,
+      2,
+      3,
+      3
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.06,
+     "runs": 30
+    },
+    {
+     "path": "strong-strong-weak-strong",
+     "p": 0.0591,
+     "curve": [
+      1,
+      2,
+      2,
+      3
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.08,
+     "runs": 40
+    },
+    {
+     "path": "strong-strong-weak-weak",
+     "p": 0.0591,
+     "curve": [
+      1,
+      2,
+      2,
+      2
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.046,
+     "runs": 23
+    },
+    {
+     "path": "strong-weak-strong-strong",
+     "p": 0.0338,
+     "curve": [
+      1,
+      1,
+      2,
+      3
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.036,
+     "runs": 18
+    },
+    {
+     "path": "strong-weak-strong-weak",
+     "p": 0.0338,
+     "curve": [
+      1,
+      1,
+      2,
+      2
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.026,
+     "runs": 13
+    },
+    {
+     "path": "strong-weak-weak-strong",
+     "p": 0.0338,
+     "curve": [
+      1,
+      1,
+      1,
+      2
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.042,
+     "runs": 21
+    },
+    {
+     "path": "strong-weak-weak-weak",
+     "p": 0.0338,
+     "curve": [
+      1,
+      1,
+      1,
+      1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.022,
+     "runs": 11
+    },
+    {
+     "path": "weak-strong-strong-strong",
+     "p": 0.0338,
+     "curve": [
+      0,
+      1,
+      2,
+      3
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.03,
+     "runs": 15
+    },
+    {
+     "path": "weak-strong-strong-weak",
+     "p": 0.0338,
+     "curve": [
+      0,
+      1,
+      2,
+      2
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.036,
+     "runs": 18
+    },
+    {
+     "path": "weak-strong-weak-strong",
+     "p": 0.0338,
+     "curve": [
+      0,
+      1,
+      1,
+      2
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.044,
+     "runs": 22
+    },
+    {
+     "path": "weak-strong-weak-weak",
+     "p": 0.0338,
+     "curve": [
+      0,
+      1,
+      1,
+      1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.026,
+     "runs": 13
+    },
+    {
+     "path": "strong-strong-strong-miss",
+     "p": 0.0236,
+     "curve": [
+      1,
+      2,
+      3,
+      2
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.022,
+     "runs": 11
+    },
+    {
+     "path": "strong-strong-weak-miss",
+     "p": 0.0236,
+     "curve": [
+      1,
+      2,
+      2,
+      1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.016,
+     "runs": 8
+    },
+    {
+     "path": "strong-strong-miss-strong",
+     "p": 0.0236,
+     "curve": [
+      1,
+      2,
+      1,
+      2
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.024,
+     "runs": 12
+    },
+    {
+     "path": "strong-strong-miss-weak",
+     "p": 0.0236,
+     "curve": [
+      1,
+      2,
+      1,
+      1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.012,
+     "runs": 6
+    },
+    {
+     "path": "weak-weak-strong-strong",
+     "p": 0.0193,
+     "curve": [
+      0,
+      0,
+      1,
+      2
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.01,
+     "runs": 5
+    },
+    {
+     "path": "weak-weak-strong-weak",
+     "p": 0.0193,
+     "curve": [
+      0,
+      0,
+      1,
+      1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.016,
+     "runs": 8
+    },
+    {
+     "path": "weak-weak-weak-strong",
+     "p": 0.0193,
+     "curve": [
+      0,
+      0,
+      0,
+      1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.026,
+     "runs": 13
+    },
+    {
+     "path": "weak-weak-weak-weak",
+     "p": 0.0193,
+     "curve": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.018,
+     "runs": 9
+    },
+    {
+     "path": "strong-weak-strong-miss",
+     "p": 0.0135,
+     "curve": [
+      1,
+      1,
+      2,
+      1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.012,
+     "runs": 6
+    },
+    {
+     "path": "strong-weak-weak-miss",
+     "p": 0.0135,
+     "curve": [
+      1,
+      1,
+      1,
+      0
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.004,
+     "runs": 2
+    },
+    {
+     "path": "strong-weak-miss-strong",
+     "p": 0.0135,
+     "curve": [
+      1,
+      1,
+      0,
+      1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.006,
+     "runs": 3
+    },
+    {
+     "path": "strong-weak-miss-weak",
+     "p": 0.0135,
+     "curve": [
+      1,
+      1,
+      0,
+      0
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.012,
+     "runs": 6
+    },
+    {
+     "path": "weak-strong-strong-miss",
+     "p": 0.0135,
+     "curve": [
+      0,
+      1,
+      2,
+      1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.012,
+     "runs": 6
+    },
+    {
+     "path": "weak-strong-weak-miss",
+     "p": 0.0135,
+     "curve": [
+      0,
+      1,
+      1,
+      0
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.018,
+     "runs": 9
+    },
+    {
+     "path": "weak-strong-miss-strong",
+     "p": 0.0135,
+     "curve": [
+      0,
+      1,
+      0,
+      1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.024,
+     "runs": 12
+    },
+    {
+     "path": "weak-strong-miss-weak",
+     "p": 0.0135,
+     "curve": [
+      0,
+      1,
+      0,
+      0
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.014,
+     "runs": 7
+    },
+    {
+     "path": "strong-strong-miss-miss",
+     "p": 0.0095,
+     "curve": [
+      1,
+      2,
+      1,
+      0
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.012,
+     "runs": 6
+    },
+    {
+     "path": "strong-miss-strong-strong",
+     "p": 0.0084,
+     "curve": [
+      1,
+      0,
+      1,
+      2
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.008,
+     "runs": 4
+    },
+    {
+     "path": "strong-miss-strong-weak",
+     "p": 0.0084,
+     "curve": [
+      1,
+      0,
+      1,
+      1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.008,
+     "runs": 4
+    },
+    {
+     "path": "strong-miss-weak-strong",
+     "p": 0.0084,
+     "curve": [
+      1,
+      0,
+      0,
+      1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.004,
+     "runs": 2
+    },
+    {
+     "path": "strong-miss-weak-weak",
+     "p": 0.0084,
+     "curve": [
+      1,
+      0,
+      0,
+      0
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.01,
+     "runs": 5
+    },
+    {
+     "path": "miss-strong-strong-strong",
+     "p": 0.0084,
+     "curve": [
+      -1,
+      0,
+      1,
+      2
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.014,
+     "runs": 7
+    },
+    {
+     "path": "miss-strong-strong-weak",
+     "p": 0.0084,
+     "curve": [
+      -1,
+      0,
+      1,
+      1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.004,
+     "runs": 2
+    },
+    {
+     "path": "miss-strong-weak-strong",
+     "p": 0.0084,
+     "curve": [
+      -1,
+      0,
+      0,
+      1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.012,
+     "runs": 6
+    },
+    {
+     "path": "miss-strong-weak-weak",
+     "p": 0.0084,
+     "curve": [
+      -1,
+      0,
+      0,
+      0
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.008,
+     "runs": 4
+    },
+    {
+     "path": "weak-weak-strong-miss",
+     "p": 0.0077,
+     "curve": [
+      0,
+      0,
+      1,
+      0
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.01,
+     "runs": 5
+    },
+    {
+     "path": "weak-weak-weak-miss",
+     "p": 0.0077,
+     "curve": [
+      0,
+      0,
+      0,
+      -1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.008,
+     "runs": 4
+    },
+    {
+     "path": "weak-weak-miss-strong",
+     "p": 0.0077,
+     "curve": [
+      0,
+      0,
+      -1,
+      0
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.018,
+     "runs": 9
+    },
+    {
+     "path": "weak-weak-miss-weak",
+     "p": 0.0077,
+     "curve": [
+      0,
+      0,
+      -1,
+      -1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.008,
+     "runs": 4
+    },
+    {
+     "path": "strong-weak-miss-miss",
+     "p": 0.0054,
+     "curve": [
+      1,
+      1,
+      0,
+      -1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.006,
+     "runs": 3
+    },
+    {
+     "path": "weak-strong-miss-miss",
+     "p": 0.0054,
+     "curve": [
+      0,
+      1,
+      0,
+      -1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.008,
+     "runs": 4
+    },
+    {
+     "path": "weak-miss-strong-strong",
+     "p": 0.0048,
+     "curve": [
+      0,
+      -1,
+      0,
+      1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.002,
+     "runs": 1
+    },
+    {
+     "path": "weak-miss-strong-weak",
+     "p": 0.0048,
+     "curve": [
+      0,
+      -1,
+      0,
+      0
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.006,
+     "runs": 3
+    },
+    {
+     "path": "weak-miss-weak-strong",
+     "p": 0.0048,
+     "curve": [
+      0,
+      -1,
+      -1,
+      0
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.002,
+     "runs": 1
+    },
+    {
+     "path": "weak-miss-weak-weak",
+     "p": 0.0048,
+     "curve": [
+      0,
+      -1,
+      -1,
+      -1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.0,
+     "runs": 0
+    },
+    {
+     "path": "miss-weak-strong-strong",
+     "p": 0.0048,
+     "curve": [
+      -1,
+      -1,
+      0,
+      1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.004,
+     "runs": 2
+    },
+    {
+     "path": "miss-weak-strong-weak",
+     "p": 0.0048,
+     "curve": [
+      -1,
+      -1,
+      0,
+      0
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.004,
+     "runs": 2
+    },
+    {
+     "path": "miss-weak-weak-strong",
+     "p": 0.0048,
+     "curve": [
+      -1,
+      -1,
+      -1,
+      0
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.002,
+     "runs": 1
+    },
+    {
+     "path": "miss-weak-weak-weak",
+     "p": 0.0048,
+     "curve": [
+      -1,
+      -1,
+      -1,
+      -1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.008,
+     "runs": 4
+    },
+    {
+     "path": "strong-miss-strong-miss",
+     "p": 0.0034,
+     "curve": [
+      1,
+      0,
+      1,
+      0
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.0,
+     "runs": 0
+    },
+    {
+     "path": "strong-miss-weak-miss",
+     "p": 0.0034,
+     "curve": [
+      1,
+      0,
+      0,
+      -1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.0,
+     "runs": 0
+    },
+    {
+     "path": "strong-miss-miss-strong",
+     "p": 0.0034,
+     "curve": [
+      1,
+      0,
+      -1,
+      0
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.004,
+     "runs": 2
+    },
+    {
+     "path": "strong-miss-miss-weak",
+     "p": 0.0034,
+     "curve": [
+      1,
+      0,
+      -1,
+      -1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.004,
+     "runs": 2
+    },
+    {
+     "path": "miss-strong-strong-miss",
+     "p": 0.0034,
+     "curve": [
+      -1,
+      0,
+      1,
+      0
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.0,
+     "runs": 0
+    },
+    {
+     "path": "miss-strong-weak-miss",
+     "p": 0.0034,
+     "curve": [
+      -1,
+      0,
+      0,
+      -1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.01,
+     "runs": 5
+    },
+    {
+     "path": "miss-strong-miss-strong",
+     "p": 0.0034,
+     "curve": [
+      -1,
+      0,
+      -1,
+      0
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.012,
+     "runs": 6
+    },
+    {
+     "path": "miss-strong-miss-weak",
+     "p": 0.0034,
+     "curve": [
+      -1,
+      0,
+      -1,
+      -1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.006,
+     "runs": 3
+    },
+    {
+     "path": "weak-weak-miss-miss",
+     "p": 0.0031,
+     "curve": [
+      0,
+      0,
+      -1,
+      -2
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.004,
+     "runs": 2
+    },
+    {
+     "path": "weak-miss-strong-miss",
+     "p": 0.0019,
+     "curve": [
+      0,
+      -1,
+      0,
+      -1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.0,
+     "runs": 0
+    },
+    {
+     "path": "weak-miss-weak-miss",
+     "p": 0.0019,
+     "curve": [
+      0,
+      -1,
+      -1,
+      -2
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.0,
+     "runs": 0
+    },
+    {
+     "path": "weak-miss-miss-strong",
+     "p": 0.0019,
+     "curve": [
+      0,
+      -1,
+      -2,
+      -1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.0,
+     "runs": 0
+    },
+    {
+     "path": "weak-miss-miss-weak",
+     "p": 0.0019,
+     "curve": [
+      0,
+      -1,
+      -2,
+      -2
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.004,
+     "runs": 2
+    },
+    {
+     "path": "miss-weak-strong-miss",
+     "p": 0.0019,
+     "curve": [
+      -1,
+      -1,
+      0,
+      -1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.0,
+     "runs": 0
+    },
+    {
+     "path": "miss-weak-weak-miss",
+     "p": 0.0019,
+     "curve": [
+      -1,
+      -1,
+      -1,
+      -2
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.0,
+     "runs": 0
+    },
+    {
+     "path": "miss-weak-miss-strong",
+     "p": 0.0019,
+     "curve": [
+      -1,
+      -1,
+      -2,
+      -1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.002,
+     "runs": 1
+    },
+    {
+     "path": "miss-weak-miss-weak",
+     "p": 0.0019,
+     "curve": [
+      -1,
+      -1,
+      -2,
+      -2
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.01,
+     "runs": 5
+    },
+    {
+     "path": "strong-miss-miss-miss",
+     "p": 0.0014,
+     "curve": [
+      1,
+      0,
+      -1,
+      -2
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.0,
+     "runs": 0
+    },
+    {
+     "path": "miss-strong-miss-miss",
+     "p": 0.0014,
+     "curve": [
+      -1,
+      0,
+      -1,
+      -2
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.006,
+     "runs": 3
+    },
+    {
+     "path": "miss-miss-strong-strong",
+     "p": 0.0012,
+     "curve": [
+      -1,
+      -2,
+      -1,
+      0
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.002,
+     "runs": 1
+    },
+    {
+     "path": "miss-miss-strong-weak",
+     "p": 0.0012,
+     "curve": [
+      -1,
+      -2,
+      -1,
+      -1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.002,
+     "runs": 1
+    },
+    {
+     "path": "miss-miss-weak-strong",
+     "p": 0.0012,
+     "curve": [
+      -1,
+      -2,
+      -2,
+      -1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.0,
+     "runs": 0
+    },
+    {
+     "path": "miss-miss-weak-weak",
+     "p": 0.0012,
+     "curve": [
+      -1,
+      -2,
+      -2,
+      -2
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.0,
+     "runs": 0
+    },
+    {
+     "path": "weak-miss-miss-miss",
+     "p": 0.0008,
+     "curve": [
+      0,
+      -1,
+      -2,
+      -3
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.002,
+     "runs": 1
+    },
+    {
+     "path": "miss-weak-miss-miss",
+     "p": 0.0008,
+     "curve": [
+      -1,
+      -1,
+      -2,
+      -3
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.002,
+     "runs": 1
+    },
+    {
+     "path": "miss-miss-strong-miss",
+     "p": 0.0005,
+     "curve": [
+      -1,
+      -2,
+      -1,
+      -2
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.0,
+     "runs": 0
+    },
+    {
+     "path": "miss-miss-weak-miss",
+     "p": 0.0005,
+     "curve": [
+      -1,
+      -2,
+      -2,
+      -3
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.0,
+     "runs": 0
+    },
+    {
+     "path": "miss-miss-miss-strong",
+     "p": 0.0005,
+     "curve": [
+      -1,
+      -2,
+      -3,
+      -2
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.0,
+     "runs": 0
+    },
+    {
+     "path": "miss-miss-miss-weak",
+     "p": 0.0005,
+     "curve": [
+      -1,
+      -2,
+      -3,
+      -3
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.002,
+     "runs": 1
+    },
+    {
+     "path": "miss-miss-miss-miss",
+     "p": 0.0002,
+     "curve": [
+      -1,
+      -2,
+      -3,
+      -4
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.0,
+     "runs": 0
+    }
+   ],
+   "held_p": 0.9221,
+   "max_abs_gap": 0.0209,
+   "stopped_in_scene": {
+    "1": 500
+   },
+   "measured_bucket_rates": {
+    "b1": {
+     "strong": 0.544,
+     "weak": 0.346,
+     "miss": 0.11
+    },
+    "b2": {
+     "strong": 0.624,
+     "weak": 0.316,
+     "miss": 0.06
+    },
+    "b3": {
+     "strong": 0.392,
+     "weak": 0.406,
+     "miss": 0.202
+    },
+    "b4": {
+     "strong": 0.476,
+     "weak": 0.372,
+     "miss": 0.152
+    }
+   }
+  },
+  "random": {
+   "swing": {
+    "b1": {
+     "entropy_bits": 1.45,
+     "max_bits": 1.585,
+     "outcome_casts": {
+      "strong": [],
+      "weak": [],
+      "miss": []
+     },
+     "cast_diverges": false,
+     "p_strong": 0.458,
+     "p_weak": 0.396,
+     "p_miss": 0.146,
+     "scene": 0
+    },
+    "b2": {
+     "entropy_bits": 1.45,
+     "max_bits": 1.585,
+     "outcome_casts": {
+      "strong": [
+       "tel"
+      ],
+      "weak": [
+       "tel"
+      ],
+      "miss": [
+       "tel"
+      ]
+     },
+     "cast_diverges": false,
+     "p_strong": 0.458,
+     "p_weak": 0.396,
+     "p_miss": 0.146,
+     "scene": 0
+    },
+    "b3": {
+     "entropy_bits": 1.45,
+     "max_bits": 1.585,
+     "outcome_casts": {
+      "strong": [
+       "furnace"
+      ],
+      "weak": [
+       "furnace"
+      ],
+      "miss": []
+     },
+     "cast_diverges": true,
+     "p_strong": 0.458,
+     "p_weak": 0.396,
+     "p_miss": 0.146,
+     "scene": 1
+    },
+    "b4": {
+     "entropy_bits": 1.45,
+     "max_bits": 1.585,
+     "outcome_casts": {
+      "strong": [
+       "furnace",
+       "tel"
+      ],
+      "weak": [
+       "tel"
+      ],
+      "miss": [
+       "furnace",
+       "tel"
+      ]
+     },
+     "cast_diverges": true,
+     "p_strong": 0.458,
+     "p_weak": 0.396,
+     "p_miss": 0.146,
+     "scene": 1
+    }
+   },
+   "paths": [
+    {
+     "path": "strong-strong-strong-strong",
+     "p": 0.0441,
+     "curve": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.052,
+     "runs": 26
+    },
+    {
+     "path": "strong-strong-weak-strong",
+     "p": 0.0381,
+     "curve": [
+      1,
+      2,
+      2,
+      3
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.036,
+     "runs": 18
+    },
+    {
+     "path": "weak-strong-strong-strong",
+     "p": 0.0381,
+     "curve": [
+      0,
+      1,
+      2,
+      3
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.048,
+     "runs": 24
+    },
+    {
+     "path": "strong-strong-strong-weak",
+     "p": 0.0381,
+     "curve": [
+      1,
+      2,
+      3,
+      3
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.032,
+     "runs": 16
+    },
+    {
+     "path": "strong-weak-strong-strong",
+     "p": 0.0381,
+     "curve": [
+      1,
+      1,
+      2,
+      3
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.044,
+     "runs": 22
+    },
+    {
+     "path": "strong-strong-weak-weak",
+     "p": 0.0329,
+     "curve": [
+      1,
+      2,
+      2,
+      2
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.026,
+     "runs": 13
+    },
+    {
+     "path": "strong-weak-weak-strong",
+     "p": 0.0329,
+     "curve": [
+      1,
+      1,
+      1,
+      2
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.03,
+     "runs": 15
+    },
+    {
+     "path": "weak-strong-strong-weak",
+     "p": 0.0329,
+     "curve": [
+      0,
+      1,
+      2,
+      2
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.04,
+     "runs": 20
+    },
+    {
+     "path": "weak-strong-weak-strong",
+     "p": 0.0329,
+     "curve": [
+      0,
+      1,
+      1,
+      2
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.046,
+     "runs": 23
+    },
+    {
+     "path": "weak-weak-strong-strong",
+     "p": 0.0329,
+     "curve": [
+      0,
+      0,
+      1,
+      2
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.02,
+     "runs": 10
+    },
+    {
+     "path": "strong-weak-strong-weak",
+     "p": 0.0329,
+     "curve": [
+      1,
+      1,
+      2,
+      2
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.034,
+     "runs": 17
+    },
+    {
+     "path": "weak-weak-weak-strong",
+     "p": 0.0284,
+     "curve": [
+      0,
+      0,
+      0,
+      1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.042,
+     "runs": 21
+    },
+    {
+     "path": "weak-strong-weak-weak",
+     "p": 0.0284,
+     "curve": [
+      0,
+      1,
+      1,
+      1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.028,
+     "runs": 14
+    },
+    {
+     "path": "weak-weak-strong-weak",
+     "p": 0.0284,
+     "curve": [
+      0,
+      0,
+      1,
+      1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.02,
+     "runs": 10
+    },
+    {
+     "path": "strong-weak-weak-weak",
+     "p": 0.0284,
+     "curve": [
+      1,
+      1,
+      1,
+      1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.016,
+     "runs": 8
+    },
+    {
+     "path": "weak-weak-weak-weak",
+     "p": 0.0245,
+     "curve": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.016,
+     "runs": 8
+    },
+    {
+     "path": "strong-strong-strong-miss",
+     "p": 0.014,
+     "curve": [
+      1,
+      2,
+      3,
+      2
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.01,
+     "runs": 5
+    },
+    {
+     "path": "strong-miss-strong-strong",
+     "p": 0.014,
+     "curve": [
+      1,
+      0,
+      1,
+      2
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.014,
+     "runs": 7
+    },
+    {
+     "path": "miss-strong-strong-strong",
+     "p": 0.014,
+     "curve": [
+      -1,
+      0,
+      1,
+      2
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.02,
+     "runs": 10
+    },
+    {
+     "path": "strong-strong-miss-strong",
+     "p": 0.014,
+     "curve": [
+      1,
+      2,
+      1,
+      2
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.01,
+     "runs": 5
+    },
+    {
+     "path": "strong-strong-weak-miss",
+     "p": 0.0121,
+     "curve": [
+      1,
+      2,
+      2,
+      1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.014,
+     "runs": 7
+    },
+    {
+     "path": "strong-miss-weak-strong",
+     "p": 0.0121,
+     "curve": [
+      1,
+      0,
+      0,
+      1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.014,
+     "runs": 7
+    },
+    {
+     "path": "weak-strong-strong-miss",
+     "p": 0.0121,
+     "curve": [
+      0,
+      1,
+      2,
+      1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.008,
+     "runs": 4
+    },
+    {
+     "path": "weak-miss-strong-strong",
+     "p": 0.0121,
+     "curve": [
+      0,
+      -1,
+      0,
+      1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.014,
+     "runs": 7
+    },
+    {
+     "path": "strong-weak-strong-miss",
+     "p": 0.0121,
+     "curve": [
+      1,
+      1,
+      2,
+      1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.012,
+     "runs": 6
+    },
+    {
+     "path": "strong-miss-strong-weak",
+     "p": 0.0121,
+     "curve": [
+      1,
+      0,
+      1,
+      1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.01,
+     "runs": 5
+    },
+    {
+     "path": "miss-strong-weak-strong",
+     "p": 0.0121,
+     "curve": [
+      -1,
+      0,
+      0,
+      1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.022,
+     "runs": 11
+    },
+    {
+     "path": "strong-strong-miss-weak",
+     "p": 0.0121,
+     "curve": [
+      1,
+      2,
+      1,
+      1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.006,
+     "runs": 3
+    },
+    {
+     "path": "weak-strong-miss-strong",
+     "p": 0.0121,
+     "curve": [
+      0,
+      1,
+      0,
+      1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.024,
+     "runs": 12
+    },
+    {
+     "path": "miss-strong-strong-weak",
+     "p": 0.0121,
+     "curve": [
+      -1,
+      0,
+      1,
+      1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.008,
+     "runs": 4
+    },
+    {
+     "path": "strong-weak-miss-strong",
+     "p": 0.0121,
+     "curve": [
+      1,
+      1,
+      0,
+      1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.012,
+     "runs": 6
+    },
+    {
+     "path": "miss-weak-strong-strong",
+     "p": 0.0121,
+     "curve": [
+      -1,
+      -1,
+      0,
+      1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.002,
+     "runs": 1
+    },
+    {
+     "path": "weak-miss-weak-strong",
+     "p": 0.0105,
+     "curve": [
+      0,
+      -1,
+      -1,
+      0
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.004,
+     "runs": 2
+    },
+    {
+     "path": "strong-miss-weak-weak",
+     "p": 0.0105,
+     "curve": [
+      1,
+      0,
+      0,
+      0
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.014,
+     "runs": 7
+    },
+    {
+     "path": "weak-strong-weak-miss",
+     "p": 0.0105,
+     "curve": [
+      0,
+      1,
+      1,
+      0
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.008,
+     "runs": 4
+    },
+    {
+     "path": "weak-weak-strong-miss",
+     "p": 0.0105,
+     "curve": [
+      0,
+      0,
+      1,
+      0
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.018,
+     "runs": 9
+    },
+    {
+     "path": "weak-miss-strong-weak",
+     "p": 0.0105,
+     "curve": [
+      0,
+      -1,
+      0,
+      0
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.006,
+     "runs": 3
+    },
+    {
+     "path": "strong-weak-weak-miss",
+     "p": 0.0105,
+     "curve": [
+      1,
+      1,
+      1,
+      0
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.0,
+     "runs": 0
+    },
+    {
+     "path": "miss-strong-weak-weak",
+     "p": 0.0105,
+     "curve": [
+      -1,
+      0,
+      0,
+      0
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.008,
+     "runs": 4
+    },
+    {
+     "path": "weak-strong-miss-weak",
+     "p": 0.0105,
+     "curve": [
+      0,
+      1,
+      0,
+      0
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.01,
+     "runs": 5
+    },
+    {
+     "path": "weak-weak-miss-strong",
+     "p": 0.0105,
+     "curve": [
+      0,
+      0,
+      -1,
+      0
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.014,
+     "runs": 7
+    },
+    {
+     "path": "miss-weak-weak-strong",
+     "p": 0.0105,
+     "curve": [
+      -1,
+      -1,
+      -1,
+      0
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.01,
+     "runs": 5
+    },
+    {
+     "path": "strong-weak-miss-weak",
+     "p": 0.0105,
+     "curve": [
+      1,
+      1,
+      0,
+      0
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.006,
+     "runs": 3
+    },
+    {
+     "path": "miss-weak-strong-weak",
+     "p": 0.0105,
+     "curve": [
+      -1,
+      -1,
+      0,
+      0
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.012,
+     "runs": 6
+    },
+    {
+     "path": "weak-weak-weak-miss",
+     "p": 0.009,
+     "curve": [
+      0,
+      0,
+      0,
+      -1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.008,
+     "runs": 4
+    },
+    {
+     "path": "weak-miss-weak-weak",
+     "p": 0.009,
+     "curve": [
+      0,
+      -1,
+      -1,
+      -1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.006,
+     "runs": 3
+    },
+    {
+     "path": "weak-weak-miss-weak",
+     "p": 0.009,
+     "curve": [
+      0,
+      0,
+      -1,
+      -1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.012,
+     "runs": 6
+    },
+    {
+     "path": "miss-weak-weak-weak",
+     "p": 0.009,
+     "curve": [
+      -1,
+      -1,
+      -1,
+      -1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.01,
+     "runs": 5
+    },
+    {
+     "path": "strong-miss-strong-miss",
+     "p": 0.0045,
+     "curve": [
+      1,
+      0,
+      1,
+      0
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.0,
+     "runs": 0
+    },
+    {
+     "path": "strong-miss-miss-strong",
+     "p": 0.0045,
+     "curve": [
+      1,
+      0,
+      -1,
+      0
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.006,
+     "runs": 3
+    },
+    {
+     "path": "miss-strong-strong-miss",
+     "p": 0.0045,
+     "curve": [
+      -1,
+      0,
+      1,
+      0
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.002,
+     "runs": 1
+    },
+    {
+     "path": "strong-strong-miss-miss",
+     "p": 0.0045,
+     "curve": [
+      1,
+      2,
+      1,
+      0
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.002,
+     "runs": 1
+    },
+    {
+     "path": "miss-miss-strong-strong",
+     "p": 0.0045,
+     "curve": [
+      -1,
+      -2,
+      -1,
+      0
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.004,
+     "runs": 2
+    },
+    {
+     "path": "miss-strong-miss-strong",
+     "p": 0.0045,
+     "curve": [
+      -1,
+      0,
+      -1,
+      0
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": true,
+     "measured": 0.012,
+     "runs": 6
+    },
+    {
+     "path": "strong-miss-weak-miss",
+     "p": 0.0039,
+     "curve": [
+      1,
+      0,
+      0,
+      -1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.0,
+     "runs": 0
+    },
+    {
+     "path": "weak-miss-strong-miss",
+     "p": 0.0039,
+     "curve": [
+      0,
+      -1,
+      0,
+      -1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.0,
+     "runs": 0
+    },
+    {
+     "path": "strong-miss-miss-weak",
+     "p": 0.0039,
+     "curve": [
+      1,
+      0,
+      -1,
+      -1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.004,
+     "runs": 2
+    },
+    {
+     "path": "miss-strong-weak-miss",
+     "p": 0.0039,
+     "curve": [
+      -1,
+      0,
+      0,
+      -1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.016,
+     "runs": 8
+    },
+    {
+     "path": "weak-strong-miss-miss",
+     "p": 0.0039,
+     "curve": [
+      0,
+      1,
+      0,
+      -1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.006,
+     "runs": 3
+    },
+    {
+     "path": "weak-miss-miss-strong",
+     "p": 0.0039,
+     "curve": [
+      0,
+      -1,
+      -2,
+      -1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.004,
+     "runs": 2
+    },
+    {
+     "path": "miss-miss-weak-strong",
+     "p": 0.0039,
+     "curve": [
+      -1,
+      -2,
+      -2,
+      -1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.002,
+     "runs": 1
+    },
+    {
+     "path": "strong-weak-miss-miss",
+     "p": 0.0039,
+     "curve": [
+      1,
+      1,
+      0,
+      -1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.004,
+     "runs": 2
+    },
+    {
+     "path": "miss-weak-strong-miss",
+     "p": 0.0039,
+     "curve": [
+      -1,
+      -1,
+      0,
+      -1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.0,
+     "runs": 0
+    },
+    {
+     "path": "miss-weak-miss-strong",
+     "p": 0.0039,
+     "curve": [
+      -1,
+      -1,
+      -2,
+      -1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.008,
+     "runs": 4
+    },
+    {
+     "path": "miss-miss-strong-weak",
+     "p": 0.0039,
+     "curve": [
+      -1,
+      -2,
+      -1,
+      -1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.006,
+     "runs": 3
+    },
+    {
+     "path": "miss-strong-miss-weak",
+     "p": 0.0039,
+     "curve": [
+      -1,
+      0,
+      -1,
+      -1
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.002,
+     "runs": 1
+    },
+    {
+     "path": "weak-miss-weak-miss",
+     "p": 0.0033,
+     "curve": [
+      0,
+      -1,
+      -1,
+      -2
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.002,
+     "runs": 1
+    },
+    {
+     "path": "weak-weak-miss-miss",
+     "p": 0.0033,
+     "curve": [
+      0,
+      0,
+      -1,
+      -2
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.004,
+     "runs": 2
+    },
+    {
+     "path": "weak-miss-miss-weak",
+     "p": 0.0033,
+     "curve": [
+      0,
+      -1,
+      -2,
+      -2
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.004,
+     "runs": 2
+    },
+    {
+     "path": "miss-weak-weak-miss",
+     "p": 0.0033,
+     "curve": [
+      -1,
+      -1,
+      -1,
+      -2
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.002,
+     "runs": 1
+    },
+    {
+     "path": "miss-miss-weak-weak",
+     "p": 0.0033,
+     "curve": [
+      -1,
+      -2,
+      -2,
+      -2
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.002,
+     "runs": 1
+    },
+    {
+     "path": "miss-weak-miss-weak",
+     "p": 0.0033,
+     "curve": [
+      -1,
+      -1,
+      -2,
+      -2
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.016,
+     "runs": 8
+    },
+    {
+     "path": "strong-miss-miss-miss",
+     "p": 0.0014,
+     "curve": [
+      1,
+      0,
+      -1,
+      -2
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.002,
+     "runs": 1
+    },
+    {
+     "path": "miss-miss-strong-miss",
+     "p": 0.0014,
+     "curve": [
+      -1,
+      -2,
+      -1,
+      -2
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.0,
+     "runs": 0
+    },
+    {
+     "path": "miss-strong-miss-miss",
+     "p": 0.0014,
+     "curve": [
+      -1,
+      0,
+      -1,
+      -2
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.004,
+     "runs": 2
+    },
+    {
+     "path": "miss-miss-miss-strong",
+     "p": 0.0014,
+     "curve": [
+      -1,
+      -2,
+      -3,
+      -2
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.0,
+     "runs": 0
+    },
+    {
+     "path": "weak-miss-miss-miss",
+     "p": 0.0012,
+     "curve": [
+      0,
+      -1,
+      -2,
+      -3
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.002,
+     "runs": 1
+    },
+    {
+     "path": "miss-miss-weak-miss",
+     "p": 0.0012,
+     "curve": [
+      -1,
+      -2,
+      -2,
+      -3
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.0,
+     "runs": 0
+    },
+    {
+     "path": "miss-weak-miss-miss",
+     "p": 0.0012,
+     "curve": [
+      -1,
+      -1,
+      -2,
+      -3
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.004,
+     "runs": 2
+    },
+    {
+     "path": "miss-miss-miss-weak",
+     "p": 0.0012,
+     "curve": [
+      -1,
+      -2,
+      -3,
+      -3
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.004,
+     "runs": 2
+    },
+    {
+     "path": "miss-miss-miss-miss",
+     "p": 0.0005,
+     "curve": [
+      -1,
+      -2,
+      -3,
+      -4
+     ],
+     "firsts": [],
+     "met": [
+      "furnace",
+      "sable",
+      "tel"
+     ],
+     "held": false,
+     "measured": 0.0,
+     "runs": 0
+    }
+   ],
+   "held_p": 0.8862,
+   "max_abs_gap": 0.0136,
+   "stopped_in_scene": {
+    "1": 500
+   },
+   "measured_bucket_rates": {
+    "b1": {
+     "strong": 0.41,
+     "weak": 0.414,
+     "miss": 0.176
+    },
+    "b2": {
+     "strong": 0.5,
+     "weak": 0.376,
+     "miss": 0.124
+    },
+    "b3": {
+     "strong": 0.436,
+     "weak": 0.382,
+     "miss": 0.182
+    },
+    "b4": {
+     "strong": 0.514,
+     "weak": 0.358,
+     "miss": 0.128
+    }
+   }
+  }
+ },
+ "run_at": "2026-10-16T22:59:39.215787+00:00",
+ "scenes": 2,
+ "decision": {
+  "beat": "b5",
+  "proposed_by": "furnace"
+ }
+}

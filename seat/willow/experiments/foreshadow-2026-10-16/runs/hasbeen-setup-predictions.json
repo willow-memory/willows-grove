@@ -1,0 +1,23 @@
+{
+ "decision": "b3",
+ "evidence": {},
+ "p_any_setup": {
+  "random": 0.0,
+  "suggested": 0.0
+ },
+ "playable_beats": [
+  "b1",
+  "b2"
+ ],
+ "tags": {
+  "b1-miss": false,
+  "b1-strong": false,
+  "b1-weak": false,
+  "b2-miss": false,
+  "b2-strong": false,
+  "b2-weak": false
+ },
+ "world": "Hasbeen \u2014 Late Shift",
+ "world_sha256": "2e5787a722f11356789f0ccf1d717fe3448b52e63a63f1d49ac71e065d593595",
+ "written_at": "2026-10-16T23:05:43.871445+00:00"
+}

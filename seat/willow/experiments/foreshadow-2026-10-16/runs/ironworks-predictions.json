@@ -1,0 +1,145 @@
+{
+ "claims": [
+  {
+   "check": {
+    "beat": "b4",
+    "kind": "max_entropy_beat"
+   },
+   "claim": "The last action beat before the decision is the biggest swing (highest outcome entropy).",
+   "forecaster": "heuristic",
+   "id": "H1"
+  },
+  {
+   "check": {
+    "beat": "b1",
+    "bucket": "strong",
+    "kind": "cast_gate"
+   },
+   "claim": "The first action beat is the cast gate: its strong outcome introduces more new characters than any other single outcome.",
+   "forecaster": "heuristic",
+   "id": "H2"
+  },
+  {
+   "check": {
+    "kind": "proposer_unintroduced",
+    "proposer": "furnace"
+   },
+   "claim": "No path before the decision introduces the decision's proposer by name.",
+   "forecaster": "heuristic",
+   "id": "H3"
+  },
+  {
+   "check": {
+    "kind": "valley_unique"
+   },
+   "claim": "At least one character is met only on a path that contains a miss (the valley holds unique content).",
+   "forecaster": "heuristic",
+   "id": "H4"
+  },
+  {
+   "check": {
+    "hi": 0.92,
+    "kind": "held_range",
+    "lo": 0.85,
+    "policy": "suggested"
+   },
+   "claim": "The night 'holds together' (strong >= miss) on 85-92% of runs under the suggested approach.",
+   "forecaster": "heuristic",
+   "id": "H5"
+  },
+  {
+   "check": {
+    "hi": 0.45,
+    "kind": "missing_cast_range",
+    "lo": 0.2,
+    "policy": "suggested"
+   },
+   "claim": "20-45% of runs (suggested approach) reach the decision without meeting at least one unseated character who is met on some other path.",
+   "forecaster": "heuristic",
+   "id": "H6"
+  },
+  {
+   "check": {
+    "expected": false,
+    "kind": "seal_gates_last_scene"
+   },
+   "claim": "A decision beat stops every run before the final scene: the last scene is unreachable without a human seal.",
+   "forecaster": "heuristic",
+   "id": "H7"
+  },
+  {
+   "check": {
+    "beat": "b1",
+    "kind": "beat_probs",
+    "p": {
+     "miss": 0.08333333333333333,
+     "strong": 0.5833333333333334,
+     "weak": 0.3333333333333333
+    },
+    "policy": "suggested",
+    "tol": 0.05
+   },
+   "claim": "Beat b1 under the suggested approach (Grit): strong 0.583, weak 0.333, miss 0.083; measured within 0.05 each.",
+   "forecaster": "arithmetic",
+   "id": "A-b1"
+  },
+  {
+   "check": {
+    "beat": "b2",
+    "kind": "beat_probs",
+    "p": {
+     "miss": 0.16666666666666666,
+     "strong": 0.4166666666666667,
+     "weak": 0.4166666666666667
+    },
+    "policy": "suggested",
+    "tol": 0.05
+   },
+   "claim": "Beat b2 under the suggested approach (Cool): strong 0.417, weak 0.417, miss 0.167; measured within 0.05 each.",
+   "forecaster": "arithmetic",
+   "id": "A-b2"
+  },
+  {
+   "check": {
+    "beat": "b3",
+    "kind": "beat_probs",
+    "p": {
+     "miss": 0.16666666666666666,
+     "strong": 0.4166666666666667,
+     "weak": 0.4166666666666667
+    },
+    "policy": "suggested",
+    "tol": 0.05
+   },
+   "claim": "Beat b3 under the suggested approach (Weird): strong 0.417, weak 0.417, miss 0.167; measured within 0.05 each.",
+   "forecaster": "arithmetic",
+   "id": "A-b3"
+  },
+  {
+   "check": {
+    "beat": "b4",
+    "kind": "beat_probs",
+    "p": {
+     "miss": 0.16666666666666666,
+     "strong": 0.4166666666666667,
+     "weak": 0.4166666666666667
+    },
+    "policy": "suggested",
+    "tol": 0.05
+   },
+   "claim": "Beat b4 under the suggested approach (Cute): strong 0.417, weak 0.417, miss 0.167; measured within 0.05 each.",
+   "forecaster": "arithmetic",
+   "id": "A-b4"
+  }
+ ],
+ "playable_beats": [
+  "b1",
+  "b2",
+  "b3",
+  "b4"
+ ],
+ "world": "Ironworks \u2014 Last Pour",
+ "world_file": "ironworks.json",
+ "world_sha256": "a0e0655d2a09c754a1e0341a76874bcbc3aea81e7361a405aeee212015833983",
+ "written_at": "2026-10-16T22:58:22.682216+00:00"
+}

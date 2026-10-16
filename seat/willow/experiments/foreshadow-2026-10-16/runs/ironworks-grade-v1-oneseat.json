@@ -1,0 +1,242 @@
+{
+ "world": "Ironworks \u2014 Last Pour",
+ "n": 500,
+ "score": {
+  "heuristic": "1/7",
+  "arithmetic": "2/4"
+ },
+ "results": [
+  {
+   "id": "H1",
+   "forecaster": "heuristic",
+   "hit": false,
+   "claim": "The last action beat before the decision is the biggest swing (highest outcome entropy).",
+   "measured": {
+    "entropy": {
+     "b1": 1.281,
+     "b2": 1.483,
+     "b3": 1.483,
+     "b4": 1.483
+    },
+    "top": [
+     "b2",
+     "b3",
+     "b4"
+    ],
+    "note": "tied: the beat is not uniquely the biggest swing"
+   }
+  },
+  {
+   "id": "H2",
+   "forecaster": "heuristic",
+   "hit": false,
+   "claim": "The first action beat is the cast gate: its strong outcome introduces more new characters than any other single outcome.",
+   "measured": {
+    "new_cast_by_outcome": {},
+    "leaders": []
+   }
+  },
+  {
+   "id": "H3",
+   "forecaster": "heuristic",
+   "hit": false,
+   "claim": "No path before the decision introduces the decision's proposer by name.",
+   "measured": {
+    "paths_meeting_proposer": [
+     "strong-strong-strong-strong",
+     "strong-strong-strong-weak",
+     "strong-strong-weak-strong",
+     "strong-strong-weak-weak",
+     "strong-weak-strong-strong",
+     "strong-weak-strong-weak",
+     "strong-weak-weak-strong",
+     "strong-weak-weak-weak",
+     "weak-strong-strong-strong",
+     "weak-strong-strong-weak",
+     "weak-strong-weak-strong",
+     "weak-strong-weak-weak",
+     "weak-weak-strong-strong",
+     "weak-weak-strong-weak",
+     "weak-weak-weak-strong",
+     "weak-weak-weak-weak",
+     "strong-strong-strong-miss",
+     "strong-strong-weak-miss",
+     "strong-strong-miss-strong",
+     "strong-strong-miss-weak",
+     "strong-weak-strong-miss",
+     "strong-weak-weak-miss",
+     "strong-weak-miss-strong",
+     "strong-weak-miss-weak",
+     "strong-miss-strong-strong",
+     "strong-miss-strong-weak",
+     "strong-miss-weak-strong",
+     "strong-miss-weak-weak",
+     "weak-strong-strong-miss",
+     "weak-strong-weak-miss",
+     "weak-weak-strong-miss",
+     "weak-weak-weak-miss",
+     "weak-strong-miss-strong",
+     "weak-strong-miss-weak",
+     "weak-weak-miss-strong",
+     "weak-weak-miss-weak",
+     "weak-miss-strong-strong",
+     "weak-miss-strong-weak",
+     "weak-miss-weak-strong",
+     "weak-miss-weak-weak",
+     "strong-strong-miss-miss",
+     "strong-weak-miss-miss",
+     "strong-miss-strong-miss",
+     "strong-miss-weak-miss",
+     "strong-miss-miss-strong",
+     "strong-miss-miss-weak",
+     "miss-strong-strong-strong",
+     "miss-strong-strong-weak",
+     "miss-strong-weak-strong",
+     "miss-strong-weak-weak",
+     "miss-weak-strong-strong",
+     "miss-weak-strong-weak",
+     "miss-weak-weak-strong",
+     "miss-weak-weak-weak",
+     "weak-strong-miss-miss",
+     "weak-weak-miss-miss",
+     "weak-miss-strong-miss",
+     "weak-miss-weak-miss",
+     "weak-miss-miss-strong",
+     "weak-miss-miss-weak",
+     "strong-miss-miss-miss",
+     "miss-strong-strong-miss",
+     "miss-strong-weak-miss",
+     "miss-weak-strong-miss",
+     "miss-weak-weak-miss",
+     "miss-strong-miss-strong",
+     "miss-strong-miss-weak",
+     "miss-weak-miss-strong",
+     "miss-weak-miss-weak",
+     "miss-miss-strong-strong",
+     "miss-miss-strong-weak",
+     "miss-miss-weak-strong",
+     "miss-miss-weak-weak",
+     "weak-miss-miss-miss",
+     "miss-strong-miss-miss",
+     "miss-weak-miss-miss",
+     "miss-miss-strong-miss",
+     "miss-miss-weak-miss",
+     "miss-miss-miss-strong",
+     "miss-miss-miss-weak",
+     "miss-miss-miss-miss"
+    ]
+   }
+  },
+  {
+   "id": "H4",
+   "forecaster": "heuristic",
+   "hit": false,
+   "claim": "At least one character is met only on a path that contains a miss (the valley holds unique content).",
+   "measured": {
+    "met_only_on_miss_paths": []
+   }
+  },
+  {
+   "id": "H5",
+   "forecaster": "heuristic",
+   "hit": true,
+   "claim": "The night 'holds together' (strong >= miss) on 85-92% of runs under the suggested approach.",
+   "measured": 0.8892
+  },
+  {
+   "id": "H6",
+   "forecaster": "heuristic",
+   "hit": false,
+   "claim": "20-45% of runs (suggested approach) reach the decision without meeting at least one unseated character who is met on some other path.",
+   "measured": {
+    "measured_fraction": 0,
+    "unseated_met_somewhere": [
+     "furnace"
+    ]
+   }
+  },
+  {
+   "id": "H7",
+   "forecaster": "heuristic",
+   "hit": false,
+   "claim": "A decision beat stops every run before the final scene: the last scene is unreachable without a human seal.",
+   "measured": {
+    "stopped_in_scene": {
+     "1": 500
+    }
+   }
+  },
+  {
+   "id": "A-b1",
+   "forecaster": "arithmetic",
+   "hit": true,
+   "claim": "Beat b1 under the suggested approach (Grit): strong 0.583, weak 0.333, miss 0.083; measured within 0.05 each.",
+   "measured": {
+    "measured": {
+     "strong": 0.544,
+     "weak": 0.346,
+     "miss": 0.11
+    },
+    "gaps": {
+     "strong": 0.0393,
+     "weak": 0.0127,
+     "miss": 0.0267
+    }
+   }
+  },
+  {
+   "id": "A-b2",
+   "forecaster": "arithmetic",
+   "hit": false,
+   "claim": "Beat b2 under the suggested approach (Cool): strong 0.417, weak 0.417, miss 0.167; measured within 0.05 each.",
+   "measured": {
+    "measured": {
+     "strong": 0.624,
+     "weak": 0.316,
+     "miss": 0.06
+    },
+    "gaps": {
+     "strong": 0.2073,
+     "weak": 0.1007,
+     "miss": 0.1067
+    }
+   }
+  },
+  {
+   "id": "A-b3",
+   "forecaster": "arithmetic",
+   "hit": true,
+   "claim": "Beat b3 under the suggested approach (Weird): strong 0.417, weak 0.417, miss 0.167; measured within 0.05 each.",
+   "measured": {
+    "measured": {
+     "strong": 0.392,
+     "weak": 0.406,
+     "miss": 0.202
+    },
+    "gaps": {
+     "strong": 0.0247,
+     "weak": 0.0107,
+     "miss": 0.0353
+    }
+   }
+  },
+  {
+   "id": "A-b4",
+   "forecaster": "arithmetic",
+   "hit": false,
+   "claim": "Beat b4 under the suggested approach (Cute): strong 0.417, weak 0.417, miss 0.167; measured within 0.05 each.",
+   "measured": {
+    "measured": {
+     "strong": 0.476,
+     "weak": 0.372,
+     "miss": 0.152
+    },
+    "gaps": {
+     "strong": 0.0593,
+     "weak": 0.0447,
+     "miss": 0.0147
+    }
+   }
+  }
+ ]
+}

@@ -1,0 +1,627 @@
+{
+ "world": "Hasbeen \u2014 Late Shift",
+ "seats": [
+  "Nomi Reyes"
+ ],
+ "stats": [
+  {
+   "Grit": 2,
+   "Weird": 3,
+   "Cute": 2,
+   "Cool": 2
+  }
+ ],
+ "n": 500,
+ "policies": {
+  "suggested": {
+   "swing": {
+    "b1": {
+     "entropy_bits": 1.281,
+     "max_bits": 1.585,
+     "outcome_casts": {
+      "strong": [
+       "librarian",
+       "maker",
+       "witness"
+      ],
+      "weak": [
+       "maker"
+      ],
+      "miss": [
+       "maker"
+      ]
+     },
+     "cast_diverges": true,
+     "p_strong": 0.583,
+     "p_weak": 0.333,
+     "p_miss": 0.083,
+     "scene": 0
+    },
+    "b2": {
+     "entropy_bits": 1.483,
+     "max_bits": 1.585,
+     "outcome_casts": {
+      "strong": [
+       "librarian",
+       "maker"
+      ],
+      "weak": [
+       "librarian"
+      ],
+      "miss": [
+       "librarian",
+       "witness"
+      ]
+     },
+     "cast_diverges": true,
+     "p_strong": 0.417,
+     "p_weak": 0.417,
+     "p_miss": 0.167,
+     "scene": 0
+    }
+   },
+   "paths": [
+    {
+     "path": "strong-strong",
+     "p": 0.2431,
+     "curve": [
+      1,
+      2
+     ],
+     "firsts": [
+      {
+       "beat": "b1",
+       "bucket": "strong",
+       "introduces": [
+        "librarian",
+        "witness"
+       ]
+      }
+     ],
+     "met": [
+      "junior",
+      "librarian",
+      "maker",
+      "witness"
+     ],
+     "held": true,
+     "measured": 0.242,
+     "runs": 121
+    },
+    {
+     "path": "strong-weak",
+     "p": 0.2431,
+     "curve": [
+      1,
+      1
+     ],
+     "firsts": [
+      {
+       "beat": "b1",
+       "bucket": "strong",
+       "introduces": [
+        "librarian",
+        "witness"
+       ]
+      }
+     ],
+     "met": [
+      "junior",
+      "librarian",
+      "maker",
+      "witness"
+     ],
+     "held": true,
+     "measured": 0.206,
+     "runs": 103
+    },
+    {
+     "path": "weak-strong",
+     "p": 0.1389,
+     "curve": [
+      0,
+      1
+     ],
+     "firsts": [
+      {
+       "beat": "b2",
+       "bucket": "strong",
+       "introduces": [
+        "librarian"
+       ]
+      }
+     ],
+     "met": [
+      "junior",
+      "librarian",
+      "maker"
+     ],
+     "held": true,
+     "measured": 0.166,
+     "runs": 83
+    },
+    {
+     "path": "weak-weak",
+     "p": 0.1389,
+     "curve": [
+      0,
+      0
+     ],
+     "firsts": [
+      {
+       "beat": "b2",
+       "bucket": "weak",
+       "introduces": [
+        "librarian"
+       ]
+      }
+     ],
+     "met": [
+      "junior",
+      "librarian",
+      "maker"
+     ],
+     "held": true,
+     "measured": 0.134,
+     "runs": 67
+    },
+    {
+     "path": "strong-miss",
+     "p": 0.0972,
+     "curve": [
+      1,
+      0
+     ],
+     "firsts": [
+      {
+       "beat": "b1",
+       "bucket": "strong",
+       "introduces": [
+        "librarian",
+        "witness"
+       ]
+      }
+     ],
+     "met": [
+      "junior",
+      "librarian",
+      "maker",
+      "witness"
+     ],
+     "held": true,
+     "measured": 0.096,
+     "runs": 48
+    },
+    {
+     "path": "weak-miss",
+     "p": 0.0556,
+     "curve": [
+      0,
+      -1
+     ],
+     "firsts": [
+      {
+       "beat": "b2",
+       "bucket": "miss",
+       "introduces": [
+        "librarian",
+        "witness"
+       ]
+      }
+     ],
+     "met": [
+      "junior",
+      "librarian",
+      "maker",
+      "witness"
+     ],
+     "held": false,
+     "measured": 0.046,
+     "runs": 23
+    },
+    {
+     "path": "miss-strong",
+     "p": 0.0347,
+     "curve": [
+      -1,
+      0
+     ],
+     "firsts": [
+      {
+       "beat": "b2",
+       "bucket": "strong",
+       "introduces": [
+        "librarian"
+       ]
+      }
+     ],
+     "met": [
+      "junior",
+      "librarian",
+      "maker"
+     ],
+     "held": true,
+     "measured": 0.054,
+     "runs": 27
+    },
+    {
+     "path": "miss-weak",
+     "p": 0.0347,
+     "curve": [
+      -1,
+      -1
+     ],
+     "firsts": [
+      {
+       "beat": "b2",
+       "bucket": "weak",
+       "introduces": [
+        "librarian"
+       ]
+      }
+     ],
+     "met": [
+      "junior",
+      "librarian",
+      "maker"
+     ],
+     "held": false,
+     "measured": 0.044,
+     "runs": 22
+    },
+    {
+     "path": "miss-miss",
+     "p": 0.0139,
+     "curve": [
+      -1,
+      -2
+     ],
+     "firsts": [
+      {
+       "beat": "b2",
+       "bucket": "miss",
+       "introduces": [
+        "librarian",
+        "witness"
+       ]
+      }
+     ],
+     "met": [
+      "junior",
+      "librarian",
+      "maker",
+      "witness"
+     ],
+     "held": false,
+     "measured": 0.012,
+     "runs": 6
+    }
+   ],
+   "held_p": 0.8959,
+   "max_abs_gap": 0.0371,
+   "stopped_in_scene": {
+    "0": 500
+   },
+   "measured_bucket_rates": {
+    "b1": {
+     "strong": 0.544,
+     "weak": 0.346,
+     "miss": 0.11
+    },
+    "b2": {
+     "strong": 0.462,
+     "weak": 0.384,
+     "miss": 0.154
+    }
+   }
+  },
+  "random": {
+   "swing": {
+    "b1": {
+     "entropy_bits": 1.45,
+     "max_bits": 1.585,
+     "outcome_casts": {
+      "strong": [
+       "librarian",
+       "maker",
+       "witness"
+      ],
+      "weak": [
+       "maker"
+      ],
+      "miss": [
+       "maker"
+      ]
+     },
+     "cast_diverges": true,
+     "p_strong": 0.458,
+     "p_weak": 0.396,
+     "p_miss": 0.146,
+     "scene": 0
+    },
+    "b2": {
+     "entropy_bits": 1.45,
+     "max_bits": 1.585,
+     "outcome_casts": {
+      "strong": [
+       "librarian",
+       "maker"
+      ],
+      "weak": [
+       "librarian"
+      ],
+      "miss": [
+       "librarian",
+       "witness"
+      ]
+     },
+     "cast_diverges": true,
+     "p_strong": 0.458,
+     "p_weak": 0.396,
+     "p_miss": 0.146,
+     "scene": 0
+    }
+   },
+   "paths": [
+    {
+     "path": "strong-strong",
+     "p": 0.2101,
+     "curve": [
+      1,
+      2
+     ],
+     "firsts": [
+      {
+       "beat": "b1",
+       "bucket": "strong",
+       "introduces": [
+        "librarian",
+        "witness"
+       ]
+      }
+     ],
+     "met": [
+      "junior",
+      "librarian",
+      "maker",
+      "witness"
+     ],
+     "held": true,
+     "measured": 0.202,
+     "runs": 101
+    },
+    {
+     "path": "strong-weak",
+     "p": 0.1814,
+     "curve": [
+      1,
+      1
+     ],
+     "firsts": [
+      {
+       "beat": "b1",
+       "bucket": "strong",
+       "introduces": [
+        "librarian",
+        "witness"
+       ]
+      }
+     ],
+     "met": [
+      "junior",
+      "librarian",
+      "maker",
+      "witness"
+     ],
+     "held": true,
+     "measured": 0.15,
+     "runs": 75
+    },
+    {
+     "path": "weak-strong",
+     "p": 0.1814,
+     "curve": [
+      0,
+      1
+     ],
+     "firsts": [
+      {
+       "beat": "b2",
+       "bucket": "strong",
+       "introduces": [
+        "librarian"
+       ]
+      }
+     ],
+     "met": [
+      "junior",
+      "librarian",
+      "maker"
+     ],
+     "held": true,
+     "measured": 0.208,
+     "runs": 104
+    },
+    {
+     "path": "weak-weak",
+     "p": 0.1567,
+     "curve": [
+      0,
+      0
+     ],
+     "firsts": [
+      {
+       "beat": "b2",
+       "bucket": "weak",
+       "introduces": [
+        "librarian"
+       ]
+      }
+     ],
+     "met": [
+      "junior",
+      "librarian",
+      "maker"
+     ],
+     "held": true,
+     "measured": 0.152,
+     "runs": 76
+    },
+    {
+     "path": "strong-miss",
+     "p": 0.0668,
+     "curve": [
+      1,
+      0
+     ],
+     "firsts": [
+      {
+       "beat": "b1",
+       "bucket": "strong",
+       "introduces": [
+        "librarian",
+        "witness"
+       ]
+      }
+     ],
+     "met": [
+      "junior",
+      "librarian",
+      "maker",
+      "witness"
+     ],
+     "held": true,
+     "measured": 0.064,
+     "runs": 32
+    },
+    {
+     "path": "miss-strong",
+     "p": 0.0668,
+     "curve": [
+      -1,
+      0
+     ],
+     "firsts": [
+      {
+       "beat": "b2",
+       "bucket": "strong",
+       "introduces": [
+        "librarian"
+       ]
+      }
+     ],
+     "met": [
+      "junior",
+      "librarian",
+      "maker"
+     ],
+     "held": true,
+     "measured": 0.092,
+     "runs": 46
+    },
+    {
+     "path": "weak-miss",
+     "p": 0.0577,
+     "curve": [
+      0,
+      -1
+     ],
+     "firsts": [
+      {
+       "beat": "b2",
+       "bucket": "miss",
+       "introduces": [
+        "librarian",
+        "witness"
+       ]
+      }
+     ],
+     "met": [
+      "junior",
+      "librarian",
+      "maker",
+      "witness"
+     ],
+     "held": false,
+     "measured": 0.048,
+     "runs": 24
+    },
+    {
+     "path": "miss-weak",
+     "p": 0.0577,
+     "curve": [
+      -1,
+      -1
+     ],
+     "firsts": [
+      {
+       "beat": "b2",
+       "bucket": "weak",
+       "introduces": [
+        "librarian"
+       ]
+      }
+     ],
+     "met": [
+      "junior",
+      "librarian",
+      "maker"
+     ],
+     "held": false,
+     "measured": 0.066,
+     "runs": 33
+    },
+    {
+     "path": "miss-miss",
+     "p": 0.0213,
+     "curve": [
+      -1,
+      -2
+     ],
+     "firsts": [
+      {
+       "beat": "b2",
+       "bucket": "miss",
+       "introduces": [
+        "librarian",
+        "witness"
+       ]
+      }
+     ],
+     "met": [
+      "junior",
+      "librarian",
+      "maker",
+      "witness"
+     ],
+     "held": false,
+     "measured": 0.018,
+     "runs": 9
+    }
+   ],
+   "held_p": 0.8632,
+   "max_abs_gap": 0.0314,
+   "stopped_in_scene": {
+    "0": 500
+   },
+   "measured_bucket_rates": {
+    "b1": {
+     "strong": 0.416,
+     "weak": 0.408,
+     "miss": 0.176
+    },
+    "b2": {
+     "strong": 0.502,
+     "weak": 0.368,
+     "miss": 0.13
+    }
+   }
+  }
+ },
+ "run_at": "2026-10-16T23:05:44.057400+00:00",
+ "scenes": 1,
+ "decision": {
+  "beat": "b3",
+  "proposed_by": "architect"
+ }
+}
