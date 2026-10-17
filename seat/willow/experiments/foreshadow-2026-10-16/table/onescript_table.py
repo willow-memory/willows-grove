@@ -53,17 +53,35 @@ HELD = {
 }
 
 
+def _items(md: str, head: str) -> list[str]:
+    """The `- ` lines of one `## ` section. Every line is read or refused:
+    a line the pattern can't read stops the run, it is never skipped."""
+    sec = md.replace("\r\n", "\n").split(f"\n## {head}\n", 1)[1].split("\n## ", 1)[0]
+    return [x for x in sec.split("\n") if x.startswith("- ")]
+
+
+def _read(line: str, pattern: str, head: str) -> re.Match:
+    m = re.fullmatch(pattern, line)
+    if m is None:
+        sys.exit(f"record.md, {head}: can't read {line!r}; nothing migrated")
+    return m
+
+
 def human_lines(md: str) -> list[str]:
-    """The `## Human lines (verbatim)` section, each line as written (JSON-quoted)."""
-    sec = md.split("## Human lines (verbatim)", 1)[1].split("\n## ", 1)[0]
-    return [json.loads(m) for m in re.findall(r'^- \d+: (".*")$', sec, re.M)]
+    """The `## Human lines (verbatim)` section, each line as written (JSON-quoted),
+    numbered 1, 2, 3, ... with none missing."""
+    head = "Human lines (verbatim)"
+    got = [_read(x, r'- (\d+): (".*")', head) for x in _items(md, head)]
+    if [int(m[1]) for m in got] != list(range(1, len(got) + 1)):
+        sys.exit(f"record.md, {head}: lines are not numbered 1..{len(got)}")
+    return [json.loads(m[2]) for m in got]
 
 
 def sealed_facts(md: str) -> list[tuple[str, str, int]]:
     """(id, fact, line) from `## Sealed`, ordered by id."""
-    sec = md.split("## Sealed", 1)[1].split("\n## ", 1)[0]
-    got = re.findall(r"^- (s\d+): (.*) — line (\d+)$", sec, re.M)
-    return sorted((i, t, int(n)) for i, t, n in got)
+    pattern = r"- (s\d+): (.*) — line (\d+)"
+    got = [_read(x, pattern, "Sealed") for x in _items(md, "Sealed")]
+    return sorted((m[1], m[2], int(m[3])) for m in got)
 
 
 def pending_rows(md: str, ledger: dict) -> list[dict]:
@@ -115,7 +133,7 @@ def migrate() -> None:
     ledger = json.loads((HERE / "ledger.json").read_text(encoding="utf-8"))
     print(must(onescript("checkin"), "checkin"))
     for line in human_lines(md):
-        must(onescript("turn", line), "turn")
+        must(onescript("turn", "--", line), "turn")
     card = json.loads(
         must(onescript("scope", "--by", "who", "--match", "who=desk"), "scope")
     )
@@ -136,7 +154,12 @@ def propose(bite: str) -> None:
     must(onescript(*args, "--max-chars", str(MAX_CHARS)), "serve")
     doc = json.loads((BOX / "served.json").read_text(encoding="utf-8"))
     if doc["state"] != "populated" or len(doc["tables"]) != 1:
-        sys.exit(f"serve: {doc['state']}: {doc['why'] or 'expected one table'}")
+        hint = (
+            " (a new container: run `onescript checkin` first)"
+            if "serve key" in doc["why"]
+            else ""
+        )
+        sys.exit(f"serve: {doc['state']}: {doc['why'] or 'expected one table'}{hint}")
     cite = doc["tables"][0]["id"]
     rows = [
         json.loads(x) for x in PENDING.read_text(encoding="utf-8").splitlines() if x
@@ -149,7 +172,7 @@ def propose(bite: str) -> None:
         encoding="utf-8",
     )
     try:
-        print(must(onescript("turn", bite, "--proposal", str(out)), "turn"))
+        print(must(onescript("turn", "--proposal", str(out), "--", bite), "turn"))
     finally:
         out.unlink()  # its cite is this check-in's id; the record holds the rows
 
