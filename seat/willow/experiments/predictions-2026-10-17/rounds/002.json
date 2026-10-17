@@ -1,0 +1,25 @@
+{
+ "forecasts": {
+  "willow": {
+   "at": 1792199893,
+   "beacon_then": 6558962,
+   "p": {
+    "3d6": 0.26,
+    "d100": 0.37,
+    "max": 0.44,
+    "pair": 0.49
+   },
+   "sha256": "9018f67f35171031ff4b70b7567ff6cd8f3d37cfa279f944a2260e89992258b3"
+  }
+ },
+ "opened_by_beacon": 6558962,
+ "questions": {
+  "3d6": "Roll 3d6: is the sum 13 or more?",
+  "d100": "Roll a d100: 37 or under?",
+  "max": "Draw 5 numbers from 1\u2013100: is the largest 90 or more?",
+  "pair": "Deal 5 cards from a shuffled deck: do two share a rank?"
+ },
+ "round": 2,
+ "target": 6558972,
+ "target_at": 1792200180
+}
