@@ -29,6 +29,29 @@ says, in its detail, that only the record was read. It is ``unreachable`` only
 when it is configured and cannot be read, or when the record could not answer
 either (so the turn is never left saying nothing).
 
+The table (SPEC R13, no new panel): when the seat is pointed at a table box
+(``GROVE_SEAT_BOX``, see ``seat_cli.config``), ``api.needs`` also hands back the
+wagers and the table's own lines, and ``item_box`` lays them out like the rest:
+
+    wager ID reconciled · ...           a ``wager`` box, ``needs you`` (the grade is
+                                        yours): the forecast, the outcome and code's
+                                        score, one detail line each
+    wager ID escalate to human · WHY    a ``wager`` box, ``needs you``: a forecast
+                                        waiting on your outcome seal or tip
+    wager ID seal unreachable · WHY     an ``unreachable`` ``wager`` box
+    table verdict session S · ...       a ``verdict session`` box: ``needs you`` while
+                                        a tip seal is waited on, ``decided`` once it
+                                        covers it, ``unreachable`` when the tip was
+                                        not checked here (no human key)
+    table agm_head STATE · ...          an ``agm_head`` box: ``satisfied`` decided,
+                                        ``failing`` blocked, ``unreachable`` and
+                                        ``unanchored`` (an ``empty`` box) apart
+
+A decision beat awaiting a seal is a ``proposal`` line already. A line is
+scrubbed before it is a box (``scrub``): the human key's own hex, a ``seed`` or
+``key`` set to a value, and a long hex run that is not a 64-hex hash or a 40-hex commit
+never reach the screen, wherever a record's text put them.
+
 A box's fields are the record line's own parts, re-laid and never reworded:
 ``proposal · own_idea: no · PATH · VERDICT[ · REASON]`` is a ``proposal`` box
 (value ``proposal PATH: VERDICT``, detail ``own_idea: no`` and
@@ -110,6 +133,21 @@ STATUS_PHRASES = frozenset(
         "anything for me",
     }
 )
+#: Asked for the table's story: the served fact boxes said as one sentence by
+#: ``table_boxes.narrate`` (a model's, checked, else code's). Same exact-match
+#: rule as the status phrases; no substring, no model.
+STORY_PHRASES = frozenset(
+    {
+        "what happened at the table",
+        "whats happened at the table",
+        "what happened at the table so far",
+        "narrate the table",
+        "tell me the story",
+        "the story so far",
+        "whats the story so far",
+        "tell me what happened at the table",
+    }
+)
 _LEAD = ("please ", "ok ", "okay ", "so ", "hey ", "and ")
 _TRAIL = (
     " right now",
@@ -137,6 +175,11 @@ def _key(text: str) -> str:
     return t.replace("what is ", "whats ", 1) if t.startswith("what is ") else t
 
 
+def story_kind(text: str) -> bool:
+    """Whether the line asks for the table's story (``STORY_PHRASES``)."""
+    return _key(text) in STORY_PHRASES
+
+
 def status_kind(text: str) -> str | None:
     """``"where"`` (the whole state), ``"needs"`` (what waits on the human) or
     ``None`` (not a status question: a task, or something else the seat knows)."""
@@ -146,9 +189,10 @@ def status_kind(text: str) -> str | None:
     return "needs" if k in STATUS_PHRASES else None
 
 
-def _gone(state: str, why: str) -> Reading:
+def _gone(state: str, why: str, source: str = "record") -> Reading:
     value = f"empty — {why}" if state == "empty" else f"unreachable — {why}"
-    return Reading(state, why, [Box("rstate", "pass", "record", value, state=state)])
+    bid = "rstate" if source == "record" else "tstate"
+    return Reading(state, why, [Box(bid, "pass", source, value, state=state)])
 
 
 def _bid(line: str, seen: set[str]) -> str:
@@ -163,6 +207,56 @@ def _bid(line: str, seen: set[str]) -> str:
 
 PROPOSAL = "proposal · "
 RECHECK = re.compile(r"re-check (?P<row>row \d+ \([^)]*\)) · (?P<why>.+)", re.S)
+WAGER = re.compile(
+    r"wager (?P<id>\S+) (?P<state>reconciled|escalate to human|seal unreachable)"
+    r" · (?P<rest>.+)",
+    re.S,
+)
+SESSION = re.compile(
+    r"table verdict session (?P<sid>.+?) · (?P<rest>\d+ rows · .+)", re.S
+)
+AGM = re.compile(
+    r"table agm_head (?P<state>satisfied|failing|unreachable|unanchored)"
+    r"(?: · (?P<rest>.+))?",
+    re.S,
+)
+#: What a line must not carry onto the screen (see ``scrub``).
+WITHHELD = "[withheld]"
+_SECRET_SET = re.compile(
+    r"\b(?:seed|key|secret|token|passphrase|password)\b\s*[:=]\s*[0-9A-Za-z+/_=-]{8,}",
+    re.I,
+)
+_LONG_HEX = re.compile(r"(?<![0-9A-Za-z])[0-9a-fA-F]{24,}(?![0-9A-Za-z])")
+
+
+def scrub(line: str, secrets: tuple[str, ...] = ()) -> str:
+    """The line with every known secret, any ``seed``/``key`` set to a value and
+    any hex run of 24 or more characters that is not exactly a 64-hex hash (the
+    size of a record's own hashes, which the screen shortens) or a 40-hex git
+    commit replaced by ``[withheld]``. A secret is matched as given; the caller
+    hands in both a key's text and its hex."""
+    for sec in secrets:
+        if sec and len(sec) >= 4:
+            line = line.replace(sec, WITHHELD)
+    line = _SECRET_SET.sub(WITHHELD, line)
+    return _LONG_HEX.sub(
+        lambda m: m.group(0) if len(m.group(0)) in (40, 64) else WITHHELD, line
+    )
+
+
+def _parts(rest: str) -> str:
+    """The line's ` · ` parts, one detail line each (a detail that splits on
+    ` · ` would be read as chip options, which a score is not)."""
+    return "\n".join(x for x in (p.strip() for p in rest.split(" · ")) if x)
+
+
+def _tip_kind(tip: str) -> tuple[str, str]:
+    """(kind, state) of a verdict session's tip clause."""
+    if tip.startswith("covered by"):
+        return "dec", "populated"
+    if tip.startswith("waiting on"):
+        return "you", "populated"
+    return "block", "unreachable"  # not checked here: no human key was handed over
 
 
 def item_box(line: str, seen: set[str]) -> Box:
@@ -180,11 +274,62 @@ def item_box(line: str, seen: set[str]) -> Box:
     m = RECHECK.fullmatch(line)
     if m:
         return Box(bid, "you", "re-check", f"re-check {m['row']}", m["why"])
+    if m := WAGER.fullmatch(line):  # R13: the forecast, its outcome, its score
+        if m["state"] == "seal unreachable":
+            return Box(
+                bid,
+                "block",
+                "wager",
+                f"unreachable — wager {m['id']} seal: {m['rest']}",
+                state="unreachable",
+            )
+        return Box(
+            bid, "you", "wager", f"wager {m['id']} {m['state']}", _parts(m["rest"])
+        )
+    if m := SESSION.fullmatch(line):  # R13: a verdict session, and its tip
+        parts = m["rest"].split(" · ")
+        kind, state = _tip_kind(parts[-1])
+        value = f"table verdict session {m['sid']}"
+        if state == "unreachable":
+            value = f"unreachable — {value}: {parts[-1]}"
+            parts = parts[:-1]
+        return Box(
+            bid, kind, "verdict session", value, _parts(" · ".join(parts)), state=state
+        )
+    if m := AGM.fullmatch(line):  # R13: the ai-game-master ledger head
+        state, rest = m["state"], m["rest"] or ""
+        value = f"table agm_head {state}"
+        if state == "unanchored":
+            return Box(
+                bid, "pass", "agm_head", f"empty — {rest or value}", state="empty"
+            )
+        if state == "unreachable":
+            return Box(
+                bid,
+                "block",
+                "agm_head",
+                f"unreachable — {rest or value}",
+                state="unreachable",
+            )
+        return Box(
+            bid,
+            "block" if state == "failing" else "dec",
+            "agm_head",
+            value,
+            _parts(rest),
+        )
     return Box(bid, "you", "record", line)
 
 
 def _counts(items: list[Box]) -> str:
-    names = {"proposal": "proposal", "re-check": "re-check", "record": "other"}
+    names = {
+        "proposal": "proposal",
+        "re-check": "re-check",
+        "wager": "wager",
+        "verdict session": "verdict session",
+        "agm_head": "agm_head",
+        "record": "other",
+    }
     out = []
     for label in names:
         n = sum(b.label == label for b in items)
@@ -193,11 +338,24 @@ def _counts(items: list[Box]) -> str:
     return ", ".join(out)
 
 
-def read_needs(api: object, cfg: object) -> Reading:
+def read_needs(
+    api: object,
+    cfg: object,
+    *,
+    human_key: object = None,
+    read_head: object = None,
+    secrets: tuple[str, ...] = (),
+) -> Reading:
     """The record's NEEDS YOU as boxes, by ``api.needs``. Never raises: a read
-    that fails is an ``unreachable`` reading. One ``invocation`` row, no other."""
+    that fails is an ``unreachable`` reading. One ``invocation`` row, no other.
+
+    ``human_key`` (a file outside the box) and ``read_head`` (the table's ledger
+    reader) are handed to ``api.needs`` only when set, so a box that is no
+    table's, and an older willow-bot, are asked exactly as before. ``secrets``
+    are strings no line may show (``scrub``)."""
+    kw = {k: v for k, v in (("human_key", human_key), ("read_head", read_head)) if v}
     try:
-        res = api.needs(cfg)  # type: ignore[attr-defined]
+        res = api.needs(cfg, **kw)  # type: ignore[attr-defined]
     except Exception as e:  # noqa: BLE001 - an older willow-bot has no needs
         why = (
             "this willow-bot has no needs read (the one script is older)"
@@ -211,7 +369,9 @@ def read_needs(api: object, cfg: object) -> Reading:
     lines = res.get("needs")
     if not isinstance(lines, list) or not all(isinstance(x, str) for x in lines):
         return _gone("unreachable", "the needs read is not a list of lines")
-    lines = [x for x in (" ".join(_clean(x).split()) for x in lines) if x]
+    lines = [
+        x for x in (scrub(" ".join(_clean(x).split()), secrets) for x in lines) if x
+    ]
     if not lines:
         return _gone("empty", "nothing on the record waits on you")
     seen: set[str] = {"rstate"}

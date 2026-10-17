@@ -19,6 +19,17 @@
 #                     bot), else ./.venv, else python3
 #   WILLOW_HOME       finds the venvs and the operator's public keyring
 #   WILLOW_NESTOR_DB  Nestor's store, read-only: where a seal is looked up
+#   GROVE_SEAT_BOX    point the seat at another box, a table's (SPEC R13): its
+#                     NEEDS YOU then carries the wagers, the verdict sessions and
+#                     the agm_head check, read through api.needs / api.checkout
+#   GROVE_SEAT_KEYS   that box's keys file (default: the seat's own)
+#   GROVE_SEAT_HUMAN_KEY  the human's key, a 0600 file outside the box: a sealed
+#                     tip is checked and scores show; never printed
+#   GROVE_SEAT_LEDGER the ai-game-master campaign.db, for the agm_head check
+#                     (THE_TABLE_ROOT finds the_table.agm_head)
+#   GROVE_SEAT_GRAPH  a cbm project: a qualified file.py:name cite in a model
+#                     sentence is read against its code graph (stale or
+#                     unreachable is "unchecked", said; never re-indexes)
 #   GROVE_SAY_MODEL   the reply model (default qwen3:4b); --model NAME wins over it
 #   OLLAMA_HOST       the local model's Ollama, loopback only (default 127.0.0.1:11434);
 #                     it says each reply's sentence (qwen3:4b) and code checks it

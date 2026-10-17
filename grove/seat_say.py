@@ -282,12 +282,59 @@ def _bare(sentence: str) -> str:
     return re.sub(r"['’]s\b", "", CITE.sub(" ", sentence))
 
 
+def symbol_rows(
+    sentence: str,
+    claims: Callable[[str, dict], list[dict]] | None,
+    symbols: Callable[[str], dict] | None,
+) -> list[dict]:
+    """The ``symbol`` claims of a sentence (T-cbm-1): each qualified
+    ``file.py:name`` or ``file.py:line`` cite read against the code graph by the
+    layer-5 gate (``claims`` = ``gate.check_claims``; ``symbols`` = the graph
+    reader, ``graph.symbols_for`` bound to a project). Rows are ``verified``,
+    ``unverified`` (a fresh graph holds no such symbol: struck) or ``unchecked``
+    (graph stale, unreachable, not asked, or a gate that cannot answer: said,
+    never passed as verified). No reader, no gate or no cite: no rows. Bare names
+    are never cites. This is part of ``every cite was served``, not a fifth
+    check (``CHECK_NAMES`` stays four)."""
+    if claims is None or symbols is None:
+        return []
+    try:
+        rows = claims(sentence, {"symbols": symbols(sentence)})
+    except Exception as e:  # noqa: BLE001 - a gate that can't answer verifies nothing
+        return [
+            {
+                "kind": "symbol",
+                "claim": "a code cite",
+                "verdict": "unchecked",
+                "record": f"the code graph could not be asked: {type(e).__name__}",
+            }
+        ]
+    return [r for r in rows if r.get("kind") == "symbol"]
+
+
+def symbol_notes(rows: list[dict]) -> list[str]:
+    """One plain line per claim that was not verified, so a stale or unreachable
+    graph is said beside the checks and not left as a silent pass."""
+    return [
+        f"{r.get('verdict')}: {r.get('claim')} ({r.get('record')})"
+        for r in rows
+        if r.get("verdict") != "verified"
+    ]
+
+
 def check_cites_served(
-    sentence: str, boxes: list[Box], earlier: list[Box] | None = None
+    sentence: str,
+    boxes: list[Box],
+    earlier: list[Box] | None = None,
+    symbols: list[dict] | None = None,
 ) -> bool:
     """Every ``[id]`` the sentence cites is a box that was served: one of this
-    page's boxes, or one of the ``earlier`` boxes of this run's thread."""
+    page's boxes, or one of the ``earlier`` boxes of this run's thread. A code
+    cite (``symbols``, from ``symbol_rows``) the code graph does not hold fails
+    too; one the graph could not be asked about is ``unchecked`` and does not."""
     served = {b.id for b in boxes} | {b.id for b in earlier or []}
+    if any(r.get("verdict") == "unverified" for r in symbols or []):
+        return False
     return set(CITE.findall(sentence)) <= served
 
 
@@ -361,11 +408,13 @@ def run_checks(
     human: str = "",
     claims: Callable[[str, dict], list[dict]] | None = None,
     earlier: list[Box] | None = None,
+    symbols: list[dict] | None = None,
 ) -> list[bool | str]:
     """The four results, in ``CHECK_NAMES`` order: True, False, or ``"na"``.
-    ``earlier`` is the boxes of this run's thread the prompt carried."""
+    ``earlier`` is the boxes of this run's thread the prompt carried; ``symbols``
+    is ``symbol_rows`` of the sentence (T-cbm-1)."""
     return [
-        check_cites_served(sentence, boxes, earlier),
+        check_cites_served(sentence, boxes, earlier, symbols),
         check_boxes_cited(sentence, boxes),
         check_nothing_lacking(sentence, boxes, human, earlier),
         check_quotes(sentence, human, claims),
