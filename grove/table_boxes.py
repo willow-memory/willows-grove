@@ -29,8 +29,9 @@ What a model may do here is one thing: rewrite the code sentence
 (``seat_boxes.compose``, one cited sentence per fact box) under
 ``seat_say.run_checks`` (every cite served, every box cited, nothing the
 boxes lack) plus the table checks (R21, B5): no quotes at all in table
-narration; per clause, every number and verdict word a clause holds must be
-in the one box that clause cites; no fleet noun (DECISION.md §3: Willow,
+narration; per clause, every number and content word a clause holds must be
+in the VALUE of the one box that clause cites, exactly, no stemming, glue
+free, a spelled number a content word, each cite with a clause of its own; no fleet noun (DECISION.md §3: Willow,
 Grove, Nestor, Jeles, SOIL, SAFE never reach a player; a word a fact box
 itself holds is exempt, and plurals and possessives of a fleet noun are
 caught). A sentence that fails any check is struck and the code sentence
@@ -49,14 +50,13 @@ from __future__ import annotations
 import re
 from collections.abc import Callable
 
-from grove.seat_boxes import Box, compose, lore_box
+from grove.seat_boxes import GLUE, Box, compose, lore_box
 from grove.seat_say import (
     CHECK_NAMES,
     CITE,
     NUMBER,
-    QUOTE,
+    STOP,
     WORD,
-    _bare,
     _fold,
     build_prompt,
     check_boxes_cited,
@@ -205,6 +205,7 @@ def scene_boxes(
 def served_boxes(doc: dict) -> list[Box]:
     """A served document's rows as boxes; each id is the served table id with
     the row's place in it (``<served id>_<i>``: ``_`` so ``seat_say.CITE`` reads it), so a cite is a served id.
+    Only a table that is populated and ``human-sealed`` yields boxes (NIT-3).
     These are the boxes a model may be asked to say."""
     out: list[Box] = []
     if not isinstance(doc, dict) or doc.get("state") != "populated":
@@ -216,6 +217,13 @@ def served_boxes(doc: dict) -> list[Box]:
         )
         return [Box("served", "pass", "served", f"{state} — {why}", state=state)]
     for t in doc.get("tables") or []:
+        if not isinstance(t, dict):
+            continue
+        if (
+            t.get("state", "populated") != "populated"
+            or t.get("trust") != "human-sealed"
+        ):
+            continue  # NIT-3: only a sealed, populated table's rows are facts
         tid = str(t.get("id", ""))
         for i, row in enumerate(t.get("rows") or []):
             b = box_of(row, f"{tid}_{i}") if isinstance(row, dict) else None
@@ -260,21 +268,63 @@ def shown(boxes: list[Box]) -> list[Box]:
 
 # --- the table checks (R21) --------------------------------------------------------
 
+#: Every quote mark (NIT-1). `'` and `’` count only as quotes, not as the
+#: apostrophe inside a word (``Grit's``, ``don’t``).
+_QUOTE_MARKS = re.compile(r"[\"“”«»‘‚‛`″‟]|(?<![^\W\d_])['’]|['’](?![^\W\d_])")
+#: Spelled numbers read as numbers (R21: normalised or refused).
+NUMBER_WORDS = frozenset(
+    "zero one two three four five six seven eight nine ten eleven twelve "
+    "thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty".split()
+)
+#: Words free in any clause: the seat's glue and function words.
+_FREE = frozenset({w for g in GLUE for w in WORD.findall(_fold(g))} | {w for w in STOP})
+
 
 def check_no_quotes(sentence: str) -> bool:
     """Table narration quotes nothing: a quote is no way past the boxes."""
-    return not QUOTE.search(sentence) and '"' not in sentence and "“" not in sentence
+    return not _QUOTE_MARKS.search(sentence)
 
 
-def _box_words(b: Box) -> tuple[set[str], set[str]]:
-    text = _fold(f"{b.label} {b.value} {b.detail}")
-    return set(NUMBER.findall(text)), {w for w in WORD.findall(text) if w in BANDS}
+def _value_words(b: Box) -> tuple[list[str], set[str]]:
+    """The checkable vocabulary of a box: its VALUE only (R21 refinement):
+    for a roll, turn N, total T and verdict V; a detail stays code's."""
+    text = _fold(re.sub(r"['’]s\b", "", b.value))
+    return NUMBER.findall(text), set(WORD.findall(text))
+
+
+_ROLL_VALUE = re.compile(r"^turn (\d+) rolled (\d+)\b")
+_AFTER_TURN = re.compile(r"\bturn\s+(\d+)")
+
+
+def _numbers_match(clause: str, b: Box) -> bool:
+    """Every number in the clause is the box's, exactly. For a roll box the
+    number said after ``turn`` must be its turn N and any other number its
+    total T, so ``turn 11 rolled 0`` is not ``turn 0 rolled 11`` while
+    ``rolled 11 on turn 0`` is."""
+    nums, _ = _value_words(b)
+    got = NUMBER.findall(clause)
+    m = _ROLL_VALUE.match(_fold(b.value))
+    if m is None:
+        return set(got) <= set(nums)
+    turn, total = m.group(1), m.group(2)
+    after_turn = _AFTER_TURN.findall(clause)
+    if any(n != turn for n in after_turn):
+        return False
+    rest = list(got)
+    for n in after_turn:
+        rest.remove(n)
+    return all(n == total for n in rest)
 
 
 def check_clauses(sentence: str, boxes: list[Box]) -> bool:
-    """Per clause (the text up to each ``[id]`` cite): every number and
-    every verdict word in the clause is in the one box the clause cites. A
-    trailing clause with no cite may hold no number or verdict word."""
+    """Per clause (the text up to each ``[id]`` cite): every number and every
+    content word in the clause is in the VALUE of the one box the clause
+    cites; glue and function words are free; numbers compare exactly, a
+    roll's turn after ``turn`` and its total elsewhere (``_numbers_match``);
+    verdict and every other word match exactly, no stemming (``missed`` is
+    not ``miss``); a spelled number is a content word like any other. Each
+    cite needs a clause of its own saying something from its box (NIT-2),
+    and a trailing clause with no cite may hold no content word or number."""
     by_id = {b.id: b for b in boxes}
     end = 0
     for m in _CLAUSE.finditer(sentence):
@@ -283,14 +333,18 @@ def check_clauses(sentence: str, boxes: list[Box]) -> bool:
         b = by_id.get(cid)
         if b is None:
             return False
-        nums, verdicts = _box_words(b)
-        text = _fold(_bare(clause))
-        if not set(NUMBER.findall(text)) <= nums:
+        _, words = _value_words(b)
+        text = _fold(re.sub(r"['’]s\b", "", clause))
+        got_nums = NUMBER.findall(text)
+        content = [w for w in WORD.findall(text) if w not in _FREE]
+        if not _numbers_match(text, b):
             return False
-        if any(w in BANDS and w not in verdicts for w in WORD.findall(text)):
+        if any(w not in words for w in content):
             return False
-    tail = _fold(_bare(sentence[end:]))
-    if NUMBER.search(tail) or any(w in BANDS for w in WORD.findall(tail)):
+        if not got_nums and not content:
+            return False  # NIT-2: a cite with no clause of its own
+    tail = _fold(sentence[end:])
+    if NUMBER.search(tail) or any(w not in _FREE for w in WORD.findall(tail)):
         return False
     return True
 

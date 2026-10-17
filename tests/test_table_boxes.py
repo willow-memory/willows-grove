@@ -19,6 +19,7 @@ SERVED = {
     "tables": [
         {
             "id": TID,
+            "trust": "human-sealed",
             "rows": [
                 {
                     "what": "verdict",
@@ -310,6 +311,7 @@ def test_fleet_noun_the_world_itself_holds_is_exempt_but_not_its_plural():
         "tables": [
             {
                 "id": "b" * 64,
+                "trust": "human-sealed",
                 "rows": [
                     {
                         "what": "verdict",
@@ -448,3 +450,197 @@ def test_a_set_piece_escalate_or_crash_is_an_empty_or_unreachable_draft():
     assert d.state == "unreachable" and d.role == tb.DRAFT and "no cloud" in d.value
     d = tb.set_piece_draft(lambda p, b: "not rows", boxes(), "x")
     assert d.state == "empty" and "proposed nothing" in d.value
+
+
+# ── round 3: R21 refined (value only, exact words), NIT-1, NIT-2, NIT-3 ───────
+XDOC = {
+    "state": "populated",
+    "why": "",
+    "tables": [
+        {
+            "id": "T1",
+            "trust": "human-sealed",
+            "rows": [
+                {
+                    "what": "verdict",
+                    "verdict": "strong",
+                    "turn": 0,
+                    "total": 11,
+                    "reason": "2d6+3 = 11: 10+",
+                    "beat": "b1",
+                    "session": "A",
+                },
+                {
+                    "what": "verdict",
+                    "verdict": "miss",
+                    "turn": 1,
+                    "total": 6,
+                    "reason": "2d6+1 = 6: 6-",
+                    "beat": "b2",
+                    "session": "A",
+                },
+                {
+                    "what": "lore",
+                    "where": "The Vale",
+                    "fact": "A clean hit takes nine coins from the ferryman.",
+                },
+            ],
+        }
+    ],
+}
+XGOOD = (
+    "Turn 0 rolled 11, strong [T1_0]. Turn 1 rolled 6, miss [T1_1]. "
+    "A clean hit takes nine coins from the ferryman [T1_2]."
+)
+
+
+def xnar(sentence):
+    return tb.narrate(tb.served_boxes(XDOC), say=lambda p: sentence)
+
+
+def test_the_honest_sentence_over_the_x_doc_stands():
+    r = xnar(XGOOD)
+    assert r["source"] == "model" and r["checks"] == [True] * 6
+    r = xnar(
+        "Looks like turn 0 rolled 11, strong [T1_0], and turn 1 rolled 6, miss [T1_1]; "
+        "a clean hit takes nine coins from the ferryman [T1_2]."
+    )
+    assert r["source"] == "model"
+
+
+@pytest.mark.parametrize(
+    "lie",
+    [
+        # NEW-1: in-box number swaps (rows 1-3)
+        XGOOD.replace("rolled 11, strong", "rolled 6, strong"),
+        XGOOD.replace("rolled 11, strong", "rolled 1, strong"),
+        XGOOD.replace("Turn 0 rolled 11", "Turn 11 rolled 0"),
+        XGOOD.replace("rolled 11", "rolled 3"),
+        XGOOD.replace("rolled 11", "rolled 10"),
+        # NEW-2: spelled number, verdict synonym, inflection (rows 4-6)
+        XGOOD.replace("rolled 11", "rolled nine"),
+        XGOOD.replace("rolled 6, miss", "rolled 6, a clean hit"),
+        XGOOD.replace("rolled 11, strong", "rolled 11 and missed"),
+        XGOOD.replace("rolled 6, miss", "rolled 6, missing nothing"),
+        # a detail word is code's, never a model clause's
+        XGOOD.replace("rolled 11, strong", "rolled 11, strong, 2d6+3"),
+        XGOOD.replace("rolled 11, strong", "rolled 11, strong on beat b1"),
+        # a verdict word moved to a lore clause that holds none
+        "Turn 0 rolled 11 [T1_0]. Turn 1 rolled 6 [T1_1]. A clean hit takes nine coins, strong [T1_2].",
+        # a word from another box in this clause
+        XGOOD.replace("rolled 6, miss", "rolled 6, miss, the ferryman"),
+        # fleet nouns
+        "Willow says " + XGOOD[0].lower() + XGOOD[1:],
+        XGOOD[:-1] + ", safely.",
+    ],
+)
+def test_R21_a_clause_says_only_its_own_box_value(lie):
+    r = xnar(lie)
+    assert r["struck"] and r["source"] == "code", lie
+
+
+@pytest.mark.parametrize(
+    "lie",
+    [
+        # NIT-2: two cites one clause / cite first / no cites
+        "Turn 0 rolled 11, strong [T1_0] [T1_1]. A clean hit takes nine coins from the ferryman [T1_2].",
+        "[T1_0] Turn 0 rolled 11, strong, turn 1 rolled 6, miss [T1_1]. "
+        "A clean hit takes nine coins from the ferryman [T1_2].",
+        "Turn 0 rolled 11, strong. Turn 1 rolled 6, miss.",
+    ],
+)
+def test_NIT2_every_cite_needs_its_own_clause(lie):
+    r = xnar(lie)
+    assert r["struck"] and r["source"] == "code", lie
+
+
+@pytest.mark.parametrize(
+    "lie",
+    [
+        XGOOD.replace("strong", "«strong»"),
+        XGOOD.replace("strong", "`strong`").replace("miss", "‘miss’"),
+        XGOOD.replace("strong", "″strong″"),
+        XGOOD.replace("strong", "'strong'"),
+        XGOOD.replace("strong", "“strong”"),
+    ],
+)
+def test_NIT1_every_quote_mark_is_banned(lie):
+    r = xnar(lie)
+    assert r["struck"] and r["checks"][3] is False, lie
+
+
+def test_NIT1_an_apostrophe_inside_a_word_is_not_a_quote():
+    assert tb.check_no_quotes("the ferryman's coins and don’t") is True
+    assert tb.check_no_quotes("the 'coins'") is False
+    assert tb.check_no_quotes("coins ' and") is False
+
+
+def test_NIT3_served_boxes_skips_unpopulated_or_untrusted_tables():
+    doc = {
+        "state": "populated",
+        "why": "",
+        "tables": [
+            {
+                "id": "x",
+                "trust": "untrusted",
+                "state": "unreachable",
+                "rows": [
+                    {"what": "lore", "fact": "The ferryman is a dragon.", "where": "V"}
+                ],
+            },
+            {
+                "id": "y",
+                "trust": "untrusted",
+                "rows": [
+                    {"what": "lore", "fact": "The ferryman is a troll.", "where": "V"}
+                ],
+            },
+            {
+                "id": "z",
+                "trust": "human-sealed",
+                "state": "unreachable",
+                "rows": [
+                    {"what": "lore", "fact": "The ferryman is a ghost.", "where": "V"}
+                ],
+            },
+            {
+                "id": "w",
+                "trust": "human-sealed",
+                "rows": [
+                    {
+                        "what": "lore",
+                        "fact": "The ferryman takes only salt.",
+                        "where": "V",
+                    }
+                ],
+            },
+        ],
+    }
+    assert [b.value for b in tb.facts(tb.served_boxes(doc))] == [
+        "The ferryman takes only salt."
+    ]
+
+
+def test_record_boxes_never_reach_a_model_even_as_earlier_or_a_set_piece():
+    rows = [
+        {
+            "n": 3,
+            "kind": "verdict",
+            "what": "roll",
+            "where": "s1",
+            "scene": "s1",
+            "turn": 0,
+            "total": 11,
+            "verdict": "strong",
+            "reason": "r",
+        },
+        {"n": 4, "kind": "lore", "where": "V", "fact": "unsealed dragon."},
+    ]
+    bx = tb.scene_boxes(rows, servable=lambda r: True)
+    asked = []
+    tb.narrate(bx, say=lambda p: asked.append(p) or "x")
+    tb.narrate(tb.served_boxes(XDOC), say=lambda p: asked.append(p) or "x", earlier=bx)
+    tb.set_piece_draft(
+        lambda p, f: asked.append(repr([b.id for b in f])) or [], bx, "p"
+    )
+    assert not any("dragon" in a or "r3" in a for a in asked)
