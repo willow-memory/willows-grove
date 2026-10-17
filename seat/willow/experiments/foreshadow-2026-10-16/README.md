@@ -108,7 +108,9 @@ key; the real box was not touched.
 | A14 | Seal, a new check-in, then `propose` | Works: the spec pins the stack. In a new container `propose` needs `onescript checkin` first, and now says so |
 | A15 | Seal, then a new human turn, then `propose` | Works |
 
-A5 is willow-bot's to fix: the seal row should carry its proof (or Nestor pair
-id), and `serve.sealed()` and `write_proposal` should re-verify it, not read
-`who`. Until then, a sealed tip (anchor) only guards the rows up to it.
+A5 is fixed in willow-bot, in [willow-memory/willow-bot#137](https://github.com/willow-memory/willow-bot/pull/137)
+(open, CI green): a seal row carries its proof or Nestor pair, and every reader
+checks it again. Re-tested 2026-10-17: the attacks above, plus 8 aimed at the
+fix, all hold (handoff
+[`foreshadow-table-handoff-2026-10-17.md`](../../../../docs/design/handoffs/foreshadow-table-handoff-2026-10-17.md)).
 
