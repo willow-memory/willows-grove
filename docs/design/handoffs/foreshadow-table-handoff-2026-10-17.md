@@ -13,7 +13,7 @@ last six rows and all of §4 and §5 are its.*
 | Repo | Branch | State |
 |---|---|---|
 | willows-grove | `claude/intelligent-bohr-dm1up4` | Pushed. Everything on `claude/cool-volta-hfkg92` (the table's one-script record, its importer, the break test) plus this handoff as updated. No PR |
-| willow-bot | `claude/wizardly-dijkstra-va6dic` | Pushed: [willow-memory/willow-bot#137](https://github.com/willow-memory/willow-bot/pull/137), open, head `c46416a`, 9 commits. Description rewritten to match. CI on the head had not reported at hand-off. Waiting on the human's review |
+| willow-bot | `claude/wizardly-dijkstra-va6dic` | Pushed: [willow-memory/willow-bot#137](https://github.com/willow-memory/willow-bot/pull/137), open, head `c46416a`, 9 commits. Description rewritten to match. CI green on the head: 14 of 14 checks, one-script and test-matrix on Python 3.10–3.14, CodeQL. Waiting on the human's review |
 | willow-bot | `pr137` (local only) | A leftover local branch at `bbc1a42`, never pushed. Ignore it |
 
 To run the table in a new container:
@@ -66,7 +66,7 @@ around, and a wager's outcome is inside what the human signs.
 ## §4 Seventeen questions
 
 1. Is PR 137 reviewed and merged as it stands, nine commits and all?
-2. Does CI pass on Python 3.10–3.14 on the head `c46416a` (only the container's Python was run)?
+2. Should a later push on PR 137 be re-checked against the morning screen by hand, since CI (green on `c46416a`) runs no box with real old seals?
 3. On the human's own box, is the anchor file present and readable when the first new verb runs, so its old seals stay pinned?
 4. Roughly how many seal rows on the human's own box predate PR 137?
 5. Does the human seal the table's scope (`table/scope-card.json`) next?
