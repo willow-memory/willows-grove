@@ -1,0 +1,13 @@
+{
+ "forecasts": {},
+ "opened_by_beacon": 6558952,
+ "questions": {
+  "3d6": "Roll 3d6: is the sum 13 or more?",
+  "fixed": "Shuffle 8 numbered cards: is any card in its own place?",
+  "pair": "Deal 5 cards from a shuffled deck: do two share a rank?",
+  "six": "Flip 12 coins: exactly 6 heads?"
+ },
+ "round": 1,
+ "target": 6558962,
+ "target_at": 1792199880
+}
