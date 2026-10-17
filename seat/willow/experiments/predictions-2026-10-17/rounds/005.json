@@ -1,5 +1,16 @@
 {
  "forecasts": {
+  "human": {
+   "at": 1792200832,
+   "beacon_then": 6558993,
+   "p": {
+    "birthday": 0.5,
+    "d100": 0.35,
+    "distinct": 0.05,
+    "pair": 0.5
+   },
+   "sha256": "55ef3d2d2c1b1585713f74e252f43ef9e769bccfa457765577917662df31b990"
+  },
   "willow": {
    "at": 1792200796,
    "beacon_then": 6558992,
