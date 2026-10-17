@@ -1,0 +1,25 @@
+{
+ "forecasts": {
+  "willow": {
+   "at": 1792200493,
+   "beacon_then": 6558982,
+   "p": {
+    "birthday": 0.51,
+    "distinct": 0.015,
+    "streak": 0.48,
+    "ten": 0.65
+   },
+   "sha256": "a93c091ea57c21e1e64a235042d47f53674cc710a27827fd0da0d3c85faa5546"
+  }
+ },
+ "opened_by_beacon": 6558982,
+ "questions": {
+  "birthday": "23 people, birthdays drawn from 365 days: do any two share one?",
+  "distinct": "Roll 6d6: are all six faces different?",
+  "streak": "Flip 20 coins: is there a run of 4 or more heads?",
+  "ten": "Roll 10d10: does a 10 come up?"
+ },
+ "round": 4,
+ "target": 6558992,
+ "target_at": 1792200780
+}
