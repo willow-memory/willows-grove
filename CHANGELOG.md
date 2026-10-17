@@ -2,6 +2,28 @@
 
 All notable changes land here per INVARIANTS.md §3. Format follows Keep a Changelog v1.1.0.
 
+## [0.25.0](https://github.com/willow-memory/willows-grove/compare/v0.24.2...v0.25.0) (2026-10-17)
+
+
+### Added
+
+* **experiments:** export rounds as one-script forecasts; the table's f1 as a wager ([9b97caa](https://github.com/willow-memory/willows-grove/commit/9b97caa61ab40ce033ca0edcf139bd6008cf5992))
+* **seat:** box build — the table's boxes, checked narrator, table surface, and the build record ([#157](https://github.com/willow-memory/willows-grove/issues/157)) ([96bcce8](https://github.com/willow-memory/willows-grove/commit/96bcce86315e9a3813ebedcbbbaeb8408d229d57))
+* **seat:** the table on the seat's screen; symbol cites in a model sentence (W4, R13, T-cbm-1) ([426bfa4](https://github.com/willow-memory/willows-grove/commit/426bfa4ab286bf220fa8318760338ac8b844faff))
+* **seat:** the table's boxes and the checked narrator (W3b, R12, C16, N9) ([a600f82](https://github.com/willow-memory/willows-grove/commit/a600f822eea0085f2ac898130544d02e0df47418))
+* **seat:** W4 revision 2 — B1 table unreachable card, Q1 a peeked second box, R23 beacon note ([ea4dc85](https://github.com/willow-memory/willows-grove/commit/ea4dc85e9f17ad9a07654a4540fa42d602dca454))
+
+
+### Fixed
+
+* **ci:** Windows legs — persona check reads git as UTF-8; seat-table path asserts are portable ([e0a074a](https://github.com/willow-memory/willows-grove/commit/e0a074ac3e542b9252e940c496773ff931ec3476))
+* **experiments:** export.py says what it checks, and refuses a late forecast ([540dc7c](https://github.com/willow-memory/willows-grove/commit/540dc7ce3cf30afba6cc0fe52a3091f48d840835))
+* **seat:** W3b revision — the narrator after the audit (R21, B5, S1-S4, F1) ([5384726](https://github.com/willow-memory/willows-grove/commit/5384726687ec52d64cdde4f39f67e90c44cdfbbf))
+* **seat:** W3b round 3 — R21 refined (NEW-1, NEW-2, NIT-1, NIT-2, NIT-3) ([d22832e](https://github.com/willow-memory/willows-grove/commit/d22832e1e4d2e2d039f0bc999ae4e401bcf6ae35))
+* **seat:** W3b round 4 — R21b: negators never free, lore word for word, H4 ([20bb083](https://github.com/willow-memory/willows-grove/commit/20bb083f7c92ad5bc112a76d3681bf7643ed7107))
+* **seat:** W4 break 2 — items 7, 9, 10, 11 and the chip rule of 8 ([88bc1ef](https://github.com/willow-memory/willows-grove/commit/88bc1ef98e5205ee93d5f1b827517c0728008466))
+* **seat:** W4 revision 1 — B2, S4, Q2, N8 (scrub hardened, escalate text never shown) ([d6b168a](https://github.com/willow-memory/willows-grove/commit/d6b168a38ab5628bf130853fe0ae2586da26a74d))
+
 ## [0.24.2](https://github.com/willow-memory/willows-grove/compare/v0.24.1...v0.24.2) (2026-10-15)
 
 
