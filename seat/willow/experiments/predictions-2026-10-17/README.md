@@ -1,6 +1,6 @@
 # Predicting random things (2026-10-17)
 
-§1 What this is · §2 Play · §3 Scoring · §4 Limits
+§1 What this is · §2 Play · §3 Scoring · §4 Limits · §5 Results (2026-10-17)
 
 ## §1 What this is
 
@@ -37,3 +37,20 @@ reveal). Beating the oracle over many rounds is luck; matching it is skill.
 | Beacon not verified | The drand BLS signature is stored in the round file, not checked (no BLS library in the standard library) |
 | The agent knows the odds | It wrote the deck and its exact-odds checks, so its forecasts are oracle-informed. The human's forecasts are the real test |
 | One forecast per player per round | A forecast stands once written; no edits |
+
+## §5 Results (2026-10-17)
+
+Seven rounds, 28 questions, beacon rounds 6558962 to 6559022. Every
+forecast was written 6 to 10 beacon rounds before its data existed; none
+was refused or edited. Round files: `rounds/001.json` to `rounds/007.json`.
+
+| Rank | Who | Questions | Mean Brier |
+|---|---|---|---|
+| 1 | human | 28 | 0.15971 |
+| 2 | oracle | 28 | 0.15988 |
+| 3 | willow (the desk) | 28 | 0.15991 |
+| 4 | coin flip | 28 | 0.250 |
+
+The three are 0.0002 apart: noise. The human's one large miss was round 1's
+`3d6` (12% against 26%); from round 4 on, every human forecast sat within a
+few points of the exact odds.
