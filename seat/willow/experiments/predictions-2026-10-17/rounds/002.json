@@ -30,6 +30,26 @@
   "max": "Draw 5 numbers from 1\u2013100: is the largest 90 or more?",
   "pair": "Deal 5 cards from a shuffled deck: do two share a rank?"
  },
+ "reveal": {
+  "answers": {
+   "3d6": false,
+   "d100": false,
+   "max": false,
+   "pair": true
+  },
+  "beacon": {
+   "previous_signature": "92d5798f50435dcd30380c1f2f1a2e35c5ad065edbba8df99aedc5d96eacc0553779b37bd3be746287574749c2cf9f6205fadc4ceab385808b78f6f39f6f2414d2c47f6dfa0dcb0cf76e4e2fb00070531c4994d69fc794325862e13e65f246cf",
+   "randomness": "9c6e64f9966c83c88dbbb6847e337011d6b23927b7a5bb8081348d927416ba1a",
+   "round": 6558972,
+   "signature": "b0eac8935a1c88704e09c7382d21576151486ab9e5f2089d1bbc9158b8abba97a741403175d29727d185dbe15b31342b0542072892a4c1fc8fa93e5ccf9fb1a6df70b250ae30d4cc3aac0ae82923c1a6e20bb02506748963ff6f515669be7c1a"
+  },
+  "oracle": {
+   "3d6": 0.25925925925925924,
+   "d100": 0.37,
+   "max": 0.4415940551,
+   "pair": 0.4929171668667467
+  }
+ },
  "round": 2,
  "target": 6558972,
  "target_at": 1792200180
