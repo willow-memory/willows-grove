@@ -1,0 +1,47 @@
+{
+ "note": "Proposals and predictions for session 1. Kept here, out of the chat. Machine proposes; the human seals. Predictions are recorded before the outcome and graded after.",
+ "proposals": [
+  {
+   "id": "p1",
+   "text": "The machine is Jane, the one running this table.",
+   "state": "open",
+   "from_turn": 1
+  },
+  {
+   "id": "p2",
+   "text": "Buckhorn is far enough that the trip took more than a day.",
+   "state": "open",
+   "from_turn": 1
+  },
+  {
+   "id": "p3",
+   "text": "The machine is a seeing-stone (a palant\u00edr), kept somewhere a traveller can reach.",
+   "state": "open",
+   "from_turn": 4
+  },
+  {
+   "id": "p4",
+   "text": "Buckhorn is a village of the human's own making, in or near the Shire; it is on no map the wise keep.",
+   "state": "open",
+   "from_turn": 4
+  }
+ ],
+ "predictions": [
+  {
+   "id": "f1",
+   "text": "Before this visit ends, the visitor asks the machine something to do with the \"friend\".",
+   "confidence": 0.62,
+   "recorded_turn": 1,
+   "state": "open",
+   "graded": null
+  },
+  {
+   "id": "f2",
+   "text": "The human seals the visitor as a hobbit (\"us\" and \"no easy FEET\").",
+   "confidence": 0.85,
+   "recorded_turn": 4,
+   "state": "open",
+   "graded": null
+  }
+ ]
+}

@@ -1,0 +1,25 @@
+{
+ "status": "DRAFT — an agent's reading after the forecast was recorded; not blind (the tagger's output had been seen). A named human seals or corrects it.",
+ "read_at_note": "written after aetheris-predictions.json (sha256 335d252f...)",
+ "tags": {
+  "b1": {"strong": ["insight"], "weak": ["injury", "insight"], "miss": ["exposure", "injury", "insight"]},
+  "b2": {"strong": ["exposure", "injury"], "weak": ["setback"], "miss": ["exposure", "setback"]},
+  "b3": {"strong": ["trust"], "weak": ["exposure", "setback"], "miss": ["setback"]},
+  "b4": {"strong": ["insight"], "weak": ["setback"], "miss": ["injury", "setback"]}
+ },
+ "why": {
+  "b1-strong": "it's a question, and a name inside it: insight. 'isn't an alarm' is a negation, not exposure",
+  "b1-weak": "salt and copper, aether answering in her blood: a cost to the body; the shape is learned",
+  "b1-miss": "nosebleed; the crowd sees her eyes go blank and Maunder 'noticed you noticing'; learns it is awake",
+  "b2-strong": "burns a reservoir, aether-smoke; every face turned to her",
+  "b2-weak": "the lower market lost; the Assembly will remember (standing — no tag for it)",
+  "b2-miss": "gate jams, three people nearly lost; 'everyone saw'",
+  "b3-strong": "Kesh: 'an ally, for exactly as long as you keep your word'",
+  "b3-weak": "two promises, each heard by the other: exposure, and trust lost on both sides",
+  "b3-miss": "Kesh withdraws; she goes down alone (ally lost — no tag for it)",
+  "b4-strong": "reads the water; first living person to touch the core awake",
+  "b4-weak": "loses the sealed writ: no proof she was sent ('agree' is not trust here)",
+  "b4-miss": "half-drowned, shaking and spent"
+ },
+ "vocabulary_gaps": ["negation (isn't an alarm)", "standing / reputation (the Assembly will remember; everyone saw; three versions by morning)", "ally gained vs ally lost (trust is only positive)", "cost to self vs injury"]
+}

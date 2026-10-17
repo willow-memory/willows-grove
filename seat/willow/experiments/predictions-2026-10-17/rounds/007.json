@@ -1,0 +1,56 @@
+{
+ "forecasts": {
+  "human": {
+   "at": 1792201430,
+   "beacon_then": 6559013,
+   "p": {
+    "fixed": 0.6,
+    "gap": 0.5,
+    "six": 0.2,
+    "ten": 0.65
+   },
+   "sha256": "3158a8dca749a5c3d7044ed11cb96da40b3276a3e9f7893d8cb1225cb70d7e58"
+  },
+  "willow": {
+   "at": 1792201398,
+   "beacon_then": 6559012,
+   "p": {
+    "fixed": 0.63,
+    "gap": 0.48,
+    "six": 0.23,
+    "ten": 0.65
+   },
+   "sha256": "aa2927f4a569a68d909929b944133036d0ad665fb869360ad05199af4c23e7e9"
+  }
+ },
+ "opened_by_beacon": 6559012,
+ "questions": {
+  "fixed": "Shuffle 8 numbered cards: is any card in its own place?",
+  "gap": "Roll 2d6 twice: do the two sums differ by 3 or more?",
+  "six": "Flip 12 coins: exactly 6 heads?",
+  "ten": "Roll 10d10: does a 10 come up?"
+ },
+ "reveal": {
+  "answers": {
+   "fixed": true,
+   "gap": false,
+   "six": false,
+   "ten": false
+  },
+  "beacon": {
+   "previous_signature": "884012eb126896adfd0b21dd7bc19badb2623521076da2caf464fdccfbdac737d1c4edbdd55cc0ea2c35ebbde571c9dc0e09a326eb26acd725b5c6868d384ea9eb3f13f2486dcf4a7bd991dc61c0fe310d63fd408a730a656e6172c7e3192a34",
+   "randomness": "6f9e5cbfda13b153f6e29be56610cdcdb15c3cd7d08fb42ff30fcb8f2e82fd7a",
+   "round": 6559022,
+   "signature": "96a8b84cebd16c7a474ce048640d6e8c3dffe5356119ca020bc678ab86229dc5665db6a1dddffead847e0f0b3a99b8151322d6ed3da8268de6e730d5f114fcde7b3ee31d32b714a5d86e7c3dac9674d14630d44494663e929ff7303f10c35f23"
+  },
+  "oracle": {
+   "fixed": 0.6321180555555556,
+   "gap": 0.4783950617283951,
+   "six": 0.2255859375,
+   "ten": 0.6513215599
+  }
+ },
+ "round": 7,
+ "target": 6559022,
+ "target_at": 1792201680
+}

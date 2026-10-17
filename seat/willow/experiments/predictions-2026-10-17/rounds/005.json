@@ -1,0 +1,56 @@
+{
+ "forecasts": {
+  "human": {
+   "at": 1792200832,
+   "beacon_then": 6558993,
+   "p": {
+    "birthday": 0.5,
+    "d100": 0.35,
+    "distinct": 0.05,
+    "pair": 0.5
+   },
+   "sha256": "55ef3d2d2c1b1585713f74e252f43ef9e769bccfa457765577917662df31b990"
+  },
+  "willow": {
+   "at": 1792200796,
+   "beacon_then": 6558992,
+   "p": {
+    "birthday": 0.51,
+    "d100": 0.37,
+    "distinct": 0.015,
+    "pair": 0.49
+   },
+   "sha256": "6f534e164efd5281103025d95e6a5a799dc76370917eb042ce94efccb8bb6529"
+  }
+ },
+ "opened_by_beacon": 6558992,
+ "questions": {
+  "birthday": "23 people, birthdays drawn from 365 days: do any two share one?",
+  "d100": "Roll a d100: 37 or under?",
+  "distinct": "Roll 6d6: are all six faces different?",
+  "pair": "Deal 5 cards from a shuffled deck: do two share a rank?"
+ },
+ "reveal": {
+  "answers": {
+   "birthday": true,
+   "d100": false,
+   "distinct": false,
+   "pair": false
+  },
+  "beacon": {
+   "previous_signature": "acfe7a1a91fec68f6cdbf9c44976ff71e074e0f622295557b67456fa283b2cfd43fc3225d9459287c19455f9ea9e68750311f64beab941b8c9f7f79971d4c62ed476c81966c7c42e3d13cabeb069fb16e17bdfcf46ef8ba6ae1415a7b6716d6f",
+   "randomness": "b0ec7f3754aec239a590b219732a831d96588e4e77ddfaacf9098f36542231b7",
+   "round": 6559002,
+   "signature": "a7db0cd447cab4759a237b25f5a7600e965d2760f5e30ea7267a35c509c38d76904636aaf6b8e9a67f0d1242d9dc233019c9eab51d205e608d5bef6d8d1242fd6230fe0b6f8eb1231d1d82f15448a727a2d0d0d47fe33b6baa3187b8f00aeae0"
+  },
+  "oracle": {
+   "birthday": 0.5072972343239854,
+   "d100": 0.37,
+   "distinct": 0.015432098765432098,
+   "pair": 0.4929171668667467
+  }
+ },
+ "round": 5,
+ "target": 6559002,
+ "target_at": 1792201080
+}

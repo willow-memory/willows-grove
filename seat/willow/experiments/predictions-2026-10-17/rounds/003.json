@@ -1,0 +1,56 @@
+{
+ "forecasts": {
+  "human": {
+   "at": 1792200248,
+   "beacon_then": 6558974,
+   "p": {
+    "2d20": 0.25,
+    "fixed": 0.6,
+    "six": 0.2,
+    "streak": 0.5
+   },
+   "sha256": "24023c7f3d7631c304c45f72913352ed7e4fd4e941b918b1fa89e5af7ee01a44"
+  },
+  "willow": {
+   "at": 1792200193,
+   "beacon_then": 6558972,
+   "p": {
+    "2d20": 0.3,
+    "fixed": 0.63,
+    "six": 0.23,
+    "streak": 0.48
+   },
+   "sha256": "f2f24e5468cfa749fe29fb6a6b14621ed7c9d05e3155fe05268f39e3259b7211"
+  }
+ },
+ "opened_by_beacon": 6558972,
+ "questions": {
+  "2d20": "Roll 2d20: is the sum over 25?",
+  "fixed": "Shuffle 8 numbered cards: is any card in its own place?",
+  "six": "Flip 12 coins: exactly 6 heads?",
+  "streak": "Flip 20 coins: is there a run of 4 or more heads?"
+ },
+ "reveal": {
+  "answers": {
+   "2d20": false,
+   "fixed": false,
+   "six": false,
+   "streak": true
+  },
+  "beacon": {
+   "previous_signature": "b1175dda318b57cea4626a14b6cab7f1f62efc5284b04614dbbea09a3cc8a2752a22d883a2d7e3ffdf2ddd70f2e960ff19827480a2de23099262143e396a8508f67ebcdbe4478433cfac7c7fed37e47890e7f708dccc8e61fcdf71bc17d1113a",
+   "randomness": "e598a9911b583a2ebe0ddb45efe8334a9ccaf162c4579d2705ac8cf5073ffed2",
+   "round": 6558982,
+   "signature": "90056e842a36d17f2f6cbff510173157d3a82823ef16ec5cbbe77134f1c788e88e65c51f458b9878e6f7e79a1f542b210177d2851411e593e8a067dbac8dcb0980ef5105a64a0dc1edbbdd189ef6a6149cf603103c6a1d77b24da0ef1a4e8569"
+  },
+  "oracle": {
+   "2d20": 0.3,
+   "fixed": 0.6321180555555556,
+   "six": 0.2255859375,
+   "streak": 0.47801876068115234
+  }
+ },
+ "round": 3,
+ "target": 6558982,
+ "target_at": 1792200480
+}

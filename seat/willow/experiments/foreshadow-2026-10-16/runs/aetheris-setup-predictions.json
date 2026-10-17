@@ -1,0 +1,38 @@
+{
+ "decision": "b5",
+ "evidence": {
+  "b3-miss": [
+   "who decides"
+  ],
+  "b3-strong": [
+   "words you"
+  ]
+ },
+ "p_any_setup": {
+  "random": 0.625,
+  "suggested": 0.5833
+ },
+ "playable_beats": [
+  "b1",
+  "b2",
+  "b3",
+  "b4"
+ ],
+ "tags": {
+  "b1-miss": false,
+  "b1-strong": false,
+  "b1-weak": false,
+  "b2-miss": false,
+  "b2-strong": false,
+  "b2-weak": false,
+  "b3-miss": true,
+  "b3-strong": true,
+  "b3-weak": false,
+  "b4-miss": false,
+  "b4-strong": false,
+  "b4-weak": false
+ },
+ "world": "Aetheris \u2014 The Waking Tide",
+ "world_sha256": "de28063d0cb4b519904d693445ba3af0224a2ad50a3a27a6750538ec5a099720",
+ "written_at": "2026-10-16T23:05:43.996642+00:00"
+}

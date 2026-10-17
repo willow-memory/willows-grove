@@ -1,0 +1,123 @@
+{
+ "world": "Hasbeen \u2014 Late Shift",
+ "detector": {
+  "tp": 0,
+  "fp": 0,
+  "fn": 3,
+  "precision": null,
+  "recall": 0.0,
+  "found": [],
+  "reference": [
+   "b1-strong",
+   "b2-miss",
+   "b2-weak"
+  ]
+ },
+ "setup_by_bucket": {
+  "strong": 1,
+  "weak": 1,
+  "miss": 1
+ },
+ "policies": {
+  "suggested": {
+   "forecast_p_any_setup": 0.0,
+   "measured_p_any_setup": 0.78,
+   "exact_p_any_setup": 0.8265,
+   "hit_within_0.07": false,
+   "measured_reach_decision_with_no_setup": 0.22,
+   "measured_setup_only_via_a_miss": 0.058
+  },
+  "random": {
+   "forecast_p_any_setup": 0.0,
+   "measured_p_any_setup": 0.7,
+   "exact_p_any_setup": 0.7517,
+   "hit_within_0.07": false,
+   "measured_reach_decision_with_no_setup": 0.3,
+   "measured_setup_only_via_a_miss": 0.066
+  }
+ }
+}
+{
+ "world": "Ironworks \u2014 Last Pour",
+ "detector": {
+  "tp": 0,
+  "fp": 4,
+  "fn": 1,
+  "precision": 0.0,
+  "recall": 0.0,
+  "found": [
+   "b1-miss",
+   "b1-strong",
+   "b3-strong",
+   "b3-weak"
+  ],
+  "reference": [
+   "b4-strong"
+  ]
+ },
+ "setup_by_bucket": {
+  "strong": 1,
+  "weak": 0,
+  "miss": 0
+ },
+ "policies": {
+  "suggested": {
+   "forecast_p_any_setup": 0.9444,
+   "measured_p_any_setup": 0.476,
+   "exact_p_any_setup": 0.4166,
+   "hit_within_0.07": false,
+   "measured_reach_decision_with_no_setup": 0.524,
+   "measured_setup_only_via_a_miss": 0.0
+  },
+  "random": {
+   "forecast_p_any_setup": 0.9423,
+   "measured_p_any_setup": 0.514,
+   "exact_p_any_setup": 0.4582,
+   "hit_within_0.07": false,
+   "measured_reach_decision_with_no_setup": 0.486,
+   "measured_setup_only_via_a_miss": 0.0
+  }
+ }
+}
+{
+ "world": "Aetheris \u2014 The Waking Tide",
+ "detector": {
+  "tp": 2,
+  "fp": 0,
+  "fn": 1,
+  "precision": 1.0,
+  "recall": 0.667,
+  "found": [
+   "b3-miss",
+   "b3-strong"
+  ],
+  "reference": [
+   "b1-strong",
+   "b3-miss",
+   "b3-strong"
+  ]
+ },
+ "setup_by_bucket": {
+  "strong": 2,
+  "weak": 0,
+  "miss": 1
+ },
+ "policies": {
+  "suggested": {
+   "forecast_p_any_setup": 0.5833,
+   "measured_p_any_setup": 0.818,
+   "exact_p_any_setup": 0.8265,
+   "hit_within_0.07": false,
+   "measured_reach_decision_with_no_setup": 0.182,
+   "measured_setup_only_via_a_miss": 0.122
+  },
+  "random": {
+   "forecast_p_any_setup": 0.625,
+   "measured_p_any_setup": 0.79,
+   "exact_p_any_setup": 0.8123,
+   "hit_within_0.07": false,
+   "measured_reach_decision_with_no_setup": 0.21,
+   "measured_setup_only_via_a_miss": 0.09
+  }
+ }
+}
