@@ -18,6 +18,7 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Added
 
+- **seat:** the box build: the table's boxes and a checked narrator (`grove/table_boxes.py`: per-clause checks, lore said by code, no model text on a card), the table surface on the seat (wager, verdict-session and `agm_head` lines; a read-only peeked table box), a hardened scrub and symbol-cite rows, `export.py` beside the forecasting game and `onescript_table.py wagers`, and the build's record with its cross-repo tests (`seat/willow/experiments/box-build-2026-10-17/`) (PR 157).
 - **seat:** desk experiments, not packaged: the foreshadow harness and the AI GM table's record as a one-script record with its importer (`seat/willow/experiments/foreshadow-2026-10-16/`), and a forecasting game that takes forecasts before a drand beacon round and grades them by Brier score once the beacon's randomness seeds the data, with its seven played rounds (`seat/willow/experiments/predictions-2026-10-17/`) (PR 156).
 
 ### Fixed

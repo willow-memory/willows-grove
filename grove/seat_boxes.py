@@ -197,7 +197,12 @@ def checks_line(results: list, names: tuple[str, ...], prefix: str, color: bool)
     chips = []
     for name, st in zip(names, results, strict=True):
         mark = "✓" if st is True else "✗" if st is False else "–"
-        chip = f"{mark} {name}" + (" (none quoted)" if st == "na" else "")
+        why = (
+            "(none quoted)"
+            if name.startswith("your words")
+            else "(code cite unchecked)"
+        )
+        chip = f"{mark} {name}" + (f" {why}" if st == "na" else "")
         if color and st != "na":
             chip = _paint(KINDS["pass"][1] if st is True else RUST, chip)
         chips.append(chip)
@@ -307,6 +312,23 @@ def terminate(text: str) -> str:
     words inside the quotes are never touched."""
     text = text.rstrip()
     return text if not text or ENDED.search(text) else text + "."
+
+
+#: A lore row's label (box-build R11/R12, W3a audit N9): one sealed world fact
+#: as one box. The fact is the value, said as itself; where it belongs (the
+#: scene) is the detail. Its id is the row's own (``r<n>``) or the served id.
+LORE = "lore"
+
+
+def lore_box(row: dict, bid: str) -> Box:
+    """One ``lore`` record row (``fact``, ``where``) as a box. The fact is a
+    served, human-sealed line and is said word for word; the box carries no
+    status, so nothing about it reads as a problem or a task."""
+    fact = " ".join(str(row.get("fact") or "").split())
+    where = " ".join(str(row.get("where") or "").split())
+    if not fact:
+        return Box(bid, "pass", LORE, "empty — a lore row with no fact", state="empty")
+    return Box(bid, "pass", LORE, fact, f"of {where}" if where else "")
 
 
 def plural(n: int, one: str, many: str = "") -> str:

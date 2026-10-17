@@ -187,6 +187,19 @@ launcher's order (``GROVE_VENV``, the D2 bot venv, the legacy one, ``./.venv``).
 
 willow-bot is found at ``WILLOW_BOT_ROOT``, else beside this repo
 (``../willow-bot``), the way the one script finds this repo.
+
+The table (box-build R13, no new panel): ``GROVE_SEAT_BOX`` points the seat at a
+table's box, ``GROVE_SEAT_HUMAN_KEY`` and ``GROVE_SEAT_LEDGER`` give it the
+human's key file and the ai-game-master ledger. "What's on the table" then shows
+the wagers (reconciled, escalated, unreachable), the verdict sessions, the
+agm_head state and the decision beats awaiting a seal, as boxes, through
+``api.needs``; the close-out screen has the same in its TABLE section, through
+``api.checkout``. "What happened at the table" says the served table's fact
+boxes through ``table_boxes.narrate`` (the injected ``say``, or code). A line is
+scrubbed of the key, seeds and key-sized hex before it is a box
+(``seat_record.scrub``). ``GROVE_SEAT_GRAPH`` names a cbm project: a qualified
+``file.py:name`` cite in a model sentence is read against its code graph as part
+of ``every cite was served`` (T-cbm-1; a fifth check is the human's call).
 """
 
 from __future__ import annotations
@@ -203,7 +216,7 @@ import tempfile
 import time
 import tomllib
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import date, datetime, timezone
 from importlib import metadata
 from pathlib import Path
@@ -239,7 +252,9 @@ from grove.seat_boxes import (
     _val,
 )
 from grove.seat_nestor import lead_rank, read_store
-from grove.seat_record import read_needs, status_kind
+from grove import table_boxes as tb
+from grove.seat_nestor import Reading
+from grove.seat_record import read_needs, scrub, status_kind, story_kind
 from grove.seat_say import (
     CHECK_NAMES,
     MODEL,
@@ -250,6 +265,8 @@ from grove.seat_say import (
     ollama_say,
     passed,
     run_checks,
+    symbol_notes,
+    symbol_rows,
 )
 
 ORD = ("first", "second", "third", "fourth")
@@ -327,6 +344,10 @@ class Bot:
     #: The one script's layer-5 narration gate (``gate.check_claims``), the
     #: function ``Run.say`` wraps; the quote check calls it when it is here.
     claims: Callable[[str, dict], list[dict]] | None = None
+    #: T-cbm-1: the code-graph reader (``graph.symbols_for`` bound to a cbm
+    #: project, ``GROVE_SEAT_GRAPH``), so a qualified ``file.py:name`` cite in a
+    #: model sentence is read against the graph. None: no symbol claims are made.
+    symbols: Callable[[str], dict] | None = None
 
 
 def bot_root() -> Path:
@@ -346,8 +367,30 @@ def load_bot(root: Path) -> Bot:
     except ImportError as e:
         raise SeatUnavailable(f"unreachable: the one script won't import: {e}") from e
     return Bot(
-        api, escalate.cut, proposals.subject, escalate.PIECE_CHARS, gate.check_claims
+        api,
+        escalate.cut,
+        proposals.subject,
+        escalate.PIECE_CHARS,
+        gate.check_claims,
+        graph_reader(),
     )
+
+
+def graph_reader(environ: dict | None = None) -> Callable[[str], dict] | None:
+    """T-cbm-1: ``GROVE_SEAT_GRAPH`` names the cbm project a model sentence's
+    ``file.py:name`` cites are read against (``onescript.graph.symbols_for``).
+    Unset, or a one script without the graph seam: None, and no symbol claim is
+    made. The graph says ``stale`` or ``unreachable`` itself; nothing here
+    re-indexes."""
+    env = os.environ if environ is None else environ
+    project = env.get("GROVE_SEAT_GRAPH", "").strip()
+    if not project:
+        return None
+    try:
+        from onescript import graph
+    except ImportError:
+        return None
+    return lambda sentence: graph.symbols_for(sentence, project)
 
 
 def resolve_venv(
@@ -384,11 +427,56 @@ def resolve_venv(
     return home / "willow-bot" / "venvs" / "willow-bot"
 
 
-def config(bot: Bot, root: Path, grove: Path = GROVE_ROOT):
-    """The Config the one script's own CLI builds, with the same defaults."""
+def config(bot: Bot, root: Path, grove: Path = GROVE_ROOT, environ: dict | None = None):
+    """The Config the one script's own CLI builds, with the same defaults.
+
+    SPEC R13: ``GROVE_SEAT_BOX`` points the seat at another box, a table's, and
+    ``GROVE_SEAT_KEYS`` at that box's keys file; unset, the seat's own box and
+    keys as always. Nothing else about the seat changes: it reads the table
+    through ``api.needs`` and ``api.checkout``, never the record file."""
+    env = os.environ if environ is None else environ
+    box = env.get("GROVE_SEAT_BOX", "").strip()
+    keys = env.get("GROVE_SEAT_KEYS", "").strip()
+    return _make_config(bot, root, grove, box, keys, env)
+
+
+def table_config(
+    bot: Bot, root: Path, grove: Path = GROVE_ROOT, environ: dict | None = None
+):
+    """Q1: the Config of a SECOND box the seat only watches
+    (``GROVE_SEAT_TABLE_BOX``; keys ``GROVE_SEAT_TABLE_KEYS``, else the box's OWN,
+    ``<box parent>/keys/keys.json``, never the seat's: the sealed tip's anchor
+    sits beside the keys file, and another box's keys call an honest chain
+    rewritten), or None when none is named. Keys that are not there make the
+    table ``unreachable`` in ``Seat.status``, never a fallback. It is read with ``api.peek``, which writes
+    nothing to it, so the human's sealed tip is never moved by the seat looking."""
+    env = os.environ if environ is None else environ
+    box = env.get("GROVE_SEAT_TABLE_BOX", "").strip()
+    if not box:
+        return None
+    keys = env.get("GROVE_SEAT_TABLE_KEYS", "").strip()
+    if not keys:
+        # the table box's OWN keys, beside it (the sealed tip's anchor lives there);
+        # never the seat's, which would call an honest chain rewritten
+        keys = str(Path(box).expanduser().parent / "keys" / "keys.json")
+    return _make_config(bot, root, grove, box, keys, env)
+
+
+def _make_config(bot, root, grove, box, keys, env):
+    extra = {}
+    if env.get("GROVE_SEAT_DRAND", "").strip():  # R23: off unless asked, like --drand
+        try:
+            from onescript import beacon
+
+            extra["beacon"] = beacon.drand_reader
+        except ImportError:
+            pass
     return bot.api.Config(
-        box=root / ".flow" / "onescript",
-        keys=root / ".flow" / "onescript-keys" / "keys.json",
+        **extra,
+        box=Path(box).expanduser() if box else root / ".flow" / "onescript",
+        keys=Path(keys).expanduser()
+        if keys
+        else root / ".flow" / "onescript-keys" / "keys.json",
         constitution=grove / "governance" / "CONSTITUTION.md",
         ci=grove / ".github" / "workflows" / "tests.yml",
         root=root,
@@ -397,6 +485,51 @@ def config(bot: Bot, root: Path, grove: Path = GROVE_ROOT):
         keyring=bot.api.default_keyring(),
         nestor_db=bot.api.default_nestor_db(),
     )
+
+
+def table_root(environ: dict | None = None) -> Path:
+    """The-table's app directory (``THE_TABLE_ROOT``), where ``the_table.agm_head``
+    is: the ledger reader for the table's agm_head check."""
+    env = os.environ if environ is None else environ
+    got = env.get("THE_TABLE_ROOT", "").strip()
+    return (
+        Path(got).expanduser()
+        if got
+        else GROVE_ROOT.parent / "safe-app-store" / "apps" / "the-table"
+    )
+
+
+def ledger_reader(db: str, root: Path | None = None) -> Callable[[], dict]:
+    """``read_head`` for ``api.needs`` and ``api.checkout``: recompute the
+    ai-game-master ledger head at ``db`` (``GROVE_SEAT_LEDGER``) with the-table's
+    own ``agm_head.reader``. Imported on first use, so a missing the-table is
+    the agm_head check's ``unreachable`` (it raises, and the check says why),
+    never a crash and never a pass."""
+
+    def read() -> dict:
+        base = root or table_root()
+        if str(base) not in sys.path:
+            sys.path.append(str(base))
+        try:
+            from the_table import agm_head
+        except ImportError as e:
+            raise OSError(f"the-table is not importable from {base}: {e}") from e
+        return agm_head.reader(db)()
+
+    return read
+
+
+def read_key_secrets(path: Path | None) -> tuple[str, ...]:
+    """The human key's text and hex, for ``seat_record.scrub``: what no line may
+    show. An unreadable file yields none (the read itself will say it)."""
+    if path is None:
+        return ()
+    try:
+        text = Path(path).read_text().strip()
+        raw = bytes.fromhex(text)
+    except (OSError, ValueError):
+        return ()
+    return tuple(x for x in {text, raw.hex(), raw.decode("latin-1")} if len(x) >= 8)
 
 
 # --- the flowering rung --------------------------------------------------------
@@ -545,6 +678,11 @@ class Said:
     cards: list[Box] = field(default_factory=list)
     checks: list = field(default_factory=list)
     tail: list[str] = field(default_factory=list)
+    #: The names of ``checks``, in order: the seat's four, or the table's six.
+    names: tuple[str, ...] = CHECK_NAMES
+    #: Code cites the graph did not verify and did not strike (``symbol_notes``):
+    #: said under the checks, never left as a silent pass.
+    notes: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -618,8 +756,20 @@ class Seat:
         color: bool | None = None,
         clock: Callable[[], str] = lambda: time.strftime("%H:%M"),
         today: Callable[[], date] = lambda: datetime.now(timezone.utc).date(),
+        human_key: Path | None = None,
+        read_head: Callable[[], dict] | None = None,
+        table_cfg: Any = None,
+        table_own: bool = False,
     ):
         self.bot, self.api, self.cfg = bot, bot.api, cfg
+        #: Q1: a second box the seat only watches (``api.peek``, nothing written),
+        #: and whether the seat's own box is a table's (``GROVE_SEAT_BOX``).
+        self.table_cfg, self.table_own = table_cfg, table_own
+        #: R13: the human's key file (outside the box) and the table's ledger
+        #: reader, handed to ``api.needs`` and ``api.checkout`` when set; the
+        #: key's own text is a secret no line may show.
+        self.human_key, self.read_head = human_key, read_head
+        self.secrets = read_key_secrets(human_key)
         self.ratatosk = resolve_ratatosk()
         self.flower = flower or ratatosk_flowering(cmd=(self.ratatosk,))
         self.deposit = deposit or willow_mcp_deposit()
@@ -712,7 +862,9 @@ class Seat:
             self.write(ln)
         if said.checks:
             prefix = f"checks as they passed at {at}:" if at else "checks:"
-            self.write(checks_line(said.checks, CHECK_NAMES, prefix, self.color))
+            self.write(checks_line(said.checks, said.names, prefix, self.color))
+        for ln in said.notes:
+            self.write(f"note · {ln}")
         for ln in said.tail:
             self.write(ln)
 
@@ -787,13 +939,16 @@ class Seat:
                     )
                 ],
             )
+        syms = symbol_rows(sentence, self.bot.claims, self.bot.symbols)
         results = run_checks(
             sentence,
             batch,
             human,
             self.bot.claims,
             earlier=[b for _, boxes in earlier for b in boxes],
+            symbols=syms,
         )
+        notes = symbol_notes(syms)
         if passed(results):
             return Said(
                 batch,
@@ -801,6 +956,7 @@ class Seat:
                 replay,
                 [say_line(sentence)],
                 checks=results,
+                notes=notes,
             )
         return Said(
             batch,
@@ -809,6 +965,7 @@ class Seat:
             [struck_line(sentence, self.color)],
             checks=results,
             tail=[say_line(code)],
+            notes=notes,
         )
 
     def queued_behind(self, why: str) -> str:
@@ -897,8 +1054,51 @@ class Seat:
         self.you(task)
         path = getattr(self.cfg, "nestor_db", None)
         asked = status_kind(task) == "needs"
-        rec = read_needs(self.api, self.cfg)
+        rec = read_needs(
+            self.api,
+            self.cfg,
+            human_key=self.human_key,
+            read_head=self.read_head,
+            secrets=self.secrets,
+            known=self.public_ids(),
+        )
         boxes = list(rec.boxes)
+        watched: list[Box] = []
+        if (
+            self.table_cfg is not None
+            and not Path(str(getattr(self.table_cfg, "keys", ""))).is_file()
+        ):
+            tab = Reading(
+                "unreachable",
+                "no keys",
+                [
+                    Box(
+                        "tstate",
+                        "pass",
+                        "table",
+                        "unreachable — the table box's own keys are not at "
+                        f"{getattr(self.table_cfg, 'keys', '?')} "
+                        "(set GROVE_SEAT_TABLE_KEYS)",
+                        state="unreachable",
+                    )
+                ],
+            )
+            boxes += tab.boxes
+            watched = tab.boxes
+        elif self.table_cfg is not None:  # Q1: watched, never written to
+            tab = read_needs(
+                self.api,
+                self.table_cfg,
+                human_key=self.human_key,
+                read_head=self.read_head,
+                secrets=self.secrets,
+                source="table",
+                known=self.public_ids(),
+            )
+            boxes += tab.boxes
+            watched = tab.boxes
+        if self.table_cfg is not None or self.table_own:
+            boxes += self.beacon_note()
         counts: dict[str, int] = {}
         if path is not None and str(path).strip():
             got = read_store(path, drafts_as="you" if asked else "pr")
@@ -929,7 +1129,9 @@ class Seat:
                     [d for d in (rec.boxes[0].detail,) if d]
                     + ["no Nestor store is configured, so only the record was read"]
                 )
-        seen = hashlib.sha1("|".join(f"{b.id}{b.value}" for b in rec.boxes).encode())
+        seen = hashlib.sha1(
+            "|".join(f"{b.id}{b.value}" for b in [*rec.boxes, *watched]).encode()
+        )
         self.converse(
             f"status:{status_kind(task)}:{path}:{sig}:{seen.hexdigest()[:10]}",
             lead_rank(sorted(boxes, key=open_tier)),
@@ -937,6 +1139,99 @@ class Seat:
             lead=any(b.state == "populated" for b in boxes),
             rush=not counts.get("rejected"),
         )
+
+    def public_ids(self) -> tuple[str, ...]:
+        """The 64-hex ids the seat itself holds as public: the served tables of
+        this run's served file and the sealed scope's subject hash. A poisoned
+        line cannot add to it, because it comes from the api's own answers."""
+        out = set()
+        for t in (
+            (self.doc or {}).get("tables", []) if isinstance(self.doc, dict) else []
+        ):
+            tid = str(t.get("id", "")) if isinstance(t, dict) else ""
+            if len(tid) == 64:
+                out.add(tid)
+        for v in (self.sealed or {}).values() if isinstance(self.sealed, dict) else []:
+            tail = str(v).rsplit(":", 1)[-1]
+            if len(tail) == 64:
+                out.add(tail)
+        return tuple(out)
+
+    def beacon_note(self) -> list[Box]:
+        """R23: the CLI is offline unless ``GROVE_SEAT_DRAND`` (or ``--drand`` on
+        the one script) asks for drand. Off, a table forecast's beacon round
+        cannot be read, so no table outcome can be shown to be real: said."""
+        cfgs = [c for c in (self.table_cfg, self.cfg if self.table_own else None) if c]
+        if all(getattr(c, "beacon", None) is not None for c in cfgs):
+            return []
+        return [
+            Box(
+                "tbeacon",
+                "block",
+                "beacon",
+                "unreachable — beacon reader off: table outcomes unreachable",
+                "set GROVE_SEAT_DRAND to read drand rounds",
+                state="unreachable",
+            )
+        ]
+
+    def clean(self, b: Box, known: tuple[str, ...] = ()) -> Box:
+        """A box with its words scrubbed (``seat_record.scrub``); ``known`` are
+        the served ids that may stand."""
+        return replace(
+            b,
+            value=scrub(b.value, self.secrets, known),
+            detail=scrub(b.detail, self.secrets, known),
+        )
+
+    def table_story(self, task: str) -> None:
+        """The table's story (R12, R21; ``table_boxes.narrate``): the served
+        table's fact boxes said as one sentence. ``self.say`` is the injected
+        model (None: code only); the sentence stands only if every table check
+        passes, else it is struck and code's sentence stands. A seal, a
+        decision or an escalated pick is shown and never said (C16); an ESCALATE
+        from the model is the human's card. Nothing is rolled or written."""
+        self.you(task)
+        doc = (
+            self.doc
+            if isinstance(self.doc, dict)
+            else {"state": "empty", "why": "no served file stands in this check-in"}
+        )
+        boxes = tb.served_boxes(doc)
+        got = tb.narrate(boxes, task, say=self.say)
+        n = len(tb.sayable(boxes))
+        code = [say_line(got["code"])] if got["code"] else []
+        cards: list[Box] = []
+        if got["source"] == "model":
+            who, lines, tail = (
+                f"{self.model} · said {plural(n, 'box', 'boxes')}",
+                [say_line(got["sentence"])],
+                [],
+            )
+        elif got["struck"]:
+            who = f"{self.model} · failed a check · replaced by a code sentence"
+            lines, tail = [struck_line(got["model"], self.color)], code
+        else:
+            who = f"code · said {plural(n, 'box', 'boxes')} · {got['why'] or 'by code'}"
+            lines, tail = code, []
+            if got["escalated"]:
+                cards = [
+                    self.card("you", "human card", "the model escalated", got["why"])
+                ]
+        # a served id is a 64-hex before `_N`: known from the boxes, not from a bracket
+        ids = tuple({b.id.split("_")[0] for b in boxes})
+        clean = lambda t: scrub(t, self.secrets, ids)  # noqa: E731 - every line, B2/S4
+        said = Said(
+            [self.clean(b, ids) for b in boxes],
+            clean(who),
+            "code · shown again from the pile, no model asked now",
+            [clean(x) for x in lines],
+            cards=[self.clean(b, ids) for b in cards],
+            checks=got["checks"] or [],
+            tail=[clean(x) for x in tail],
+            names=tb.TABLE_CHECK_NAMES,
+        )
+        self.emit(said)
 
     def offer(self, thread: Thread) -> None:
         """The chip row for what the turn showed. Its choices are remembered so
@@ -1491,13 +1786,18 @@ class Seat:
             )
 
     def checkout(self) -> None:
+        kw = {
+            k: v
+            for k, v in (("human_key", self.human_key), ("read_head", self.read_head))
+            if v
+        }
         try:
-            res = self.api.checkout(self.cfg)
+            res = self.api.checkout(self.cfg, **kw)
         except Exception as e:  # noqa: BLE001 - the close-out must not be lost
             self.show(self.gone("morning screen", f"{type(e).__name__}: {e}"))
         else:
             if not self.refused(res):
-                screen = str(res.get("screen", "")).strip()
+                screen = scrub(str(res.get("screen", "")), self.secrets).strip()
                 self.show(
                     self.card("pass", "morning screen", screen)
                     if screen
@@ -1613,6 +1913,9 @@ class Seat:
                             continue  # code answered it: no chain, no model
                         if status_kind(task):
                             self.status(task)  # the record and the store: no chain
+                            continue
+                        if story_kind(task):
+                            self.table_story(task)  # the served table's boxes, said
                             continue
                         self.chain(task)
                         self.proposals()
@@ -1754,7 +2057,18 @@ def main(argv: list[str] | None = None) -> int:
         print(f"grove seat: {e}", file=sys.stderr)
         return 2
     say = None if args.no_say else ollama_say(model=model)
-    return Seat(bot, config(bot, root), say=say, model=model).run()
+    key = os.environ.get("GROVE_SEAT_HUMAN_KEY", "").strip()
+    ledger = os.environ.get("GROVE_SEAT_LEDGER", "").strip()
+    return Seat(
+        bot,
+        config(bot, root),
+        table_cfg=table_config(bot, root),
+        table_own=bool(os.environ.get("GROVE_SEAT_BOX", "").strip()),
+        say=say,
+        model=model,
+        human_key=Path(key).expanduser() if key else None,
+        read_head=ledger_reader(ledger) if ledger else None,
+    ).run()
 
 
 if __name__ == "__main__":
