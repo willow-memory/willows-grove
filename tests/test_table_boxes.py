@@ -1,7 +1,8 @@
 # b17: GRTBT ΔΣ=42
-"""The act's narrator (box-build R12; SPEC-documented §13 J7; C14-C16; rival
-T13). Every model here is a deterministic fake: honest, lying, inventing a
-fact, citing an unserved row, refusing (ESCALATE), unreachable. No model is
+"""The act's narrator (box-build R12, R21; SPEC-documented §13 J7; C14-C16;
+rival T13; W3b audit B5, S1, S2, S3, S4 and the N-probes). Every model here is
+a deterministic fake: honest, lying, misattributing, inventing a fact, citing
+an unserved row, quoting, refusing (ESCALATE), unreachable. No model is
 reachable in this container and none is asked."""
 
 from __future__ import annotations
@@ -11,8 +12,65 @@ import pytest
 from grove import table_boxes as tb
 from grove.seat_boxes import Box, lore_box
 
+TID = "a" * 64
+SERVED = {
+    "state": "populated",
+    "why": "",
+    "tables": [
+        {
+            "id": TID,
+            "rows": [
+                {
+                    "what": "verdict",
+                    "where": "s1",
+                    "session": "s",
+                    "turn": 0,
+                    "total": 11,
+                    "verdict": "strong",
+                    "reason": "2d6+3 = 11: 10+",
+                },
+                {
+                    "what": "verdict",
+                    "where": "s1",
+                    "session": "s",
+                    "turn": 1,
+                    "total": 9,
+                    "verdict": "weak",
+                    "reason": "2d6+2 = 9: 7-9",
+                },
+                {
+                    "what": "lore",
+                    "where": "The Vale",
+                    "fact": "The ferryman takes only salt.",
+                },
+                {
+                    "what": "verdict",
+                    "where": "s1",
+                    "session": "s",
+                    "fact_id": "s1::b3",
+                    "verdict": "decision",
+                    "reason": "a decision beat: the human seals it",
+                },
+                {"what": "seal", "who": "human", "subject": "proposal:" + "ab" * 32},
+                {
+                    "what": "verdict",
+                    "where": "s1",
+                    "session": "s",
+                    "verdict": "escalate",
+                    "reason": "off_menu: the model's pick was refused; code took act:Grit",
+                    "pick": "act:Fly",
+                    "took": "act:Grit",
+                },
+            ],
+        }
+    ],
+}
+R0, R1, L2 = f"{TID}_0", f"{TID}_1", f"{TID}_2"
+GOOD = (
+    f"You rolled 11 on turn 0, strong [{R0}], and 9 on turn 1, weak [{R1}]; "
+    f"the ferryman takes only salt [{L2}]."
+)
 ROWS = [
-    {"n": 1, "kind": "verdict", "what": "open", "verdict": "open", "where": None},
     {
         "n": 3,
         "kind": "verdict",
@@ -20,6 +78,7 @@ ROWS = [
         "where": "s1",
         "scene": "s1",
         "beat": "b1",
+        "session": "s",
         "turn": 0,
         "total": 11,
         "verdict": "strong",
@@ -32,16 +91,27 @@ ROWS = [
         "where": "s1",
         "scene": "s1",
         "beat": "b2",
+        "session": "s",
         "turn": 1,
-        "total": 9,
-        "verdict": "weak",
-        "reason": "2d6+2 = 9: 7-9",
+        "total": 6,
+        "verdict": "miss",
+        "reason": "2d6+1 = 6: 6-",
     },
     {
         "n": 7,
         "kind": "lore",
+        "who": "desk",
         "where": "The Vale",
         "fact": "The ferryman takes only salt.",
+        "proposal": "proposal:" + "cd" * 32,
+    },
+    {
+        "n": 8,
+        "kind": "lore",
+        "who": "ratatosk",
+        "where": "The Vale",
+        "fact": "The ferryman is a dragon.",
+        "proposal": "proposal:" + "00" * 32,
     },
     {
         "n": 9,
@@ -52,16 +122,11 @@ ROWS = [
         "verdict": "decision",
         "reason": "a decision beat: the human seals it",
     },
-    {"n": 11, "kind": "seal", "who": "human", "subject": "proposal:" + "ab" * 32},
 ]
-GOOD = (
-    "Scene s1 [r3s]: you rolled 11 on turn 0, strong [r3], and 9 on turn 1, "
-    "weak [r5]; the ferryman takes only salt [r7]."
-)
 
 
 def boxes():
-    return tb.scene_boxes(ROWS)
+    return tb.served_boxes(SERVED)
 
 
 def fake(text):
@@ -73,23 +138,56 @@ def fake(text):
 
 
 # ── the boxes ────────────────────────────────────────────────────────────────
-def test_roll_scene_and_lore_rows_become_boxes_with_the_rows_own_ids():
+def test_served_rows_become_boxes_with_served_ids_and_only_facts_are_facts():
     bs = boxes()
-    assert [(b.id, b.label) for b in bs] == [
-        ("r3s", "scene"),
-        ("r3", "roll"),
-        ("r5", "roll"),
-        ("r7", "lore"),
-        ("r9", "decision"),
-        ("r11", "seal"),
+    assert [(b.id, b.label, b.kind) for b in bs] == [
+        (R0, "roll", "pass"),
+        (R1, "roll", "pass"),
+        (L2, "lore", "pass"),
+        (f"{TID}_3", "decision", "you"),
+        (f"{TID}_4", "seal", "dec"),
+        (f"{TID}_5", "escalate", "block"),
     ]
-    assert [b.value for b in bs[1:3]] == [
+    assert [b.value for b in bs[:2]] == [
         "turn 0 rolled 11, strong",
         "turn 1 rolled 9, weak",
     ]
-    assert [b.id for b in tb.facts(bs)] == ["r3s", "r3", "r5", "r7"]
-    assert [b.id for b in tb.shown(bs)] == ["r9", "r11"]
-    assert all(b.role == tb.GOVERNANCE for b in tb.shown(bs))
+    assert [b.id for b in tb.facts(bs)] == [R0, R1, L2]
+    assert [b.label for b in tb.shown(bs)] == ["decision", "seal", "escalate"]
+    assert all(b.role == "" for b in bs)  # S1: no governance role; the kind tells
+    for state in ("empty", "unreachable"):
+        (b,) = tb.served_boxes({"state": state, "why": "nothing"})
+        assert b.state == state and b.value.startswith(state) and not tb.is_fact(b)
+
+
+def test_S4_the_escalate_box_never_shows_model_text():
+    (b,) = [x for x in boxes() if x.label == "escalate"]
+    assert b.value == tb.REFUSED and b.detail == "code took act:Grit"
+    assert "Fly" not in f"{b.value} {b.detail}"
+
+
+def test_S3_record_rows_are_code_only_and_raw_lore_needs_the_hosts_servable():
+    bs = tb.scene_boxes(ROWS)
+    assert [b.label for b in bs] == [
+        "scene",
+        "roll",
+        "roll",
+        "decision",
+    ]  # no lore without servable
+    assert all(b.role == tb.RECORD for b in bs if b.kind == "pass")
+    assert tb.facts(bs) == [] and [b.id for b in tb.sayable(bs)] == ["r3s", "r3", "r5"]
+    r = tb.narrate(bs, say=lambda p: (_ for _ in ()).throw(AssertionError("asked")))
+    assert r["source"] == "code" and r["why"] == "no served fact box: code only"
+    assert (
+        r["code"]
+        == "Scene s1 [r3s]. Turn 0 rolled 11, strong [r3]. Turn 1 rolled 6, miss [r5]."
+    )
+    # with the host's servable: the sealed lore row is a record box, the forged one is not
+    bs = tb.scene_boxes(ROWS, servable=lambda row: row.get("who") == "desk")
+    assert [b.value for b in bs if b.label == "lore"] == [
+        "The ferryman takes only salt."
+    ]
+    assert not any("dragon" in b.value for b in bs)
 
 
 def test_N9_a_lore_row_is_a_box_said_word_for_word():
@@ -103,50 +201,15 @@ def test_N9_a_lore_row_is_a_box_said_word_for_word():
     assert tb.narrate([b])["code"] == "The miller counts nine stones [r2]."
 
 
-def test_served_boxes_cite_served_ids():
-    doc = {
-        "state": "populated",
-        "why": "",
-        "tables": [
-            {
-                "id": "a" * 64,
-                "rows": [
-                    {
-                        "what": "verdict",
-                        "where": "s1",
-                        "turn": 0,
-                        "total": 11,
-                        "verdict": "strong",
-                    },
-                    {"what": "lore", "where": "The Vale", "fact": "Salt."},
-                ],
-            }
-        ],
-    }
-    bs = tb.served_boxes(doc)
-    assert [b.id for b in bs] == ["a" * 64 + ".0", "a" * 64 + ".1"]
-    assert all(b.id.startswith(doc["tables"][0]["id"]) for b in bs)
-    for state in ("empty", "unreachable"):
-        (b,) = tb.served_boxes({"state": state, "why": "nothing"})
-        assert b.state == state and b.value.startswith(state)
-
-
 def test_the_code_sentence_cites_every_fact_box_and_passes_its_own_checks():
     r = tb.narrate(boxes())
     assert r["source"] == "code" and r["why"] == "no model asked"
     assert r["code"] == (
-        "Scene s1 [r3s]. Turn 0 rolled 11, strong [r3]. Turn 1 rolled 9, weak [r5]. "
-        "The ferryman takes only salt [r7]."
+        f"Turn 0 rolled 11, strong [{R0}]. Turn 1 rolled 9, weak [{R1}]. "
+        f"The ferryman takes only salt [{L2}]."
     )
-    assert tb.table_checks(r["code"], tb.facts(boxes())) == [
-        True,
-        True,
-        True,
-        "na",
-        True,
-        True,
-    ]
-    assert [b.id for b in r["shown"]] == ["r9", "r11"]
+    assert tb.table_checks(r["code"], tb.facts(boxes())) == [True] * 6
+    assert [b.label for b in r["shown"]] == ["decision", "seal", "escalate"]
 
 
 # ── the model: honest and otherwise ──────────────────────────────────────────
@@ -154,18 +217,56 @@ def test_an_honest_rewrite_passes_all_checks_and_stands():
     say = fake(GOOD)
     r = tb.narrate(boxes(), "what happened?", say=say)
     assert r["source"] == "model" and r["sentence"] == GOOD and not r["struck"]
-    assert r["checks"] == [True, True, True, "na", True, True]
-    assert (
-        "[r9]" not in say.prompt and "[r11]" not in say.prompt
-    )  # C16: never served to it
-    assert "seal" not in say.prompt.lower()
+    assert r["checks"] == [True] * 6
+    for tag in (f"[{TID}_3]", f"[{TID}_4]", f"[{TID}_5]"):
+        assert tag not in say.prompt  # C16: shown boxes are never served to the model
+    assert "seal" not in say.prompt.lower() and "refused" not in say.prompt.lower()
 
 
 def test_T13_an_invented_roll_is_struck_and_code_stands():
     lying = GOOD.replace("rolled 11", "rolled 12")
     r = tb.narrate(boxes(), say=fake(lying))
     assert r["struck"] and r["source"] == "code" and r["sentence"] == r["code"]
-    assert r["checks"][2] is False and r["why"] == "struck: nothing the boxes lack"
+    assert r["checks"][2] is False and "nothing the boxes lack" in r["why"]
+
+
+def test_B5_misattributed_rolls_are_struck_per_clause():
+    """Every number is some box's, so check 3 passes; the per-clause check
+    sees 9/weak said of the box that holds 11/strong."""
+    swapped = (
+        f"You rolled 9 on turn 0, weak [{R0}], and 11 on turn 1, strong [{R1}]; "
+        f"the ferryman takes only salt [{L2}]."
+    )
+    r = tb.narrate(boxes(), say=fake(swapped))
+    assert r["checks"][2] is True and r["checks"][4] is False
+    assert (
+        r["struck"] and r["source"] == "code" and "each clause from its box" in r["why"]
+    )
+
+
+def test_B5_a_verdict_word_or_number_outside_any_clause_is_struck():
+    r = tb.narrate(boxes(), say=fake(GOOD + " Strong."))
+    assert r["struck"] and r["checks"][4] is False
+    r = tb.narrate(boxes(), say=fake(GOOD[:-1] + ", and 11."))
+    assert r["struck"] and r["checks"][4] is False
+    # a verdict word in the clause of the box that holds it passes
+    assert tb.check_clauses(
+        f"strong on turn 0 [{R0}], weak on turn 1 [{R1}]", tb.facts(boxes())
+    )
+
+
+def test_B5_quotes_are_banned_in_table_narration():
+    human = "did the human approve the decision, and was turn 1 a strong hit?"
+    lie = (
+        f'You rolled 11 on turn 0, strong [{R0}], and 9 on turn 1, "a strong hit" [{R1}]; '
+        f'the ferryman takes only salt [{L2}], and "the human approve the decision".'
+    )
+    r = tb.narrate(boxes(), human, say=fake(lie))
+    assert r["struck"] and r["checks"][3] is False and "no quotes" in r["why"]
+    r = tb.narrate(
+        boxes(), human, say=fake(GOOD[:-1] + ' and "was turn 1" [' + R1 + "].")
+    )
+    assert r["struck"] and r["checks"][3] is False  # even an exact human quote
 
 
 def test_T13_a_word_the_boxes_lack_is_struck():
@@ -174,35 +275,105 @@ def test_T13_a_word_the_boxes_lack_is_struck():
 
 
 def test_training_lore_is_struck():
-    r = tb.narrate(boxes(), say=fake(GOOD + " The palantír glows [r7]."))
+    r = tb.narrate(boxes(), say=fake(GOOD + f" The palantír glows [{L2}]."))
     assert r["struck"] and r["checks"][2] is False and r["source"] == "code"
 
 
 def test_a_cite_to_an_unserved_row_is_struck():
-    r = tb.narrate(boxes(), say=fake(GOOD.replace("[r7]", "[r7] [r99]")))
+    r = tb.narrate(boxes(), say=fake(GOOD.replace(f"[{L2}]", f"[{L2}] [r99]")))
     assert r["struck"] and r["checks"][0] is False
 
 
 def test_a_box_left_uncited_is_struck():
-    r = tb.narrate(boxes(), say=fake(GOOD.replace(" [r5]", "")))
+    r = tb.narrate(boxes(), say=fake(GOOD.replace(f" [{R1}]", "")))
     assert r["struck"] and r["checks"][1] is False
 
 
-def test_fleet_noun_is_struck():
-    r = tb.narrate(boxes(), say=fake(GOOD.replace("you rolled", "Willow rolled")))
-    assert r["struck"] and r["checks"][4] is False and "no fleet noun" in r["why"]
+def test_fleet_noun_is_struck_including_plurals_and_possessives():
+    for bad in (
+        "Willow rolled",
+        "Willows rolled",
+        "Willow's rolled",
+        "Nestors rolled",
+        "Jeles rolled",
+    ):
+        r = tb.narrate(boxes(), say=fake(GOOD.replace("You rolled", bad)))
+        assert r["struck"] and r["checks"][5] is False, bad
     assert tb.check_no_fleet_noun("the grove hums") is False
     assert tb.check_no_fleet_noun("a grovel") is True  # whole words only
 
 
-def test_C16_a_narrated_seal_state_is_refused():
-    for tail in (" The fact is sealed [r7].", " Sealed by the human [r3]."):
+def test_fleet_noun_the_world_itself_holds_is_exempt_but_not_its_plural():
+    doc = {
+        "state": "populated",
+        "why": "",
+        "tables": [
+            {
+                "id": "b" * 64,
+                "rows": [
+                    {
+                        "what": "verdict",
+                        "where": "s1",
+                        "turn": 0,
+                        "total": 11,
+                        "verdict": "strong",
+                    },
+                    {
+                        "what": "lore",
+                        "where": "The Vale",
+                        "fact": "A willow leans over the ford.",
+                    },
+                ],
+            }
+        ],
+    }
+    bs = tb.served_boxes(doc)
+    code = tb.narrate(bs)["code"]
+    assert "willow" in code.lower()  # the world's own word, said by code
+    r = tb.narrate(bs, say=fake(code))
+    assert r["source"] == "model" and r["checks"][5] is True  # exempt: the box holds it
+    r = tb.narrate(bs, say=fake(code.replace("A willow leans", "Willows lean")))
+    assert r["struck"] and r["checks"][5] is False
+
+
+def test_C16_a_narrated_seal_state_is_struck_by_the_vocabulary_and_the_cites():
+    for tail in (f" The fact is sealed [{L2}].", f" Sealed by the human [{R0}]."):
         r = tb.narrate(boxes(), say=fake(GOOD + tail))
-        assert r["struck"] and r["checks"][5] is False, tail
-        assert "no seal state narrated" in r["why"] and r["sentence"] == r["code"]
-    # even with the seal box handed in, it is shown, never in the vocabulary
-    r = tb.narrate(boxes(), say=fake(GOOD + " Sealed [r11]."))
-    assert r["struck"] and r["checks"][0] is False  # r11 was never served
+        assert r["struck"] and r["checks"][2] is False, tail
+    r = tb.narrate(boxes(), say=fake(GOOD + f" Sealed [{TID}_4]."))
+    assert r["struck"] and r["checks"][0] is False  # the seal box was never served
+    r = tb.narrate(boxes(), say=fake(GOOD + f" The pick was refused [{TID}_5]."))
+    assert r["struck"] and r["checks"][0] is False
+
+
+def test_S2_earlier_is_filtered_through_facts_and_the_prompt_sees_the_same_set():
+    bs = boxes()
+    draft = Box(
+        "draft",
+        "pr",
+        "set piece",
+        "Gerald slides a napkin under the grille.",
+        tb.DRAFT_DETAIL,
+        role=tb.DRAFT,
+    )
+    gov = tb.shown(bs)
+    prior = Box("p1", "pass", "roll", "turn 9 rolled 4, miss", "2d6+1 = 4: 6-")
+    say = fake(
+        GOOD[:-1] + ", and Gerald slides a napkin under the grille [draft], "
+        f"decision waits on you [{TID}_3]."
+    )
+    r = tb.narrate(bs, say=say, earlier=[draft, *gov, prior])
+    assert r["struck"] and r["checks"][0] is False  # draft and governance: never served
+    assert "[draft]" not in say.prompt and f"[{TID}_3]" not in say.prompt
+    assert "[p1]" in say.prompt  # the earlier fact box is in the prompt and the checks
+    r = tb.narrate(
+        bs, say=fake(GOOD[:-1] + ", still 4 on turn 9, miss [p1]."), earlier=[prior]
+    )
+    assert r["source"] == "model"
+    r = tb.narrate(
+        bs, say=fake(GOOD[:-1] + ", still 5 on turn 9, miss [p1]."), earlier=[prior]
+    )
+    assert r["struck"] and r["checks"][2] is False
 
 
 def test_a_models_ESCALATE_goes_to_the_human_and_code_stands():
@@ -237,7 +408,7 @@ def test_no_fact_box_no_model_call():
 # ── the set piece: a draft, never a fact ──────────────────────────────────────
 def test_a_set_pieces_flowering_output_is_never_a_fact():
     def flower(prompt, fb):
-        assert all(b.role == "" for b in fb)  # the draft sees fact boxes only
+        assert all(tb.is_fact(b) for b in fb)  # the draft sees fact boxes only
         return [
             {
                 "path": "draft/scene.md",
