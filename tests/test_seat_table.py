@@ -704,3 +704,114 @@ def test_N8_a_session_id_with_the_separator_is_not_read_as_a_session():
         "table verdict session a · b · 2 rows · forecast f1 · waiting on your tip seal"
     )
     assert box(worse).label == "record"
+
+
+# ── B1: the whole table unreachable; Q1: a second box, peeked; R23: beacon off ─────
+def test_B1_a_table_unreachable_line_is_one_unreachable_card():
+    b = box("table unreachable · chain broken at row 7")
+    assert (b.label, b.state) == ("table", "unreachable")
+    assert b.value == "unreachable — table: chain broken at row 7"
+    assert bx.render_box(b).startswith("+! [unreachable]")
+
+
+def test_B1_the_no_sealed_tip_session_line_is_a_blocked_not_a_key_complaint():
+    b = box(
+        "table verdict session s1 · 2 rows · forecast f1 · no sealed tip on record that checks out"
+    )
+    assert (b.kind, b.state) == ("block", "unreachable")
+    assert "no human key" not in b.value
+
+
+class Peeker:
+    """A fake api with a needs and a peek that remember what they were asked."""
+
+    def __init__(self, own, watched):
+        self.own, self.watched, self.calls = own, watched, []
+
+    def needs(self, cfg, **kw):
+        self.calls.append(("needs", cfg, kw))
+        return {"needs": self.own, "count": len(self.own), "code": 0}
+
+    def peek(self, cfg, **kw):
+        self.calls.append(("peek", cfg, kw))
+        return {"needs": self.watched, "count": len(self.watched), "code": 0}
+
+
+def test_Q1_source_table_reads_by_peek_and_ids_its_boxes_apart():
+    api = Peeker([], [WAGER_ESCALATE])
+    got = rec.read_needs(api, "tcfg", source="table")
+    assert [c[0] for c in api.calls] == ["peek"]
+    ids = [b.id for b in got.boxes]
+    assert all(i.startswith("t") for i in ids)
+    same = rec.read_needs(Peeker([WAGER_ESCALATE], []), "cfg")
+    assert not set(ids) & {b.id for b in same.boxes}
+    assert got.boxes[0].label == "table" and "api.peek" in got.boxes[0].detail
+
+
+def test_Q1_an_older_willow_bot_without_peek_is_unreachable_not_a_crash():
+    class Old:
+        pass
+
+    got = rec.read_needs(Old(), "c", source="table")
+    assert got.state == "unreachable" and "no peek read" in got.boxes[0].value
+
+
+def test_Q1_the_status_turn_shows_both_boxes_and_asks_the_second_by_peek_only():
+    api = Peeker(["proposal · own_idea: no · own/x · pass"], [WAGER_ESCALATE])
+    st, out = seat(FakeApi(), [])
+    st.api = api
+    st.cfg, st.table_cfg = "own", "watched"
+    st.status("what's on the table")
+    said = text(out)
+    assert "wager f1 escalate to human" in said and "[needs you] proposal" in said
+    assert [(c[0], c[1]) for c in api.calls] == [("needs", "own"), ("peek", "watched")]
+
+
+def test_Q1_table_config_names_a_second_box_only_when_asked(tmp_path):
+    made = []
+
+    class Api:
+        def default_keyring(self):
+            return None
+
+        def default_nestor_db(self):
+            return None
+
+        def Config(self, **kw):  # noqa: N802
+            made.append(kw)
+            return kw
+
+    b = s.Bot(Api(), None, None, 1)
+    assert s.table_config(b, tmp_path, environ={}) is None
+    s.table_config(b, tmp_path, environ={"GROVE_SEAT_TABLE_BOX": "/t/box"})
+    assert str(made[0]["box"]) == "/t/box"
+    assert made[0]["keys"] == tmp_path / ".flow" / "onescript-keys" / "keys.json"
+    assert "beacon" not in made[0]
+
+
+def test_R23_the_seat_says_the_beacon_reader_is_off_when_a_table_is_watched():
+    class Cfg:
+        beacon = None
+
+    st, out = seat(FakeApi(needs=lambda c, **k: {"needs": [], "count": 0}), [])
+    st.table_own = True
+    st.cfg = Cfg()
+    (note,) = st.beacon_note()
+    assert note.state == "unreachable"
+    assert note.value == "unreachable — beacon reader off: table outcomes unreachable"
+    Cfg.beacon = staticmethod(lambda n: {})
+    assert st.beacon_note() == []
+    st.table_own = False
+    Cfg.beacon = None
+    assert st.beacon_note() == []  # no table watched: nothing to say
+
+
+def test_R23_the_status_turn_carries_the_beacon_note():
+    class Cfg:
+        beacon = None
+
+    api = FakeApi(needs=lambda c, **k: {"needs": [WAGER_ESCALATE], "count": 1})
+    st, out = seat(api, [])
+    st.cfg, st.table_own = Cfg(), True
+    st.status("what's on the table")
+    assert "beacon reader off: table outcomes unreachable" in text(out)

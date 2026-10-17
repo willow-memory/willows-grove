@@ -195,10 +195,10 @@ def _gone(state: str, why: str, source: str = "record") -> Reading:
     return Reading(state, why, [Box(bid, "pass", source, value, state=state)])
 
 
-def _bid(line: str, seen: set[str]) -> str:
+def _bid(line: str, seen: set[str], prefix: str = "r") -> str:
     digest = hashlib.sha1(line.encode()).hexdigest()
     for n in range(5, len(digest)):
-        bid = "r" + digest[:n]
+        bid = prefix + digest[:n]
         if bid not in seen:
             seen.add(bid)
             return bid
@@ -216,6 +216,8 @@ WAGER = re.compile(
 SESSION = re.compile(
     r"table verdict session (?P<sid>(?:(?! · ).)+?) · (?P<rest>\d+ rows · .+)", re.S
 )
+#: B1: the whole table, unreachable (a broken record decides nothing)
+TABLE_GONE = re.compile(r"table unreachable · (?P<why>.+)", re.S)
 AGM = re.compile(
     r"table agm_head (?P<state>satisfied|failing|unreachable|unanchored)"
     r"(?: · (?P<rest>.+))?",
@@ -324,9 +326,9 @@ def _tip_kind(tip: str) -> tuple[str, str]:
     return "block", "unreachable"  # not checked here: no human key was handed over
 
 
-def item_box(line: str, seen: set[str]) -> Box:
+def item_box(line: str, seen: set[str], prefix: str = "r") -> Box:
     """One NEEDS YOU line as a ``needs you`` box: its own parts, re-laid."""
-    bid = _bid(line, seen)
+    bid = _bid(line, seen, prefix)
     if line.startswith(PROPOSAL):
         parts = line[len(PROPOSAL) :].split(" · ")
         if len(parts) >= 3 and parts[0].startswith("own_idea:"):
@@ -361,6 +363,14 @@ def item_box(line: str, seen: set[str]) -> Box:
         return Box(
             bid, kind, "verdict session", value, _parts(" · ".join(parts)), state=state
         )
+    if m := TABLE_GONE.fullmatch(line):
+        return Box(
+            bid,
+            "block",
+            "table",
+            f"unreachable — table: {m['why']}",
+            state="unreachable",
+        )
     if m := AGM.fullmatch(line):  # R13: the ai-game-master ledger head
         state, rest = m["state"], m["rest"] or ""
         value = f"table agm_head {state}"
@@ -388,6 +398,7 @@ def item_box(line: str, seen: set[str]) -> Box:
 
 def _counts(items: list[Box]) -> str:
     names = {
+        "table": "table",
         "proposal": "proposal",
         "re-check": "re-check",
         "wager": "wager",
@@ -410,43 +421,51 @@ def read_needs(
     human_key: object = None,
     read_head: object = None,
     secrets: tuple[str, ...] = (),
+    source: str = "record",
 ) -> Reading:
     """The record's NEEDS YOU as boxes, by ``api.needs``. Never raises: a read
     that fails is an ``unreachable`` reading. One ``invocation`` row, no other.
+
+    ``source="table"`` (Q1) reads a second box by ``api.peek``, which writes
+    nothing at all, and ids its boxes ``t...`` so two readings never collide.
 
     ``human_key`` (a file outside the box) and ``read_head`` (the table's ledger
     reader) are handed to ``api.needs`` only when set, so a box that is no
     table's, and an older willow-bot, are asked exactly as before. ``secrets``
     are strings no line may show (``scrub``)."""
     kw = {k: v for k, v in (("human_key", human_key), ("read_head", read_head)) if v}
+    verb = "needs" if source == "record" else "peek"
+    pre = "r" if source == "record" else "t"
     try:
-        res = api.needs(cfg, **kw)  # type: ignore[attr-defined]
-    except Exception as e:  # noqa: BLE001 - an older willow-bot has no needs
+        res = getattr(api, verb)(cfg, **kw)
+    except Exception as e:  # noqa: BLE001 - an older willow-bot has no needs/peek
         why = (
-            "this willow-bot has no needs read (the one script is older)"
+            f"this willow-bot has no {verb} read (the one script is older)"
             if isinstance(e, AttributeError)
             else f"{type(e).__name__}: {e}"
         )
-        return _gone("unreachable", why)
+        return _gone("unreachable", why, source)
     if not isinstance(res, dict) or "refused" in res:
         why = res.get("refused") if isinstance(res, dict) else "not a needs record"
-        return _gone("unreachable", _clean(why))
+        return _gone("unreachable", _clean(why), source)
     lines = res.get("needs")
     if not isinstance(lines, list) or not all(isinstance(x, str) for x in lines):
-        return _gone("unreachable", "the needs read is not a list of lines")
+        return _gone("unreachable", "the needs read is not a list of lines", source)
     lines = [
         x for x in (scrub(" ".join(_clean(x).split()), secrets) for x in lines) if x
     ]
     if not lines:
-        return _gone("empty", "nothing on the record waits on you")
-    seen: set[str] = {"rstate"}
-    items = [item_box(x, seen) for x in lines]
+        return _gone("empty", f"nothing on the {source} waits on you", source)
+    seen: set[str] = {pre + "state"}
+    items = [item_box(x, seen, pre) for x in lines]
     count = Box(
-        _bid("count", seen),
+        _bid("count", seen, pre),
         "pass",
-        "record",
+        source,
         f"{len(items)} waiting on you: {_counts(items)}",
-        "from the record's NEEDS YOU, read without checking out",
+        "from the record's NEEDS YOU, read without checking out"
+        if source == "record"
+        else "from the table box, watched with api.peek: nothing was written to it",
         role="count",
     )
     return Reading("populated", "", [count, *items], {"waiting": len(items)})

@@ -23,6 +23,12 @@
 #                     NEEDS YOU then carries the wagers, the verdict sessions and
 #                     the agm_head check, read through api.needs / api.checkout
 #   GROVE_SEAT_KEYS   that box's keys file (default: the seat's own)
+#   GROVE_SEAT_TABLE_BOX  a SECOND box the seat only watches (the seat's own box
+#                     stays its own): read with api.peek, which writes nothing,
+#                     so the tip you are about to sign never moves; keys from
+#                     GROVE_SEAT_TABLE_KEYS (default: the seat's own)
+#   GROVE_SEAT_DRAND  set to read drand rounds (the one script's --drand); unset,
+#                     the seat says "beacon reader off: table outcomes unreachable"
 #   GROVE_SEAT_HUMAN_KEY  the human's key, a 0600 file outside the box: a sealed
 #                     tip is checked and scores show; never printed
 #   GROVE_SEAT_LEDGER the ai-game-master campaign.db, for the agm_head check

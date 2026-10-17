@@ -436,7 +436,36 @@ def config(bot: Bot, root: Path, grove: Path = GROVE_ROOT, environ: dict | None 
     env = os.environ if environ is None else environ
     box = env.get("GROVE_SEAT_BOX", "").strip()
     keys = env.get("GROVE_SEAT_KEYS", "").strip()
+    return _make_config(bot, root, grove, box, keys, env)
+
+
+def table_config(
+    bot: Bot, root: Path, grove: Path = GROVE_ROOT, environ: dict | None = None
+):
+    """Q1: the Config of a SECOND box the seat only watches
+    (``GROVE_SEAT_TABLE_BOX``, keys ``GROVE_SEAT_TABLE_KEYS`` else the seat's
+    own), or None when none is named. It is read with ``api.peek``, which writes
+    nothing to it, so the human's sealed tip is never moved by the seat looking."""
+    env = os.environ if environ is None else environ
+    box = env.get("GROVE_SEAT_TABLE_BOX", "").strip()
+    if not box:
+        return None
+    return _make_config(
+        bot, root, grove, box, env.get("GROVE_SEAT_TABLE_KEYS", "").strip(), env
+    )
+
+
+def _make_config(bot, root, grove, box, keys, env):
+    extra = {}
+    if env.get("GROVE_SEAT_DRAND", "").strip():  # R23: off unless asked, like --drand
+        try:
+            from onescript import beacon
+
+            extra["beacon"] = beacon.drand_reader
+        except ImportError:
+            pass
     return bot.api.Config(
+        **extra,
         box=Path(box).expanduser() if box else root / ".flow" / "onescript",
         keys=Path(keys).expanduser()
         if keys
@@ -722,8 +751,13 @@ class Seat:
         today: Callable[[], date] = lambda: datetime.now(timezone.utc).date(),
         human_key: Path | None = None,
         read_head: Callable[[], dict] | None = None,
+        table_cfg: Any = None,
+        table_own: bool = False,
     ):
         self.bot, self.api, self.cfg = bot, bot.api, cfg
+        #: Q1: a second box the seat only watches (``api.peek``, nothing written),
+        #: and whether the seat's own box is a table's (``GROVE_SEAT_BOX``).
+        self.table_cfg, self.table_own = table_cfg, table_own
         #: R13: the human's key file (outside the box) and the table's ledger
         #: reader, handed to ``api.needs`` and ``api.checkout`` when set; the
         #: key's own text is a secret no line may show.
@@ -1021,6 +1055,20 @@ class Seat:
             secrets=self.secrets,
         )
         boxes = list(rec.boxes)
+        watched: list[Box] = []
+        if self.table_cfg is not None:  # Q1: watched, never written to
+            tab = read_needs(
+                self.api,
+                self.table_cfg,
+                human_key=self.human_key,
+                read_head=self.read_head,
+                secrets=self.secrets,
+                source="table",
+            )
+            boxes += tab.boxes
+            watched = tab.boxes
+        if self.table_cfg is not None or self.table_own:
+            boxes += self.beacon_note()
         counts: dict[str, int] = {}
         if path is not None and str(path).strip():
             got = read_store(path, drafts_as="you" if asked else "pr")
@@ -1051,7 +1099,9 @@ class Seat:
                     [d for d in (rec.boxes[0].detail,) if d]
                     + ["no Nestor store is configured, so only the record was read"]
                 )
-        seen = hashlib.sha1("|".join(f"{b.id}{b.value}" for b in rec.boxes).encode())
+        seen = hashlib.sha1(
+            "|".join(f"{b.id}{b.value}" for b in [*rec.boxes, *watched]).encode()
+        )
         self.converse(
             f"status:{status_kind(task)}:{path}:{sig}:{seen.hexdigest()[:10]}",
             lead_rank(sorted(boxes, key=open_tier)),
@@ -1059,6 +1109,24 @@ class Seat:
             lead=any(b.state == "populated" for b in boxes),
             rush=not counts.get("rejected"),
         )
+
+    def beacon_note(self) -> list[Box]:
+        """R23: the CLI is offline unless ``GROVE_SEAT_DRAND`` (or ``--drand`` on
+        the one script) asks for drand. Off, a table forecast's beacon round
+        cannot be read, so no table outcome can be shown to be real: said."""
+        cfgs = [c for c in (self.table_cfg, self.cfg if self.table_own else None) if c]
+        if all(getattr(c, "beacon", None) is not None for c in cfgs):
+            return []
+        return [
+            Box(
+                "tbeacon",
+                "block",
+                "beacon",
+                "unreachable — beacon reader off: table outcomes unreachable",
+                "set GROVE_SEAT_DRAND to read drand rounds",
+                state="unreachable",
+            )
+        ]
 
     def clean(self, b: Box, known: tuple[str, ...] = ()) -> Box:
         """A box with its words scrubbed (``seat_record.scrub``); ``known`` are
@@ -1947,6 +2015,8 @@ def main(argv: list[str] | None = None) -> int:
     return Seat(
         bot,
         config(bot, root),
+        table_cfg=table_config(bot, root),
+        table_own=bool(os.environ.get("GROVE_SEAT_BOX", "").strip()),
         say=say,
         model=model,
         human_key=Path(key).expanduser() if key else None,
