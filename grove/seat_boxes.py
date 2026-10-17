@@ -197,7 +197,11 @@ def checks_line(results: list, names: tuple[str, ...], prefix: str, color: bool)
     chips = []
     for name, st in zip(names, results, strict=True):
         mark = "✓" if st is True else "✗" if st is False else "–"
-        why = "(none quoted)" if name.startswith("your words") else "(code cite unchecked)"
+        why = (
+            "(none quoted)"
+            if name.startswith("your words")
+            else "(code cite unchecked)"
+        )
         chip = f"{mark} {name}" + (f" {why}" if st == "na" else "")
         if color and st != "na":
             chip = _paint(KINDS["pass"][1] if st is True else RUST, chip)
