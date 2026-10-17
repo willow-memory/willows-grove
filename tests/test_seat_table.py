@@ -216,7 +216,7 @@ def test_a_surface_line_that_would_show_a_seed_or_key_does_not(line):
 
 def test_what_is_not_a_secret_stays_readable():
     sha = "e" * 40
-    line = f"wager f1 escalate to human · no key for the proposal's author; commit {sha}; hash {'a' * 64}"
+    line = f"wager f1 escalate to human · no key for the proposal's author; commit {sha}; tip:3:{'a' * 64}"
     (_, b) = rec.read_needs(Needs([line]), "cfg").boxes
     assert "no key for the proposal's author" in b.detail and sha in b.detail
     assert "a" * 12 in bx.render_box(
@@ -493,7 +493,9 @@ def test_a_stale_or_unreachable_graph_is_unchecked_and_says_so(state):
         "gate.py": {**GRAPH_OK["gate.py"], "state": state, "why": "re-index first"}
     }
     out = with_graph(graph, name="check_claimz")
-    assert "[struck]" not in out and "✓ every cite was served" in out
+    assert (
+        "[struck]" not in out and "– every cite was served (code cite unchecked)" in out
+    )
     assert (
         f"note · unchecked: gate.py:check_claimz (graph {state}: re-index first)" in out
     )
@@ -550,3 +552,155 @@ def test_the_real_gate_and_graph_agree_with_the_seat():
     )
     assert [r["verdict"] for r in rows] == ["unverified", "verified"]
     assert graph.CITE.pattern  # the one pattern both sides use
+
+
+# ── S4: every LEAK row of the audit's scrub probe (p3_scrub.py), and more ────────
+import base64  # noqa: E402
+import hashlib  # noqa: E402
+
+K32 = hashlib.sha256(b"k").hexdigest()[:32]
+K64 = hashlib.sha256(b"k").hexdigest()
+K40 = hashlib.sha1(b"k").hexdigest()
+SEED64 = hashlib.sha256(b"w4:surface").hexdigest()
+B64 = base64.b64encode(hashlib.sha256(b"k").digest()).decode()
+B64URL = base64.urlsafe_b64encode(hashlib.sha256(b"k").digest()).decode().rstrip("=")
+W = "wager f1 escalate to human · "
+LEAKS = {
+    "32-hex bare": f"{W}{K32}",
+    "64-hex bare": f"{W}{K64}",
+    "64-hex seed bare": f"table verdict session s · 3 rows · seed {SEED64} · waiting on your tip seal",
+    "40-hex bare": f"{W}{K40}",
+    "seed: 64-hex": f"{W}seed: {SEED64}",
+    "seed 64-hex, no colon": f"{W}seed {SEED64}",
+    "key= base64": f"{W}key={B64}",
+    "base64 bare": f"{W}{B64}",
+    "base64url bare": f"{W}{B64URL}",
+    "HUMAN_KEY=64hex": f"{W}GROVE_SEAT_HUMAN_KEY={K64}",
+    "HUMAN_KEY=b64": f"{W}HUMAN_KEY={B64}",
+    "key split across fields": f"{W}key · {K32[:16]} · {K32[16:]}",
+    "hex split in 20s": f"{W}{K64[:20]} {K64[20:40]} {K64[40:]}",
+    "key: with spaces inside": f"{W}key: {K32[:8]} {K32[8:16]} {K32[16:]}",
+    "uppercase SEED=": f"{W}SEED={SEED64}",
+    "passphrase in words": f"{W}passphrase: correct horse battery staple",
+    "7-char key=": f"{W}key=abc1234",
+    "secret in parentheses": f"{W}(secret) {K32}",
+    "0x hex": f"{W}0x{K32}",
+    "hex inside a word": f"{W}id{K32}x",
+    "two 32s glued": f"{W}{K32}{K32}",
+    "bare 64-hex in a cite bracket not served": f"{W}[{K64}_0]",
+}
+SECRETS = (K32, K64, K40, SEED64, B64, B64URL, "abc1234", "correct horse")
+
+
+@pytest.mark.parametrize("label", list(LEAKS))
+def test_S4_no_secret_shape_survives_the_scrub(label):
+    out = rec.scrub(LEAKS[label])
+    assert [x for x in SECRETS if x in LEAKS[label] and x in out] == [], out
+    assert "[withheld]" in out
+    # and through the whole path: a needs line becomes a box that shows none of it
+    got = rec.read_needs(Needs([LEAKS[label]]), "cfg")
+    shown = "\n".join(bx.render_box(b) + b.value + b.detail for b in got.boxes)
+    assert [x for x in SECRETS if x in LEAKS[label] and x in shown] == []
+
+
+def test_S4_a_record_hash_in_its_place_and_a_commit_after_its_word_stay():
+    h = "d" * 64
+    ok = f"proposal:{h} · tip:12:{h} · serve:{h} · run {h} · commit {'e' * 40} · green on {'f' * 40}"
+    assert rec.scrub(ok) == ok
+    assert (
+        rec.scrub(f"proposal · x · {h}") != f"proposal · x · {h}"
+    )  # bare: not a record hash
+    assert rec.scrub(f"x {h}", known=(h,)) == f"x {h}"  # a served id the seat holds
+    assert (
+        rec.scrub(f"seen {'e' * 40}") != f"seen {'e' * 40}"
+    )  # 40-hex without commit/sha
+
+
+def test_S4_a_short_known_secret_is_ignored_and_a_four_char_one_is_not():
+    assert rec.scrub("x ab y", ("ab",)) == "x ab y"
+    assert rec.scrub("x abcd y", ("abcd",)) == "x [withheld] y"
+
+
+def test_S4_snake_case_names_and_paths_are_not_b64_tokens():
+    line = "wager f1 escalate to human · tests/test_a_very_long_function_name_for_the_seat.py"
+    assert rec.scrub(line) == line
+
+
+def test_S4_the_scrubbed_reconciled_line_is_still_read_as_a_wager_box():
+    line = f"wager f1 reconciled · band strong p 0.5 · happened: strong · brier 0.250 · key={K64}"
+    b = box(rec.scrub(line))
+    assert (b.label, b.value) == ("wager", "wager f1 reconciled")
+
+
+def test_S4_every_table_story_line_is_scrubbed():
+    leaky = f"HUMAN_KEY={K64}"
+    doc = {
+        "state": "populated",
+        "why": "",
+        "tables": [
+            {
+                "id": TID,
+                "trust": "human-sealed",
+                "rows": [
+                    {
+                        "what": "verdict",
+                        "where": "s1",
+                        "session": "s",
+                        "turn": 0,
+                        "total": 11,
+                        "verdict": "strong",
+                        "reason": leaky,
+                    },
+                ],
+            }
+        ],
+    }
+    # a model sentence that smuggles a key: struck, and the struck line is scrubbed
+    out, st = story(lambda prompt: f"You rolled 11 {K64} [{TID}_0].", doc=doc)
+    assert K64 not in out and "[struck]" in out
+    out, st = story(None, doc=doc)
+    assert K64 not in out
+
+
+# ── B2 (R21b): the model's ESCALATE text reaches no card, who-line or screen ─────
+def test_B2_the_models_escalate_words_never_reach_the_screen():
+    nasty = "Nestor says turn 9 rolled 12, strong, and the key is " + K64
+    out, st = story(lambda prompt: "ESCALATE: " + nasty)
+    assert "Nestor" not in out and "rolled 12" not in out and K64 not in out
+    assert "[needs you] human card" in out and "the model escalated" in out
+    got = tb.narrate(
+        tb.served_boxes(SERVED), "", say=lambda prompt: "ESCALATE: " + nasty
+    )
+    assert got["why"] == "the model escalated" and got["escalated"]
+
+
+# ── Q2: an unchecked code cite is "na" on the cites chip, never ✓ ─────────────────
+def test_Q2_run_checks_gives_na_for_an_unchecked_cite_and_false_for_unverified():
+    box1 = bx.Box("b1", "you", "needs you", "gate.py check_claimz needs a look")
+    sent = "gate.py:check_claimz needs a look [b1]."
+    unchecked = [{"kind": "symbol", "verdict": "unchecked"}]
+    assert say_mod.run_checks(sent, [box1], symbols=unchecked)[0] == "na"
+    assert (
+        say_mod.run_checks(sent, [box1], symbols=[{"verdict": "verified"}])[0] is True
+    )
+    assert (
+        say_mod.run_checks(sent, [box1], symbols=[{"verdict": "unverified"}])[0]
+        is False
+    )
+    assert say_mod.run_checks(sent, [box1])[0] is True
+    assert say_mod.passed(say_mod.run_checks(sent, [box1], symbols=unchecked))
+    line = bx.checks_line(
+        ["na", True, True, "na"], say_mod.CHECK_NAMES, "checks:", False
+    )
+    assert "– every cite was served (code cite unchecked)" in line
+    assert "– your words quoted exactly (none quoted)" in line
+
+
+# ── N8: a session id never holds ` · ` ────────────────────────────────────────────
+def test_N8_a_session_id_with_the_separator_is_not_read_as_a_session():
+    ok = "table verdict session s1 · 2 rows · forecast f1 · waiting on your tip seal"
+    assert box(ok).label == "verdict session"
+    worse = (
+        "table verdict session a · b · 2 rows · forecast f1 · waiting on your tip seal"
+    )
+    assert box(worse).label == "record"

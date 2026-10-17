@@ -212,8 +212,9 @@ WAGER = re.compile(
     r" · (?P<rest>.+)",
     re.S,
 )
+#: a session id never holds ` · ` (N8): such a line is not read as a session
 SESSION = re.compile(
-    r"table verdict session (?P<sid>.+?) · (?P<rest>\d+ rows · .+)", re.S
+    r"table verdict session (?P<sid>(?:(?! · ).)+?) · (?P<rest>\d+ rows · .+)", re.S
 )
 AGM = re.compile(
     r"table agm_head (?P<state>satisfied|failing|unreachable|unanchored)"
@@ -222,26 +223,90 @@ AGM = re.compile(
 )
 #: What a line must not carry onto the screen (see ``scrub``).
 WITHHELD = "[withheld]"
-_SECRET_SET = re.compile(
-    r"\b(?:seed|key|secret|token|passphrase|password)\b\s*[:=]\s*[0-9A-Za-z+/_=-]{8,}",
-    re.I,
+_NAMED = r"\w*(?:key|seed|secret|token|passphrase|password)\w*"
+#: ``HUMAN_KEY=...``, ``seed: ...``, ``GROVE_SEAT_HUMAN_KEY=...``: the whole field
+#: (up to the next `` · `` or the end of the line) is the value.
+_ASSIGNED = re.compile(rf"\b{_NAMED}\s*[:=]\s*[^\n]*?(?= · |\n|$)", re.I)
+#: ``seed <hex or base64>``: a secret's name, then a long token, no colon.
+_NAMED_VALUE = re.compile(rf"\b{_NAMED}\s+[A-Za-z0-9+/_=-]{{16,}}", re.I)
+_HEX_RUN = re.compile(r"[0-9a-fA-F]{24,}")
+_HEX_PART = re.compile(
+    r"(?<![0-9A-Za-z])(?=[0-9a-f]*[a-f])[0-9a-f]{8,}(?![0-9A-Za-z])", re.I
 )
-_LONG_HEX = re.compile(r"(?<![0-9A-Za-z])[0-9a-fA-F]{24,}(?![0-9A-Za-z])")
+_B64_RUN = re.compile(
+    r"(?<![A-Za-z0-9+/_=-])[A-Za-z0-9+/_-]{32,}={0,2}(?![A-Za-z0-9+/_=-])"
+)
+#: Where a 64-hex is a record's own hash (a subject, the run's version): a
+#: ``proposal:``/``serve:``/``tip:N:`` subject or ``run``. A 40-hex is a commit
+#: only after ``commit``/``sha``/``green on``/``head``.
+_HASH_AFTER = re.compile(
+    r"(?:\b(?:proposal|serve|outcome|forecast|seal|run)[: ]|\btip:\d+:)$", re.I
+)
+_SHA_AFTER = re.compile(r"(?:\b(?:commit|sha1?|green on|head)\W{0,3})$", re.I)
 
 
-def scrub(line: str, secrets: tuple[str, ...] = ()) -> str:
-    """The line with every known secret, any ``seed``/``key`` set to a value and
-    any hex run of 24 or more characters that is not exactly a 64-hex hash (the
-    size of a record's own hashes, which the screen shortens) or a 40-hex git
-    commit replaced by ``[withheld]``. A secret is matched as given; the caller
-    hands in both a key's text and its hex."""
+def _hex_ok(line: str, m: re.Match, known: tuple[str, ...]) -> bool:
+    run = m.group(0)
+    before = line[: m.start()]
+    after = line[m.end() : m.end() + 1]
+    if before[-1:].isalnum() or after.isalnum():
+        return False  # glued into a word: no boundary, no hash
+    if run in known:
+        return True
+    if len(run) == 64:
+        return bool(_HASH_AFTER.search(before))
+    if len(run) == 40:
+        return bool(_SHA_AFTER.search(before))
+    return False
+
+
+def scrub(line: str, secrets: tuple[str, ...] = (), known: tuple[str, ...] = ()) -> str:
+    """The line with what must not reach the screen replaced by ``[withheld]``:
+
+    * every known secret (``secrets``: the key's text and hex, as given);
+    * the value of any ``...key/seed/secret/token/password...`` set with ``:`` or
+      ``=`` (the whole field), and ``seed <long token>`` without a colon;
+    * hex runs of 24 or more characters, anywhere, **unless** the run is a record
+      hash in its place: a 64-hex after ``proposal:``, ``serve:``, ``tip:N:``,
+      ``outcome:``, ``forecast:``, ``seal:`` or ``run``, a 40-hex after
+      ``commit``/``sha``/``green on``/``head``, or a hash handed in ``known``
+      (a bare 64-hex, a ``0x`` hex, a hex glued into a word are withheld);
+    * 8-or-more-character hex pieces that together make 24 or more (a key split
+      by spaces or `` · ``);
+    * a base64 or base64url run of 32 or more characters with a digit and both
+      cases (a random-looking token, not a snake_case name or a path)."""
     for sec in secrets:
         if sec and len(sec) >= 4:
             line = line.replace(sec, WITHHELD)
-    line = _SECRET_SET.sub(WITHHELD, line)
-    return _LONG_HEX.sub(
-        lambda m: m.group(0) if len(m.group(0)) in (40, 64) else WITHHELD, line
+    line = _ASSIGNED.sub(WITHHELD, line)
+    line = _NAMED_VALUE.sub(WITHHELD, line)
+    line = re.sub(r"0[xX][0-9a-fA-F]{8,}", WITHHELD, line)
+    line = _HEX_RUN.sub(
+        lambda m: m.group(0) if _hex_ok(line, m, known) else WITHHELD, line
     )
+
+    # a key cut in pieces: adjacent hex pieces (space or ' · ') adding up to a key
+    def pieces(m: re.Match) -> str:
+        n = sum(len(x) for x in re.findall(r"[0-9a-fA-F]+", m.group(0)))
+        return WITHHELD if n >= 24 else m.group(0)
+
+    line = re.sub(
+        rf"{_HEX_PART.pattern}(?:(?: · | ){_HEX_PART.pattern})+",
+        pieces,
+        line,
+        flags=re.I,
+    )
+
+    def b64(m: re.Match) -> str:
+        t = m.group(0)
+        mixed = (
+            any(c.isdigit() for c in t)
+            and any(c.isupper() for c in t)
+            and any(c.islower() for c in t)
+        )
+        return WITHHELD if mixed else t
+
+    return _B64_RUN.sub(b64, line)
 
 
 def _parts(rest: str) -> str:

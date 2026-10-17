@@ -327,7 +327,7 @@ def check_cites_served(
     boxes: list[Box],
     earlier: list[Box] | None = None,
     symbols: list[dict] | None = None,
-) -> bool:
+) -> bool:  # run_checks turns a True with an unchecked code cite into "na"
     """Every ``[id]`` the sentence cites is a box that was served: one of this
     page's boxes, or one of the ``earlier`` boxes of this run's thread. A code
     cite (``symbols``, from ``symbol_rows``) the code graph does not hold fails
@@ -413,8 +413,11 @@ def run_checks(
     """The four results, in ``CHECK_NAMES`` order: True, False, or ``"na"``.
     ``earlier`` is the boxes of this run's thread the prompt carried; ``symbols``
     is ``symbol_rows`` of the sentence (T-cbm-1)."""
+    served = check_cites_served(sentence, boxes, earlier, symbols)
+    if served is True and any(r.get("verdict") == "unchecked" for r in symbols or []):
+        served = "na"  # Q2: a code cite nobody could check is not a pass
     return [
-        check_cites_served(sentence, boxes, earlier, symbols),
+        served,
         check_boxes_cited(sentence, boxes),
         check_nothing_lacking(sentence, boxes, human, earlier),
         check_quotes(sentence, human, claims),

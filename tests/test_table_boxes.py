@@ -383,7 +383,7 @@ def test_S2_earlier_is_filtered_through_facts_and_the_prompt_sees_the_same_set()
 def test_a_models_ESCALATE_goes_to_the_human_and_code_stands():
     r = tb.narrate(boxes(), say=fake("ESCALATE: the boxes do not say who rolled"))
     assert r["escalated"] and r["source"] == "code" and not r["struck"]
-    assert r["why"] == "the model escalated: the boxes do not say who rolled"
+    assert r["why"] == "the model escalated"  # its reason is never shown (B2)
     assert r["checks"] is None
 
 

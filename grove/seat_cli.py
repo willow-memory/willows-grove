@@ -216,7 +216,7 @@ import tempfile
 import time
 import tomllib
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import date, datetime, timezone
 from importlib import metadata
 from pathlib import Path
@@ -1060,6 +1060,15 @@ class Seat:
             rush=not counts.get("rejected"),
         )
 
+    def clean(self, b: Box, known: tuple[str, ...] = ()) -> Box:
+        """A box with its words scrubbed (``seat_record.scrub``); ``known`` are
+        the served ids that may stand."""
+        return replace(
+            b,
+            value=scrub(b.value, self.secrets, known),
+            detail=scrub(b.detail, self.secrets, known),
+        )
+
     def table_story(self, task: str) -> None:
         """The table's story (R12, R21; ``table_boxes.narrate``): the served
         table's fact boxes said as one sentence. ``self.say`` is the injected
@@ -1094,14 +1103,17 @@ class Seat:
                 cards = [
                     self.card("you", "human card", "the model escalated", got["why"])
                 ]
+        # a served id is a 64-hex before `_N`: known from the boxes, not from a bracket
+        ids = tuple({b.id.split("_")[0] for b in boxes})
+        clean = lambda t: scrub(t, self.secrets, ids)  # noqa: E731 - every line, B2/S4
         said = Said(
-            boxes,
-            who,
+            [self.clean(b, ids) for b in boxes],
+            clean(who),
             "code · shown again from the pile, no model asked now",
-            lines,
-            cards=cards,
+            [clean(x) for x in lines],
+            cards=[self.clean(b, ids) for b in cards],
             checks=got["checks"] or [],
-            tail=tail,
+            tail=[clean(x) for x in tail],
             names=tb.TABLE_CHECK_NAMES,
         )
         self.emit(said)

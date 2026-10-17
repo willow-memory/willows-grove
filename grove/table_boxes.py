@@ -478,9 +478,9 @@ def narrate(
     out["model"] = got
     if _ESCALATE_RE.match(got):
         out["escalated"] = True
-        out["why"] = (
-            f"the model escalated: {got[len(ESCALATE) :].strip(' :-') or 'no reason'}"
-        )
+        # R21b: the model's own words (its ESCALATE reason) never reach a card, a
+        # who-line or the screen; the human is told only that it escalated.
+        out["why"] = "the model escalated"
         return out
     checks = table_checks(got, fb, human, earlier)
     out["checks"] = checks
