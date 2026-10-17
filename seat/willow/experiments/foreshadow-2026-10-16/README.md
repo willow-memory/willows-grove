@@ -1,6 +1,6 @@
 # Foreshadow and the AI GM table (2026-10-16)
 
-§1 What this is · §2 Files · §3 Run it · §4 Results · §5 The table session · §6 Limits
+§1 What this is · §2 Files · §3 Run it · §4 Results · §5 The table session · §6 Limits · §7 Break test
 
 ## §1 What this is
 
@@ -86,3 +86,29 @@ served. Under one-script `serve` they would be struck (handoff §4).
 | No model | No Ollama in the cloud container; every tagger is code |
 | Fitted | The setup detector was written after reading all three worlds |
 | Not run | Nestor's life-simulation distributions (`humans.py --distribution 500`): blocked in the session by a permission check |
+
+## §7 Break test
+
+2026-10-17. Each attack ran on a scratch copy of `table/` with a throwaway human
+key; the real box was not touched.
+
+| # | Attack | Result |
+|---|---|---|
+| A1 | `propose` before any seal | Refused: serve is `empty` |
+| A2 | A human line that starts with `-` (`-h`, `--proposal=…`) | **Broke the importer**: argparse took it as a flag. Fixed: `--` before every bite |
+| A3, A4 | Keys readable by others; keys inside the box | Refused |
+| A5 | A `seal` row appended by hand with a correct chain hash, no key | **Broke one-script**: serve populated, and all five proposals passed. A seal row carries no proof, and `serve.sealed()` trusts any `who: human` row. Nothing is anchored, so the chain can't see it |
+| A5b | The same forgery over a proposal | Nothing written (`write_proposal` runs only after a real seal), but `pooled` hides the forged proposal as sealed |
+| A6 | Edit a past bite | Caught: hard close, chain broken |
+| A7 | Cut the last rows | Not caught: no tip is anchored (one-script's own documented limit) |
+| A8 | Widen the sealed spec in `scope-card.json` | Refused: the seal covers that exact set |
+| A9 | Hostile pending rows (`record.jsonl`, `../`, an extra key, an empty claim) | Each refused, by its rule |
+| A11 | `propose` twice | Duplicate rows; `pooled` keeps one per subject |
+| A12 | `record.md` with an unquoted line, a doubled space, a gap in numbering, CRLF | **Broke the importer**: each line was skipped silently (CRLF: all of them). Fixed: every line is read or the run stops |
+| A14 | Seal, a new check-in, then `propose` | Works: the spec pins the stack. In a new container `propose` needs `onescript checkin` first, and now says so |
+| A15 | Seal, then a new human turn, then `propose` | Works |
+
+A5 is willow-bot's to fix: the seal row should carry its proof (or Nestor pair
+id), and `serve.sealed()` and `write_proposal` should re-verify it, not read
+`who`. Until then, a sealed tip (anchor) only guards the rows up to it.
+
