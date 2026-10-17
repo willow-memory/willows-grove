@@ -7,6 +7,8 @@ reachable in this container and none is asked."""
 
 from __future__ import annotations
 
+import json
+
 import pytest
 
 from grove import table_boxes as tb
@@ -369,11 +371,11 @@ def test_S2_earlier_is_filtered_through_facts_and_the_prompt_sees_the_same_set()
     assert "[draft]" not in say.prompt and f"[{TID}_3]" not in say.prompt
     assert "[p1]" in say.prompt  # the earlier fact box is in the prompt and the checks
     r = tb.narrate(
-        bs, say=fake(GOOD[:-1] + ", still 4 on turn 9, miss [p1]."), earlier=[prior]
+        bs, say=fake(GOOD[:-1] + ", and turn 9 rolled 4, miss [p1]."), earlier=[prior]
     )
     assert r["source"] == "model"
     r = tb.narrate(
-        bs, say=fake(GOOD[:-1] + ", still 5 on turn 9, miss [p1]."), earlier=[prior]
+        bs, say=fake(GOOD[:-1] + ", and turn 9 rolled 5, miss [p1]."), earlier=[prior]
     )
     assert r["struck"] and r["checks"][2] is False
 
@@ -644,3 +646,128 @@ def test_record_boxes_never_reach_a_model_even_as_earlier_or_a_set_piece():
         lambda p, f: asked.append(repr([b.id for b in f])) or [], bx, "p"
     )
     assert not any("dragon" in a or "r3" in a for a in asked)
+
+
+# ── round 4: R21b (H1 negators, H2 lore word for word, H4 total or verdict) ──
+def xdoc(lore):
+    d = json.loads(json.dumps(XDOC))
+    d["tables"][0]["rows"][2]["fact"] = lore
+    return d
+
+
+def xnar2(sentence, lore=None):
+    bx = tb.served_boxes(xdoc(lore) if lore else XDOC)
+    return tb.narrate(bx, say=lambda p: sentence)
+
+
+G1 = "Turn 1 rolled 6, miss [T1_1]."
+LC = " A clean hit takes nine coins from the ferryman [T1_2]."
+
+
+@pytest.mark.parametrize(
+    "honest",
+    [
+        "Turn 0 rolled 11, strong [T1_0]. " + G1 + LC,
+        "Rolled 11 on turn 0, strong [T1_0]. " + G1 + LC,
+        "On turn 0 you rolled 11, strong [T1_0]. " + G1 + LC,
+        "Turn 0 rolled 11, it's strong [T1_0]. " + G1 + LC,
+        "Turn 0 rolled 11, strong, turn 0 [T1_0]. " + G1 + LC,
+    ],
+)
+def test_R21b_honest_roll_clauses_still_stand(honest):
+    assert xnar2(honest)["source"] == "model", honest
+
+
+def test_R21b_honest_lore_with_digits_stands_word_for_word():
+    lore = "The toll is 3 coins and 12 salt."
+    r = xnar2(
+        "Turn 0 rolled 11, strong [T1_0]. "
+        + G1
+        + " The toll is 3 coins and 12 salt [T1_2].",
+        lore,
+    )
+    assert r["source"] == "model"
+    r = xnar2(
+        "Turn 0 rolled 11, strong [T1_0]. "
+        + G1
+        + "; the toll is 3 coins and 12 salt [T1_2].",
+        lore,
+    )
+    assert r["source"] == "model"  # punctuation and case are not words
+
+
+@pytest.mark.parametrize(
+    "lie",
+    [
+        "Turn 0 rolled 11, not strong [T1_0]. " + G1 + LC,
+        "Turn 0 rolled 11, strong [T1_0]. Turn 1 rolled 6, not miss [T1_1]." + LC,
+        "Turn 0 rolled 11, strong [T1_0]. Turn 1 rolled 6, no miss [T1_1]." + LC,
+        "Turn 0 rolled 11, but still strong [T1_0]. Turn 1 rolled 6, yet miss [T1_1]."
+        + LC,
+        "Turn 0 rolled 11, never strong [T1_0]. " + G1 + LC,
+        "Turn 0 rolled 11, strong [T1_0]. " + G1 + LC[:-1] + ", not.",
+        "Turn 0 didn't roll 11 [T1_0]. " + G1 + LC,
+        "Turn 0's roll: 11, strong [T1_0]. " + G1 + LC,
+    ],
+)
+def test_R21b_H1_negators_and_hedges_are_never_free(lie):
+    r = xnar2(lie)
+    assert r["struck"] and r["source"] == "code", lie
+
+
+@pytest.mark.parametrize(
+    "lore, clause",
+    [
+        ("The toll is 3 coins and 12 salt.", "The toll is 12 coins and 3 salt [T1_2]."),
+        ("The toll is 3 coins and 12 salt.", "The toll is 3 coins and 3 salt [T1_2]."),
+        ("The ferryman takes no salt.", "The ferryman takes salt [T1_2]."),
+        ("The ferryman takes salt.", "The ferryman takes not salt [T1_2]."),
+        ("The ferryman takes salt.", "Salt takes the ferryman [T1_2]."),
+        ("The ferryman takes salt.", "Looks like the ferryman takes salt [T1_2]."),
+        ("The ferryman takes salt.", "The ferryman [T1_2]."),
+    ],
+)
+def test_R21b_H2_a_lore_clause_is_the_boxs_exact_value_or_struck(lore, clause):
+    r = xnar2("Turn 0 rolled 11, strong [T1_0]. " + G1 + " " + clause, lore)
+    assert r["struck"] and r["source"] == "code", clause
+    assert r["checks"][4] is False
+
+
+def test_R21b_H4_a_roll_clause_says_the_total_or_the_verdict():
+    r = xnar2("Turn [T1_0]. " + G1 + LC)
+    assert r["struck"] and r["checks"][4] is False
+    r = xnar2("Turn 0 [T1_0]. " + G1 + LC)
+    assert r["struck"] and r["checks"][4] is False
+    assert xnar2("Strong [T1_0]. " + G1 + LC)["source"] == "model"
+    assert xnar2("Rolled 11 [T1_0]. " + G1 + LC)["source"] == "model"
+
+
+def test_R21b_lore_digit_as_a_turn_is_struck():
+    r = xnar2(
+        "Turn 3 rolled 11, strong [T1_0]. "
+        + G1
+        + " The toll is 3 coins and 12 salt [T1_2].",
+        "The toll is 3 coins and 12 salt.",
+    )
+    assert r["struck"]
+
+
+@pytest.mark.parametrize(
+    "t, n",
+    [
+        ({"trust": "human-sealed"}, 1),
+        ({"trust": "untrusted"}, 0),
+        ({}, 0),
+        ({"trust": "Human-Sealed"}, 0),
+        ({"trust": "human-sealed", "state": "unreachable"}, 0),
+        ({"trust": "human-sealed", "state": "empty"}, 0),
+    ],
+)
+def test_NIT3_every_trust_and_state_shape(t, n):
+    d = {
+        "state": "populated",
+        "tables": [
+            {"id": "T", **t, "rows": [{"what": "lore", "where": "V", "fact": "x y."}]}
+        ],
+    }
+    assert len(tb.facts(tb.served_boxes(d))) == n

@@ -277,7 +277,15 @@ NUMBER_WORDS = frozenset(
     "thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty".split()
 )
 #: Words free in any clause: the seat's glue and function words.
-_FREE = frozenset({w for g in GLUE for w in WORD.findall(_fold(g))} | {w for w in STOP})
+#: R21b (H1): negators and hedges are never free in a table clause, whatever
+#: the seat's glue or stop list says; an n't form splits to a word the box
+#: lacks and is struck by the word rule.
+NEGATORS = frozenset("not no nor never but yet still than".split())
+#: Words free in any clause: the seat's glue and function words, less the
+#: negators and hedges.
+_FREE = frozenset(
+    ({w for g in GLUE for w in WORD.findall(_fold(g))} | set(STOP)) - NEGATORS
+)
 
 
 def check_no_quotes(sentence: str) -> bool:
@@ -316,15 +324,23 @@ def _numbers_match(clause: str, b: Box) -> bool:
     return all(n == total for n in rest)
 
 
+def _tokens(text: str) -> list[str]:
+    """Words and numbers of a folded text, in order, possessive 's dropped."""
+    return re.findall(r"[^\W_]+", _fold(re.sub(r"['’]s\b", "", text)))
+
+
 def check_clauses(sentence: str, boxes: list[Box]) -> bool:
     """Per clause (the text up to each ``[id]`` cite): every number and every
     content word in the clause is in the VALUE of the one box the clause
-    cites; glue and function words are free; numbers compare exactly, a
-    roll's turn after ``turn`` and its total elsewhere (``_numbers_match``);
-    verdict and every other word match exactly, no stemming (``missed`` is
-    not ``miss``); a spelled number is a content word like any other. Each
-    cite needs a clause of its own saying something from its box (NIT-2),
-    and a trailing clause with no cite may hold no content word or number."""
+    cites; glue and function words are free, negators and hedges never
+    (R21b H1); numbers compare exactly, a roll's turn after ``turn`` and its
+    total elsewhere; every other word matches exactly, no stemming
+    (``missed`` is not ``miss``); a spelled number is a content word. A lore
+    box is said by code only: a model clause citing one must be the box's
+    exact value, token for token (R21b H2). A roll clause must say the
+    box's total or its verdict, not just ``turn`` (H4). Each cite needs a
+    clause of its own (NIT-2), and a trailing clause with no cite may hold
+    no content word, negator or number."""
     by_id = {b.id: b for b in boxes}
     end = 0
     for m in _CLAUSE.finditer(sentence):
@@ -333,6 +349,10 @@ def check_clauses(sentence: str, boxes: list[Box]) -> bool:
         b = by_id.get(cid)
         if b is None:
             return False
+        if b.label == "lore":  # H2: word for word, or not at all
+            if _tokens(clause) != _tokens(b.value):
+                return False
+            continue
         _, words = _value_words(b)
         text = _fold(re.sub(r"['’]s\b", "", clause))
         got_nums = NUMBER.findall(text)
@@ -343,6 +363,11 @@ def check_clauses(sentence: str, boxes: list[Box]) -> bool:
             return False
         if not got_nums and not content:
             return False  # NIT-2: a cite with no clause of its own
+        roll = _ROLL_VALUE.match(_fold(b.value))
+        if roll is not None:  # H4: the total or the verdict, not just "turn"
+            verdict = _fold(b.value).split()[-1]
+            if roll.group(2) not in got_nums and verdict not in content:
+                return False
     tail = _fold(sentence[end:])
     if NUMBER.search(tail) or any(w not in _FREE for w in WORD.findall(tail)):
         return False
