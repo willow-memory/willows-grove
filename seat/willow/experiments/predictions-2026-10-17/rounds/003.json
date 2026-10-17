@@ -1,0 +1,25 @@
+{
+ "forecasts": {
+  "willow": {
+   "at": 1792200193,
+   "beacon_then": 6558972,
+   "p": {
+    "2d20": 0.3,
+    "fixed": 0.63,
+    "six": 0.23,
+    "streak": 0.48
+   },
+   "sha256": "f2f24e5468cfa749fe29fb6a6b14621ed7c9d05e3155fe05268f39e3259b7211"
+  }
+ },
+ "opened_by_beacon": 6558972,
+ "questions": {
+  "2d20": "Roll 2d20: is the sum over 25?",
+  "fixed": "Shuffle 8 numbered cards: is any card in its own place?",
+  "six": "Flip 12 coins: exactly 6 heads?",
+  "streak": "Flip 20 coins: is there a run of 4 or more heads?"
+ },
+ "round": 3,
+ "target": 6558982,
+ "target_at": 1792200480
+}
