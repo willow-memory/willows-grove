@@ -16,6 +16,10 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ## [Unreleased]
 
+### Added
+
+- **seat:** desk experiments, not packaged: the foreshadow harness and the AI GM table's record as a one-script record with its importer (`seat/willow/experiments/foreshadow-2026-10-16/`), and a forecasting game that takes forecasts before a drand beacon round and grades them by Brier score once the beacon's randomness seeds the data, with its seven played rounds (`seat/willow/experiments/predictions-2026-10-17/`) (PR 156).
+
 ### Fixed
 
 - **seat:** one model for now: the chain's local rung runs on the seat's reply model (`--model`, else `GROVE_SAY_MODEL`, else `qwen3:4b`) instead of willow-bot's default `llama3.2:3b`, so a small box keeps one model loaded and the reply no longer waits behind a model swap (PR 154).

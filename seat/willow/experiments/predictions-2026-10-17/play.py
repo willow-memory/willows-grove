@@ -174,10 +174,7 @@ DECK = {
     ),
     "gap": (
         "Roll 2d6 twice: do the two sums differ by 3 or more?",
-        lambda s: abs(
-            (s.die(6) + s.die(6)) - (s.die(6) + s.die(6))
-        )
-        >= 3,
+        lambda s: abs((s.die(6) + s.die(6)) - (s.die(6) + s.die(6))) >= 3,
         lambda: _dice_odds(4, 6, lambda r: abs(r[0] + r[1] - r[2] - r[3]) >= 3),
     ),
     "max": (
@@ -264,7 +261,9 @@ def cmd_forecast(r: int, who: str, pairs: list[str]) -> int:
         "sha256": hashlib.sha256(canon(got).encode()).hexdigest(),
     }
     save(r, data)
-    print(f"{who}: forecast for round {r} kept, {data['target'] - now} beacon rounds early")
+    print(
+        f"{who}: forecast for round {r} kept, {data['target'] - now} beacon rounds early"
+    )
     return 0
 
 
@@ -319,7 +318,9 @@ def cmd_board() -> int:
         rows["oracle"] = {"p": d["reveal"]["oracle"]}
         for w, row in rows.items():
             for q in d["questions"]:
-                total.setdefault(w, []).append(brier(row["p"][q], d["reveal"]["answers"][q]))
+                total.setdefault(w, []).append(
+                    brier(row["p"][q], d["reveal"]["answers"][q])
+                )
     if not total:
         print("no graded round yet")
         return 0
