@@ -1,0 +1,25 @@
+{
+ "forecasts": {
+  "willow": {
+   "at": 1792201398,
+   "beacon_then": 6559012,
+   "p": {
+    "fixed": 0.63,
+    "gap": 0.48,
+    "six": 0.23,
+    "ten": 0.65
+   },
+   "sha256": "aa2927f4a569a68d909929b944133036d0ad665fb869360ad05199af4c23e7e9"
+  }
+ },
+ "opened_by_beacon": 6559012,
+ "questions": {
+  "fixed": "Shuffle 8 numbered cards: is any card in its own place?",
+  "gap": "Roll 2d6 twice: do the two sums differ by 3 or more?",
+  "six": "Flip 12 coins: exactly 6 heads?",
+  "ten": "Roll 10d10: does a 10 come up?"
+ },
+ "round": 7,
+ "target": 6559022,
+ "target_at": 1792201680
+}
