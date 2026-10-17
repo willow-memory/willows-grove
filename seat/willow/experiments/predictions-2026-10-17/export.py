@@ -9,12 +9,20 @@ One JSON line per (forecaster, question) of a revealed round, in the shape
      "proposed_outcome": {"path": "no"}}
 
 `by` is a role (human, desk, oracle, coin), never a name; the forecaster
-`willow` is the desk. `committed` is the round file's own commitment, re-hashed
-here from the forecast it names, so an edited round file is refused, not
-exported. Oracle and coin rows carry none: code worked them out. The
-`proposed_outcome` is code's reading of the beacon, re-derived here from the
-stored randomness with play.py's own deck; it is never a seal. Only the human's
-proof over `reverse.outcome_subject` makes an outcome count.
+`willow` is the desk. `committed` carries the round file's own fields
+(`sha256`, `beacon_then`, `target`). The round file is the game's own
+record, a plain rewritable JSON file, not a commitment: its `sha256` sits in
+the clear beside the forecast it hashes, so anyone can edit both. What this
+checks is narrower: an edit that forgets to re-hash is refused, and so is a
+forecast whose own fields say it was made at or after its target
+(`beacon_then >= target`, or `at >= target_at`). The one-script record's
+commitment is the chain order under the human's sealed tip, made when the
+rows are written, not here. Oracle and coin rows carry none: code worked
+them out. The `proposed_outcome` is code's reading of the beacon, re-derived
+here from the stored randomness with play.py's own deck; it is never a seal.
+Only the human's proof over `reverse.outcome_subject` makes an outcome count.
+The beacon's BLS signature is still not checked (the README's §4 limit; the
+box build's T10): the stored randomness is taken as the beacon's.
 
 This file sits beside `play.py` and imports it by path; `play.py` and the
 round files are the game's record as played and are not edited.
@@ -73,6 +81,11 @@ def export(data: dict) -> list[dict]:
         if hashlib.sha256(play.canon(f["p"]).encode()).hexdigest() != f["sha256"]:
             raise Refused(
                 f"round {data['round']}: {who}'s forecast is not what was committed"
+            )
+        if f["beacon_then"] >= data["target"] or f["at"] >= data["target_at"]:
+            raise Refused(
+                f"round {data['round']}: {who}'s forecast says it was made at or "
+                "after its target beacon"
             )
         rows[ROLE[who]] = (
             f["p"],
