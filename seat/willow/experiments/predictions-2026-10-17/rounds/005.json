@@ -1,0 +1,25 @@
+{
+ "forecasts": {
+  "willow": {
+   "at": 1792200796,
+   "beacon_then": 6558992,
+   "p": {
+    "birthday": 0.51,
+    "d100": 0.37,
+    "distinct": 0.015,
+    "pair": 0.49
+   },
+   "sha256": "6f534e164efd5281103025d95e6a5a799dc76370917eb042ce94efccb8bb6529"
+  }
+ },
+ "opened_by_beacon": 6558992,
+ "questions": {
+  "birthday": "23 people, birthdays drawn from 365 days: do any two share one?",
+  "d100": "Roll a d100: 37 or under?",
+  "distinct": "Roll 6d6: are all six faces different?",
+  "pair": "Deal 5 cards from a shuffled deck: do two share a rank?"
+ },
+ "round": 5,
+ "target": 6559002,
+ "target_at": 1792201080
+}
