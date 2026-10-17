@@ -30,6 +30,26 @@
   "pair": "Deal 5 cards from a shuffled deck: do two share a rank?",
   "six": "Flip 12 coins: exactly 6 heads?"
  },
+ "reveal": {
+  "answers": {
+   "3d6": false,
+   "fixed": true,
+   "pair": true,
+   "six": false
+  },
+  "beacon": {
+   "previous_signature": "a4c75fd82d37186dcb5f3db5100ed2091cc1a62f1fea26c4c6616a4e38a83b69783a3c63260722a1c0a137ca7724560703d260cd9c48dc4f62d3cbb1e004fd62eecd00e22dea3d7b0e4465c657e5760859662068b02a9c5d88a085aa1267e5a9",
+   "randomness": "1b67ea4ec18b7a2446a79aed1070847aae17ff7bb0cadc27bf000344d415bdd5",
+   "round": 6558962,
+   "signature": "8fdff730321e9f1655549ec7d47398b401422326a1c9a343f4ac1a3b757dceae290af9d27323b3b962ddc61cb9d697f30a841fb15185a649a454c2494ed268faf31698ff62d965df647650b77dcdb344766121a8fb1ec0a05b8af17ec3a1a3ab"
+  },
+  "oracle": {
+   "3d6": 0.25925925925925924,
+   "fixed": 0.6321180555555556,
+   "pair": 0.4929171668667467,
+   "six": 0.2255859375
+  }
+ },
  "round": 1,
  "target": 6558962,
  "target_at": 1792199880
