@@ -1,5 +1,7 @@
 # Handoff: foreshadow tests and the first-bite GM table (2026-10-16)
 
+*Followed by [`foreshadow-table-handoff-2026-10-17.md`](foreshadow-table-handoff-2026-10-17.md).*
+
 §1 What I now understand · §2 What was done · §3 How the GM should be served · §4 Seventeen questions · §5 Risks and open gates
 
 *Cloud session, 2026-10-16, branch `claude/bold-goodall-9ablrs`. Persona: willow,
