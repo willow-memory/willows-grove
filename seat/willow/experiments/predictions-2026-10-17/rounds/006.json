@@ -30,6 +30,26 @@
   "fixed": "Shuffle 8 numbered cards: is any card in its own place?",
   "max": "Draw 5 numbers from 1\u2013100: is the largest 90 or more?"
  },
+ "reveal": {
+  "answers": {
+   "3d6": false,
+   "distinct": false,
+   "fixed": true,
+   "max": false
+  },
+  "beacon": {
+   "previous_signature": "82cc423f184d7baf1c18b37babf2cb65de62f7d3a005c295e8f9da6fdc85f9469c6534427f12ed4c2068fe5eaa4ad94e15fddf94c5d090c866da0604924dd0036282292296ad61d31e4e583b32618b93037a5531c271b1aa0feb9cf94ac42190",
+   "randomness": "2dc7c2c81e3b2144108704545c324ffb9381b21a43e9264a697fbbfc36c2a6d9",
+   "round": 6559012,
+   "signature": "b57fc6b7595e8a6c47fa44df946b36ac543e1df30d241310156ab88f1fe2f80408de0da927eebd5e761ff1586ea802e60e0a75c6a01e9c08f3f2b28878e797ecbf87f5e2f8fb03d6305b977eee197accaaeaf59e6f75a088032a16faaf608c07"
+  },
+  "oracle": {
+   "3d6": 0.25925925925925924,
+   "distinct": 0.015432098765432098,
+   "fixed": 0.6321180555555556,
+   "max": 0.4415940551
+  }
+ },
  "round": 6,
  "target": 6559012,
  "target_at": 1792201380
