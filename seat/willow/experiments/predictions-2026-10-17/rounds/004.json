@@ -30,6 +30,26 @@
   "streak": "Flip 20 coins: is there a run of 4 or more heads?",
   "ten": "Roll 10d10: does a 10 come up?"
  },
+ "reveal": {
+  "answers": {
+   "birthday": true,
+   "distinct": false,
+   "streak": true,
+   "ten": true
+  },
+  "beacon": {
+   "previous_signature": "b6ff73de69d2f7717e7cda6f017d544f22eae46156bc5775ac3e1aff977cb169cbf30e25b4826bc6b98052871e589c0b07973bb450c3eeb72a9911db0238f11e36b840056d665a97978cc877fa9645a45448d8686d39e7ddb484c43134942438",
+   "randomness": "bc3cb5f731cce624818d550507cc7d1e730db0529c2a5fe422f8c2c9bf1f514c",
+   "round": 6558992,
+   "signature": "8e00030778454cd369396b54cc3ab217d06624960687c5ebbc65db0f4e73cc05968a696f9163e86ddf49d12bd9dcab2309bf312db05619d72ff037fe71d6a2cabf72f6d98972877103a3afe022c2685c7257c6ca8f3cdbd59812b0587b72764f"
+  },
+  "oracle": {
+   "birthday": 0.5072972343239854,
+   "distinct": 0.015432098765432098,
+   "streak": 0.47801876068115234,
+   "ten": 0.6513215599
+  }
+ },
  "round": 4,
  "target": 6558992,
  "target_at": 1792200780
