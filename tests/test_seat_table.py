@@ -678,7 +678,9 @@ def test_B2_the_models_escalate_words_never_reach_the_screen():
 def test_Q2_run_checks_gives_na_for_an_unchecked_cite_and_false_for_unverified():
     box1 = bx.Box("b1", "you", "needs you", "gate.py check_claimz needs a look")
     sent = "gate.py:check_claimz needs a look [b1]."
-    unchecked = [{"kind": "symbol", "verdict": "unchecked"}]
+    unchecked = [
+        {"kind": "symbol", "verdict": "unchecked", "record": "graph stale: re-index"}
+    ]
     assert say_mod.run_checks(sent, [box1], symbols=unchecked)[0] == "na"
     assert (
         say_mod.run_checks(sent, [box1], symbols=[{"verdict": "verified"}])[0] is True
@@ -688,6 +690,13 @@ def test_Q2_run_checks_gives_na_for_an_unchecked_cite_and_false_for_unverified()
         is False
     )
     assert say_mod.run_checks(sent, [box1])[0] is True
+    # item 8: "na" is for a graph that was stale or unreachable, nothing else
+    for why in (
+        "outside every symbol the graph holds in x.py",
+        "project not in the graph",
+    ):
+        other = [{"kind": "symbol", "verdict": "unchecked", "record": why}]
+        assert say_mod.run_checks(sent, [box1], symbols=other)[0] is True
     assert say_mod.passed(say_mod.run_checks(sent, [box1], symbols=unchecked))
     line = bx.checks_line(
         ["na", True, True, "na"], say_mod.CHECK_NAMES, "checks:", False
@@ -756,15 +765,18 @@ def test_Q1_an_older_willow_bot_without_peek_is_unreachable_not_a_crash():
     assert got.state == "unreachable" and "no peek read" in got.boxes[0].value
 
 
-def test_Q1_the_status_turn_shows_both_boxes_and_asks_the_second_by_peek_only():
+def test_Q1_the_status_turn_shows_both_boxes_and_asks_the_second_by_peek_only(tmp_path):
     api = Peeker(["proposal · own_idea: no · own/x · pass"], [WAGER_ESCALATE])
     st, out = seat(FakeApi(), [])
     st.api = api
-    st.cfg, st.table_cfg = "own", "watched"
+    keys = tmp_path / "keys.json"
+    keys.write_text("{}")
+    watched = type("Cfg", (), {"keys": keys})()
+    st.cfg, st.table_cfg = "own", watched
     st.status("what's on the table")
     said = text(out)
     assert "wager f1 escalate to human" in said and "[needs you] proposal" in said
-    assert [(c[0], c[1]) for c in api.calls] == [("needs", "own"), ("peek", "watched")]
+    assert [(c[0], c[1]) for c in api.calls] == [("needs", "own"), ("peek", watched)]
 
 
 def test_Q1_table_config_names_a_second_box_only_when_asked(tmp_path):
@@ -785,7 +797,17 @@ def test_Q1_table_config_names_a_second_box_only_when_asked(tmp_path):
     assert s.table_config(b, tmp_path, environ={}) is None
     s.table_config(b, tmp_path, environ={"GROVE_SEAT_TABLE_BOX": "/t/box"})
     assert str(made[0]["box"]) == "/t/box"
-    assert made[0]["keys"] == tmp_path / ".flow" / "onescript-keys" / "keys.json"
+    # item 7: the table box's OWN keys, beside it; never the seat's
+    assert str(made[0]["keys"]) == "/t/keys/keys.json"
+    s.table_config(
+        b,
+        tmp_path,
+        environ={
+            "GROVE_SEAT_TABLE_BOX": "/t/box",
+            "GROVE_SEAT_TABLE_KEYS": "/k/x.json",
+        },
+    )
+    assert str(made[1]["keys"]) == "/k/x.json"
     assert "beacon" not in made[0]
 
 
@@ -815,3 +837,63 @@ def test_R23_the_status_turn_carries_the_beacon_note():
     st.cfg, st.table_own = Cfg(), True
     st.status("what's on the table")
     assert "beacon reader off: table outcomes unreachable" in text(out)
+
+
+def test_item7_a_table_box_without_its_own_keys_is_unreachable_never_the_seats():
+    api = Peeker([], [WAGER_ESCALATE])
+    st, out = seat(FakeApi(), ["", "", ""])
+    st.api = api
+    st.cfg = "own"
+    st.table_cfg = type("Cfg", (), {"keys": "/nowhere/keys/keys.json"})()
+    st.status("what's on the table")
+    said = text(out)
+    assert (
+        "[unreachable]" in said
+        and "own keys are not at /nowhere/keys/keys.json" in said
+    )
+    assert [c[0] for c in api.calls] == ["needs"]  # no peek was made on any keys
+
+
+# ── items 9, 10, 11: the public record values survive, a split key does not ──────
+def test_item9_the_agm_head_line_keeps_the_ledger_heads():
+    h1, h2 = "a1" * 32, "b2" * 32
+    line = f"table agm_head failing · the ledger is at (4, {h1}), anchored (3, {h2})"
+    assert rec.scrub(line) == line
+    assert rec.scrub(f"seed_id {'c3' * 8} · subject {h1} · head {h2}") == (
+        f"seed_id {'c3' * 8} · subject {h1} · head {h2}"
+    )
+    assert rec.scrub(f"merged {'e' * 40}") == f"merged {'e' * 40}"
+    assert rec.scrub(f"table {h1}", known=(h1,)) == f"table {h1}"  # a served table id
+    assert rec.scrub(f"seed {h1}") != f"seed {h1}"  # a seed is still not a seed_id
+
+
+def test_item9_the_status_turn_passes_the_served_ids_it_holds_as_known():
+    h = "d4" * 32
+    api = FakeApi(
+        needs=lambda c, **k: {
+            "needs": [f"wager f1 escalate to human · table {h}"],
+            "count": 1,
+        }
+    )
+    st, out = seat(api, [])
+    st.doc = {"tables": [{"id": h}]}
+    st.status("what's on the table")
+    assert h[:12] in text(out) and "[withheld]" not in text(out)
+    st.doc = {"tables": []}
+    st.turns.clear()
+    st.status("what's on the table")
+    assert "[withheld]" in text(out)
+
+
+def test_item11_a_human_key_split_by_separators_or_pieces_is_withheld():
+    k = hashlib.sha256(b"w4b:k").hexdigest()
+    for line in (
+        ",".join(k[i : i + 8] for i in range(0, 64, 8)),
+        "-".join(k[i : i + 8] for i in range(0, 64, 8)),
+        "/".join(k[i : i + 16] for i in range(0, 64, 16)),
+        ":".join(k[i : i + 2] for i in range(0, 64, 2)),
+        " ".join(k[i : i + 6] for i in range(0, 64, 6)),
+        " · ".join(k[i : i + 4] for i in range(0, 64, 4)),
+    ):
+        out = rec.scrub("got " + line, (k,))
+        assert out == "got [withheld]", (line, out)

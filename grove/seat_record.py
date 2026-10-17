@@ -230,7 +230,9 @@ _NAMED = r"\w*(?:key|seed|secret|token|passphrase|password)\w*"
 #: (up to the next `` · `` or the end of the line) is the value.
 _ASSIGNED = re.compile(rf"\b{_NAMED}\s*[:=]\s*[^\n]*?(?= · |\n|$)", re.I)
 #: ``seed <hex or base64>``: a secret's name, then a long token, no colon.
-_NAMED_VALUE = re.compile(rf"\b{_NAMED}\s+[A-Za-z0-9+/_=-]{{16,}}", re.I)
+_NAMED_VALUE = re.compile(
+    rf"\b(?!\w*_id\b){_NAMED}\s+[A-Za-z0-9+/_=-]{{16,}}", re.I
+)  # (`seed_id 9f..` names a public id, not a seed)
 _HEX_RUN = re.compile(r"[0-9a-fA-F]{24,}")
 _HEX_PART = re.compile(
     r"(?<![0-9A-Za-z])(?=[0-9a-f]*[a-f])[0-9a-f]{8,}(?![0-9A-Za-z])", re.I
@@ -242,9 +244,11 @@ _B64_RUN = re.compile(
 #: ``proposal:``/``serve:``/``tip:N:`` subject or ``run``. A 40-hex is a commit
 #: only after ``commit``/``sha``/``green on``/``head``.
 _HASH_AFTER = re.compile(
-    r"(?:\b(?:proposal|serve|outcome|forecast|seal|run)[: ]|\btip:\d+:)$", re.I
+    r"(?:\b(?:proposal|serve|outcome|forecast|seal|run|subject|head|merged)[: ]"
+    r"|\btip:\d+:|\(\d+, )$",
+    re.I,
 )
-_SHA_AFTER = re.compile(r"(?:\b(?:commit|sha1?|green on|head)\W{0,3})$", re.I)
+_SHA_AFTER = re.compile(r"(?:\b(?:commit|sha1?|green on|head|merged)\W{0,3})$", re.I)
 
 
 def _hex_ok(line: str, m: re.Match, known: tuple[str, ...]) -> bool:
@@ -280,6 +284,13 @@ def scrub(line: str, secrets: tuple[str, ...] = (), known: tuple[str, ...] = ())
     for sec in secrets:
         if sec and len(sec) >= 4:
             line = line.replace(sec, WITHHELD)
+        if sec and len(sec) >= 16:
+            # the same secret cut into pieces by up to three non-word characters
+            # (`,` `-` `/` `:` space ` · `) between any two of its characters
+            gap = r"[^0-9A-Za-z]{0,3}"
+            line = re.sub(
+                gap.join(re.escape(ch) for ch in sec), WITHHELD, line, flags=re.I
+            )
     line = _ASSIGNED.sub(WITHHELD, line)
     line = _NAMED_VALUE.sub(WITHHELD, line)
     line = re.sub(r"0[xX][0-9a-fA-F]{8,}", WITHHELD, line)
@@ -422,6 +433,7 @@ def read_needs(
     read_head: object = None,
     secrets: tuple[str, ...] = (),
     source: str = "record",
+    known: tuple[str, ...] = (),
 ) -> Reading:
     """The record's NEEDS YOU as boxes, by ``api.needs``. Never raises: a read
     that fails is an ``unreachable`` reading. One ``invocation`` row, no other.
@@ -452,7 +464,9 @@ def read_needs(
     if not isinstance(lines, list) or not all(isinstance(x, str) for x in lines):
         return _gone("unreachable", "the needs read is not a list of lines", source)
     lines = [
-        x for x in (scrub(" ".join(_clean(x).split()), secrets) for x in lines) if x
+        x
+        for x in (scrub(" ".join(_clean(x).split()), secrets, known) for x in lines)
+        if x
     ]
     if not lines:
         return _gone("empty", f"nothing on the {source} waits on you", source)

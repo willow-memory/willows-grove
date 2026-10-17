@@ -414,8 +414,15 @@ def run_checks(
     ``earlier`` is the boxes of this run's thread the prompt carried; ``symbols``
     is ``symbol_rows`` of the sentence (T-cbm-1)."""
     served = check_cites_served(sentence, boxes, earlier, symbols)
-    if served is True and any(r.get("verdict") == "unchecked" for r in symbols or []):
-        served = "na"  # Q2: a code cite nobody could check is not a pass
+    if served is True and any(
+        r.get("verdict") == "unchecked"
+        and str(r.get("record", "")).startswith(("graph stale", "graph unreachable"))
+        for r in symbols or []
+    ):
+        # Q2: a cite nobody could check because the graph was stale or unreachable
+        # is not a pass. (Another reason, such as a line outside every symbol, is
+        # the cite's own, and the chip says what the graph said, not "na".)
+        served = "na"
     return [
         served,
         check_boxes_cited(sentence, boxes),

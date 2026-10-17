@@ -253,6 +253,7 @@ from grove.seat_boxes import (
 )
 from grove.seat_nestor import lead_rank, read_store
 from grove import table_boxes as tb
+from grove.seat_nestor import Reading
 from grove.seat_record import read_needs, scrub, status_kind, story_kind
 from grove.seat_say import (
     CHECK_NAMES,
@@ -443,16 +444,22 @@ def table_config(
     bot: Bot, root: Path, grove: Path = GROVE_ROOT, environ: dict | None = None
 ):
     """Q1: the Config of a SECOND box the seat only watches
-    (``GROVE_SEAT_TABLE_BOX``, keys ``GROVE_SEAT_TABLE_KEYS`` else the seat's
-    own), or None when none is named. It is read with ``api.peek``, which writes
+    (``GROVE_SEAT_TABLE_BOX``; keys ``GROVE_SEAT_TABLE_KEYS``, else the box's OWN,
+    ``<box parent>/keys/keys.json``, never the seat's: the sealed tip's anchor
+    sits beside the keys file, and another box's keys call an honest chain
+    rewritten), or None when none is named. Keys that are not there make the
+    table ``unreachable`` in ``Seat.status``, never a fallback. It is read with ``api.peek``, which writes
     nothing to it, so the human's sealed tip is never moved by the seat looking."""
     env = os.environ if environ is None else environ
     box = env.get("GROVE_SEAT_TABLE_BOX", "").strip()
     if not box:
         return None
-    return _make_config(
-        bot, root, grove, box, env.get("GROVE_SEAT_TABLE_KEYS", "").strip(), env
-    )
+    keys = env.get("GROVE_SEAT_TABLE_KEYS", "").strip()
+    if not keys:
+        # the table box's OWN keys, beside it (the sealed tip's anchor lives there);
+        # never the seat's, which would call an honest chain rewritten
+        keys = str(Path(box).expanduser().parent / "keys" / "keys.json")
+    return _make_config(bot, root, grove, box, keys, env)
 
 
 def _make_config(bot, root, grove, box, keys, env):
@@ -1053,10 +1060,32 @@ class Seat:
             human_key=self.human_key,
             read_head=self.read_head,
             secrets=self.secrets,
+            known=self.public_ids(),
         )
         boxes = list(rec.boxes)
         watched: list[Box] = []
-        if self.table_cfg is not None:  # Q1: watched, never written to
+        if (
+            self.table_cfg is not None
+            and not Path(str(getattr(self.table_cfg, "keys", ""))).is_file()
+        ):
+            tab = Reading(
+                "unreachable",
+                "no keys",
+                [
+                    Box(
+                        "tstate",
+                        "pass",
+                        "table",
+                        "unreachable — the table box's own keys are not at "
+                        f"{getattr(self.table_cfg, 'keys', '?')} "
+                        "(set GROVE_SEAT_TABLE_KEYS)",
+                        state="unreachable",
+                    )
+                ],
+            )
+            boxes += tab.boxes
+            watched = tab.boxes
+        elif self.table_cfg is not None:  # Q1: watched, never written to
             tab = read_needs(
                 self.api,
                 self.table_cfg,
@@ -1064,6 +1093,7 @@ class Seat:
                 read_head=self.read_head,
                 secrets=self.secrets,
                 source="table",
+                known=self.public_ids(),
             )
             boxes += tab.boxes
             watched = tab.boxes
@@ -1109,6 +1139,23 @@ class Seat:
             lead=any(b.state == "populated" for b in boxes),
             rush=not counts.get("rejected"),
         )
+
+    def public_ids(self) -> tuple[str, ...]:
+        """The 64-hex ids the seat itself holds as public: the served tables of
+        this run's served file and the sealed scope's subject hash. A poisoned
+        line cannot add to it, because it comes from the api's own answers."""
+        out = set()
+        for t in (
+            (self.doc or {}).get("tables", []) if isinstance(self.doc, dict) else []
+        ):
+            tid = str(t.get("id", "")) if isinstance(t, dict) else ""
+            if len(tid) == 64:
+                out.add(tid)
+        for v in (self.sealed or {}).values() if isinstance(self.sealed, dict) else []:
+            tail = str(v).rsplit(":", 1)[-1]
+            if len(tail) == 64:
+                out.add(tail)
+        return tuple(out)
 
     def beacon_note(self) -> list[Box]:
         """R23: the CLI is offline unless ``GROVE_SEAT_DRAND`` (or ``--drand`` on
