@@ -135,6 +135,8 @@ def _git(*args: str) -> str:
         cwd=str(REPO_ROOT),
         capture_output=True,
         text=True,
+        encoding="utf-8",  # commit messages are UTF-8; Windows' default code page is not
+        errors="replace",
         check=True,
     ).stdout
 

@@ -11,6 +11,8 @@ willow-bot's; the real api is exercised in box-build/e2e/test_w4_surface.py.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from grove import seat_boxes as bx
@@ -247,7 +249,10 @@ def test_config_points_the_seat_at_a_table_box_by_environment(tmp_path):
         environ={"GROVE_SEAT_BOX": "/t/box", "GROVE_SEAT_KEYS": "/t/k.json"},
     )
     assert made[0]["box"] == tmp_path / ".flow" / "onescript"
-    assert str(made[1]["box"]) == "/t/box" and str(made[1]["keys"]) == "/t/k.json"
+    assert (
+        Path(made[1]["box"]).as_posix() == "/t/box"
+        and Path(made[1]["keys"]).as_posix() == "/t/k.json"
+    )
 
 
 def test_the_status_turn_shows_the_wagers_and_the_table_through_api_needs():
@@ -796,9 +801,9 @@ def test_Q1_table_config_names_a_second_box_only_when_asked(tmp_path):
     b = s.Bot(Api(), None, None, 1)
     assert s.table_config(b, tmp_path, environ={}) is None
     s.table_config(b, tmp_path, environ={"GROVE_SEAT_TABLE_BOX": "/t/box"})
-    assert str(made[0]["box"]) == "/t/box"
+    assert Path(made[0]["box"]).as_posix() == "/t/box"
     # item 7: the table box's OWN keys, beside it; never the seat's
-    assert str(made[0]["keys"]) == "/t/keys/keys.json"
+    assert Path(made[0]["keys"]).as_posix() == "/t/keys/keys.json"
     s.table_config(
         b,
         tmp_path,
@@ -807,7 +812,7 @@ def test_Q1_table_config_names_a_second_box_only_when_asked(tmp_path):
             "GROVE_SEAT_TABLE_KEYS": "/k/x.json",
         },
     )
-    assert str(made[1]["keys"]) == "/k/x.json"
+    assert Path(made[1]["keys"]).as_posix() == "/k/x.json"
     assert "beacon" not in made[0]
 
 
