@@ -153,11 +153,23 @@ jobs:
 
       # Grove's seat takes the three states from willow-bot's one script
       # (flatten F5, F-18: "2 a"), so willow-bot is checked out beside it.
-      # It reads willow-bot master: a change that needs both lands there first.
+      # A change that spans repos rides one branch name in each: take
+      # willow-memory/willow-bot's branch of this PR's name when it has one, else main.
+      - name: Which willow-bot
+        id: bot_ref
+        shell: bash
+        env:
+          BRANCH: ${{ github.head_ref || github.ref_name }}
+        run: |
+          if git ls-remote --exit-code --heads https://github.com/willow-memory/willow-bot "$BRANCH" >/dev/null; then
+            echo "ref=$BRANCH" >> "$GITHUB_OUTPUT"
+          else
+            echo "ref=main" >> "$GITHUB_OUTPUT"
+          fi
       - uses: actions/checkout@v4
         with:
           repository: willow-memory/willow-bot
-          ref: main
+          ref: ${{ steps.bot_ref.outputs.ref }}
           path: willow-bot
 
       - name: Run test suite
@@ -231,11 +243,23 @@ jobs:
       # rest until the next push.
       # Grove's seat takes the three states from willow-bot's one script
       # (flatten F5, F-18: "2 a"), so willow-bot is checked out beside it.
-      # It reads willow-bot master: a change that needs both lands there first.
+      # A change that spans repos rides one branch name in each: take
+      # willow-memory/willow-bot's branch of this PR's name when it has one, else main.
+      - name: Which willow-bot
+        id: bot_ref
+        shell: bash
+        env:
+          BRANCH: ${{ github.head_ref || github.ref_name }}
+        run: |
+          if git ls-remote --exit-code --heads https://github.com/willow-memory/willow-bot "$BRANCH" >/dev/null; then
+            echo "ref=$BRANCH" >> "$GITHUB_OUTPUT"
+          else
+            echo "ref=main" >> "$GITHUB_OUTPUT"
+          fi
       - uses: actions/checkout@v4
         with:
           repository: willow-memory/willow-bot
-          ref: main
+          ref: ${{ steps.bot_ref.outputs.ref }}
           path: willow-bot
 
       - name: Run test suite (no container services on Windows)
