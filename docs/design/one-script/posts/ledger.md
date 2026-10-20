@@ -25,6 +25,8 @@ Sources:
   SEEDED SIMULATION, seed 20261020: 51 hits of 100 coin flips, the always-80% caller averages
   0.334 against the coin's 0.25, its hits alone 0.04). For DEV, upload the PNGs and swap the
   relative paths for the upload URLs. Palette: the dataviz reference light slots 1-3, validated.
+- Cover: ledger-figures/cover.png (1000x420, DEV's cover size), drawn by make_cover.py in the
+  series' style (flat vector, clay orange / steel blue / cream, a CRT robot, the ESCALATE sign).
 -->
 
 # A forecast app that shows you its losses
