@@ -1,4 +1,11 @@
 <!--
+Published 2026-10-20 as "My Robot Keeps Its Receipts":
+https://dev.to/sean_campbell_840bd62bf7e/my-robot-keeps-its-receipts-3h9g
+The operator edits before publishing, so the live text may differ from this draft. Title: the
+operator said "I went with 4"; the published slug is option 5 of the five offered ("My Robot
+Keeps Its Receipts"), so the URL's title is the one recorded. Tags proposed: python, ai,
+opensource, showdev (the live tags are whatever the operator set).
+
 Desk draft of a standalone DEV post, 2026-10-20, session 01WpF9VeQij17q9eaens5cNb. A follow-up
 to the DEV × Kaggle Benchmarking Challenge series (closed 2026-10-11), as its own article (the
 operator: "1 d, 2 link back"). Written in the operator's register; not the operator's words until
@@ -29,7 +36,7 @@ Sources:
   operator turned down a drawn cover: "that is a terrible image. Would you write the prompt").
 -->
 
-# A forecast app that shows you its losses
+# My Robot Keeps Its Receipts
 
 *A follow-up to my [DEV × Kaggle Benchmarking Challenge](https://dev.to/sean_campbell_840bd62bf7e/does-your-model-know-when-it-doesnt-know-a-benchmark-for-the-escalate-answer-268o) series. The challenge is over; this one stands on its own.*
 
