@@ -2,6 +2,20 @@
 
 All notable changes land here per INVARIANTS.md §3. Format follows Keep a Changelog v1.1.0.
 
+## [0.26.0](https://github.com/willow-memory/willows-grove/compare/v0.25.0...v0.26.0) (2026-10-20)
+
+
+### Added
+
+* **seat:** the seat on the one pile; the flatten record F0 to F6 ([932c9f9](https://github.com/willow-memory/willows-grove/commit/932c9f9fdc91e2f28c8beed50e284bc0c2173ca7))
+* **seat:** the seat's bot venv follows the bot's box rule (flatten F-17) ([cb6b6ea](https://github.com/willow-memory/willows-grove/commit/cb6b6ea351d49fe6c334871856d1c1204bb2c2c7))
+* **seat:** the three states are the one script's (flatten F5, F-18) ([58568f9](https://github.com/willow-memory/willows-grove/commit/58568f9f07ed7d4c95a50e1d5d2d8588eda7f969))
+
+
+### Fixed
+
+* **seat:** the bot's box rule is read from the seat's own willow-bot ([9b5ed9e](https://github.com/willow-memory/willows-grove/commit/9b5ed9eca4a5567246981e87f6af99d7a5260cd8))
+
 ## [0.25.0](https://github.com/willow-memory/willows-grove/compare/v0.24.2...v0.25.0) (2026-10-17)
 
 
