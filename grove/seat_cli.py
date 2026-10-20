@@ -405,8 +405,11 @@ def _bot_box(env) -> Path | None:
     """The bot's box by the bot's own rule (flatten F-17: willow-bot's
     ``willow_bot.paths.env_box``, read with ``env``): ``$WILLOW_HOME``, else
     ``$WILLOW_VAULT_BOX``, an existing absolute directory; else None, never a
-    guessed home. No willow-bot to read the rule from: None too."""
-    got = env.get("WILLOW_BOT_ROOT")
+    guessed home. No willow-bot to read the rule from: None too. Where
+    willow-bot is comes from ``env``, else this process (the seat's own
+    ``WILLOW_BOT_ROOT``, as ``seat_boxes`` reads it), else beside Grove: it
+    is where the rule's code lives, not part of the box ``env`` describes."""
+    got = env.get("WILLOW_BOT_ROOT") or os.environ.get("WILLOW_BOT_ROOT")
     root = Path(got).expanduser() if got else GROVE_ROOT.parent / "willow-bot"
     if not (root / "willow_bot" / "paths.py").is_file():
         return None

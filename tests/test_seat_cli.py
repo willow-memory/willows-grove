@@ -10,11 +10,13 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
 import shutil
 import subprocess
 import sys
 from datetime import date
+from pathlib import Path
 
 import pytest
 
@@ -2688,6 +2690,23 @@ def test_gate_venv_box_is_the_bots_rule(tmp_path):
     for bad in ("rel/box", str(tmp_path / "missing")):
         assert rv({"WILLOW_HOME": bad, "WILLOW_VAULT_BOX": str(vb)}, tmp_path) is None
     assert rv({}, tmp_path) is None
+
+
+def test_the_box_rule_is_read_from_the_seats_own_willow_bot(tmp_path, monkeypatch):
+    """Where willow-bot is is the seat's (its WILLOW_BOT_ROOT, as seat_boxes
+    reads it), not part of the box env judged: with no willow-bot beside
+    Grove (CI checks it out inside), the rule is still the bot's; with none
+    named and none beside, no box, never a guess."""
+    bot = os.environ.get("WILLOW_BOT_ROOT") or str(s.GROVE_ROOT.parent / "willow-bot")
+    if not (Path(bot) / "willow_bot" / "paths.py").is_file():
+        pytest.skip(f"no willow-bot at {bot}")
+    home = tmp_path / "home"
+    home.mkdir()
+    monkeypatch.setattr(s, "GROVE_ROOT", tmp_path / "grove")  # nothing beside
+    monkeypatch.setenv("WILLOW_BOT_ROOT", bot)
+    assert s._bot_box({"WILLOW_HOME": str(home)}) == home
+    monkeypatch.delenv("WILLOW_BOT_ROOT")
+    assert s._bot_box({"WILLOW_HOME": str(home)}) is None
 
 
 def test_config_hands_the_gate_the_resolved_venv(tmp_path, monkeypatch):
