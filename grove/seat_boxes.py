@@ -87,7 +87,36 @@ KINDS: dict[str, tuple[str, tuple[int, int, int]]] = {
 FAINT = (111, 100, 83)
 AMBER = KINDS["block"][1]
 RUST = (217, 100, 92)  # --rust: a failed check
-STATES = ("populated", "empty", "unreachable")
+
+
+def _one_script_states():
+    """The three states, once: willow-bot's ``onescript/states.py`` (flatten
+    F5, F-18; the operator: "2 a"), from the willow-bot the seat reads
+    (``$WILLOW_BOT_ROOT``, else beside this repo). With none beside, the seat
+    stops at import and says where it looked."""
+    import importlib
+    import os
+    from pathlib import Path
+
+    got = os.environ.get("WILLOW_BOT_ROOT")
+    root = (
+        Path(got).expanduser()
+        if got
+        else Path(__file__).resolve().parents[2] / "willow-bot"
+    )
+    one = root / "one-script"
+    if not (one / "onescript" / "states.py").is_file():
+        raise ImportError(
+            f"unreachable: no one script at {one} for the three states "
+            "(set WILLOW_BOT_ROOT)"
+        )
+    if str(one) not in sys.path:
+        sys.path.insert(0, str(one))
+    return importlib.import_module("onescript.states")
+
+
+_states = _one_script_states()
+STATES = _states.STATES
 #: state -> (top rule, bar). The glyphs differ so no color is needed to tell.
 RULE = {"populated": "+-", "empty": "+.", "unreachable": "+!"}
 BAR = {"populated": "|", "empty": ":", "unreachable": "!"}
@@ -136,7 +165,7 @@ def render_box(box: Box, color: bool = False) -> str:
     | the work order
     | local-flow-and-ui section 7
     """
-    state = box.state if box.state in STATES else "unreachable"
+    state = _states.checked(box.state)
     if state == "populated":
         name, rgb = KINDS.get(box.kind, ("note", FAINT))
     else:

@@ -222,35 +222,43 @@ from importlib import metadata
 from pathlib import Path
 from typing import Any
 
-from grove.seat_boxes import (
-    Box,
-    cap,
-    carry_over,
-    compose,
-    human_line,
-    checks_line,
-    chips,
-    clause,
-    COUNTED,
-    legend,
-    looks_like_ref,
-    matches,
-    opening,
-    parse_follow,
-    pile_header,
-    plural,
-    plain_line,
-    rank,
-    ref_tokens,
-    terminate,
-    render_box,
-    say_line,
-    struck_line,
-    use_color,
-    who_line,
-    why_sentence,
-    _val,
-)
+try:
+    from grove.seat_boxes import (
+        Box,
+        cap,
+        carry_over,
+        compose,
+        human_line,
+        checks_line,
+        chips,
+        clause,
+        COUNTED,
+        legend,
+        looks_like_ref,
+        matches,
+        opening,
+        parse_follow,
+        pile_header,
+        plural,
+        plain_line,
+        rank,
+        ref_tokens,
+        terminate,
+        render_box,
+        say_line,
+        struck_line,
+        use_color,
+        who_line,
+        why_sentence,
+        _val,
+    )
+except ImportError as _no_states:
+    # The three states are the one script's (flatten F5, F-18): with no one
+    # script beside, the seat says so and exits 2, as load_bot does.
+    if __name__ == "__main__":
+        print(f"grove seat: {_no_states}", file=sys.stderr)
+        raise SystemExit(2) from None
+    raise
 from grove.seat_nestor import lead_rank, read_store
 from grove import table_boxes as tb
 from grove.seat_nestor import Reading
