@@ -157,7 +157,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: willow-memory/willow-bot
-          ref: master
+          ref: main
           path: willow-bot
 
       - name: Run test suite
@@ -235,7 +235,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: willow-memory/willow-bot
-          ref: master
+          ref: main
           path: willow-bot
 
       - name: Run test suite (no container services on Windows)
