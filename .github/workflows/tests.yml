@@ -151,7 +151,30 @@ jobs:
           git fetch --no-tags origin "${GITHUB_BASE_REF:-master}"
           python3 scripts/check_changelog_bullet.py
 
+      # Grove's seat takes the three states from willow-bot's one script
+      # (flatten F5, F-18: "2 a"), so willow-bot is checked out beside it.
+      # A change that spans repos rides one branch name in each: take
+      # willow-memory/willow-bot's branch of this PR's name when it has one, else main.
+      - name: Which willow-bot
+        id: bot_ref
+        shell: bash
+        env:
+          BRANCH: ${{ github.head_ref || github.ref_name }}
+        run: |
+          if git ls-remote --exit-code --heads https://github.com/willow-memory/willow-bot "$BRANCH" >/dev/null; then
+            echo "ref=$BRANCH" >> "$GITHUB_OUTPUT"
+          else
+            echo "ref=main" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        with:
+          repository: willow-memory/willow-bot
+          ref: ${{ steps.bot_ref.outputs.ref }}
+          path: willow-bot
+
       - name: Run test suite
+        env:
+          WILLOW_BOT_ROOT: ${{ github.workspace }}/willow-bot
         run: python3 -m pytest -x -q --tb=short --ignore=tests/e2e --ignore=tests/e2e_ollama --ignore=tests/e2e_willow_mcp
 
       # docs/INVARIANTS.md §10 — Playwright is CI-first. Browsers only
@@ -218,7 +241,30 @@ jobs:
       # No `-x` here, deliberately: this leg exists to surface the Windows
       # class of failure, and a run that stops at the first one hides the
       # rest until the next push.
+      # Grove's seat takes the three states from willow-bot's one script
+      # (flatten F5, F-18: "2 a"), so willow-bot is checked out beside it.
+      # A change that spans repos rides one branch name in each: take
+      # willow-memory/willow-bot's branch of this PR's name when it has one, else main.
+      - name: Which willow-bot
+        id: bot_ref
+        shell: bash
+        env:
+          BRANCH: ${{ github.head_ref || github.ref_name }}
+        run: |
+          if git ls-remote --exit-code --heads https://github.com/willow-memory/willow-bot "$BRANCH" >/dev/null; then
+            echo "ref=$BRANCH" >> "$GITHUB_OUTPUT"
+          else
+            echo "ref=main" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        with:
+          repository: willow-memory/willow-bot
+          ref: ${{ steps.bot_ref.outputs.ref }}
+          path: willow-bot
+
       - name: Run test suite (no container services on Windows)
+        env:
+          WILLOW_BOT_ROOT: ${{ github.workspace }}/willow-bot
         run: python -m pytest -q --tb=short --ignore=tests/e2e --ignore=tests/e2e_ollama --ignore=tests/e2e_willow_mcp
 
   # The lint leg. ruff is pinned to an exact version: an unpinned linter is

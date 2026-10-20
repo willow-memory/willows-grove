@@ -12,12 +12,13 @@
 #
 #   WILLOW_BOT_ROOT   willow-bot checkout (default: ../willow-bot beside this repo)
 #   GROVE_VENV        python venv dir; wins over every default below. Else
-#                     $WILLOW_HOME/willow-bot/venvs/willow-bot (seal D2: the
+#                     <box>/willow-bot/venvs/willow-bot (seal D2: the
 #                     bot's venvs live in the bot; ships willow_mcp, onescript
-#                     and ratatosk), else the legacy $WILLOW_HOME/venvs/willow-bot
+#                     and ratatosk), else the legacy <box>/venvs/willow-bot
 #                     (used with a stderr warning until it is recreated in the
 #                     bot), else ./.venv, else python3
-#   WILLOW_HOME       finds the venvs and the operator's public keyring
+#   WILLOW_HOME       the box, else WILLOW_VAULT_BOX (the bot's rule, F-17): finds
+#                     the venvs and the operator's public keyring
 #   WILLOW_NESTOR_DB  Nestor's store, read-only: where a seal is looked up
 #   GROVE_SEAT_BOX    point the seat at another box, a table's (SPEC R13): its
 #                     NEEDS YOU then carries the wagers, the verdict sessions and
@@ -46,13 +47,25 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 PY=""
-NEW_VENV="${WILLOW_HOME:-}/willow-bot/venvs/willow-bot"
-OLD_VENV="${WILLOW_HOME:-}/venvs/willow-bot"
+# The bot's box, by the bot's rule (willow_bot.paths.env_box, flatten F-17):
+# the first of WILLOW_HOME, WILLOW_VAULT_BOX set to a non-blank value (ends
+# trimmed, ~ expanded), an existing absolute directory; a named box that is
+# not one is refused, never passed over. No box: no bot venv, never a guess.
+# tests/test_seat_cli.py holds this to grove.seat_cli.resolve_venv.
+BOX=""
+for v in "${WILLOW_HOME:-}" "${WILLOW_VAULT_BOX:-}"; do
+  v="${v#"${v%%[![:space:]]*}"}"
+  v="${v%"${v##*[![:space:]]}"}"
+  if [[ -n "$v" ]]; then BOX="${v/#\~/${HOME:-}}"; break; fi
+done
+if [[ -n "$BOX" && ( "${BOX#/}" == "$BOX" || ! -d "$BOX" ) ]]; then BOX=""; fi
+NEW_VENV="${BOX}/willow-bot/venvs/willow-bot"
+OLD_VENV="${BOX}/venvs/willow-bot"
 if [[ -n "${GROVE_VENV:-}" && -x "${GROVE_VENV}/bin/python3" ]]; then
   PY="${GROVE_VENV}/bin/python3"
-elif [[ -n "${WILLOW_HOME:-}" && -x "${NEW_VENV}/bin/python3" ]]; then
+elif [[ -n "$BOX" && -x "${NEW_VENV}/bin/python3" ]]; then
   PY="${NEW_VENV}/bin/python3"
-elif [[ -n "${WILLOW_HOME:-}" && -x "${OLD_VENV}/bin/python3" ]]; then
+elif [[ -n "$BOX" && -x "${OLD_VENV}/bin/python3" ]]; then
   PY="${OLD_VENV}/bin/python3"
   echo "grove-seat: warning: using the old venv ${OLD_VENV}, outside the bot (D2); recreate it at ${NEW_VENV}." >&2
 elif [[ -x "${ROOT}/.venv/bin/python3" ]]; then

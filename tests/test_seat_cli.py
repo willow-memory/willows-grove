@@ -10,11 +10,13 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
 import shutil
 import subprocess
 import sys
 from datetime import date
+from pathlib import Path
 
 import pytest
 
@@ -1776,6 +1778,41 @@ def test_no_bot_venv_anywhere_falls_through_to_python3(tmp_path):
     assert out not in ("new", "legacy")
 
 
+@pytest.mark.skipif(
+    sys.platform == "win32" or shutil.which("bash") is None,
+    reason="scripts/grove-seat is a POSIX launcher",
+)
+@pytest.mark.parametrize("layout", ["both", "new", "old", "none"])
+@pytest.mark.parametrize(
+    "box_env",
+    [
+        {"WILLOW_HOME": "{h}"},
+        {"WILLOW_VAULT_BOX": "{h}"},
+        {"WILLOW_HOME": " ", "WILLOW_VAULT_BOX": " {h} "},
+        {"WILLOW_HOME": "{h}/missing", "WILLOW_VAULT_BOX": "{h}"},
+        {"WILLOW_HOME": "rel/box"},
+        {},
+    ],
+)
+def test_the_launcher_and_resolve_venv_agree(tmp_path, layout, box_env):
+    """F-17: grove-seat's shell rule and resolve_venv (the bot's
+    willow_bot.paths) pick the same bot venv, or none, every time."""
+    home = tmp_path / "home"
+    home.mkdir()
+    if layout in ("both", "new"):
+        fake_python(home / "willow-bot" / "venvs" / "willow-bot" / "bin", "new")
+    if layout in ("both", "old"):
+        fake_python(home / "venvs" / "willow-bot" / "bin", "legacy")
+    env = {k: v.format(h=home) for k, v in box_env.items()}
+    want = s.resolve_venv(env, "/usr", "/usr", tmp_path / "grove")
+    out, _ = launch({"PATH": "/usr/bin:/bin", **env})
+    py = want / "bin" / "python3" if want is not None else None
+    if py is not None and py.is_file():
+        assert out == ("new" if "willow-bot/venvs" in str(want) else "legacy")
+    else:
+        assert out not in ("new", "legacy")
+
+
 # --- ratatosk resolution and the say timeout ----------------------------------------
 
 
@@ -2631,9 +2668,45 @@ def test_gate_venv_skips_a_grove_venv_with_no_python_and_ends_at_dot_venv(tmp_pa
 
 
 def test_gate_venv_with_nothing_is_the_d2_path_not_the_legacy_one(tmp_path):
+    (tmp_path / "home").mkdir()
     env = {"WILLOW_HOME": str(tmp_path / "home")}
     want = tmp_path / "home" / "willow-bot" / "venvs" / "willow-bot"
     assert rv(env, tmp_path) == want
+
+
+def test_gate_venv_box_is_the_bots_rule(tmp_path):
+    """F-17: the box is WILLOW_HOME, else WILLOW_VAULT_BOX, an existing
+    absolute directory; one that is not is refused, never passed over; no box
+    is no venv, never a guessed home."""
+    vb = tmp_path / "vb"
+    _py(vb / "willow-bot" / "venvs" / "willow-bot" / "bin")
+    assert (
+        rv({"WILLOW_VAULT_BOX": str(vb)}, tmp_path)
+        == vb / "willow-bot" / "venvs" / "willow-bot"
+    )
+    assert rv({"WILLOW_HOME": "  ", "WILLOW_VAULT_BOX": str(vb)}, tmp_path) == (
+        vb / "willow-bot" / "venvs" / "willow-bot"
+    )  # blank is unset
+    for bad in ("rel/box", str(tmp_path / "missing")):
+        assert rv({"WILLOW_HOME": bad, "WILLOW_VAULT_BOX": str(vb)}, tmp_path) is None
+    assert rv({}, tmp_path) is None
+
+
+def test_the_box_rule_is_read_from_the_seats_own_willow_bot(tmp_path, monkeypatch):
+    """Where willow-bot is is the seat's (its WILLOW_BOT_ROOT, as seat_boxes
+    reads it), not part of the box env judged: with no willow-bot beside
+    Grove (CI checks it out inside), the rule is still the bot's; with none
+    named and none beside, no box, never a guess."""
+    bot = os.environ.get("WILLOW_BOT_ROOT") or str(s.GROVE_ROOT.parent / "willow-bot")
+    if not (Path(bot) / "willow_bot" / "paths.py").is_file():
+        pytest.skip(f"no willow-bot at {bot}")
+    home = tmp_path / "home"
+    home.mkdir()
+    monkeypatch.setattr(s, "GROVE_ROOT", tmp_path / "grove")  # nothing beside
+    monkeypatch.setenv("WILLOW_BOT_ROOT", bot)
+    assert s._bot_box({"WILLOW_HOME": str(home)}) == home
+    monkeypatch.delenv("WILLOW_BOT_ROOT")
+    assert s._bot_box({"WILLOW_HOME": str(home)}) is None
 
 
 def test_config_hands_the_gate_the_resolved_venv(tmp_path, monkeypatch):

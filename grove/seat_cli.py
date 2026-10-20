@@ -222,35 +222,43 @@ from importlib import metadata
 from pathlib import Path
 from typing import Any
 
-from grove.seat_boxes import (
-    Box,
-    cap,
-    carry_over,
-    compose,
-    human_line,
-    checks_line,
-    chips,
-    clause,
-    COUNTED,
-    legend,
-    looks_like_ref,
-    matches,
-    opening,
-    parse_follow,
-    pile_header,
-    plural,
-    plain_line,
-    rank,
-    ref_tokens,
-    terminate,
-    render_box,
-    say_line,
-    struck_line,
-    use_color,
-    who_line,
-    why_sentence,
-    _val,
-)
+try:
+    from grove.seat_boxes import (
+        Box,
+        cap,
+        carry_over,
+        compose,
+        human_line,
+        checks_line,
+        chips,
+        clause,
+        COUNTED,
+        legend,
+        looks_like_ref,
+        matches,
+        opening,
+        parse_follow,
+        pile_header,
+        plural,
+        plain_line,
+        rank,
+        ref_tokens,
+        terminate,
+        render_box,
+        say_line,
+        struck_line,
+        use_color,
+        who_line,
+        why_sentence,
+        _val,
+    )
+except ImportError as _no_states:
+    # The three states are the one script's (flatten F5, F-18): with no one
+    # script beside, the seat says so and exits 2, as load_bot does.
+    if __name__ == "__main__":
+        print(f"grove seat: {_no_states}", file=sys.stderr)
+        raise SystemExit(2) from None
+    raise
 from grove.seat_nestor import lead_rank, read_store
 from grove import table_boxes as tb
 from grove.seat_nestor import Reading
@@ -393,38 +401,60 @@ def graph_reader(environ: dict | None = None) -> Callable[[str], dict] | None:
     return lambda sentence: graph.symbols_for(sentence, project)
 
 
+def _bot_box(env) -> Path | None:
+    """The bot's box by the bot's own rule (flatten F-17: willow-bot's
+    ``willow_bot.paths.env_box``, read with ``env``): ``$WILLOW_HOME``, else
+    ``$WILLOW_VAULT_BOX``, an existing absolute directory; else None, never a
+    guessed home. No willow-bot to read the rule from: None too. Where
+    willow-bot is comes from ``env``, else this process (the seat's own
+    ``WILLOW_BOT_ROOT``, as ``seat_boxes`` reads it), else beside Grove: it
+    is where the rule's code lives, not part of the box ``env`` describes."""
+    got = env.get("WILLOW_BOT_ROOT") or os.environ.get("WILLOW_BOT_ROOT")
+    root = Path(got).expanduser() if got else GROVE_ROOT.parent / "willow-bot"
+    if not (root / "willow_bot" / "paths.py").is_file():
+        return None
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+    from willow_bot import paths  # noqa: PLC0415  (the bot's rule, one copy)
+
+    try:
+        return paths.env_box(environ=env)
+    except paths.BoxNotConfigured:
+        return None
+
+
 def resolve_venv(
     environ: dict | None = None,
     prefix: str | None = None,
     base_prefix: str | None = None,
     grove: Path = GROVE_ROOT,
-) -> Path:
+) -> Path | None:
     """The venv the gate's toolchain check (``Config.venv``) looks in: the one
     the seat runs in. When the running interpreter is a venv, that venv (the
     launcher ``scripts/grove-seat`` already chose it by seal D2, so the gate
     and the seat can't disagree); otherwise the launcher's own order:
-    ``GROVE_VENV``, ``$WILLOW_HOME/willow-bot/venvs/willow-bot`` (D2), the
-    legacy ``$WILLOW_HOME/venvs/willow-bot``, ``<grove>/.venv``, each only if
-    it has a ``bin/python3``. With none, the D2 path, so a missing toolchain
-    is reported against the place it belongs."""
+    ``GROVE_VENV``, ``<box>/willow-bot/venvs/willow-bot`` (D2), the legacy
+    ``<box>/venvs/willow-bot``, ``<grove>/.venv``, each only if it has a
+    ``bin/python3``, the box being the bot's (``_bot_box``, F-17). With none,
+    the D2 path in the box, so a missing toolchain is reported against the
+    place it belongs; with no box either, None, and the gate says why."""
     env = os.environ if environ is None else environ
     prefix = sys.prefix if prefix is None else prefix
     base_prefix = sys.base_prefix if base_prefix is None else base_prefix
     if prefix != base_prefix:
         return Path(prefix)
-    willow = env.get("WILLOW_HOME", "")
-    new = Path(willow).expanduser() / "willow-bot" / "venvs" / "willow-bot"
+    box = _bot_box(env)
+    new = box / "willow-bot" / "venvs" / "willow-bot" if box is not None else None
     cands = []
     if env.get("GROVE_VENV"):
         cands.append(Path(env["GROVE_VENV"]).expanduser())
-    if willow:
-        cands += [new, Path(willow).expanduser() / "venvs" / "willow-bot"]
+    if box is not None:
+        cands += [new, box / "venvs" / "willow-bot"]
     cands.append(grove / ".venv")
     found = next((c for c in cands if (c / "bin" / "python3").is_file()), None)
     if found:
         return found
-    home = Path(willow or "~").expanduser()
-    return home / "willow-bot" / "venvs" / "willow-bot"
+    return new
 
 
 def config(bot: Bot, root: Path, grove: Path = GROVE_ROOT, environ: dict | None = None):

@@ -679,6 +679,14 @@ in willow-bot yet, where D2 (sealed 2026-10-02) homes it. (Moved 2026-10-07: wil
 the session transcript and local memory, so publishing them is a separate
 decision.
 
+## Flattening into one pile (2026-10-19)
+
+The operator decided the fleet flattens into one pile of code in willow-bot:
+the one-script record is the one chain (§9 row 11 reopened), the game pieces
+move into the bot, and catgrid keeps both its generators. The decisions in the
+operator's words, the phases F0–F6 and what they override:
+[`flatten-2026-10-19.md`](flatten-2026-10-19.md).
+
 ## Running it
 
 The code, its tests and its run instructions are in willow-bot:
