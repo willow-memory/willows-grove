@@ -20,6 +20,11 @@ Sources:
 - The deck reader and drand as the clock: onescript/deck.py (willow-bot f061518, flatten F6).
 - Brier for a 50% call is 0.25 whatever happens: (0.5 - 1)^2 = (0.5 - 0)^2 = 0.25.
 - No claim here that any strategy has an edge, and none that the ledger has graded a real call.
+- Figures: ledger-figures/make_figures.py regenerates all four from the sources above (fig1 the
+  Day 3 table; fig2 arithmetic; fig3 market.py's deadline and beacon.py's 30 s period; fig4 a
+  SEEDED SIMULATION, seed 20261020: 51 hits of 100 coin flips, the always-80% caller averages
+  0.334 against the coin's 0.25, its hits alone 0.04). For DEV, upload the PNGs and swap the
+  relative paths for the upload URLs. Palette: the dataviz reference light slots 1-3, validated.
 -->
 
 # A forecast app that shows you its losses
@@ -31,6 +36,8 @@ Sources:
 For the challenge I built a benchmark that asked one thing: **does your model know when it doesn't know?** It had 200 invented items in four shapes. One in five had the answer taken out, and on those the only right reply was `ESCALATE`. Each model got two numbers, never merged: how often it got the answerable ones right, and how often it answered anyway when it should have stopped.
 
 The finding wasn't that models can't stop. Five of the twelve hosted models I ran had zero false confidence on every shape. The finding was that **the average hides the floor**. Claude Haiku 4.5 answered 9 out of 10 judge items it should have escalated, a number you'd never see in its overall score.
+
+![Horizontal bars: false confidence on each model's worst shape. Claude Haiku 4.5 at 0.90 towers over the rest; five models sit at 0.00.](ledger-figures/fig1-floor.png)
 
 When the challenge closed I kept turning the question over, and it stopped being about models. Turn it on a person. Turn it on a stock tip, a betting app, a newsletter that "called" the last crash. Does *the forecaster* know when it doesn't know? And can you even check?
 
@@ -79,6 +86,8 @@ def in_time(latest: object, close_date: str) -> bool:
     return beacon.round_time(latest + 1) <= deadline(close_date)
 ```
 
+![A timeline in UTC: the call and the seal must land before the 13:00 deadline; the New York session follows (13:30–20:00 in summer, 14:30–21:00 in winter); the close is read after.](ledger-figures/fig3-window.png)
+
 If I sealed late, the proposal escalates with the reason. If the price source is down, the outcome is *unreachable*, not "no". If the price the row says differs from what the reader says now, it escalates. If a close for that day is already on the record before the call, it escalates. Each of those has a test that tries it and checks for the refusal: 42 tests. I also broke each guard on purpose to make sure a test failed, and 14 out of 14 did.
 
 ## Where ESCALATE shows up again
@@ -87,7 +96,15 @@ Here's the part that surprised me. The benchmark rewarded a model for saying "I 
 
 Every call is scored with a Brier score: the square of the gap between the probability you gave and what happened. A call of 50% scores 0.25 whatever happens. That's the coin flip, and it's the forecaster's `ESCALATE`: "I don't know which way this goes", said honestly.
 
+![Two curves of Brier score against the stated probability, one for "it happened" and one for "it didn't". They cross at 50%, where the score is 0.25 either way.](ledger-figures/fig2-brier.png)
+
 So the question the ledger answers isn't "did you make money". It's **do you beat the coin, over many calls, with the misses counted?** That's the floor-not-average idea from the benchmark, aimed at whoever's making the calls. A forecaster who's confident on everything and right on the easy ones will look great in a highlight reel and lose to the coin on the ledger.
+
+Here's what that looks like, as a simulation rather than market data: 100 coin flips, a caller who says 80% on every one, and the coin.
+
+![A simulation of 100 coin flips. The always-80% caller's running Brier score settles near 0.33, above the coin's flat 0.25. Its hits alone sit at 0.04.](ledger-figures/fig4-reel.png)
+
+Show only the hits and the loud caller scores 0.04, which looks brilliant. Count every call and it averages 0.334, worse than the coin's 0.25. The calls are the same; only the record differs.
 
 ## What it isn't
 
