@@ -11,6 +11,7 @@ except the published RFC test vector.
 from __future__ import annotations
 
 import json
+import os
 import stat
 from unittest import mock
 
@@ -56,13 +57,36 @@ def test_identity_bytes_are_rfc8032():
 def test_identity_file_is_unchanged(tmp_path):
     p = tmp_path / "id" / "identity.json"
     made = Identity.generate(p)
-    assert stat.S_IMODE(p.stat().st_mode) == 0o600
     body = json.loads(p.read_text())
     assert (
         sorted(body) == ["private_key", "version"]
         and len(bytes.fromhex(body["private_key"])) == 32
     )
     assert Identity.load(p).public_key_hex == made.public_key_hex
+
+
+# The mode pins on their own, so Windows still runs the rest of each test above.
+# Windows has ACLs, not POSIX mode bits, and the identity file sets none: a strict
+# xfail there goes red the day one is set (the same stance as test_mcp_auth.py).
+_POSIX_MODE_BITS = pytest.mark.xfail(
+    os.name == "nt",
+    strict=True,
+    reason="POSIX mode bits: Windows has ACLs, and the identity file sets none",
+)
+
+
+@_POSIX_MODE_BITS
+def test_identity_file_is_0600(tmp_path):
+    p = tmp_path / "id" / "identity.json"
+    Identity.generate(p)
+    assert stat.S_IMODE(p.stat().st_mode) == 0o600
+
+
+@_POSIX_MODE_BITS
+def test_local_fallback_identity_file_is_0600(tmp_path, nowhere):
+    p = tmp_path / "id.json"
+    Identity.generate(p)
+    assert stat.S_IMODE(p.stat().st_mode) == 0o600
 
 
 def test_generate_takes_its_key_from_the_one_script_and_says_so(tmp_path):
@@ -74,7 +98,6 @@ def test_generate_with_no_one_script_falls_back_locally_and_says_so(tmp_path, no
     p = tmp_path / "id.json"
     made = Identity.generate(p)
     assert made.generated_by == "local"
-    assert stat.S_IMODE(p.stat().st_mode) == 0o600
     body = json.loads(p.read_text())
     assert sorted(body) == ["private_key", "version"] and body["version"] == 1
     assert Identity.load(p).public_key_hex == made.public_key_hex
