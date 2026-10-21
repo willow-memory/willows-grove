@@ -96,6 +96,7 @@ QUOTE = re.compile(r'["“]([^"“”\n]+)["”]')
 NUMBER = re.compile(r"\d+(?:\.\d+)*")
 #: Any Unicode letter run, so a word in a script the scan can't read is still
 #: seen (and fails ``nothing the boxes lack``) rather than slipping past it.
+# Letters only, so digits are not words here: search tuning, not the pile's key rule (flatten-2 F11).
 WORD = re.compile(r"[^\W\d_]+")
 
 

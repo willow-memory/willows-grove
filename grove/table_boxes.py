@@ -330,7 +330,8 @@ def _numbers_match(clause: str, b: Box) -> bool:
 
 
 def _tokens(text: str) -> list[str]:
-    """Words and numbers of a folded text, in order, possessive 's dropped."""
+    """Words and numbers of a folded text, in order, possessive 's dropped.
+    Compares a sentence to its boxes' text, never a pile key: search tuning, not the pile's key rule (flatten-2 F11)."""
     return re.findall(r"[^\W_]+", _fold(re.sub(r"['’]s\b", "", text)))
 
 

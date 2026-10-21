@@ -828,6 +828,7 @@ OPTION_MIN = 3
 OPTION_WORDS = 4
 LATER, THANKS = "later", "thanks"
 NUMBER = re.compile(r"\d+(?:\.\d+)*")
+# Display/cite matching against box text, keeps inner ' ’ . -: search tuning, not the pile's key rule (flatten-2 F11).
 WORD = re.compile(r"[^\W_]+(?:['’.-][^\W_]+)*")
 _UNSAFE = re.compile(r"[\[\]\x00-\x1f\x7f]")
 ORDINALS = {
