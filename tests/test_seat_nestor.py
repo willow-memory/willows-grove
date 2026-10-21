@@ -347,8 +347,18 @@ def test_unreadable_directory_is_unreachable(tmp_path):
 SHOEBOX = Path("/tmp/claude-0/demobox/shoebox/nestor.db")
 
 
+def _kept() -> bool:
+    """Is the kept shoebox there? A directory the running user may not enter is
+    "not there", not an error (the uid is a hidden input: collecting this file as
+    an unprivileged user raised PermissionError on a root-only /tmp/claude-0)."""
+    try:
+        return SHOEBOX.exists()
+    except OSError:
+        return False
+
+
 @pytest.mark.skipif(
-    not SHOEBOX.exists(),
+    not _kept(),
     reason="demo check only: needs the kept Nestor shoebox "
     "(demo/shoebox.py --keep /tmp/claude-0/demobox/shoebox); not a gate",
 )

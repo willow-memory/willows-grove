@@ -19,6 +19,8 @@ import sys
 import tempfile
 import unittest
 
+from grove import three_states  # in this process: bound, or ABSENT, never an error
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 _PROBE = r"""
@@ -60,6 +62,18 @@ def _probe(home: str) -> dict:
 
 
 class TestThreeStates(unittest.TestCase):
+    def test_in_this_process_the_names_are_bound_or_absent_says_why(self):
+        if three_states.ABSENT is None:
+            self.assertEqual(
+                three_states.STATES,
+                (three_states.POPULATED, three_states.EMPTY, three_states.UNREACHABLE),
+            )
+            self.assertEqual(three_states.checked("nonsense"), three_states.UNREACHABLE)
+        else:
+            self.assertEqual(three_states.ABSENT["state"], "unreachable")
+            with self.assertRaises(ImportError):
+                three_states.STATES
+
     def test_present_the_names_are_bound_and_absent_is_none(self):
         home = os.environ.get("ONESCRIPT_HOME") or os.path.join(
             os.path.dirname(ROOT), "willow-bot", "one-script"
