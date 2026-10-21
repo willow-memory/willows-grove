@@ -902,3 +902,24 @@ def test_item11_a_human_key_split_by_separators_or_pieces_is_withheld():
     ):
         out = rec.scrub("got " + line, (k,))
         assert out == "got [withheld]", (line, out)
+
+
+# ── flatten-2 F12: the rules are the one script's (onescript/scrub.py) ──────────
+def test_F12_a_credential_glued_to_letters_is_withheld():
+    key = "AKIA" + "Q" * 16
+    out = rec.scrub(f"{W}wrap{key}wrap")
+    assert key not in out and "[withheld]" in out
+
+
+def test_F12_without_the_one_script_the_seat_stops_at_import_and_says_why(tmp_path):
+    import os
+    import subprocess
+    import sys
+
+    env = {**os.environ, "ONESCRIPT_HOME": str(tmp_path / "nowhere"), "WILLOW_BOT_ROOT": ""}
+    env.pop("WILLOW_BOT_ROOT")
+    got = subprocess.run(
+        [sys.executable, "-c", "import grove.seat_record"],
+        capture_output=True, text=True, env=env, cwd=os.path.dirname(os.path.dirname(__file__)),
+    )
+    assert got.returncode != 0 and "unreachable" in got.stderr and "ONESCRIPT_HOME" in got.stderr

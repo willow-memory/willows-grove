@@ -92,18 +92,24 @@ AMBER = KINDS["block"][1]
 RUST = (217, 100, 92)  # --rust: a failed check
 
 
-def _one_script_states():
-    """The three states, once: willow-bot's ``onescript/states.py`` (flatten
-    F5, F-18; the operator: "2 a"), from the willow-bot the seat reads
-    (``$WILLOW_BOT_ROOT``, else the one reach's rule: ``$ONESCRIPT_HOME``,
-    else beside this repo; flatten-2 F6.5). With none beside, the seat stops
-    at import and says where it looked, in the reach's words."""
+def one_script_module(name: str):
+    """One of the one script's modules (``onescript.<name>``), from the
+    willow-bot the seat reads (``$WILLOW_BOT_ROOT``, else the one reach's rule:
+    ``$ONESCRIPT_HOME``, else beside this repo; flatten-2 F6.5). With none
+    beside, the seat stops at import and says where it looked, in the reach's
+    words."""
     got = os.environ.get("WILLOW_BOT_ROOT")
     home = Path(got).expanduser() / "one-script" if got else None
     try:
-        return onescript_reach.module("states", home=home)
+        return onescript_reach.module(name, home=home)
     except onescript_reach.Unreachable as e:
         raise ImportError(f"unreachable: {e}") from e
+
+
+def _one_script_states():
+    """The three states, once: willow-bot's ``onescript/states.py`` (flatten
+    F5, F-18; the operator: "2 a")."""
+    return one_script_module("states")
 
 
 _states = _one_script_states()
