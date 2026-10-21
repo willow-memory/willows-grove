@@ -10,8 +10,8 @@ not sealed. The decisions are the operator's, quoted where they were made.
 
 | Order | Do |
 |---|---|
-| 1 | Merge willow-memory/willow-mcp#728 **before** willow-memory/willow-bot#158. #158 makes `onescript turn` exit 42; #728 teaches willow-mcp's executor that 42 ran to a verdict. In the other order, every turn carrying proposals shows as `unreachable` there. |
-| 2 | Then #158. It holds 9 commits (§3). Its description still describes only the first one (`stamp.py`); rewrite it when you say (F-42). |
+| 1 | Both PRs are merged, in order: willow-memory/willow-mcp#728 (the executor reads 42) at 22:13:53 UTC, then willow-memory/willow-bot#158 (9 commits, §3) at 22:14:28 UTC. Pull `main` in willow-bot and `master` in willow-mcp. |
+| 2 | #158's description still describes only its first commit (`stamp.py`). |
 | 3 | Grove `claude/flatten-2-rulings` (F-39 to F-43, O-6, O-7) and `claude/flatten-gaps` (the guesses doc) are pushed with no PR. |
 | 4 | `genesis.py` is on willow-bot `claude/genesis`, pushed with no PR. |
 
@@ -19,13 +19,13 @@ not sealed. The decisions are the operator's, quoted where they were made.
 
 | Repo | Branch | Head | PR | State |
 |---|---|---|---|---|
-| willow-bot | `claude/stamp` | `7b13b7a` | willow-memory/willow-bot#158 | Open, CI green, mergeable |
-| willow-mcp | `claude/stoic-cerf-hv9y8s` | `a817646` | willow-memory/willow-mcp#728 | Open, CI running at writing |
+| willow-bot | `claude/stamp` | `7b13b7a` | willow-memory/willow-bot#158 | **Merged**: `main` at `f12d94f` |
+| willow-mcp | `claude/stoic-cerf-hv9y8s` | `a817646` | willow-memory/willow-mcp#728 | **Merged**: `master` at `2fe526c` |
 | willows-grove | `claude/flatten-2-rulings` | `92e07f8` | none | Pushed |
 | willows-grove | `claude/flatten-gaps` | `342fd69` | none | Pushed (guesses G23 to G28) |
 | willows-grove | `claude/smallest-one-script-handoff` | this file | none | Pushed |
 | willow-bot | `claude/genesis` | `4b40db9` | none | Pushed |
-| willow-bot | `main` | `3129271` | — | Already holds the prompt-path cut (#156: `opening.py`, `prompt_path.py`, 18 modules not 39) |
+| willow-bot | `main` | `f12d94f` | — | Holds the prompt-path cut (#156) and everything in §3 (#158) |
 
 ## §3 What was done
 
@@ -120,7 +120,7 @@ Of a common-word prompt now (about 4.3 s): `rank` scoring every hit about 3.6 s 
 | A | Check the store's rows once per store hash, not every open (saves 0.7 to 0.8 s a prompt) | about 20 lines |
 | B | Rank by chunk id and read rows only for the top hits (most of the 3.6 s) | about 60 lines |
 | C | An over-cap prompt says `empty` ("narrow the stack"); a ruling is needed | — |
-| D | `checkout` can send wagers to the human and still exits 0 | small, now that #728 exists |
+| D | `checkout` can send wagers to the human and still exits 0 | small, now that #728 is merged |
 | E | Compaction of the record (F-40 ratified, nothing built) | — |
 | F | The prompt hook never asks Jeles; only `seed` does | — |
 | G | Rat exits 0 on "escalated"; under F-43 its unanswered pieces are 42 | ratatosk |
