@@ -61,7 +61,9 @@ import re
 import sys
 from dataclasses import dataclass, field
 from datetime import date, datetime
+from pathlib import Path
 
+from grove import onescript_reach
 from grove.three_states import EMPTY, POPULATED, STATES, UNREACHABLE, checked  # noqa: F401
 
 #: The only free words in a sentence (``GLUE`` in the web sketch).
@@ -89,6 +91,20 @@ KINDS: dict[str, tuple[str, tuple[int, int, int]]] = {
 FAINT = (111, 100, 83)
 AMBER = KINDS["block"][1]
 RUST = (217, 100, 92)  # --rust: a failed check
+
+
+def one_script_module(name: str):
+    """One of the one script's modules (``onescript.<name>``), from the
+    willow-bot the seat reads (``$WILLOW_BOT_ROOT``, else the one reach's rule:
+    ``$ONESCRIPT_HOME``, else beside this repo; flatten-2 F6.5). With none
+    beside, the seat stops at import and says where it looked, in the reach's
+    words."""
+    got = os.environ.get("WILLOW_BOT_ROOT")
+    home = Path(got).expanduser() / "one-script" if got else None
+    try:
+        return onescript_reach.module(name, home=home)
+    except onescript_reach.Unreachable as e:
+        raise ImportError(f"unreachable: {e}") from e
 
 
 #: state -> (top rule, bar). The glyphs differ so no color is needed to tell.
