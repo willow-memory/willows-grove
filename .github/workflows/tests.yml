@@ -207,9 +207,17 @@ jobs:
       # clean no-op, but .py files with no `def test_` anywhere fail
       # loud instead of silently vanishing from the run (m36).
       - name: Run Ollama-backed watcher e2e (PR 8+)
+        # The journal's clock is the one script's (flatten-2 F8): without it
+        # every write says unreachable, so the one script is beside here too.
+        env:
+          WILLOW_BOT_ROOT: ${{ github.workspace }}/willow-bot
+          ONESCRIPT_HOME: ${{ github.workspace }}/willow-bot/one-script
         run: bash scripts/run_test_dir_or_fail.sh tests/e2e_ollama -x -q --tb=short
 
       - name: Run willow-mcp mock e2e (PR 10+)
+        env:
+          WILLOW_BOT_ROOT: ${{ github.workspace }}/willow-bot
+          ONESCRIPT_HOME: ${{ github.workspace }}/willow-bot/one-script
         run: bash scripts/run_test_dir_or_fail.sh tests/e2e_willow_mcp -x -q --tb=short
 
   # The Windows leg: the floor and ceiling of the classifier list, so the
