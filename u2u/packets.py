@@ -7,6 +7,8 @@ import time
 from enum import Enum
 from typing import Any
 
+from grove.onescript_sign import Unreachable
+from grove.onescript_sign import sign as _one_sign  # the pinned verifier (flatten-2 F14)
 from u2u.identity import Identity
 
 
@@ -122,17 +124,9 @@ class Packet:
         except ValueError as e:
             raise PacketMalformed(f"sig is not hex: {e}") from e
 
-        from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
-        from cryptography.exceptions import InvalidSignature
-
-        try:
-            pub = Ed25519PublicKey.from_public_bytes(pub_bytes)
-        except (ValueError, Exception) as e:
-            # Ed25519 raises ValueError for wrong-length; some backends raise
-            # UnsupportedAlgorithm. Either way, verification cannot be attempted.
-            if isinstance(e, InvalidSignature):
-                raise
-            raise PacketMalformed(f"pubkey bytes rejected: {e}") from e
+        one = _one_sign()  # unreachable propagates: not "malformed", not "wrong"
+        if len(pub_bytes) != 32:
+            raise PacketMalformed("pubkey bytes rejected: the public key is not 32 bytes")
 
         canon = _canon()  # unreachable propagates: not "malformed", not "wrong"
         try:
@@ -141,9 +135,12 @@ class Packet:
         except (TypeError, ValueError) as e:
             raise PacketMalformed(f"packet not JSON-serialisable: {e}") from e
 
-        try:
-            pub.verify(sig_bytes, signing_input)
-        except InvalidSignature:
+        # the pinned verifier (flatten-2 F14): a non-canonical s, a small-order
+        # or non-canonical key, a wrong-length sig are (b), never (a)
+        ok, why = one.ed25519_verify(pub_bytes, signing_input, sig_bytes)
+        if why == one.NO_CRYPTO:
+            raise Unreachable(why)
+        if not ok:
             return False  # (b) well-formed, sig wrong
         return True  # (a)
 
