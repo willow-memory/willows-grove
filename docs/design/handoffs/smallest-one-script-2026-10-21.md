@@ -13,7 +13,7 @@ not sealed. The decisions are the operator's, quoted where they were made.
 | 1 | Merge willow-memory/willow-mcp#728 **before** willow-memory/willow-bot#158. #158 makes `onescript turn` exit 42; #728 teaches willow-mcp's executor that 42 ran to a verdict. In the other order, every turn carrying proposals shows as `unreachable` there. |
 | 2 | Then #158. It holds 9 commits (§3). Its description still describes only the first one (`stamp.py`); rewrite it when you say (F-42). |
 | 3 | Grove `claude/flatten-2-rulings` (F-39 to F-43, O-6, O-7) and `claude/flatten-gaps` (the guesses doc) are pushed with no PR. |
-| 4 | `genesis.py` is on willow-bot `claude/genesis`, committed in the container and **not pushed** (§10). |
+| 4 | `genesis.py` is on willow-bot `claude/genesis`, pushed with no PR. |
 
 ## §2 Branches and PRs
 
@@ -24,7 +24,7 @@ not sealed. The decisions are the operator's, quoted where they were made.
 | willows-grove | `claude/flatten-2-rulings` | `92e07f8` | none | Pushed |
 | willows-grove | `claude/flatten-gaps` | `342fd69` | none | Pushed (guesses G23 to G28) |
 | willows-grove | `claude/smallest-one-script-handoff` | this file | none | Pushed |
-| willow-bot | `claude/genesis` | `4b40db9` | none | **Container only** |
+| willow-bot | `claude/genesis` | `4b40db9` | none | Pushed |
 | willow-bot | `main` | `3129271` | — | Already holds the prompt-path cut (#156: `opening.py`, `prompt_path.py`, 18 modules not 39) |
 
 ## §3 What was done
@@ -125,7 +125,7 @@ Of a common-word prompt now (about 4.3 s): `rank` scoring every hit about 3.6 s 
 | F | The prompt hook never asks Jeles; only `seed` does | — |
 | G | Rat exits 0 on "escalated"; under F-43 its unanswered pieces are 42 | ratatosk |
 | H | The container's box indexed Grove at `claude/flatten-gaps`, 7 commits past `master`: not all of the pile was the operator's yes | — |
-| I | `genesis.py`: push, and decide whether its 0 can mean more than "the checks passed" | — |
+| I | `genesis.py`: decide whether its 0 can mean more than "the checks passed" | — |
 | J | Jeles labels public-record commons `human`, with `verified_at` the load date and `evidence.sealed: false`; nuggets with no kind count as `human` | Jeles |
 
 ## §9 Open questions
@@ -138,7 +138,6 @@ Gone when the container is reclaimed:
 
 | Item | Where it was |
 |---|---|
-| `claude/genesis` (`7831eae`, `4b40db9`) | willow-bot worktree `/home/user/wt/genesis`, not pushed |
 | The 20-repo box, its keys and store | `willow-bot/.flow/onescript-all*` |
 | A Jeles store (1,149 nuggets: 821 public record, 328 asserted) and a throwaway gpg key | the session scratchpad |
 | Jeles 0.16.1 installed in the bot venv | `/root/willow-bot/venvs/willow-bot` |
