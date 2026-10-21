@@ -74,7 +74,7 @@ import sqlite3
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from grove.seat_boxes import Box, rank
+from grove.seat_boxes import EMPTY, POPULATED, UNREACHABLE, Box, rank
 
 #: Most boxes shown per kind; the rest are one counted ``more`` box.
 CAPS = {"dec": 4, "pr": 4, "block": 3, "you": 4}
@@ -116,7 +116,7 @@ def _clean(text: object) -> str:
 
 def _gone(state: str, why: str) -> Reading:
     # the seat's own three-state wording (grove.seat_cli.three_state)
-    value = f"empty — {why}" if state == "empty" else f"unreachable — {why}"
+    value = f"empty — {why}" if state == EMPTY else f"unreachable — {why}"
     box = Box("nstate", "pass", "nestor store", value, state=state)
     return Reading(state, why, [box])
 
@@ -358,7 +358,7 @@ def lead_rank(boxes: list[Box]) -> list[Box]:
     ``what needs me`` and a chain turn keep the generic ``rank``."""
 
     def key(b: Box) -> tuple[int, int]:
-        if b.state != "populated":
+        if b.state != POPULATED:
             return (0, 0)
         more = b.role == "more"
         draft = b.role == "draft"
@@ -377,21 +377,21 @@ def read_store(path: str | Path | None, *, drafts_as: str = "pr") -> Reading:
     keeps them ``changed`` because a draft may be one the human chose to leave.
     Never raises on a bad store: that is an ``unreachable`` reading."""
     if path is None or not str(path).strip():
-        return _gone("unreachable", NO_PATH)
+        return _gone(UNREACHABLE, NO_PATH)
     p = Path(path).expanduser()
     if not p.is_file():
-        return _gone("unreachable", f"no Nestor store at {p}")
+        return _gone(UNREACHABLE, f"no Nestor store at {p}")
     try:
         con = sqlite3.connect(
             f"{p.resolve().as_uri()}?mode=ro", uri=True, timeout=SQL_TIMEOUT
         )
     except sqlite3.Error as e:
-        return _gone("unreachable", f"can't open {p} read-only ({e})")
+        return _gone(UNREACHABLE, f"can't open {p} read-only ({e})")
     try:
         con.execute("PRAGMA query_only = ON")
         return _read(con, p, drafts_as)
     except sqlite3.Error as e:
-        return _gone("unreachable", f"{p} is not a readable Nestor store ({e})")
+        return _gone(UNREACHABLE, f"{p} is not a readable Nestor store ({e})")
     finally:
         con.close()
 
@@ -401,21 +401,21 @@ def _read(con: sqlite3.Connection, p: Path, drafts_as: str) -> Reading:
         r[0] for r in con.execute("SELECT name FROM sqlite_master WHERE type='table'")
     }
     if not {"tm_pairs", "tm_rejections"} & tables:
-        return _gone("unreachable", f"{p} is not a Nestor store (no tm_pairs table)")
+        return _gone(UNREACHABLE, f"{p} is not a Nestor store (no tm_pairs table)")
     pairs: list[dict] = []
     rejs: list[dict] = []
     if "tm_pairs" in tables:
         cols = _columns(con, "tm_pairs")
         if missing := [c for c in NEED_PAIRS if c not in cols]:
-            return _gone("unreachable", f"tm_pairs lacks {', '.join(missing)}")
+            return _gone(UNREACHABLE, f"tm_pairs lacks {', '.join(missing)}")
         pairs = _rows(con, "tm_pairs", cols, PAIR_COLS)
     if "tm_rejections" in tables:
         cols = _columns(con, "tm_rejections")
         if missing := [c for c in NEED_REJ if c not in cols]:
-            return _gone("unreachable", f"tm_rejections lacks {', '.join(missing)}")
+            return _gone(UNREACHABLE, f"tm_rejections lacks {', '.join(missing)}")
         rejs = _rows(con, "tm_rejections", cols, REJ_COLS)
     if not pairs and not rejs:
-        return _gone("empty", "the store holds no pairs and no rejections")
+        return _gone(EMPTY, "the store holds no pairs and no rejections")
 
     seen: set[str] = {"nstate"}
     fixtures = sorted({x["origin"] for x in pairs if x["origin"].startswith(FIXTURE)})
@@ -436,4 +436,4 @@ def _read(con: sqlite3.Connection, p: Path, drafts_as: str) -> Reading:
     items += _rejection_boxes(rejs, bool(fixtures), seen)
     boxes, omitted = _cap(items, seen)
     boxes.append(_summary(counts, fixtures, seen))
-    return Reading("populated", "", rank(boxes), counts, fixtures, omitted)
+    return Reading(POPULATED, "", rank(boxes), counts, fixtures, omitted)

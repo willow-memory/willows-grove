@@ -3,17 +3,16 @@
 import json
 import os
 from pathlib import Path
-from cryptography.hazmat.primitives.asymmetric.ed25519 import (
-    Ed25519PrivateKey,
-    Ed25519PublicKey,
-)
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from cryptography.hazmat.primitives.serialization import (
     Encoding,
     PublicFormat,
     PrivateFormat,
     NoEncryption,
 )
-from cryptography.exceptions import InvalidSignature
+
+from grove.onescript_sign import Unreachable
+from grove.onescript_sign import sign as _one_sign
 
 
 class Identity:
@@ -26,8 +25,25 @@ class Identity:
 
     @classmethod
     def generate(cls, path: Path) -> "Identity":
-        key = Ed25519PrivateKey.generate()
+        """A fresh identity written to ``path`` (0600, the same JSON shape).
+
+        The key bytes come from the one script's ``sign.ed25519_generate`` when
+        it is reachable (``ident.generated_by == "onescript"``). With none
+        beside, a local ``cryptography`` key is made instead
+        (``generated_by == "local"``) so an identity can still be created: the
+        same generator, only the home differs, and it is said which ran. The
+        key file's format and location are unchanged."""
+        try:
+            raw, by = _one_sign().ed25519_generate(), "onescript"
+        except Unreachable:
+            raw, by = None, "local"
+        key = (
+            Ed25519PrivateKey.from_private_bytes(raw)
+            if raw is not None
+            else Ed25519PrivateKey.generate()
+        )
         ident = cls(key)
+        ident.generated_by = by
         path = Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
         priv_bytes = key.private_bytes(Encoding.Raw, PrivateFormat.Raw, NoEncryption())
@@ -52,12 +68,15 @@ class Identity:
         return cls.load(path) if path.exists() else cls.generate(path)
 
     def sign(self, message: bytes) -> str:
-        return self._private.sign(message).hex()
+        # signing and verifying are the one script's (flatten-2 F14); the key
+        # file and where it lives stay here
+        raw = self._private.private_bytes(
+            Encoding.Raw, PrivateFormat.Raw, NoEncryption()
+        )
+        return _one_sign().ed25519_sign(raw, message)
 
     def verify(self, message: bytes, sig_hex: str, public_key_hex: str) -> bool:
-        try:
-            pub = Ed25519PublicKey.from_public_bytes(bytes.fromhex(public_key_hex))
-            pub.verify(bytes.fromhex(sig_hex), message)
-            return True
-        except (InvalidSignature, ValueError):
-            return False
+        ok, why = _one_sign().ed25519_verify_hex(public_key_hex, message, sig_hex)
+        if why == _one_sign().NO_CRYPTO:
+            raise Unreachable(why)
+        return ok

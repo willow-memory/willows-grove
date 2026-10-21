@@ -49,7 +49,7 @@ import urllib.request
 from collections.abc import Callable
 from urllib.parse import urlparse
 
-from grove.seat_boxes import GLUE, KINDS, Box, short
+from grove.seat_boxes import EMPTY, GLUE, KINDS, POPULATED, UNREACHABLE, Box, short
 
 MODEL = os.environ.get("GROVE_SAY_MODEL") or "qwen3:4b"
 DEFAULT_HOST = "127.0.0.1:11434"
@@ -96,6 +96,7 @@ QUOTE = re.compile(r'["“]([^"“”\n]+)["”]')
 NUMBER = re.compile(r"\d+(?:\.\d+)*")
 #: Any Unicode letter run, so a word in a script the scan can't read is still
 #: seen (and fails ``nothing the boxes lack``) rather than slipping past it.
+# Letters only, so digits are not words here: search tuning, not the pile's key rule (flatten-2 F11).
 WORD = re.compile(r"[^\W\d_]+")
 
 
@@ -187,21 +188,21 @@ def ollama_probe(
         with op.open(urllib.request.Request(base + "/api/tags"), timeout=timeout) as r:
             got = json.loads(r.read().decode("utf-8"))
     except SayUnreachable as e:
-        return "unreachable", str(e)
+        return UNREACHABLE, str(e)
     except (OSError, ValueError) as e:  # HTTPError is an OSError
-        return "unreachable", f"{type(e).__name__}: {e}"
+        return UNREACHABLE, f"{type(e).__name__}: {e}"
     models = got.get("models") if isinstance(got, dict) else None
     if not isinstance(models, list):
-        return "unreachable", f"{base}: no models field"
+        return UNREACHABLE, f"{base}: no models field"
     names = {str(m.get("name")) for m in models if isinstance(m, dict)}
     if model in names or f"{model}:latest" in names:
-        return "populated", f"{model} at {base}"
-    return "empty", f"{base} is up, {model} is not installed"
+        return POPULATED, f"{model} at {base}"
+    return EMPTY, f"{base} is up, {model} is not installed"
 
 
 def fact(b: Box) -> str:
     """A box as the prompt (and the vocabulary check) sees it."""
-    name = KINDS.get(b.kind, ("note",))[0] if b.state == "populated" else b.state
+    name = KINDS.get(b.kind, ("note",))[0] if b.state == POPULATED else b.state
     detail = f" ({short(' '.join(b.detail.split()))})" if b.detail else ""
     return f"{name}: {short(b.value)}{detail}"
 

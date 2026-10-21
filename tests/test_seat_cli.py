@@ -20,6 +20,7 @@ from pathlib import Path
 
 import pytest
 
+from grove import onescript_reach
 from grove import seat_boxes as bx
 from grove import seat_cli as s
 from grove import seat_say as say_mod
@@ -1076,23 +1077,44 @@ def test_a_quote_the_one_scripts_gate_cant_verify_fails_even_if_it_reads_right()
     assert say_mod.run_checks(s_, both, "where are we")[3] is True
 
 
-def test_load_bot_hands_the_seat_the_one_scripts_claims_gate(monkeypatch, tmp_path):
-    import types
+def test_load_bot_hands_the_seat_the_one_scripts_claims_gate(
+    monkeypatch, request, tmp_path
+):
+    """A one script on disk (the real reach and states, stubs for the rest),
+    found through the one reach (flatten-2 F6.5); nothing of an earlier import
+    is reused, and nothing of this one is left behind."""
+    got = os.environ.get("WILLOW_BOT_ROOT")
+    real = Path(got) / "one-script" if got else onescript_reach.where()["onescript"]
+    if real is None or not (real / "onescript" / "reach.py").is_file():
+        if os.environ.get("CI"):
+            pytest.fail(f"CI has no willow-bot's one script at {real}")
+        pytest.skip("willow-bot's one script is not beside this repo")
+    pkg = tmp_path / "one-script" / "onescript"
+    pkg.mkdir(parents=True)
+    (pkg / "__init__.py").write_text("", encoding="utf-8")
+    for name in ("states", "reach"):
+        (pkg / f"{name}.py").write_text(
+            (real / "onescript" / f"{name}.py").read_text(encoding="utf-8"),
+            encoding="utf-8",
+        )
+    (pkg / "api.py").write_text("", encoding="utf-8")
+    (pkg / "escalate.py").write_text("cut = len\nPIECE_CHARS = 7\n", encoding="utf-8")
+    (pkg / "gate.py").write_text('check_claims = "the gate"\n', encoding="utf-8")
+    (pkg / "proposals.py").write_text("subject = str\n", encoding="utf-8")
 
-    one = tmp_path / "one-script" / "onescript"
-    one.mkdir(parents=True)
-    (one / "api.py").write_text("", encoding="utf-8")
-    pkg = types.ModuleType("onescript")
-    mods = {
-        "api": types.SimpleNamespace(),
-        "escalate": types.SimpleNamespace(cut=len, PIECE_CHARS=7),
-        "gate": types.SimpleNamespace(check_claims="the gate"),
-        "proposals": types.SimpleNamespace(subject=str),
-    }
-    for name, mod in mods.items():
-        setattr(pkg, name, mod)
-        monkeypatch.setitem(sys.modules, f"onescript.{name}", mod)
-    monkeypatch.setitem(sys.modules, "onescript", pkg)
+    def ours(m):
+        return m == "onescript" or m.startswith("onescript.")
+
+    before = {m: mod for m, mod in sys.modules.items() if ours(m)}
+    for name in before:
+        del sys.modules[name]
+
+    def put_back():
+        for name in [m for m in sys.modules if ours(m)]:
+            del sys.modules[name]
+        sys.modules.update(before)
+
+    request.addfinalizer(put_back)
     monkeypatch.setattr(sys, "path", list(sys.path))
     assert s.load_bot(tmp_path).claims == "the gate"
 
@@ -1254,9 +1276,23 @@ def test_an_unknown_flag_or_argument_exits_2_before_the_bot_loads(
 
 
 def bot_tree(tmp_path):
-    api = tmp_path / "one-script" / "onescript" / "api.py"
-    api.parent.mkdir(parents=True)
-    api.write_text("", encoding="utf-8")
+    """A tree the one reach recognizes: the real reach and states under
+    ``one-script/onescript`` (reach.py is the present-marker)."""
+    real = onescript_reach.where()["onescript"]
+    got = os.environ.get("WILLOW_BOT_ROOT")
+    real = Path(got) / "one-script" if got else real
+    if real is None or not (real / "onescript" / "reach.py").is_file():
+        if os.environ.get("CI"):
+            pytest.fail(f"CI has no willow-bot's one script at {real}")
+        pytest.skip("willow-bot's one script is not beside this repo")
+    pkg = tmp_path / "one-script" / "onescript"
+    pkg.mkdir(parents=True)
+    (pkg / "__init__.py").write_text("", encoding="utf-8")
+    for name in ("states", "reach"):
+        (pkg / f"{name}.py").write_text(
+            (real / "onescript" / f"{name}.py").read_text(encoding="utf-8"),
+            encoding="utf-8",
+        )
     return tmp_path
 
 

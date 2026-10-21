@@ -29,9 +29,12 @@ import unittest
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 COMPONENTS_DIR = os.path.join(ROOT, "web", "components")
+STATES_JS = os.path.join(ROOT, "web", "lib", "states.js")
 
 # INVARIANTS.md §1 — the three states, plus the pre-fetch sentinel every
-# panel starts in before its first answer arrives.
+# panel starts in before its first answer arrives. `loading` is UI-only
+# (flatten-2 D-f): a display condition, not a state; web/lib/states.js keeps
+# it apart from STATES, and no reader or endpoint emits it.
 SECTION_1_VOCABULARY = frozenset({"loading", "populated", "empty", "unreachable"})
 
 # Sentinels that are NOT §1 states and are allowed only because they name
@@ -63,6 +66,17 @@ _SETATTR_RE = re.compile(
 )
 
 
+def _state_constants() -> dict[str, str]:
+    """`export const POPULATED = "populated";` -> {"POPULATED": "populated"}
+    from the generated web/lib/states.js (flatten-2 F9): components write the
+    constant, and the audit reads through it to the word."""
+    with open(STATES_JS, encoding="utf-8") as fh:
+        return dict(re.findall(r'export const ([A-Z]+) = "([a-z]+)";', fh.read()))
+
+
+_CONSTANT_RE = re.compile(r"\b([A-Z]{4,})\b")
+
+
 def _component_files() -> list[str]:
     return sorted(
         os.path.join(COMPONENTS_DIR, name)
@@ -75,6 +89,8 @@ def _state_literals(source: str) -> set[str]:
     found: set[str] = set()
     for expression in _ASSIGN_RE.findall(source):
         found.update(_LITERAL_RE.findall(expression))
+        consts = _state_constants()
+        found.update(consts[c] for c in _CONSTANT_RE.findall(expression) if c in consts)
     for pattern in (_ATTR_RE, _SETATTR_RE):
         found.update(pattern.findall(source))
     return found
