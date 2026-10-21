@@ -916,10 +916,21 @@ def test_F12_without_the_one_script_the_seat_stops_at_import_and_says_why(tmp_pa
     import subprocess
     import sys
 
-    env = {**os.environ, "ONESCRIPT_HOME": str(tmp_path / "nowhere"), "WILLOW_BOT_ROOT": ""}
+    env = {
+        **os.environ,
+        "ONESCRIPT_HOME": str(tmp_path / "nowhere"),
+        "WILLOW_BOT_ROOT": "",
+    }
     env.pop("WILLOW_BOT_ROOT")
     got = subprocess.run(
         [sys.executable, "-c", "import grove.seat_record"],
-        capture_output=True, text=True, env=env, cwd=os.path.dirname(os.path.dirname(__file__)),
+        capture_output=True,
+        text=True,
+        env=env,
+        cwd=os.path.dirname(os.path.dirname(__file__)),
     )
-    assert got.returncode != 0 and "unreachable" in got.stderr and "ONESCRIPT_HOME" in got.stderr
+    assert (
+        got.returncode != 0
+        and "unreachable" in got.stderr
+        and "ONESCRIPT_HOME" in got.stderr
+    )

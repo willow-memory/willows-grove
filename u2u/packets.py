@@ -8,7 +8,9 @@ from enum import Enum
 from typing import Any
 
 from grove.onescript_sign import Unreachable
-from grove.onescript_sign import sign as _one_sign  # the pinned verifier (flatten-2 F14)
+from grove.onescript_sign import (
+    sign as _one_sign,
+)  # the pinned verifier (flatten-2 F14)
 from u2u.identity import Identity
 
 
@@ -126,7 +128,9 @@ class Packet:
 
         one = _one_sign()  # unreachable propagates: not "malformed", not "wrong"
         if len(pub_bytes) != 32:
-            raise PacketMalformed("pubkey bytes rejected: the public key is not 32 bytes")
+            raise PacketMalformed(
+                "pubkey bytes rejected: the public key is not 32 bytes"
+            )
 
         canon = _canon()  # unreachable propagates: not "malformed", not "wrong"
         try:

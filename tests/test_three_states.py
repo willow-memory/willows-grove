@@ -45,7 +45,11 @@ print(json.dumps(out))
 
 
 def _probe(home: str) -> dict:
-    env = {k: v for k, v in os.environ.items() if k not in ("WILLOW_BOT_ROOT", "PYTHONPATH")}
+    env = {
+        k: v
+        for k, v in os.environ.items()
+        if k not in ("WILLOW_BOT_ROOT", "PYTHONPATH")
+    }
     env["ONESCRIPT_HOME"] = home
     env["PYTHONDONTWRITEBYTECODE"] = "1"
     r = subprocess.run(

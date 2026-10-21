@@ -46,7 +46,13 @@ def test_u2u_packet_signing_input_is_pinned(case):
     ident = Identity(Ed25519PrivateKey.from_private_bytes(bytes(range(32))))
     with mock.patch("time.time", return_value=1700000000.0):
         pk = Packet.build(
-            PacketType.NOTE, "alice☃", "bob", CASES[case], ident, ttl=60, thread_id="t é"
+            PacketType.NOTE,
+            "alice☃",
+            "bob",
+            CASES[case],
+            ident,
+            ttl=60,
+            thread_id="t é",
         )
         assert Packet.validate(pk, ident.public_key_hex)
     assert pk["header"]["sig"] == PACKET_SIG[case]

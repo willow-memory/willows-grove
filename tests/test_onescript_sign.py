@@ -36,7 +36,9 @@ def _ident():
 def _packet(ident=None):
     ident = ident or Identity(Ed25519PrivateKey.generate())
     with mock.patch("time.time", return_value=1700000000.0):
-        return ident, Packet.build(PacketType.NOTE, "alice", "bob", {"a": 1}, ident, ttl=10**10)
+        return ident, Packet.build(
+            PacketType.NOTE, "alice", "bob", {"a": 1}, ident, ttl=10**10
+        )
 
 
 def test_identity_bytes_are_rfc8032():
@@ -46,7 +48,9 @@ def test_identity_bytes_are_rfc8032():
     assert ident.verify(b"", RFC_SIG, RFC_PUBLIC) is True
     assert ident.verify(b"x", RFC_SIG, RFC_PUBLIC) is False
     assert ident.verify(b"", RFC_SIG, "zz") is False  # not hex: wrong, as before
-    assert ident.verify(b"", RFC_SIG, "00" * 31) is False  # wrong length: wrong, as before
+    assert (
+        ident.verify(b"", RFC_SIG, "00" * 31) is False
+    )  # wrong length: wrong, as before
 
 
 def test_identity_file_is_unchanged(tmp_path):
@@ -54,7 +58,10 @@ def test_identity_file_is_unchanged(tmp_path):
     made = Identity.generate(p)
     assert stat.S_IMODE(p.stat().st_mode) == 0o600
     body = json.loads(p.read_text())
-    assert sorted(body) == ["private_key", "version"] and len(bytes.fromhex(body["private_key"])) == 32
+    assert (
+        sorted(body) == ["private_key", "version"]
+        and len(bytes.fromhex(body["private_key"])) == 32
+    )
     assert Identity.load(p).public_key_hex == made.public_key_hex
 
 
@@ -121,7 +128,10 @@ def test_signing_and_verifying_say_unreachable_never_malformed_or_wrong(nowhere)
         ident.sign(b"m")
     with pytest.raises(onescript_sign.Unreachable):
         ident.verify(b"", RFC_SIG, RFC_PUBLIC)
-    packet = {"header": {"sig": "00" * 64, "sent_at": 1, "expires_at": 2}, "payload": {"a": 1}}
+    packet = {
+        "header": {"sig": "00" * 64, "sent_at": 1, "expires_at": 2},
+        "payload": {"a": 1},
+    }
     with mock.patch("time.time", return_value=1.5):
         with pytest.raises(onescript_sign.Unreachable):
             Packet.validate(packet, "00" * 32)

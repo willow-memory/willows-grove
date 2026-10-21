@@ -70,7 +70,9 @@ class Identity:
     def sign(self, message: bytes) -> str:
         # signing and verifying are the one script's (flatten-2 F14); the key
         # file and where it lives stay here
-        raw = self._private.private_bytes(Encoding.Raw, PrivateFormat.Raw, NoEncryption())
+        raw = self._private.private_bytes(
+            Encoding.Raw, PrivateFormat.Raw, NoEncryption()
+        )
         return _one_sign().ed25519_sign(raw, message)
 
     def verify(self, message: bytes, sig_hex: str, public_key_hex: str) -> bool:
@@ -78,4 +80,3 @@ class Identity:
         if why == _one_sign().NO_CRYPTO:
             raise Unreachable(why)
         return ok
-

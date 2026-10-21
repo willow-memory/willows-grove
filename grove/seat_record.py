@@ -73,7 +73,14 @@ from __future__ import annotations
 import hashlib
 import re
 
-from grove.seat_boxes import EMPTY, POPULATED, UNREACHABLE, Box, one_script_module, plural
+from grove.seat_boxes import (
+    EMPTY,
+    POPULATED,
+    UNREACHABLE,
+    Box,
+    one_script_module,
+    plural,
+)
 from grove.seat_nestor import Reading, _clean
 
 #: Asked whole: the store's whole state (when one is configured) and the record.
