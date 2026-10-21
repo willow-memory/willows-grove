@@ -61,6 +61,9 @@ import re
 import sys
 from dataclasses import dataclass, field
 from datetime import date, datetime
+from pathlib import Path
+
+from grove import onescript_reach
 
 #: The only free words in a sentence (``GLUE`` in the web sketch).
 GLUE = (
@@ -92,27 +95,15 @@ RUST = (217, 100, 92)  # --rust: a failed check
 def _one_script_states():
     """The three states, once: willow-bot's ``onescript/states.py`` (flatten
     F5, F-18; the operator: "2 a"), from the willow-bot the seat reads
-    (``$WILLOW_BOT_ROOT``, else beside this repo). With none beside, the seat
-    stops at import and says where it looked."""
-    import importlib
-    import os
-    from pathlib import Path
-
+    (``$WILLOW_BOT_ROOT``, else the one reach's rule: ``$ONESCRIPT_HOME``,
+    else beside this repo; flatten-2 F6.5). With none beside, the seat stops
+    at import and says where it looked, in the reach's words."""
     got = os.environ.get("WILLOW_BOT_ROOT")
-    root = (
-        Path(got).expanduser()
-        if got
-        else Path(__file__).resolve().parents[2] / "willow-bot"
-    )
-    one = root / "one-script"
-    if not (one / "onescript" / "states.py").is_file():
-        raise ImportError(
-            f"unreachable: no one script at {one} for the three states "
-            "(set WILLOW_BOT_ROOT)"
-        )
-    if str(one) not in sys.path:
-        sys.path.insert(0, str(one))
-    return importlib.import_module("onescript.states")
+    home = Path(got).expanduser() / "one-script" if got else None
+    try:
+        return onescript_reach.module("states", home=home)
+    except onescript_reach.Unreachable as e:
+        raise ImportError(f"unreachable: {e}") from e
 
 
 _states = _one_script_states()

@@ -260,6 +260,7 @@ except ImportError as _no_states:
         raise SystemExit(2) from None
     raise
 from grove.seat_nestor import lead_rank, read_store
+from grove import onescript_reach
 from grove import table_boxes as tb
 from grove.seat_nestor import Reading
 from grove.seat_record import read_needs, scrub, status_kind, story_kind
@@ -364,16 +365,17 @@ def bot_root() -> Path:
 
 
 def load_bot(root: Path) -> Bot:
+    """The one script's modules the seat drives, found by the one reach
+    (flatten-2 F6.5: ``onescript_reach.py``, whose "why" is the reach's). With
+    none at ``root``, ``SeatUnavailable`` says so."""
     one = root / "one-script"
-    if not (one / "onescript" / "api.py").is_file():
-        raise SeatUnavailable(
-            f"unreachable: no one script at {one} (set WILLOW_BOT_ROOT)"
-        )
-    sys.path.insert(0, str(one))
     try:
-        from onescript import api, escalate, gate, proposals
-    except ImportError as e:
-        raise SeatUnavailable(f"unreachable: the one script won't import: {e}") from e
+        api, escalate, gate, proposals = (
+            onescript_reach.module(m, home=one)
+            for m in ("api", "escalate", "gate", "proposals")
+        )
+    except onescript_reach.Unreachable as e:
+        raise SeatUnavailable(f"unreachable: {e}") from e
     return Bot(
         api,
         escalate.cut,
