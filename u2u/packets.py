@@ -10,6 +10,13 @@ from typing import Any
 from u2u.identity import Identity
 
 
+def _canon():
+    """Family G (`sorted_spaced_ascii`), by name, from the one script."""
+    from grove.onescript_canon import family
+
+    return family("sorted_spaced_ascii")
+
+
 class PacketType(str, Enum):
     KNOCK = "KNOCK"
     NOTE = "NOTE"
@@ -51,7 +58,8 @@ class Packet:
         thread_id: str | None = None,
     ) -> dict:
         now = int(time.time())
-        payload_json = json.dumps(payload, sort_keys=True)
+        canon = _canon()
+        payload_json = canon(payload)
         header = {
             "version": "u2u-1",
             "type": ptype.value,
@@ -61,7 +69,7 @@ class Packet:
             "expires_at": now + ttl,
             "thread_id": thread_id,
         }
-        signing_input = (json.dumps(header, sort_keys=True) + payload_json).encode()
+        signing_input = (canon(header) + payload_json).encode()
         header["sig"] = identity.sign(signing_input)
         return {"header": header, "payload": payload}
 
@@ -126,9 +134,10 @@ class Packet:
                 raise
             raise PacketMalformed(f"pubkey bytes rejected: {e}") from e
 
+        canon = _canon()  # unreachable propagates: not "malformed", not "wrong"
         try:
-            payload_json = json.dumps(packet["payload"], sort_keys=True)
-            signing_input = (json.dumps(header, sort_keys=True) + payload_json).encode()
+            payload_json = canon(packet["payload"])
+            signing_input = (canon(header) + payload_json).encode()
         except (TypeError, ValueError) as e:
             raise PacketMalformed(f"packet not JSON-serialisable: {e}") from e
 
