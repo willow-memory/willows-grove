@@ -73,7 +73,7 @@ from __future__ import annotations
 import hashlib
 import re
 
-from grove.seat_boxes import Box, plural
+from grove.seat_boxes import EMPTY, POPULATED, UNREACHABLE, Box, plural
 from grove.seat_nestor import Reading, _clean
 
 #: Asked whole: the store's whole state (when one is configured) and the record.
@@ -190,7 +190,7 @@ def status_kind(text: str) -> str | None:
 
 
 def _gone(state: str, why: str, source: str = "record") -> Reading:
-    value = f"empty — {why}" if state == "empty" else f"unreachable — {why}"
+    value = f"empty — {why}" if state == EMPTY else f"unreachable — {why}"
     bid = "rstate" if source == "record" else "tstate"
     return Reading(state, why, [Box(bid, "pass", source, value, state=state)])
 
@@ -359,7 +359,7 @@ def item_box(line: str, seen: set[str], prefix: str = "r") -> Box:
                 "block",
                 "wager",
                 f"unreachable — wager {m['id']} seal: {m['rest']}",
-                state="unreachable",
+                state=UNREACHABLE,
             )
         return Box(
             bid, "you", "wager", f"wager {m['id']} {m['state']}", _parts(m["rest"])
@@ -368,7 +368,7 @@ def item_box(line: str, seen: set[str], prefix: str = "r") -> Box:
         parts = m["rest"].split(" · ")
         kind, state = _tip_kind(parts[-1])
         value = f"table verdict session {m['sid']}"
-        if state == "unreachable":
+        if state == UNREACHABLE:
             value = f"unreachable — {value}: {parts[-1]}"
             parts = parts[:-1]
         return Box(
@@ -380,22 +380,20 @@ def item_box(line: str, seen: set[str], prefix: str = "r") -> Box:
             "block",
             "table",
             f"unreachable — table: {m['why']}",
-            state="unreachable",
+            state=UNREACHABLE,
         )
     if m := AGM.fullmatch(line):  # R13: the ai-game-master ledger head
         state, rest = m["state"], m["rest"] or ""
         value = f"table agm_head {state}"
         if state == "unanchored":
-            return Box(
-                bid, "pass", "agm_head", f"empty — {rest or value}", state="empty"
-            )
-        if state == "unreachable":
+            return Box(bid, "pass", "agm_head", f"empty — {rest or value}", state=EMPTY)
+        if state == UNREACHABLE:
             return Box(
                 bid,
                 "block",
                 "agm_head",
                 f"unreachable — {rest or value}",
-                state="unreachable",
+                state=UNREACHABLE,
             )
         return Box(
             bid,
@@ -456,20 +454,20 @@ def read_needs(
             if isinstance(e, AttributeError)
             else f"{type(e).__name__}: {e}"
         )
-        return _gone("unreachable", why, source)
+        return _gone(UNREACHABLE, why, source)
     if not isinstance(res, dict) or "refused" in res:
         why = res.get("refused") if isinstance(res, dict) else "not a needs record"
-        return _gone("unreachable", _clean(why), source)
+        return _gone(UNREACHABLE, _clean(why), source)
     lines = res.get("needs")
     if not isinstance(lines, list) or not all(isinstance(x, str) for x in lines):
-        return _gone("unreachable", "the needs read is not a list of lines", source)
+        return _gone(UNREACHABLE, "the needs read is not a list of lines", source)
     lines = [
         x
         for x in (scrub(" ".join(_clean(x).split()), secrets, known) for x in lines)
         if x
     ]
     if not lines:
-        return _gone("empty", f"nothing on the {source} waits on you", source)
+        return _gone(EMPTY, f"nothing on the {source} waits on you", source)
     seen: set[str] = {pre + "state"}
     items = [item_box(x, seen, pre) for x in lines]
     count = Box(
@@ -482,4 +480,4 @@ def read_needs(
         else "from the table box, watched with api.peek: nothing was written to it",
         role="count",
     )
-    return Reading("populated", "", [count, *items], {"waiting": len(items)})
+    return Reading(POPULATED, "", [count, *items], {"waiting": len(items)})

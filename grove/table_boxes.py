@@ -50,7 +50,15 @@ from __future__ import annotations
 import re
 from collections.abc import Callable
 
-from grove.seat_boxes import GLUE, Box, compose, lore_box
+from grove.seat_boxes import (
+    EMPTY,
+    GLUE,
+    POPULATED,
+    UNREACHABLE,
+    Box,
+    compose,
+    lore_box,
+)
 from grove.seat_say import (
     CHECK_NAMES,
     CITE,
@@ -128,7 +136,7 @@ def box_of(row: dict, bid: str, role: str = "") -> Box | None:
             detail = f"{detail} · {beat}" if detail else beat
         if not _is_int(total):
             return Box(
-                bid, "pass", "roll", f"empty — turn {turn} has no total", state="empty"
+                bid, "pass", "roll", f"empty — turn {turn} has no total", state=EMPTY
             )
         return Box(
             bid,
@@ -208,21 +216,18 @@ def served_boxes(doc: dict) -> list[Box]:
     Only a table that is populated and ``human-sealed`` yields boxes (NIT-3).
     These are the boxes a model may be asked to say."""
     out: list[Box] = []
-    if not isinstance(doc, dict) or doc.get("state") != "populated":
+    if not isinstance(doc, dict) or doc.get("state") != POPULATED:
         why = _one(doc.get("why") if isinstance(doc, dict) else "no served document")
         state = (
             doc.get("state")
-            if isinstance(doc, dict) and doc.get("state") in ("empty", "unreachable")
-            else "unreachable"
+            if isinstance(doc, dict) and doc.get("state") in (EMPTY, UNREACHABLE)
+            else UNREACHABLE
         )
         return [Box("served", "pass", "served", f"{state} — {why}", state=state)]
     for t in doc.get("tables") or []:
         if not isinstance(t, dict):
             continue
-        if (
-            t.get("state", "populated") != "populated"
-            or t.get("trust") != "human-sealed"
-        ):
+        if t.get("state", "populated") != POPULATED or t.get("trust") != "human-sealed":
             continue  # NIT-3: only a sealed, populated table's rows are facts
         tid = str(t.get("id", ""))
         for i, row in enumerate(t.get("rows") or []):
@@ -237,7 +242,7 @@ def is_fact(box: Box) -> bool:
     no role, one of ``FACT_LABELS``). A record box, a draft, a decision, a
     seal, an escalate box: never."""
     return (
-        box.state == "populated"
+        box.state == POPULATED
         and box.kind == "pass"
         and box.role == ""
         and box.label in FACT_LABELS
@@ -253,7 +258,7 @@ def sayable(boxes: list[Box]) -> list[Box]:
     return [
         b
         for b in boxes
-        if b.state == "populated"
+        if b.state == POPULATED
         and b.kind == "pass"
         and b.role in ("", RECORD)
         and b.label in FACT_LABELS
@@ -517,7 +522,7 @@ def set_piece_draft(
             "set piece",
             f"unreachable — {type(e).__name__}: {e}",
             DRAFT_DETAIL,
-            state="unreachable",
+            state=UNREACHABLE,
             role=DRAFT,
         )
     rows = [r for r in (rows if isinstance(rows, list) else []) if isinstance(r, dict)]
@@ -530,7 +535,7 @@ def set_piece_draft(
             "set piece",
             f"empty — the cloud turn escalated: {why}",
             DRAFT_DETAIL,
-            state="empty",
+            state=EMPTY,
             role=DRAFT,
         )
     for r in rows:
@@ -543,6 +548,6 @@ def set_piece_draft(
         "set piece",
         "empty — the cloud turn proposed nothing",
         DRAFT_DETAIL,
-        state="empty",
+        state=EMPTY,
         role=DRAFT,
     )

@@ -49,6 +49,7 @@ local.
 | `scripts/grove-serve` | Toggle serve unit + `.mcp.json` entry together |
 | `grove/seat_cli.py`, `scripts/grove-seat` | The desk's CLI seat beside `web/` and the APK: willow-bot's one-script api at a terminal; flowering turns go through Rat's ladder (`ratatosk --onescript --class flowering`) |
 | `grove/onescript_reach.py` | Byte-for-byte copy of willow-bot's `onescript/reach_bootstrap.py` (a test holds it): finds the one script and hands off to `onescript.reach`; the seat's `seat_boxes` and `seat_cli.load_bot` reach it only through here |
+| `grove/three_states.py`, `web/lib/states.js`, `scripts/generate_states_js.py` | The three states, once: Python takes them from the one script's `onescript/states.py` through the reach; `states.js` is generated from it (committed, parity-tested). `loading` is UI-only, not a state |
 | `grove/seat_boxes.py`, `grove/seat_say.py` | The seat's box cards and its reply sentence: `qwen3:4b` on the Ollama loopback says it, code checks it against the boxes (cites, coverage, nothing invented, quotes exact) and a failed or unreachable model falls back to the code sentence |
 
 ## Rules
