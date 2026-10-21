@@ -59,3 +59,14 @@ Brier score: the squared distance between the percentage and what happened
 | What this measures | Agreement with the operator, not truth: eight of the ten were recommendations the operator could accept or turn down. A seat that guesses what the operator will say scores well here without being right about the code. |
 | The one miss | G9 was a guess about a thing outside every repo in reach; the search ran (rule 14) and found nothing by that name, and the guess filled the gap. It was wrong. |
 | Precision | Whole numbers; no more accurate than that. |
+
+## Standing permission: push this file
+
+Set by the operator, 2026-10-21. Held here so it survives the session.
+
+| Item | Detail |
+|------|--------|
+| Words | "you have permission to auto push your guesses for this session" |
+| Scope | Commits that change only this file, on `claude/flatten-gaps` in willows-grove |
+| Lasts | This session (`012onBhQDT2rhEYjuoFDQtha`) only |
+| Not covered | Any other file, branch or repo; those still wait for the operator's word (CLAUDE.md rule 9) |
