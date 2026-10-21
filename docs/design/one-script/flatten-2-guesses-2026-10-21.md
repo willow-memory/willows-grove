@@ -29,6 +29,9 @@ means the operator's answer was the recommended one.
 | G21 | `escalated` is a step after a state, not a fourth state (INVARIANTS §1 names three) | 65% | "escalated is a step, not a state, and it's just the return to 0 for the next tier." | Matched |
 | G22 | The one script's ladder would not `notice` the operator's repeated {∅} (`(\{ \emptyset \})` then `({∅})`), because the two asks get different keys | **No percentage: stated as fact, not as a guess** (rule 10 broken; recorded at the operator's word "record that as a guess") | Checked against the code after recording was asked | **Half right.** No `noticed`: held. Mechanism: wrong. The first ask keys as `['emptyset']`; the second has **no words and no key at all** (`bite_key` → `None`; `∅` is category Sm), so it never reaches the ladder. Nestor's `normalize`: `'emptyset'` then `''`, an empty norm decision 0204 refuses to seal. Not scored (no percentage) |
 | G11 | "If a merge check could check merge" meant checking the git merge (A) over merge_check checking itself (B) | 60% | "How much wood could a wood chuck chuck..." | Unresolved |
+| G23 | Cutting the prompt hook off `Run` leaves the rows a prompt writes byte-identical | 85% | Checked by a before/after capture (hit, blank, miss, over the cap, closed box) | **Matched**: identical apart from the code's own version hash |
+| G24 | The hook drops below 80 ms per prompt | 70% | Timed beside the old hook, 8 runs each | **Missed**: median 157 ms to 116 ms (bare Python 21 ms) |
+| G25 | `serve._chunk_entry` splits out without moving a served byte | 80% | The same capture | **Matched** |
 
 ## Guesses still open
 
@@ -51,9 +54,9 @@ Brier score: the squared distance between the percentage and what happened
 
 | Set | n | Brier |
 |-----|---|-------|
-| G1–G8, G10, G21 (matched) | 10 | 0.0593 |
-| G9 (missed) | 1 | 0.3025 |
-| All eleven resolved | 11 | 0.0814 |
+| G1–G8, G10, G21, G23, G25 (matched) | 12 | 0.0546 |
+| G9, G24 (missed) | 2 | 0.3962 |
+| All fourteen resolved | 14 | 0.1034 |
 
 | Note | Detail |
 |------|--------|
