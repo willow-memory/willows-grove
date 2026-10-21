@@ -32,6 +32,9 @@ means the operator's answer was the recommended one.
 | G23 | Cutting the prompt hook off `Run` leaves the rows a prompt writes byte-identical | 85% | Checked by a before/after capture (hit, blank, miss, over the cap, closed box) | **Matched**: identical apart from the code's own version hash |
 | G24 | The hook drops below 80 ms per prompt | 70% | Timed beside the old hook, 8 runs each | **Missed**: median 157 ms to 116 ms (bare Python 21 ms) |
 | G25 | `serve._chunk_entry` splits out without moving a served byte | 80% | The same capture | **Matched** |
+| G26 | Moving the write token to `stamp.py` leaves a prompt's rows and document identical | 90% | Before/after capture | **Matched** |
+| G27 | The prompt path drops to 14 modules | 80% | Counted from `sys.modules` | **Missed**: 16 (`xref` still carries `mai_shape`, and `stamp` is one more) |
+| G28 | The hook drops below 105 ms | 55% | Timed beside `main`, 24 runs each | **Matched in number, not by this cut**: about 100 ms both before and after it on this load; the 116 ms baseline was a busier machine |
 
 ## Guesses still open
 
@@ -54,9 +57,9 @@ Brier score: the squared distance between the percentage and what happened
 
 | Set | n | Brier |
 |-----|---|-------|
-| G1–G8, G10, G21, G23, G25 (matched) | 12 | 0.0546 |
-| G9, G24 (missed) | 2 | 0.3962 |
-| All fourteen resolved | 14 | 0.1034 |
+| G1–G8, G10, G21, G23, G25, G26, G28 (matched) | 14 | 0.0620 |
+| G9, G24, G27 (missed) | 3 | 0.4775 |
+| All seventeen resolved | 17 | 0.1353 |
 
 | Note | Detail |
 |------|--------|
