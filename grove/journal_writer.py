@@ -26,12 +26,12 @@ Sync only, no asyncio, matching the rest of ``grove/*.py``.
 
 from __future__ import annotations
 
-import datetime as _dt
 import logging
 import os
 from typing import Any, Optional
 
 from grove.errors import Unreachable
+from grove import onescript_reach
 from grove import willow_mcp_client as _wmc
 
 log = logging.getLogger(__name__)
@@ -58,11 +58,15 @@ def _reset_log_once_for_tests() -> None:
 
 
 def _now_iso() -> str:
-    return (
-        _dt.datetime.now(_dt.timezone.utc)
-        .isoformat(timespec="seconds")
-        .replace("+00:00", "Z")
-    )
+    """Journal ``ts``, in the one script's ``seconds_z`` format, from its one
+    clock (flatten-2 F8: "Using the onescript at every path."). ``$ONESCRIPT_NOW``
+    pins it. With no one script reachable this raises Grove's ``Unreachable``
+    with the reach's why (the route answers 503 + ``unreachable``); there is no
+    copy to fall back to."""
+    try:
+        return onescript_reach.module("clock").seconds_z()
+    except onescript_reach.Unreachable as e:
+        raise Unreachable(str(e)) from e
 
 
 def _build_tags(sender: str, ts: str, domain: Optional[str]) -> list[str]:
