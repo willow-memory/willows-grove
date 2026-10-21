@@ -27,6 +27,7 @@ means the operator's answer was the recommended one.
 | G9 | The side bar is a panel beside the chat in the operator's local Claude Code | 55% | "a ledger or the human prompts and the system/model outputs", Rat-only | **Missed** (it is Rat's `session.py` ledger) |
 | G10 | The side bar runs with every Rat turn, not every Claude Code prompt | 60% | "I think it landed as a rat only feature" | Matched |
 | G21 | `escalated` is a step after a state, not a fourth state (INVARIANTS §1 names three) | 65% | "escalated is a step, not a state, and it's just the return to 0 for the next tier." | Matched |
+| G22 | The one script's ladder would not `notice` the operator's repeated {∅} (`(\{ \emptyset \})` then `({∅})`), because the two asks get different keys | **No percentage: stated as fact, not as a guess** (rule 10 broken; recorded at the operator's word "record that as a guess") | Checked against the code after recording was asked | **Half right.** No `noticed`: held. Mechanism: wrong. The first ask keys as `['emptyset']`; the second has **no words and no key at all** (`bite_key` → `None`; `∅` is category Sm), so it never reaches the ladder. Nestor's `normalize`: `'emptyset'` then `''`, an empty norm decision 0204 refuses to seal. Not scored (no percentage) |
 | G11 | "If a merge check could check merge" meant checking the git merge (A) over merge_check checking itself (B) | 60% | "How much wood could a wood chuck chuck..." | Unresolved |
 
 ## Guesses still open
