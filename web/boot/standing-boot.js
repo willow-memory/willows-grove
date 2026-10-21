@@ -30,6 +30,8 @@
  * Zero dependencies. No build step (premise D9).
  */
 
+import { POPULATED, UNREACHABLE } from "../lib/states.js";
+
 const LOG_TAG = "[standing-boot]";
 const HEALTH_URL = "/health";
 const DEFAULT_POLL_MS = 10000;
@@ -101,11 +103,11 @@ async function _tick() {
     // grove_serve answers honestly rather than fabricating a sha, and
     // the strip carries that word through rather than hiding it.
     const commit = String(body.commit || "unknown");
-    _paint("populated", `seat live · ${commit}`);
+    _paint(POPULATED, `seat live · ${commit}`);
     _loggedUnreachable = false;
   } catch (err) {
     const reason = (err && err.message) || String(err);
-    _paint("unreachable", `seat unreachable — ${reason}`);
+    _paint(UNREACHABLE, `seat unreachable — ${reason}`);
     if (!_loggedUnreachable) {
       _loggedUnreachable = true;
       if (typeof console !== "undefined" && console.info) {

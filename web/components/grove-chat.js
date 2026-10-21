@@ -68,6 +68,8 @@
  * @element grove-chat
  */
 
+import { UNREACHABLE } from "../lib/states.js";
+
 const READBACK_POLL_MS = 5000;
 const READBACK_INITIAL_LIMIT = 25;
 
@@ -445,12 +447,12 @@ class GroveChat extends HTMLElement {
       });
     } catch (_err) {
       // Network throw — same operator-facing state as a 503.
-      this._setStatus("unreachable", "kb_journal unreachable");
+      this._setStatus(UNREACHABLE, "kb_journal unreachable");
       return; // leave text in the composer for retry
     }
     if (!res.ok) {
       // 400 / 503 / anything non-2xx — leave text, show unreachable.
-      this._setStatus("unreachable", "kb_journal unreachable");
+      this._setStatus(UNREACHABLE, "kb_journal unreachable");
       return;
     }
     let doc = null;
@@ -532,7 +534,7 @@ class GroveChat extends HTMLElement {
       const empty = list.querySelector(".readback-empty");
       if (empty) empty.remove();
     }
-    this._setReadbackStatus("unreachable", "read-back unreachable");
+    this._setReadbackStatus(UNREACHABLE, "read-back unreachable");
   }
 
   _paintReadbackEmpty() {
@@ -585,7 +587,7 @@ class GroveChat extends HTMLElement {
     let atoms = null;
     if (Array.isArray(body)) {
       atoms = body;
-    } else if (body && body.state === "unreachable") {
+    } else if (body && body.state === UNREACHABLE) {
       this._paintReadbackUnreachable();
       return;
     } else if (body && Array.isArray(body.atoms)) {

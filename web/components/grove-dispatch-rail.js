@@ -60,6 +60,8 @@
  * @element grove-dispatch-rail
  */
 
+import { EMPTY, LOADING, POPULATED, UNREACHABLE } from "../lib/states.js";
+
 const OBSERVED = ["lens"];
 const REFRESH_MS = 30_000;
 const MAX_ACTION_CHARS = 80;
@@ -241,7 +243,7 @@ class GroveDispatchRail extends HTMLElement {
     this._timer = null;
     this._retryTimer = null;
     this._tasks = [];
-    this._state = "loading"; // loading | populated | empty | unreachable (INVARIANTS §1)
+    this._state = LOADING; // loading | populated | empty | unreachable (INVARIANTS §1)
     this._render();
   }
 
@@ -290,7 +292,7 @@ class GroveDispatchRail extends HTMLElement {
           const errBody = await resp.json();
           if (errBody && errBody.reason) reason = errBody.reason;
         } catch (_) { /* body wasn't JSON — keep HTTP status */ }
-        this._state = "unreachable";
+        this._state = UNREACHABLE;
         this._reason = reason;
         this._tasks = [];
         this._retryTimer = setTimeout(() => this._fetch(), REFRESH_MS);
@@ -301,8 +303,8 @@ class GroveDispatchRail extends HTMLElement {
       // Endpoint returns {state, tasks} under INVARIANTS.md §1; tolerate
       // the pre-INVARIANTS bare-list shape too so a stale server does not
       // become the unreachable case.
-      if (body && body.state === "unreachable") {
-        this._state = "unreachable";
+      if (body && body.state === UNREACHABLE) {
+        this._state = UNREACHABLE;
         this._reason = body.reason || "endpoint reported unreachable";
         this._tasks = [];
         this._retryTimer = setTimeout(() => this._fetch(), REFRESH_MS);
@@ -316,10 +318,10 @@ class GroveDispatchRail extends HTMLElement {
       // INVARIANTS.md §1 three-state contract: distinguish populated from
       // empty at the observable-state layer (the Playwright pin at
       // tests/e2e/grove-served-page.spec.js reads `_state` directly).
-      this._state = list.length > 0 ? "populated" : "empty";
+      this._state = list.length > 0 ? POPULATED : EMPTY;
       this._reason = null;
     } catch (err) {
-      this._state = "unreachable";
+      this._state = UNREACHABLE;
       this._reason = (err && err.message) || String(err);
       this._tasks = [];
       // One retry in 30 s (matches the normal refresh cadence — C6-C8:
@@ -348,14 +350,14 @@ class GroveDispatchRail extends HTMLElement {
     const lens = (this.getAttribute("lens") || "").trim().toLowerCase();
     this._lensEl.textContent = lens || "(all)";
 
-    if (this._state === "unreachable") {
+    if (this._state === UNREACHABLE) {
       const reasonHtml = this._reason
         ? `<div class="reason">${escapeHtml(this._reason)}</div>` : "";
       this._bodyEl.innerHTML =
         `<div class="unreachable" part="unreachable">queue source not reachable${reasonHtml}</div>`;
       return;
     }
-    if (this._state === "loading") {
+    if (this._state === LOADING) {
       this._bodyEl.innerHTML = `<div class="quiet" part="loading">
         <span class="sigil" aria-hidden="true">${QUIET_SIGIL}</span>
         <span>listening…</span>

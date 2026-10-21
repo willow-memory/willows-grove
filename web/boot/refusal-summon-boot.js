@@ -42,6 +42,8 @@
  * defined by the time an event arrives.
  */
 
+import { UNREACHABLE } from "../lib/states.js";
+
 const LOG_TAG = "[refusal-summon-boot]";
 const MOUNT_ID = "refusal-chip-mount";
 const EVENT_NAME = "nestor-refusal";
@@ -137,7 +139,7 @@ async function _groveNestorAsk(claim) {
   // INVARIANTS.md §1: a 503 with state="unreachable" MUST NOT collapse
   // into a silent return. Summon a distinct "unreachable" chip so the
   // operator sees the L4 seam is down.
-  if (!resp.ok && body && body.state === "unreachable") {
+  if (!resp.ok && body && body.state === UNREACHABLE) {
     const reason = (typeof body.reason === "string" && body.reason)
       ? body.reason
       : "nestor unreachable";
@@ -147,7 +149,7 @@ async function _groveNestorAsk(claim) {
           persona: "nestor",
           act: "unreachable",
           body: reason,
-          mode: "unreachable",
+          mode: UNREACHABLE,
         },
       }));
     } catch (_e) { /* dispatch failing should not shadow the caller */ }

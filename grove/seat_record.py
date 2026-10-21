@@ -73,7 +73,14 @@ from __future__ import annotations
 import hashlib
 import re
 
-from grove.seat_boxes import Box, plural
+from grove.seat_boxes import (
+    EMPTY,
+    POPULATED,
+    UNREACHABLE,
+    Box,
+    one_script_module,
+    plural,
+)
 from grove.seat_nestor import Reading, _clean
 
 #: Asked whole: the store's whole state (when one is configured) and the record.
@@ -190,7 +197,7 @@ def status_kind(text: str) -> str | None:
 
 
 def _gone(state: str, why: str, source: str = "record") -> Reading:
-    value = f"empty — {why}" if state == "empty" else f"unreachable — {why}"
+    value = f"empty — {why}" if state == EMPTY else f"unreachable — {why}"
     bid = "rstate" if source == "record" else "tstate"
     return Reading(state, why, [Box(bid, "pass", source, value, state=state)])
 
@@ -225,45 +232,10 @@ AGM = re.compile(
 )
 #: What a line must not carry onto the screen (see ``scrub``).
 WITHHELD = "[withheld]"
-_NAMED = r"\w*(?:key|seed|secret|token|passphrase|password)\w*"
-#: ``HUMAN_KEY=...``, ``seed: ...``, ``GROVE_SEAT_HUMAN_KEY=...``: the whole field
-#: (up to the next `` · `` or the end of the line) is the value.
-_ASSIGNED = re.compile(rf"\b{_NAMED}\s*[:=]\s*[^\n]*?(?= · |\n|$)", re.I)
-#: ``seed <hex or base64>``: a secret's name, then a long token, no colon.
-_NAMED_VALUE = re.compile(
-    rf"\b(?!\w*_id\b){_NAMED}\s+[A-Za-z0-9+/_=-]{{16,}}", re.I
-)  # (`seed_id 9f..` names a public id, not a seed)
-_HEX_RUN = re.compile(r"[0-9a-fA-F]{24,}")
-_HEX_PART = re.compile(
-    r"(?<![0-9A-Za-z])(?=[0-9a-f]*[a-f])[0-9a-f]{8,}(?![0-9A-Za-z])", re.I
-)
-_B64_RUN = re.compile(
-    r"(?<![A-Za-z0-9+/_=-])[A-Za-z0-9+/_-]{32,}={0,2}(?![A-Za-z0-9+/_=-])"
-)
-#: Where a 64-hex is a record's own hash (a subject, the run's version): a
-#: ``proposal:``/``serve:``/``tip:N:`` subject or ``run``. A 40-hex is a commit
-#: only after ``commit``/``sha``/``green on``/``head``.
-_HASH_AFTER = re.compile(
-    r"(?:\b(?:proposal|serve|outcome|forecast|seal|run|subject|head|merged)[: ]"
-    r"|\btip:\d+:|\(\d+, )$",
-    re.I,
-)
-_SHA_AFTER = re.compile(r"(?:\b(?:commit|sha1?|green on|head|merged)\W{0,3})$", re.I)
-
-
-def _hex_ok(line: str, m: re.Match, known: tuple[str, ...]) -> bool:
-    run = m.group(0)
-    before = line[: m.start()]
-    after = line[m.end() : m.end() + 1]
-    if before[-1:].isalnum() or after.isalnum():
-        return False  # glued into a word: no boundary, no hash
-    if run in known:
-        return True
-    if len(run) == 64:
-        return bool(_HASH_AFTER.search(before))
-    if len(run) == 40:
-        return bool(_SHA_AFTER.search(before))
-    return False
+#: The rules are the one script's (flatten-2 F12, ``onescript/scrub.py``: "Using
+#: the onescript at every path."); an absent one script stops the seat at import,
+#: in the reach's words, as ``seat_boxes`` does.
+_scrub = one_script_module("scrub")
 
 
 def scrub(line: str, secrets: tuple[str, ...] = (), known: tuple[str, ...] = ()) -> str:
@@ -280,46 +252,14 @@ def scrub(line: str, secrets: tuple[str, ...] = (), known: tuple[str, ...] = ())
     * 8-or-more-character hex pieces that together make 24 or more (a key split
       by spaces or `` · ``);
     * a base64 or base64url run of 32 or more characters with a digit and both
-      cases (a random-looking token, not a snake_case name or a path)."""
-    for sec in secrets:
-        if sec and len(sec) >= 4:
-            line = line.replace(sec, WITHHELD)
-        if sec and len(sec) >= 16:
-            # the same secret cut into pieces by up to three non-word characters
-            # (`,` `-` `/` `:` space ` · `) between any two of its characters
-            gap = r"[^0-9A-Za-z]{0,3}"
-            line = re.sub(
-                gap.join(re.escape(ch) for ch in sec), WITHHELD, line, flags=re.I
-            )
-    line = _ASSIGNED.sub(WITHHELD, line)
-    line = _NAMED_VALUE.sub(WITHHELD, line)
-    line = re.sub(r"0[xX][0-9a-fA-F]{8,}", WITHHELD, line)
-    line = _HEX_RUN.sub(
-        lambda m: m.group(0) if _hex_ok(line, m, known) else WITHHELD, line
+      cases (a random-looking token, not a snake_case name or a path);
+    * then every credential shape (an AWS, GitHub, Slack, provider or JWT key,
+      a PEM block), found even glued to letters (added by flatten-2 F12).
+
+    The rules are ``onescript/scrub.py``'s ``generic`` set, moved there whole."""
+    return _scrub.apply(
+        line, ("generic", "credentials"), marker=WITHHELD, secrets=secrets, known=known
     )
-
-    # a key cut in pieces: adjacent hex pieces (space or ' · ') adding up to a key
-    def pieces(m: re.Match) -> str:
-        n = sum(len(x) for x in re.findall(r"[0-9a-fA-F]+", m.group(0)))
-        return WITHHELD if n >= 24 else m.group(0)
-
-    line = re.sub(
-        rf"{_HEX_PART.pattern}(?:(?: · | ){_HEX_PART.pattern})+",
-        pieces,
-        line,
-        flags=re.I,
-    )
-
-    def b64(m: re.Match) -> str:
-        t = m.group(0)
-        mixed = (
-            any(c.isdigit() for c in t)
-            and any(c.isupper() for c in t)
-            and any(c.islower() for c in t)
-        )
-        return WITHHELD if mixed else t
-
-    return _B64_RUN.sub(b64, line)
 
 
 def _parts(rest: str) -> str:
@@ -359,7 +299,7 @@ def item_box(line: str, seen: set[str], prefix: str = "r") -> Box:
                 "block",
                 "wager",
                 f"unreachable — wager {m['id']} seal: {m['rest']}",
-                state="unreachable",
+                state=UNREACHABLE,
             )
         return Box(
             bid, "you", "wager", f"wager {m['id']} {m['state']}", _parts(m["rest"])
@@ -368,7 +308,7 @@ def item_box(line: str, seen: set[str], prefix: str = "r") -> Box:
         parts = m["rest"].split(" · ")
         kind, state = _tip_kind(parts[-1])
         value = f"table verdict session {m['sid']}"
-        if state == "unreachable":
+        if state == UNREACHABLE:
             value = f"unreachable — {value}: {parts[-1]}"
             parts = parts[:-1]
         return Box(
@@ -380,22 +320,20 @@ def item_box(line: str, seen: set[str], prefix: str = "r") -> Box:
             "block",
             "table",
             f"unreachable — table: {m['why']}",
-            state="unreachable",
+            state=UNREACHABLE,
         )
     if m := AGM.fullmatch(line):  # R13: the ai-game-master ledger head
         state, rest = m["state"], m["rest"] or ""
         value = f"table agm_head {state}"
         if state == "unanchored":
-            return Box(
-                bid, "pass", "agm_head", f"empty — {rest or value}", state="empty"
-            )
-        if state == "unreachable":
+            return Box(bid, "pass", "agm_head", f"empty — {rest or value}", state=EMPTY)
+        if state == UNREACHABLE:
             return Box(
                 bid,
                 "block",
                 "agm_head",
                 f"unreachable — {rest or value}",
-                state="unreachable",
+                state=UNREACHABLE,
             )
         return Box(
             bid,
@@ -456,20 +394,20 @@ def read_needs(
             if isinstance(e, AttributeError)
             else f"{type(e).__name__}: {e}"
         )
-        return _gone("unreachable", why, source)
+        return _gone(UNREACHABLE, why, source)
     if not isinstance(res, dict) or "refused" in res:
         why = res.get("refused") if isinstance(res, dict) else "not a needs record"
-        return _gone("unreachable", _clean(why), source)
+        return _gone(UNREACHABLE, _clean(why), source)
     lines = res.get("needs")
     if not isinstance(lines, list) or not all(isinstance(x, str) for x in lines):
-        return _gone("unreachable", "the needs read is not a list of lines", source)
+        return _gone(UNREACHABLE, "the needs read is not a list of lines", source)
     lines = [
         x
         for x in (scrub(" ".join(_clean(x).split()), secrets, known) for x in lines)
         if x
     ]
     if not lines:
-        return _gone("empty", f"nothing on the {source} waits on you", source)
+        return _gone(EMPTY, f"nothing on the {source} waits on you", source)
     seen: set[str] = {pre + "state"}
     items = [item_box(x, seen, pre) for x in lines]
     count = Box(
@@ -482,4 +420,4 @@ def read_needs(
         else "from the table box, watched with api.peek: nothing was written to it",
         role="count",
     )
-    return Reading("populated", "", [count, *items], {"waiting": len(items)})
+    return Reading(POPULATED, "", [count, *items], {"waiting": len(items)})

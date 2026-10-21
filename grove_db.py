@@ -470,10 +470,10 @@ def _frank_ledger_append(event_type: str, content: dict) -> None:
     # Lazy import so grove_db has no import-time coupling to grove.errors
     # (mirrors cursor_load's pattern).
     from grove.errors import LedgerWriteFailed
+    from grove.onescript_canon import family
 
     try:
         import hashlib as _hl
-        import json as _j
         import uuid as _u
         import psycopg2
         import psycopg2.extras
@@ -488,8 +488,8 @@ def _frank_ledger_append(event_type: str, content: dict) -> None:
             )
             row = cur.fetchone()
             prev_hash = row[0] if row else None
-            payload = _j.dumps(
-                {"event_type": event_type, "content": content}, sort_keys=True
+            payload = family("sorted_spaced_ascii")(
+                {"event_type": event_type, "content": content}
             )
             new_hash = _hl.sha256(f"{prev_hash or ''}{payload}".encode()).hexdigest()
             cur.execute(
