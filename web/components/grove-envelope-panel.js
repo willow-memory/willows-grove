@@ -37,6 +37,8 @@
  * Vanilla JS + Web Components (D9). Zero deps.
  */
 
+import { EMPTY, POPULATED, UNREACHABLE } from "../lib/states.js";
+
 const DEFAULT_SOURCE = "/api/envelopes";
 const CONST_URL = "https://willow.local/const/";
 
@@ -73,7 +75,7 @@ class GroveEnvelopePanel extends HTMLElement {
       res = await fetch(src, { headers: { accept: "application/json" } });
     } catch (err) {
       this._envelopes = [];
-      this._state = "unreachable";
+      this._state = UNREACHABLE;
       this._error = String(err && err.message ? err.message : err);
       this._paint();
       return;
@@ -86,7 +88,7 @@ class GroveEnvelopePanel extends HTMLElement {
         if (doc && doc.reason) reason = doc.reason;
       } catch (_) { /* body wasn't JSON — keep HTTP status */ }
       this._envelopes = [];
-      this._state = "unreachable";
+      this._state = UNREACHABLE;
       this._error = reason;
       this._paint();
       return;
@@ -96,15 +98,15 @@ class GroveEnvelopePanel extends HTMLElement {
       doc = await res.json();
     } catch (err) {
       this._envelopes = [];
-      this._state = "unreachable";
+      this._state = UNREACHABLE;
       this._error = "malformed response body";
       this._paint();
       return;
     }
     // Endpoint carries state directly under INVARIANTS.md §1.
-    if (doc && doc.state === "unreachable") {
+    if (doc && doc.state === UNREACHABLE) {
       this._envelopes = [];
-      this._state = "unreachable";
+      this._state = UNREACHABLE;
       this._error = doc.reason || "endpoint reported unreachable";
       this._paint();
       return;
@@ -115,13 +117,13 @@ class GroveEnvelopePanel extends HTMLElement {
                           : null)) || null;
     if (!doc || doc.schema !== "envelope-registry/v1.1" || list === null) {
       this._envelopes = [];
-      this._state = "unreachable";
+      this._state = UNREACHABLE;
       this._error = "unexpected schema";
       this._paint();
       return;
     }
     this._envelopes = list;
-    this._state = list.length > 0 ? "populated" : "empty";
+    this._state = list.length > 0 ? POPULATED : EMPTY;
     this._error = null;
     this._paint();
   }
@@ -170,7 +172,7 @@ class GroveEnvelopePanel extends HTMLElement {
   }
 
   _paint() {
-    if (this._state === "unreachable") {
+    if (this._state === UNREACHABLE) {
       this._host.innerHTML = `<div class="unreachable" part="unreachable">
         envelopes source not reachable — showing last-known: none
         <div class="reason">${this._escape(this._error || "unreachable")}</div>

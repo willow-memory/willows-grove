@@ -224,6 +224,9 @@ from typing import Any
 
 try:
     from grove.seat_boxes import (
+        EMPTY,
+        POPULATED,
+        UNREACHABLE,
         Box,
         cap,
         carry_over,
@@ -624,11 +627,11 @@ def ratatosk_flowering(
 def pool_state(pool: dict) -> dict:
     """``api.pooled``'s answer in the state shape ``onescript_deposit`` reads."""
     if "refused" in pool:
-        return {"state": "unreachable", "reason": str(pool["refused"])}
+        return {"state": UNREACHABLE, "reason": str(pool["refused"])}
     items = pool.get("pooled") or []
     if not items:
-        return {"state": "empty", "reason": "the pool is empty"}
-    return {"state": "populated", "stdout_json": {"pooled": items}}
+        return {"state": EMPTY, "reason": "the pool is empty"}
+    return {"state": POPULATED, "stdout_json": {"pooled": items}}
 
 
 def willow_mcp_deposit(app_id: str = "willow") -> Callable[[dict], dict]:
@@ -642,7 +645,7 @@ def willow_mcp_deposit(app_id: str = "willow") -> Callable[[dict], dict]:
             from willow_mcp.db import Store
             from willow_mcp.onescript_deposit import deposit as put
         except ImportError as e:
-            return {"state": "unreachable", "reason": f"{NO_DEPOSIT} ({e})"}
+            return {"state": UNREACHABLE, "reason": f"{NO_DEPOSIT} ({e})"}
         return put(app_id, store=Store(), read_pool=lambda: pool_state(pool))
 
     return deposit
@@ -658,9 +661,9 @@ def row_count(rows: object) -> str:
 
 
 def three_state(state: str | None, why: str = "") -> str:
-    if state == "populated":
+    if state == POPULATED:
         return "populated"
-    if state == "empty":
+    if state == EMPTY:
         return f"empty — {why or 'nothing in scope'}"
     return f"unreachable — {why or 'no answer'}"
 
@@ -742,7 +745,7 @@ class Turn:
                     (
                         i
                         for i, b in enumerate(self.rest)
-                        if b.state == "populated" and b.role != "count"
+                        if b.state == POPULATED and b.role != "count"
                     ),
                     len(self.rest),
                 )
@@ -843,7 +846,7 @@ class Seat:
         #: timed out gets (``Seat.queued_behind``).
         self.rung_models: list[str] = []
         self.start_resume: tuple = ("none",)
-        self.start_pool: tuple = ("unreachable",)
+        self.start_pool: tuple = (UNREACHABLE,)
 
     # -- the stream: cards, replies, the human's line
 
@@ -864,7 +867,7 @@ class Seat:
         reply's sentence already says them."""
         for b in boxes:
             self.put(render_box(b, self.color))
-            if plain and b.state != "populated":
+            if plain and b.state != POPULATED:
                 self.code_reply(plain_line(b))
 
     def card(
@@ -874,11 +877,11 @@ class Seat:
 
     def state_card(self, label: str, state: str | None, why: str = "") -> Box:
         """A reader's answer in its own state, never collapsed (INVARIANTS 1)."""
-        st = state if state in ("populated", "empty") else "unreachable"
+        st = state if state in (POPULATED, EMPTY) else UNREACHABLE
         return Box(self.nid(), "pass", label, three_state(st, why), state=st)
 
     def gone(self, label: str, why: str) -> Box:
-        return self.state_card(label, "unreachable", why)
+        return self.state_card(label, UNREACHABLE, why)
 
     def you(self, text: str) -> None:
         self.write(human_line(text, self.color))
@@ -953,13 +956,13 @@ class Seat:
             sentence = " ".join(
                 str(self.say(build_prompt(batch, human, first, earlier))).split()
             )
-            state, why = ("populated", "") if sentence else ("empty", "said nothing")
+            state, why = (POPULATED, "") if sentence else (EMPTY, "said nothing")
         except Exception as e:  # noqa: BLE001 - a model problem is a state, not a crash
             state = "unreachable"
             why = (
                 str(e) if isinstance(e, SayUnreachable) else f"{type(e).__name__}: {e}"
             )
-        if state != "populated":
+        if state != POPULATED:
             return Said(
                 batch,
                 f"code · {self.model} {state} · said {plural(n, 'box', 'boxes')} by code",
@@ -1101,7 +1104,7 @@ class Seat:
             and not Path(str(getattr(self.table_cfg, "keys", ""))).is_file()
         ):
             tab = Reading(
-                "unreachable",
+                UNREACHABLE,
                 "no keys",
                 [
                     Box(
@@ -1111,7 +1114,7 @@ class Seat:
                         "unreachable — the table box's own keys are not at "
                         f"{getattr(self.table_cfg, 'keys', '?')} "
                         "(set GROVE_SEAT_TABLE_KEYS)",
-                        state="unreachable",
+                        state=UNREACHABLE,
                     )
                 ],
             )
@@ -1136,14 +1139,14 @@ class Seat:
             got = read_store(path, drafts_as="you" if asked else "pr")
             counts = got.counts
             theirs = got.boxes
-            if asked and got.state == "populated":
+            if asked and got.state == POPULATED:
                 theirs = [b for b in theirs if b.kind == "you"] or [
                     Box(
                         "nwait",
                         "pass",
                         "nestor drafts",
                         "empty — none waiting on you",
-                        state="empty",
+                        state=EMPTY,
                     )
                 ]
             boxes += theirs
@@ -1154,7 +1157,7 @@ class Seat:
                 sig = got.state  # a store that can't be read has no version
         else:
             sig = "none"
-            if rec.state == "unreachable":  # nothing answered: say both
+            if rec.state == UNREACHABLE:  # nothing answered: say both
                 boxes += read_store(None).boxes
             else:
                 rec.boxes[0].detail = "\n".join(
@@ -1168,7 +1171,7 @@ class Seat:
             f"status:{status_kind(task)}:{path}:{sig}:{seen.hexdigest()[:10]}",
             lead_rank(sorted(boxes, key=open_tier)),
             task,
-            lead=any(b.state == "populated" for b in boxes),
+            lead=any(b.state == POPULATED for b in boxes),
             rush=not counts.get("rejected"),
         )
 
@@ -1203,7 +1206,7 @@ class Seat:
                 "beacon",
                 "unreachable — beacon reader off: table outcomes unreachable",
                 "set GROVE_SEAT_DRAND to read drand rounds",
-                state="unreachable",
+                state=UNREACHABLE,
             )
         ]
 
@@ -1227,7 +1230,7 @@ class Seat:
         doc = (
             self.doc
             if isinstance(self.doc, dict)
-            else {"state": "empty", "why": "no served file stands in this check-in"}
+            else {"state": EMPTY, "why": "no served file stands in this check-in"}
         )
         boxes = tb.served_boxes(doc)
         got = tb.narrate(boxes, task, say=self.say)
@@ -1389,7 +1392,7 @@ class Seat:
         own quoted words led by who said them, provenance left to the card but
         a fixture still marked ``(fixture)``. With nothing but provenance or
         no detail, the box's own phrase and a line saying there is no more."""
-        if box.state != "populated":
+        if box.state != POPULATED:
             return plain_line(box)
         got = why_sentence(box)
         return got or f"{terminate(cap(clause(box)))} {NO_DETAIL}"
@@ -1464,14 +1467,14 @@ class Seat:
         except (EOFError, KeyboardInterrupt):
             raise
         except Exception as e:  # noqa: BLE001 - older willow-bot, or a read failure
-            self.start_resume = ("unreachable",)
+            self.start_resume = (UNREACHABLE,)
             self.hold(
                 self.gone("resume", f"{type(e).__name__}: {e}; scoping fresh instead")
             )
             return False
         if not isinstance(res, dict) or "refused" in res:
             why = res.get("refused") if isinstance(res, dict) else "not a record"
-            self.start_resume = ("unreachable",)
+            self.start_resume = (UNREACHABLE,)
             self.hold(self.gone("resume", f"{why}; scoping fresh instead"))
             return False
         spec, subject = res.get("spec"), res.get("subject")
@@ -1513,23 +1516,23 @@ class Seat:
         except (EOFError, KeyboardInterrupt):
             raise
         except Exception as e:  # noqa: BLE001 - older willow-bot, or a read failure
-            self.start_pool = ("unreachable",)
+            self.start_pool = (UNREACHABLE,)
             return self.show(self.gone(label, f"{type(e).__name__}: {e}"), plain=False)
         got = pool.get("pooled") if isinstance(pool, dict) else None
         if not isinstance(pool, dict) or "refused" in pool or not isinstance(got, list):
             why = pool.get("refused") if isinstance(pool, dict) else None
-            self.start_pool = ("unreachable",)
+            self.start_pool = (UNREACHABLE,)
             return self.show(
                 self.gone(label, str(why or "not a pool record")), plain=False
             )
         items = [p for p in got if isinstance(p, dict)]
         if not items:
-            self.start_pool = ("empty",)
+            self.start_pool = (EMPTY,)
             return self.show(
-                self.state_card(label, "empty", "nothing pooled from earlier runs"),
+                self.state_card(label, EMPTY, "nothing pooled from earlier runs"),
                 plain=False,
             )
-        self.start_pool = ("populated", len(items))
+        self.start_pool = (POPULATED, len(items))
         names = [str(p.get("subject") or p.get("path") or "?") for p in items]
         more = f" (+{len(names) - 2} more)" if len(names) > 2 else ""
         self.show(
@@ -1600,7 +1603,7 @@ class Seat:
             return False
         if not res.get("ids"):
             self.show(
-                self.state_card("scope", "empty", "no table matches; nothing to serve")
+                self.state_card("scope", EMPTY, "no table matches; nothing to serve")
             )
             return False
         for t in res.get("stack", []):
@@ -1721,7 +1724,7 @@ class Seat:
             ]
             boxes += [self.piece_box(p) for p in pieces]
         else:
-            boxes = [self.state_card("chain", "empty", "the chain cut nothing")]
+            boxes = [self.state_card("chain", EMPTY, "the chain cut nothing")]
         for p in pieces:
             if p["outcome"] == "answered" and p["rung"] != "d0":
                 self.pending += [r for r in p.get("rows") or [] if _is_row(r)]
@@ -1833,7 +1836,7 @@ class Seat:
                 self.show(
                     self.card("pass", "morning screen", screen)
                     if screen
-                    else self.state_card("morning screen", "empty", "nothing to report")
+                    else self.state_card("morning screen", EMPTY, "nothing to report")
                 )
         self.close_out()
 
@@ -1845,7 +1848,7 @@ class Seat:
         and writes nothing beyond what the close-out already does. A pool card
         it already says (unreadable, or an empty deposit of an empty pool) has no
         plain line of its own, so the fact is said once."""
-        self.carry: tuple = ("unreachable",)
+        self.carry: tuple = (UNREACHABLE,)
         try:
             self.deposit_pool()
         finally:
@@ -1862,20 +1865,20 @@ class Seat:
             self.show(self.gone("pool", str(why)), plain=False)
             return self.offer_grown()  # the closing sentence says it
         items = [p for p in pool.get("pooled") or [] if isinstance(p, dict)]
-        self.carry = ("populated", len(items)) if items else ("empty",)
+        self.carry = (POPULATED, len(items)) if items else (EMPTY,)
         try:
             got = self.deposit(pool)
         except Exception as e:  # noqa: BLE001 - the close-out must not raise
-            got = {"state": "unreachable", "reason": f"{type(e).__name__}: {e}"}
+            got = {"state": UNREACHABLE, "reason": f"{type(e).__name__}: {e}"}
         state = got.get("state")
-        if state != "populated":
+        if state != POPULATED:
             # an empty deposit of an empty pool is what the closing says
             # ("Nothing stays pooled"): the card stays, the plain line waits
             self.show(
                 self.state_card("deposit", state, got.get("reason", "")),
-                plain=not (state == "empty" and self.carry == ("empty",)),
+                plain=not (state == EMPTY and self.carry == (EMPTY,)),
             )
-            if state != "empty":  # nothing went in; show what is pooled
+            if state != EMPTY:  # nothing went in; show what is pooled
                 for p in items:
                     self.show(
                         self.card("pr", "pooled, not deposited", str(p.get("subject")))
@@ -1967,7 +1970,7 @@ def open_tier(b: Box) -> int:
     proposals first, then the store's waiting drafts, then any other record
     line, then the re-checks (the many), so the first page shows both sources.
     Every other box is tier 0 and keeps its place (the sort is stable)."""
-    if b.state != "populated":
+    if b.state != POPULATED:
         return 0
     if b.kind == "you" and b.label == "proposal":
         return 1
@@ -2045,9 +2048,9 @@ def probe(root: Path, model: str | None = MODEL) -> list[tuple[str, str, str]]:
     None (``--no-say``) leaves the Ollama row out: a code-only run never asks."""
     one = root / "one-script" / "onescript" / "api.py"
     bot_ = (
-        ("populated", str(root))
+        (POPULATED, str(root))
         if one.is_file()
-        else ("unreachable", f"no one script at {one.parent} (set WILLOW_BOT_ROOT)")
+        else (UNREACHABLE, f"no one script at {one.parent} (set WILLOW_BOT_ROOT)")
     )
     venv = "a venv" if sys.prefix != sys.base_prefix else "no venv"
     rat = resolve_ratatosk()
@@ -2058,9 +2061,9 @@ def probe(root: Path, model: str | None = MODEL) -> list[tuple[str, str, str]]:
         (
             "ratatosk",
             *(
-                ("populated", where)
+                (POPULATED, where)
                 if where
-                else ("unreachable", f"{rat} is not on the path")
+                else (UNREACHABLE, f"{rat} is not on the path")
             ),
         ),
         *([("ollama", *ollama_probe(model))] if model else []),

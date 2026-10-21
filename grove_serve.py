@@ -47,6 +47,7 @@ from grove import seed_html
 from grove import seed_reader
 from grove.errors import Unreachable
 from grove.nestor_client import NestorClient
+from grove.three_states import EMPTY, POPULATED, UNREACHABLE
 
 
 _WEB_ROOT = Path(__file__).resolve().parent / "web"
@@ -126,8 +127,8 @@ def _events_health_field() -> dict:
     binary capability check under the three-state contract).
     """
     if _ws_library_available():
-        return {"state": "populated"}
-    return {"state": "unreachable", "reason": "no websocket library"}
+        return {"state": POPULATED}
+    return {"state": UNREACHABLE, "reason": "no websocket library"}
 
 
 def _resolve_commit() -> str:
@@ -196,11 +197,11 @@ async def _dispatch(request: Request) -> JSONResponse:
             rows = kart_reader.read_queue()
     except Unreachable as e:
         return JSONResponse(
-            {"state": "unreachable", "reason": e.reason},
+            {"state": UNREACHABLE, "reason": e.reason},
             status_code=503,
         )
     serialized = [_serialize_row(r) for r in rows]
-    state = "populated" if serialized else "empty"
+    state = POPULATED if serialized else EMPTY
     return JSONResponse({"state": state, "tasks": serialized})
 
 
@@ -220,11 +221,11 @@ async def _envelopes(_request: Request) -> JSONResponse:
         doc = envelope_reader.read_all()
     except Unreachable as e:
         return JSONResponse(
-            {"state": "unreachable", "reason": e.reason},
+            {"state": UNREACHABLE, "reason": e.reason},
             status_code=503,
         )
     envelopes = doc.get("envelopes", []) if isinstance(doc, dict) else []
-    state = "populated" if envelopes else "empty"
+    state = POPULATED if envelopes else EMPTY
     return JSONResponse({"state": state, **doc})
 
 
@@ -247,7 +248,7 @@ async def _personas(_request: Request) -> JSONResponse:
         roster = persona_roster.PersonaRoster.load()
     except Unreachable as e:
         return JSONResponse(
-            {"state": "unreachable", "reason": e.reason},
+            {"state": UNREACHABLE, "reason": e.reason},
             status_code=503,
         )
     # File was located — round-trip its bytes as before so the endpoint
@@ -257,7 +258,7 @@ async def _personas(_request: Request) -> JSONResponse:
         # Defensive: PersonaRoster with no path is the "empty" shape.
         return JSONResponse(
             {
-                "state": "empty",
+                "state": EMPTY,
                 "schema": persona_roster.SCHEMA_ID,
                 "personas": {},
             }
@@ -270,13 +271,13 @@ async def _personas(_request: Request) -> JSONResponse:
         # translate a mid-flight drop to Unreachable, not empty.
         return JSONResponse(
             {
-                "state": "unreachable",
+                "state": UNREACHABLE,
                 "reason": f"registry at {path} became unreadable",
             },
             status_code=503,
         )
     # Populated when the roster has rows, empty otherwise.
-    state = "populated" if roster.all() else "empty"
+    state = POPULATED if roster.all() else EMPTY
     if isinstance(data, dict):
         return JSONResponse({"state": state, **data})
     return JSONResponse(
@@ -321,10 +322,10 @@ async def _journal(request: Request) -> JSONResponse:
         result = journal_writer.write_operator_turn(text, sender=sender)
     except Unreachable as e:
         return JSONResponse(
-            {"state": "unreachable", "ok": False, "reason": e.reason},
+            {"state": UNREACHABLE, "ok": False, "reason": e.reason},
             status_code=503,
         )
-    return JSONResponse({"state": "populated", **result}, status_code=200)
+    return JSONResponse({"state": POPULATED, **result}, status_code=200)
 
 
 async def _journal_recent(request: Request) -> JSONResponse:
@@ -351,10 +352,10 @@ async def _journal_recent(request: Request) -> JSONResponse:
         atoms = journal_reader.read_recent(limit=limit, since_id=since)
     except Unreachable as e:
         return JSONResponse(
-            {"state": "unreachable", "reason": e.reason},
+            {"state": UNREACHABLE, "reason": e.reason},
             status_code=503,
         )
-    state = "populated" if atoms else "empty"
+    state = POPULATED if atoms else EMPTY
     return JSONResponse({"state": state, "atoms": atoms})
 
 
@@ -449,7 +450,7 @@ async def _nestor_decide(request: Request) -> JSONResponse:
     if not client.available():
         return JSONResponse(
             {
-                "state": "unreachable",
+                "state": UNREACHABLE,
                 "verdict": "unavailable",
                 "reason": "nestor binary not reachable",
             },
@@ -461,7 +462,7 @@ async def _nestor_decide(request: Request) -> JSONResponse:
     except Unreachable as e:
         return JSONResponse(
             {
-                "state": "unreachable",
+                "state": UNREACHABLE,
                 "verdict": "unavailable",
                 "reason": e.reason,
             },
@@ -472,7 +473,7 @@ async def _nestor_decide(request: Request) -> JSONResponse:
         # populated (Nestor's real answer), not empty (INVARIANTS.md §1).
         return JSONResponse(
             {
-                "state": "populated",
+                "state": POPULATED,
                 "verdict": "pending",
                 "message": "no sealed pair for this claim",
             },
@@ -482,7 +483,7 @@ async def _nestor_decide(request: Request) -> JSONResponse:
     verdict = result.get("verdict") if isinstance(result, dict) else None
     if verdict == "sealed":
         return JSONResponse(
-            {"state": "populated", "verdict": "sealed", "pair": result.get("pair")},
+            {"state": POPULATED, "verdict": "sealed", "pair": result.get("pair")},
             status_code=200,
         )
     if verdict == "refused":
@@ -491,7 +492,7 @@ async def _nestor_decide(request: Request) -> JSONResponse:
         # bytes on the wire are Nestor's own.
         return JSONResponse(
             {
-                "state": "populated",
+                "state": POPULATED,
                 "verdict": "refused",
                 "refusal": result.get("refusal"),
             },
@@ -502,7 +503,7 @@ async def _nestor_decide(request: Request) -> JSONResponse:
     # verdict Nestor did not seal.
     return JSONResponse(
         {
-            "state": "populated",
+            "state": POPULATED,
             "verdict": "pending",
             "message": "no sealed pair for this claim",
         },
@@ -667,7 +668,7 @@ async def _events(websocket: WebSocket) -> None:
     if since_id < 0:
         await websocket.accept()
         await websocket.send_json(
-            {"state": "unreachable", "reason": "invalid since_id: out of range"}
+            {"state": UNREACHABLE, "reason": "invalid since_id: out of range"}
         )
         await websocket.close(code=1008)
         return
@@ -695,14 +696,14 @@ async def _events(websocket: WebSocket) -> None:
                     # passed through a reader's own try) reads as one
                     # redacted unreachable frame, never silence (F1).
                     await websocket.send_json(
-                        {"state": "unreachable", "reason": _events_redact(e)}
+                        {"state": UNREACHABLE, "reason": _events_redact(e)}
                     )
                     sent_state = True
                     caught_up = True
                     break
 
                 if not sent_state:
-                    state = "populated" if page else "empty"
+                    state = POPULATED if page else EMPTY
                     await websocket.send_json({"state": state, "reason": ""})
                     sent_state = True
 

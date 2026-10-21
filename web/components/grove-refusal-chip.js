@@ -44,6 +44,8 @@
  * Vanilla JS + Web Component. Zero dependencies. Per D9 (no build step).
  */
 
+import { UNREACHABLE } from "../lib/states.js";
+
 const PIGEON = "#94a3b8";
 const FALLBACK_SIGIL = { nestor: "¬" };
 const REGISTRY_TAG = "grove-persona-registry";
@@ -100,7 +102,7 @@ class GroveRefusalChip extends HTMLElement {
     // the chip renders it subdued and distinct from a real refusal so
     // the operator can tell "Nestor refused" apart from "could not
     // reach Nestor". Every other value falls to "refusal" (default).
-    const mode = value.mode === "unreachable" ? "unreachable" : "refusal";
+    const mode = value.mode === UNREACHABLE ? UNREACHABLE : "refusal";
     return {
       persona: typeof value.persona === "string" ? value.persona : "",
       act: typeof value.act === "string" ? value.act : "",
@@ -242,7 +244,7 @@ class GroveRefusalChip extends HTMLElement {
     this._chip.removeAttribute("hidden");
     // Toggle the visual distinction between refusal and unreachable
     // (INVARIANTS.md §1) so the operator reads the two states apart.
-    if (this._data.mode === "unreachable") {
+    if (this._data.mode === UNREACHABLE) {
       this._chip.classList.add("mode-unreachable");
     } else {
       this._chip.classList.remove("mode-unreachable");

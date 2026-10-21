@@ -81,6 +81,8 @@
  * @element grove-persona-registry
  */
 
+import { EMPTY, LOADING, POPULATED, UNREACHABLE } from "../lib/states.js";
+
 const OBSERVED = ["data-source"];
 const DEFAULT_SOURCE = "/api/personas";
 
@@ -97,8 +99,8 @@ class GrovePersonaRegistry extends HTMLElement {
     this.personas = Object.create(null);
     this._loaded = false;
     this._loadToken = 0;
-    /** @type {"populated"|"empty"|"unreachable"|"loading"} */
-    this.state = "loading";
+    /** @type {"populated"|"empty"|"unreachable"|"loading"} (loading is UI-only, D-f: not a state) */
+    this.state = LOADING;
   }
 
   connectedCallback() {
@@ -199,13 +201,13 @@ class GrovePersonaRegistry extends HTMLElement {
     if (token !== this._loadToken) return; // superseded by a newer reload
     // INVARIANTS.md §1: a 200 body may itself carry state="unreachable"
     // if the endpoint added it — we don't produce that shape, but tolerate.
-    if (doc && doc.state === "unreachable") {
+    if (doc && doc.state === UNREACHABLE) {
       this._settleUnreachable(doc.reason || "endpoint reported unreachable", token);
       return;
     }
     this.personas = this._normalize(doc);
     this._loaded = true;
-    this.state = Object.keys(this.personas).length > 0 ? "populated" : "empty";
+    this.state = Object.keys(this.personas).length > 0 ? POPULATED : EMPTY;
     this.dispatchEvent(new CustomEvent("registry-loaded", {
       bubbles: true, composed: true,
       detail: { count: Object.keys(this.personas).length, state: this.state },
@@ -219,7 +221,7 @@ class GrovePersonaRegistry extends HTMLElement {
     // and/or listen for the `registry-unreachable` event.
     this.personas = Object.create(null);
     this._loaded = true;
-    this.state = "unreachable";
+    this.state = UNREACHABLE;
     this.dispatchEvent(new CustomEvent("registry-unreachable", {
       bubbles: true, composed: true,
       detail: { reason: String(reason || "unreachable") },

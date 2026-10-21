@@ -61,9 +61,8 @@ import re
 import sys
 from dataclasses import dataclass, field
 from datetime import date, datetime
-from pathlib import Path
 
-from grove import onescript_reach
+from grove.three_states import EMPTY, POPULATED, STATES, UNREACHABLE, checked  # noqa: F401
 
 #: The only free words in a sentence (``GLUE`` in the web sketch).
 GLUE = (
@@ -92,25 +91,9 @@ AMBER = KINDS["block"][1]
 RUST = (217, 100, 92)  # --rust: a failed check
 
 
-def _one_script_states():
-    """The three states, once: willow-bot's ``onescript/states.py`` (flatten
-    F5, F-18; the operator: "2 a"), from the willow-bot the seat reads
-    (``$WILLOW_BOT_ROOT``, else the one reach's rule: ``$ONESCRIPT_HOME``,
-    else beside this repo; flatten-2 F6.5). With none beside, the seat stops
-    at import and says where it looked, in the reach's words."""
-    got = os.environ.get("WILLOW_BOT_ROOT")
-    home = Path(got).expanduser() / "one-script" if got else None
-    try:
-        return onescript_reach.module("states", home=home)
-    except onescript_reach.Unreachable as e:
-        raise ImportError(f"unreachable: {e}") from e
-
-
-_states = _one_script_states()
-STATES = _states.STATES
 #: state -> (top rule, bar). The glyphs differ so no color is needed to tell.
-RULE = {"populated": "+-", "empty": "+.", "unreachable": "+!"}
-BAR = {"populated": "|", "empty": ":", "unreachable": "!"}
+RULE = {POPULATED: "+-", EMPTY: "+.", UNREACHABLE: "+!"}
+BAR = {POPULATED: "|", EMPTY: ":", UNREACHABLE: "!"}
 SHORT = 12
 HASH64 = re.compile(r"\b[0-9a-fA-F]{64}\b")
 RESET = "\x1b[0m"
@@ -123,7 +106,7 @@ class Box:
     label: str
     value: str
     detail: str = ""
-    state: str = "populated"
+    state: str = POPULATED
     #: What the box is, structurally, when its kind does not say: ``draft`` (a
     #: waiting draft, never a fact), ``more`` (a count of rows not shown) or
     #: ``count`` (the store's summary). Set by the reader that builds the box,
@@ -156,11 +139,11 @@ def render_box(box: Box, color: bool = False) -> str:
     | the work order
     | local-flow-and-ui section 7
     """
-    state = _states.checked(box.state)
-    if state == "populated":
+    state = checked(box.state)
+    if state == POPULATED:
         name, rgb = KINDS.get(box.kind, ("note", FAINT))
     else:
-        name, rgb = state, (AMBER if state == "unreachable" else FAINT)
+        name, rgb = state, (AMBER if state == UNREACHABLE else FAINT)
     bar = BAR[state]
     head = f"{RULE[state]} [{name}] {short(box.label)}  {short(box.id)}"
     rows = [(short(box.value), True)]
@@ -271,7 +254,7 @@ def rank(boxes: list[Box]) -> list[Box]:
     sorts after the routine pass."""
 
     def key(b: Box) -> int:
-        if b.state != "populated":
+        if b.state != POPULATED:
             return -1
         return PRIORITY.index(b.kind) if b.kind in PRIORITY else len(PRIORITY)
 
@@ -347,7 +330,7 @@ def lore_box(row: dict, bid: str) -> Box:
     fact = " ".join(str(row.get("fact") or "").split())
     where = " ".join(str(row.get("where") or "").split())
     if not fact:
-        return Box(bid, "pass", LORE, "empty — a lore row with no fact", state="empty")
+        return Box(bid, "pass", LORE, "empty — a lore row with no fact", state=EMPTY)
     return Box(bid, "pass", LORE, fact, f"of {where}" if where else "")
 
 
@@ -452,7 +435,7 @@ def why(box: Box) -> str:
     """The reason a non-populated box gives: its value without the state word."""
     v = _val(box.value)
     got = STATE_PREFIX.sub("", v).strip()
-    return "" if got.lower() in ("unreachable", "empty") else got
+    return "" if got.lower() in (UNREACHABLE, EMPTY) else got
 
 
 def plain_line(box: Box) -> str:
@@ -460,9 +443,9 @@ def plain_line(box: Box) -> str:
     ``I can't read the record right now. <why>.``): fixed code words, the
     reason from the box. Populated: ``""``."""
     reason = why(box)
-    if box.state == "unreachable":
+    if box.state == UNREACHABLE:
         return f"{CANT_READ}. {terminate(cap(reason))}" if reason else f"{CANT_READ}."
-    if box.state == "empty":
+    if box.state == EMPTY:
         base = f"{cap(_val(box.label))} is empty"
         return terminate(f"{base}: {reason}") if reason else f"{base}."
     return ""
@@ -619,7 +602,7 @@ def _single(b: Box) -> list[Part]:
 
 def clause(box: Box) -> str:
     """One box as the phrase code says it, from its own facts and glue."""
-    if box.state != "populated":
+    if box.state != POPULATED:
         return bare(plain_line(box))
     return "".join(t for t, _ in _single(box))
 
@@ -756,22 +739,22 @@ def compose(
     if not boxes:
         return ""
     page = (0 if first else 1) if page is None else page
-    broken = any(b.state != "populated" for b in boxes)
-    bad = any(b.state == "populated" and problem(b) for b in boxes)
+    broken = any(b.state != POPULATED for b in boxes)
+    bad = any(b.state == POPULATED and problem(b) for b in boxes)
     sents: list[tuple[list[Part], str]] = []  # (parts, kind: heads | soft | hard)
     i = 0
     while i < len(boxes):
         b = boxes[i]
-        if b.state != "populated":
+        if b.state != POPULATED:
             line = bare(plain_line(b))
             parts = [(line, b.id)] if line else []
-            sents.append((parts, "heads" if b.state == "unreachable" else "plain"))
+            sents.append((parts, "heads" if b.state == UNREACHABLE else "plain"))
             i += 1
             continue
         j = i
         while (
             j < len(boxes)
-            and boxes[j].state == "populated"
+            and boxes[j].state == POPULATED
             and (boxes[j].kind, boxes[j].role == "draft") == (b.kind, b.role == "draft")
             and not {"more", "count"} & {b.role, boxes[j].role}
         ):
@@ -805,7 +788,7 @@ def compose(
         hot = kind == "heads" or any(
             b.id in {i for _, i in parts if i} and problem(b) and not routine_count(b)
             for b in boxes
-            if b.state == "populated"
+            if b.state == POPULATED
         )
         if hot and not flagged and parts:
             parts = [("Heads up: ", None), (lead(parts[0][0]), parts[0][1]), *parts[1:]]
@@ -896,7 +879,7 @@ def options(box: Box) -> list[str]:
     detail says them: split on `` · ``, at least ``OPTION_MIN`` parts, each at
     most ``OPTION_WORDS`` words and without a digit. ``[]`` otherwise."""
     detail = box.detail.strip()
-    if box.state != "populated" or box.kind != "you" or not detail or "\n" in detail:
+    if box.state != POPULATED or box.kind != "you" or not detail or "\n" in detail:
         return []
     parts = [_label(p) for p in detail.split(" · ")]
     if len(parts) < OPTION_MIN or not all(parts):
@@ -979,7 +962,7 @@ def chips(boxes: list[Box]) -> Chips:
             (
                 b
                 for b in boxes
-                if b.state == "populated"
+                if b.state == POPULATED
                 and b.detail
                 and not options(b)
                 and b.role not in COUNTED
