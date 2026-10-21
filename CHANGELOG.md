@@ -62,6 +62,7 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Fixed
 
+- **deps:** cryptography raised to `>=50.0.0,<51` (GHSA-g6cj-pr64-35w5, PKCS7 decrypt; no Grove code calls PKCS7), run green on 50.0.2 (PR 166).
 - **seat:** one model for now: the chain's local rung runs on the seat's reply model (`--model`, else `GROVE_SAY_MODEL`, else `qwen3:4b`) instead of willow-bot's default `llama3.2:3b`, so a small box keeps one model loaded and the reply no longer waits behind a model swap (PR 154).
 - **seat:** a reply model that times out right after the chain's local rung asked the same Ollama for a model says so as a maybe ("the chain's local rung had just asked this Ollama for llama3.2:3b; the reply may have waited behind it"), from the pieces' own `model`; a timeout with no local rung before it, and any other unreachable reason, get no hint (`Seat.queued_behind`) (PR 154).
 - **seat:** a chain piece answered with no detail says its first row's claim instead of "Local:.", and a local answer with no claim and no data is said plainly ("The local model gave an empty answer."); willow-bot now escalates such rows as `silent` with that detail, and a rung that exits non-zero carries the end of its stderr, or of its stdout summary when stderr is empty (a turn that ended early says why only there: `end=timeout`; last two lines, control characters stripped, 240 characters at most), so "ratatosk exited 1" is no longer all the human sees (`Seat.piece_value`) (PR 154).
