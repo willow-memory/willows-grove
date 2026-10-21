@@ -25,8 +25,25 @@ class Identity:
 
     @classmethod
     def generate(cls, path: Path) -> "Identity":
-        key = Ed25519PrivateKey.generate()
+        """A fresh identity written to ``path`` (0600, the same JSON shape).
+
+        The key bytes come from the one script's ``sign.ed25519_generate`` when
+        it is reachable (``ident.generated_by == "onescript"``). With none
+        beside, a local ``cryptography`` key is made instead
+        (``generated_by == "local"``) so an identity can still be created: the
+        same generator, only the home differs, and it is said which ran. The
+        key file's format and location are unchanged."""
+        try:
+            raw, by = _one_sign().ed25519_generate(), "onescript"
+        except Unreachable:
+            raw, by = None, "local"
+        key = (
+            Ed25519PrivateKey.from_private_bytes(raw)
+            if raw is not None
+            else Ed25519PrivateKey.generate()
+        )
         ident = cls(key)
+        ident.generated_by = by
         path = Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
         priv_bytes = key.private_bytes(Encoding.Raw, PrivateFormat.Raw, NoEncryption())

@@ -1276,9 +1276,23 @@ def test_an_unknown_flag_or_argument_exits_2_before_the_bot_loads(
 
 
 def bot_tree(tmp_path):
-    api = tmp_path / "one-script" / "onescript" / "api.py"
-    api.parent.mkdir(parents=True)
-    api.write_text("", encoding="utf-8")
+    """A tree the one reach recognizes: the real reach and states under
+    ``one-script/onescript`` (reach.py is the present-marker)."""
+    real = onescript_reach.where()["onescript"]
+    got = os.environ.get("WILLOW_BOT_ROOT")
+    real = Path(got) / "one-script" if got else real
+    if real is None or not (real / "onescript" / "reach.py").is_file():
+        if os.environ.get("CI"):
+            pytest.fail(f"CI has no willow-bot's one script at {real}")
+        pytest.skip("willow-bot's one script is not beside this repo")
+    pkg = tmp_path / "one-script" / "onescript"
+    pkg.mkdir(parents=True)
+    (pkg / "__init__.py").write_text("", encoding="utf-8")
+    for name in ("states", "reach"):
+        (pkg / f"{name}.py").write_text(
+            (real / "onescript" / f"{name}.py").read_text(encoding="utf-8"),
+            encoding="utf-8",
+        )
     return tmp_path
 
 

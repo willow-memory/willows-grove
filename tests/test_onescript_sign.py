@@ -58,6 +58,21 @@ def test_identity_file_is_unchanged(tmp_path):
     assert Identity.load(p).public_key_hex == made.public_key_hex
 
 
+def test_generate_takes_its_key_from_the_one_script_and_says_so(tmp_path):
+    made = Identity.generate(tmp_path / "id.json")
+    assert made.generated_by == "onescript"
+
+
+def test_generate_with_no_one_script_falls_back_locally_and_says_so(tmp_path, nowhere):
+    p = tmp_path / "id.json"
+    made = Identity.generate(p)
+    assert made.generated_by == "local"
+    assert stat.S_IMODE(p.stat().st_mode) == 0o600
+    body = json.loads(p.read_text())
+    assert sorted(body) == ["private_key", "version"] and body["version"] == 1
+    assert Identity.load(p).public_key_hex == made.public_key_hex
+
+
 def test_non_canonical_s_is_a_wrong_signature_not_a_pass_or_a_raise():
     ident, pk = _packet()
     assert Packet.validate(json.loads(json.dumps(pk)), ident.public_key_hex) is True
