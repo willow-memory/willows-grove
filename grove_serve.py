@@ -760,8 +760,9 @@ def build_app() -> Starlette:
 
 
 def _absent_routes(routes: list) -> list:
-    """The page with no one script beside: `/` and `/web` serve as ever, and
-    every reader answers the reach's own `unreachable`, with why, instead of a
+    """The page with no one script beside: `/`, `/web` and `/seed/` serve as
+    ever (the seed is static and keeps its own D16 absence stub), and every
+    reader answers the reach's own `unreachable`, with why, instead of a
     page that would not start. `/health` says it too, `ok: false`."""
     absent = three_states.ABSENT
 
@@ -781,7 +782,7 @@ def _absent_routes(routes: list) -> list:
     out = []
     for r in routes:
         path = getattr(r, "path", "")
-        if path in ("/", "") or isinstance(r, Mount):
+        if path in ("/", "") or path.startswith("/seed/") or isinstance(r, Mount):
             out.append(r)
         elif path == "/health":
             out.append(Route("/health", _health_absent))

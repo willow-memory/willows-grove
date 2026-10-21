@@ -3,7 +3,7 @@
 
 The operator, 2026-10-21: "start and say unreachable". With no one script
 beside (``ONESCRIPT_HOME`` names an empty place, ``WILLOW_BOT_ROOT`` unset),
-``grove_serve`` still imports and builds its app; ``/`` serves the page, every
+``grove_serve`` still imports and builds its app; ``/`` and ``/seed/`` serve, every
 reader answers the reach's own ``unreachable`` with why (503), ``/health`` says
 ``ok: false``, and the events socket says it once and closes. Run in a
 subprocess so the missing one script can't leak into other tests' imports.
@@ -28,6 +28,7 @@ import grove_serve
 c = TestClient(grove_serve.build_app())
 out = {
     "index": c.get("/").status_code,
+    "seed": [c.get("/seed/").status_code, c.get("/seed/1").status_code],
     "personas": [c.get("/api/personas").status_code, c.get("/api/personas").json()],
     "journal_post": c.post("/api/journal", json={}).status_code,
     "health": c.get("/health").json(),
@@ -54,6 +55,7 @@ class TestNoOneScript(unittest.TestCase):
         self.assertEqual(r.returncode, 0, r.stderr)
         out = json.loads(r.stdout.strip().splitlines()[-1])
         self.assertEqual(out["index"], 200)
+        self.assertEqual(out["seed"], [200, 200])  # static, keeps its own stub
         status, body = out["personas"]
         self.assertEqual(status, 503)
         self.assertEqual(body["state"], "unreachable")
