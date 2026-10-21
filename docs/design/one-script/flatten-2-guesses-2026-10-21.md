@@ -26,6 +26,7 @@ means the operator's answer was the recommended one.
 | G8 | Push the integration and merge-check branches | 85% | "2 push them" | Matched |
 | G9 | The side bar is a panel beside the chat in the operator's local Claude Code | 55% | "a ledger or the human prompts and the system/model outputs", Rat-only | **Missed** (it is Rat's `session.py` ledger) |
 | G10 | The side bar runs with every Rat turn, not every Claude Code prompt | 60% | "I think it landed as a rat only feature" | Matched |
+| G21 | `escalated` is a step after a state, not a fourth state (INVARIANTS §1 names three) | 65% | "escalated is a step, not a state, and it's just the return to 0 for the next tier." | Matched |
 | G11 | "If a merge check could check merge" meant checking the git merge (A) over merge_check checking itself (B) | 60% | "How much wood could a wood chuck chuck..." | Unresolved |
 
 ## Guesses still open
@@ -49,9 +50,9 @@ Brier score: the squared distance between the percentage and what happened
 
 | Set | n | Brier |
 |-----|---|-------|
-| G1–G8, G10 (matched) | 9 | 0.0522 |
+| G1–G8, G10, G21 (matched) | 10 | 0.0593 |
 | G9 (missed) | 1 | 0.3025 |
-| All ten resolved | 10 | 0.0773 |
+| All eleven resolved | 11 | 0.0814 |
 
 | Note | Detail |
 |------|--------|
