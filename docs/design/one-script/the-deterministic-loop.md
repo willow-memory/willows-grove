@@ -3,16 +3,17 @@
 
 # The deterministic loop — forward and reverse, permeable, never falsely closed
 
-**Status:** draft, agent-reported from session `session_01HcW1c3UnM36KckW1hpsy1r`
-(2026-10-20). Not ratified (§0.2; CLAUDE.md rule 4). This is a second pass: the
+**Status:** agent-drafted, **operator-ratified** at PR willows-grove#163
+(session `session_01HcW1c3UnM36KckW1hpsy1r`, 2026-10-20). This is a second pass: the
 first draft was built from the operator's spoken framing and missed the written
 closed-loop canon. It is now grounded in that canon — G76/G77 (Gerald atoms),
 `one-box/three-answers-2026-10-06.md` §HM, `one-script/workflow.md`
 (forward/reverse), and the seed canon — cited inline. The *framework* (§1–§3) is
 the operator's own; the *groundings* (§4–§8) were **reverse-checked against
 source this session** — 10 bites, every checkable assertion traced-true (the
-descriptive spine, and all four §8 egress gaps). They remain **not ratified**
-(ratification is a human act, not a code-check). One meta-finding from the
+descriptive spine, and all four §8 egress gaps). They were then **ratified by
+the operator** at PR #163 — the human seal the reverse-check itself could not
+supply (ratification is a human act, not a code-check). One meta-finding from the
 reverse pass: the box consistently **under-claims** — every correction below
 made the written claim *stronger*, never weaker, which is the safe direction
 (canon: don't overclaim) but means the note had been underselling the system.
@@ -204,5 +205,6 @@ own, when nothing of it is still leaving.
   or settings.
 - It does not touch the vault. The vault is Sean's key.
 - §4–§8 were reverse-checked against source this session (10 bites, all
-  traced-true) but are **not ratified** — a code-check is not a human seal. §1 is
-  reconciled from the operator's spoken and written words — see the note in §1.
+  traced-true) and then **operator-ratified** at PR #163 — the code-check located
+  the claims, the human seal made them hold. §1 is reconciled from the operator's
+  spoken and written words — see the note in §1.
