@@ -175,6 +175,7 @@ jobs:
       - name: Run test suite
         env:
           WILLOW_BOT_ROOT: ${{ github.workspace }}/willow-bot
+          ONESCRIPT_HOME: ${{ github.workspace }}/willow-bot/one-script
         run: python3 -m pytest -x -q --tb=short --ignore=tests/e2e --ignore=tests/e2e_ollama --ignore=tests/e2e_willow_mcp
 
       # docs/INVARIANTS.md §10 — Playwright is CI-first. Browsers only
@@ -265,6 +266,7 @@ jobs:
       - name: Run test suite (no container services on Windows)
         env:
           WILLOW_BOT_ROOT: ${{ github.workspace }}/willow-bot
+          ONESCRIPT_HOME: ${{ github.workspace }}/willow-bot/one-script
         run: python -m pytest -q --tb=short --ignore=tests/e2e --ignore=tests/e2e_ollama --ignore=tests/e2e_willow_mcp
 
   # The lint leg. ruff is pinned to an exact version: an unpinned linter is
