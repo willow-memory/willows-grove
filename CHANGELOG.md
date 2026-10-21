@@ -2,6 +2,32 @@
 
 All notable changes land here per INVARIANTS.md §3. Format follows Keep a Changelog v1.1.0.
 
+## [0.27.0](https://github.com/willow-memory/willows-grove/compare/v0.26.0...v0.27.0) (2026-10-21)
+
+
+### Added
+
+* **one-script:** Grove reaches the one script once, and records the second flattening ([#164](https://github.com/willow-memory/willows-grove/issues/164)) ([8f20e99](https://github.com/willow-memory/willows-grove/commit/8f20e99b5aed591eeebed012fd0b7f4248147ced))
+
+
+### Fixed
+
+* **deps:** cryptography 50 (floor and ceiling) ([47a9da2](https://github.com/willow-memory/willows-grove/commit/47a9da2481a0c4f77fa7f82b182697b4112b3bd7))
+* **deps:** cryptography 50 (floor and ceiling) ([#166](https://github.com/willow-memory/willows-grove/issues/166)) ([0c737a3](https://github.com/willow-memory/willows-grove/commit/0c737a32f738454ffde944bd3ac3ceca5c720af6))
+* **grove:** the page starts with no one script and says unreachable (flatten-2 F9) ([dd56363](https://github.com/willow-memory/willows-grove/commit/dd56363e323839f5e553ef395582203625c6550f))
+* **serve:** /seed/ serves with no one script beside ([20c8366](https://github.com/willow-memory/willows-grove/commit/20c8366333c952675efd1c682d60549e5dc7a18a))
+
+
+### Changed
+
+* **one-script:** Grove reaches the one script through the one reach (flatten-2 F6.5) ([552f940](https://github.com/willow-memory/willows-grove/commit/552f94088a8b75b33812695406c96c56c0c89191))
+* **one-script:** Grove signs and verifies through the one script's sign.py (flatten-2 F14) ([c3aa068](https://github.com/willow-memory/willows-grove/commit/c3aa0689b54baed167b310d0b869db2225517ae3))
+* **one-script:** Grove takes its canonical bytes from the one script (flatten-2 F7) ([060a198](https://github.com/willow-memory/willows-grove/commit/060a198baeef2c09bd0a01d69bd6d4b00337a4d7))
+* **one-script:** Grove's journal stamp comes from the one clock (flatten-2 F8) ([6304f6c](https://github.com/willow-memory/willows-grove/commit/6304f6c8e6477402476ac552c9ac6881aae502a1))
+* **one-script:** Grove's seat scrub is the one script's generic set (flatten-2 F12) ([6365f60](https://github.com/willow-memory/willows-grove/commit/6365f604a8c2b7b2fe3ebd0a332a5678251a167e))
+* **one-script:** Grove's three states come from the one script (flatten-2 F9) ([42b2981](https://github.com/willow-memory/willows-grove/commit/42b29811c499ccbd5b40e94c710b1e1c49b8de55))
+* **one-script:** seat --check and identity keygen go through the one script ([58e8704](https://github.com/willow-memory/willows-grove/commit/58e8704850619ee9cdb176caf32157e421179a42))
+
 ## [0.26.0](https://github.com/willow-memory/willows-grove/compare/v0.25.0...v0.26.0) (2026-10-20)
 
 
