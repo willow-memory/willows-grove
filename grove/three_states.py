@@ -5,8 +5,9 @@
 Grove restates none of the words (the operator: "Using the onescript at every
 path."). ``web/lib/states.js`` is generated from the same file
 (``scripts/generate_states_js.py``). ``loading`` is UI-only, not a state (D-f).
-With no one script beside, import stops with the reach's words: a reader that
-cannot name its states has no honest answer to give.
+With no one script beside, ``ABSENT`` holds the reach's answer and the state
+names are an ImportError in the reach's words: the served page starts and says
+``unreachable`` (``grove_serve``); the seat stops, as it did.
 """
 
 from __future__ import annotations
@@ -17,24 +18,47 @@ from pathlib import Path
 from grove import onescript_reach
 
 
-def _one_script_states():
-    """The three states, once: willow-bot's ``onescript/states.py`` (flatten
-    F5, F-18; the operator: "2 a"), from the willow-bot the seat reads
-    (``$WILLOW_BOT_ROOT``, else the one reach's rule: ``$ONESCRIPT_HOME``,
-    else beside this repo; flatten-2 F6.5). With none beside, the seat stops
-    at import and says where it looked, in the reach's words."""
+def _home():
+    """The willow-bot the seat reads: ``$WILLOW_BOT_ROOT``, else the one
+    reach's rule (``$ONESCRIPT_HOME``, else beside this repo; flatten-2 F6.5)."""
     got = os.environ.get("WILLOW_BOT_ROOT")
-    home = Path(got).expanduser() / "one-script" if got else None
+    return Path(got).expanduser() / "one-script" if got else None
+
+
+def _one_script_states():
+    """willow-bot's ``onescript/states.py`` itself (``scripts/generate_states_js.py``
+    reads it), or an ImportError in the reach's words when it isn't beside."""
     try:
-        return onescript_reach.module("states", home=home)
+        return onescript_reach.module("states", home=_home())
     except onescript_reach.Unreachable as e:
         raise ImportError(f"unreachable: {e}") from e
 
 
-_states = _one_script_states()
+_NAMES = ("STATES", "POPULATED", "EMPTY", "UNREACHABLE", "checked")
 
+try:
+    _states = onescript_reach.module("states", home=_home())
+except onescript_reach.Unreachable as e:
+    _states, _why = None, str(e)
 
-_states = _one_script_states()
-STATES = _states.STATES
-POPULATED, EMPTY, UNREACHABLE = _states.POPULATED, _states.EMPTY, _states.UNREACHABLE
-checked = _states.checked
+if _states is not None:
+    #: None while the one script is in reach.
+    ABSENT = None
+    STATES = _states.STATES
+    POPULATED, EMPTY = _states.POPULATED, _states.EMPTY
+    UNREACHABLE = _states.UNREACHABLE
+    checked = _states.checked
+else:
+    # The operator, 2026-10-21: "start and say unreachable". The page still
+    # starts with no one script beside it, and says so in the reach's own
+    # words: ``ABSENT`` is the reach's answer (its ``state`` word comes from
+    # ``onescript_reach``, the one script's byte-copied template), so Grove
+    # still restates nothing. Asking for a state name here is an ImportError
+    # in the reach's words, as before, so the seat stops where it did.
+    _r = onescript_reach.reach(home=_home(), law=False)
+    ABSENT = {"state": _r["state"], "reason": _r.get("why") or _why}
+
+    def __getattr__(name):
+        if name in _NAMES:
+            raise ImportError(f"unreachable: {_why}")
+        raise AttributeError(name)

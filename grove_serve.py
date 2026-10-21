@@ -47,7 +47,13 @@ from grove import seed_html
 from grove import seed_reader
 from grove.errors import Unreachable
 from grove.nestor_client import NestorClient
-from grove.three_states import EMPTY, POPULATED, UNREACHABLE
+from grove import three_states
+
+# With no one script beside, the page still starts and every reader says
+# `unreachable` in the reach's words (the operator, 2026-10-21: "start and say
+# unreachable"); see `build_app`. The names are bound only when it is in reach.
+if three_states.ABSENT is None:
+    from grove.three_states import EMPTY, POPULATED, UNREACHABLE
 
 
 _WEB_ROOT = Path(__file__).resolve().parent / "web"
@@ -748,7 +754,42 @@ def build_app() -> Starlette:
         routes.append(
             Mount("/web", app=StaticFiles(directory=str(_WEB_ROOT)), name="web")
         )
+    if three_states.ABSENT is not None:
+        routes = _absent_routes(routes)
     return Starlette(routes=routes)
+
+
+def _absent_routes(routes: list) -> list:
+    """The page with no one script beside: `/` and `/web` serve as ever, and
+    every reader answers the reach's own `unreachable`, with why, instead of a
+    page that would not start. `/health` says it too, `ok: false`."""
+    absent = three_states.ABSENT
+
+    async def _reader(_request: Request) -> JSONResponse:
+        return JSONResponse(absent, status_code=503)
+
+    async def _health_absent(_request: Request) -> JSONResponse:
+        return JSONResponse(
+            {"ok": False, "commit": _resolve_commit(), "one_script": absent}
+        )
+
+    async def _events_absent(websocket) -> None:
+        await websocket.accept()
+        await websocket.send_json(absent)
+        await websocket.close()
+
+    out = []
+    for r in routes:
+        path = getattr(r, "path", "")
+        if path in ("/", "") or isinstance(r, Mount):
+            out.append(r)
+        elif path == "/health":
+            out.append(Route("/health", _health_absent))
+        elif isinstance(r, WebSocketRoute):
+            out.append(WebSocketRoute(path, _events_absent))
+        else:
+            out.append(Route(path, _reader, methods=list(r.methods or ["GET"])))
+    return out
 
 
 def run(host: str = DEFAULT_HOST, port: int = DEFAULT_PORT) -> None:
