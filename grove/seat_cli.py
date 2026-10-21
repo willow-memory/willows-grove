@@ -2046,11 +2046,14 @@ def probe(root: Path, model: str | None = MODEL) -> list[tuple[str, str, str]]:
     """What ``--check`` reports, as ``(label, state, why)``. It imports no
     willow-bot module, calls no api function and writes nothing. ``model``
     None (``--no-say``) leaves the Ollama row out: a code-only run never asks."""
-    one = root / "one-script" / "onescript" / "api.py"
+    # the one reach's present-marker (onescript/reach.py), not a file of the
+    # api; reach() imports only onescript.reach, so this stays light. The root
+    # is the seat's explicit home (WILLOW_BOT_ROOT), as load_bot reads it.
+    got = onescript_reach.reach(home=root / "one-script", law=False)
     bot_ = (
         (POPULATED, str(root))
-        if one.is_file()
-        else (UNREACHABLE, f"no one script at {one.parent} (set WILLOW_BOT_ROOT)")
+        if got["state"] == "reachable"
+        else (UNREACHABLE, f"{got['why']} (bot root {root}; set WILLOW_BOT_ROOT)")
     )
     venv = "a venv" if sys.prefix != sys.base_prefix else "no venv"
     rat = resolve_ratatosk()
