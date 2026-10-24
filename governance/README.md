@@ -78,3 +78,20 @@ The live envelope registry moved from `$WILLOW_HOME/constitutional/` to
 `<WILLOW_CHARTER_REPO>/envelopes/` when the charter repo is set.
 Vault-shaped secrets moved to `~/sean-data-vault/willow-operator-box/`
 via `WILLOW_VAULT_BOX`.
+
+## Addendum — 2026-10-24: the law's home is willow-memory/Willow again
+
+The constitution is amended in `willow-memory/Willow` now, beside the kernel
+that answers to it, and is always a draft there (VIII.4): every amendment
+makes the next one, through the checks and a maintainer's merge.
+`governance/CONSTITUTION.md` here is a pinned copy, never edited in place.
+
+| | |
+|---|---|
+| the pin | `governance/constitution.pin`: the repo, the commit, the path and the sha256 of the bytes copied |
+| what holds it | `tests/test_constitution_pin.py` fails if the copy and the pin disagree, so a correction made here instead of there is refused |
+| to move it | copy `CONSTITUTION.md` from a newer `willow-memory/Willow` commit, and set the pin's commit and sha256 to match, in one change |
+| at this pin | Draft 0.15: Draft 0.9 as it left here, plus six amendments (VIII.1 to VIII.4, IV.9, VI.7) |
+
+Corrections flow one way, from willow to here. The rest of this tree
+(proposals, decisions, flags, the Casebook) stays here.

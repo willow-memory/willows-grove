@@ -6,7 +6,9 @@ b17: WGRV1  ΔΣ=42
 **The human** is the operator: the trust root, who ratifies. **The agent** is
 any AI seat, persona, model, CLI, or tool acting in this repo. Each line points
 to the clause that holds its reasoning in
-[`governance/CONSTITUTION.md`](governance/CONSTITUTION.md) (Draft 0.9).
+[`governance/CONSTITUTION.md`](governance/CONSTITUTION.md), a copy pinned
+from willow-memory/Willow, where the law is amended and always a draft
+(Draft 0.15 at the pin).
 *(proposed)* marks a clause not yet ratified; **local** marks a line with no
 clause behind it.
 
