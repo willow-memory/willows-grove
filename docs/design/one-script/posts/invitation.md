@@ -55,6 +55,10 @@ Short version for Reddit (r/LocalLLaMA, r/selfhosted), same facts:
 
 *Part of my DEV series. It started with a [benchmark for the ESCALATE answer](https://dev.to/sean_campbell_840bd62bf7e/does-your-model-know-when-it-doesnt-know-a-benchmark-for-the-escalate-answer-268o) and went on to [My Robot Keeps Its Receipts](https://dev.to/sean_campbell_840bd62bf7e/my-robot-keeps-its-receipts-3h9g).*
 
+> *Shaking hands:* kernel, kernel, colonel, kernel.
+>
+> Only one of them gives orders, and it isn't the one in this post.
+
 ## The invitation first
 
 Willow is a small kernel for private knowledge, and an open place to attach whatever you need to it.
