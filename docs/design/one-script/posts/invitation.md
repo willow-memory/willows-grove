@@ -132,3 +132,21 @@ I want more of those. Your kind of situation is what I'm asking for: a club's mi
 - How to pick one up: [CONTRIBUTING.md](https://github.com/willow-memory/Willow/blob/main/CONTRIBUTING.md)
 
 The kernel stays put. The rest is yours to grow.
+
+---
+
+*A colonel, a corn kernel, and an operating-system kernel walk into a bar.*
+
+*The bartender asks what they'll have.*
+
+*The colonel orders for everyone without consulting the table.*
+
+*The corn kernel claims kinship and asks for bourbon.*
+
+*The computer kernel considers the question for a long time.*
+
+*"I can't," it says at last. "Nothing present contains half the words."*
+
+*The bartender sets a glass of water in front of it anyway.*
+
+*The kernel holds the glass carefully and waits for the key.*
