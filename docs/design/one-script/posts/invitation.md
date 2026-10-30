@@ -1,4 +1,7 @@
 <!--
+Folded into posts/one-day.md (PR 170), with posts/klingon.md: the operator, "I think i want
+to merge all into one post. It was one days worth of work". This draft was never published.
+
 Desk draft of a DEV post, 2026-10-30, session 015R6z6j5NgirQsSDf27XKub. Continues the DEV series
 after "My Robot Keeps Its Receipts" (posts/ledger.md). Written in the operator's register from a
 Grok half-draft the operator pasted ("This is what Grok semi drafted"); not the operator's words
