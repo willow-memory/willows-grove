@@ -23,8 +23,10 @@ Checked against willow-memory/Willow main (README.md, ADDONS.md, kernel.py), 202
   signature, so the post doesn't say "signed".
 - The arrow points one way: README "the kernel never names an add-on, so it runs the same if you
   delete every one". kernel.py has no "adapters" string.
-- 247 built add-ons of 470: ADDONS.md's front block for 2026-W44. Will drift; re-read before
-  publishing.
+- 253 built add-ons of 471, 218 planned: ADDONS.md on Willow main dc17194 (after words-tlh,
+  PR 88), 2026-10-30. Was 247 of 470 at the first draft. Will drift; re-read before publishing.
+- The front doors: Willow issues #84 (languages), #85 (add-ons), #86 (demos), #87 (stacks),
+  opened 2026-10-30.
 - Ports in Java, TypeScript and C#, held to 4,668 shared test cases: README "Portable".
 - Hash-chain limit: README "Verifiable" and LIMITS.md (a whole chain rewritten from the edit on
   isn't detected on its own). Said in the post, not hidden.
@@ -45,7 +47,7 @@ Short version for Reddit (r/LocalLLaMA, r/selfhosted), same facts:
   files. It answers only with passages from them, each with its file and line, says so when they
   don't hold an answer, and holds anything an AI suggests until you approve it with your key.
   The kernel never imports an add-on, so you can run it alone or build your own stack on it.
-  I'm looking for people who want to put together their own local stack, write an add-on (223
+  I'm looking for people who want to put together their own local stack, write an add-on (218
   ideas are listed and waiting), or build a demo from a real situation so the add-ons have
   something real to be tested against.
   https://github.com/willow-memory/Willow
@@ -65,9 +67,10 @@ Willow is a small kernel for private knowledge, and an open place to attach what
 
 I'm looking for people who want to:
 
-- **put together their own local stack** from the kernel and the add-ons they actually need
-- **write new add-ons**: 223 ideas are listed and waiting, and you can add your own
-- **build demos from real situations**, so the add-ons have something real to be tested against
+- **put together their own local stack** from the kernel and the add-ons they actually need ([show yours](https://github.com/willow-memory/Willow/issues/87))
+- **write new add-ons**: 218 ideas are listed and waiting, and you can add your own ([start here](https://github.com/willow-memory/Willow/issues/85))
+- **add a language**: 13 are built beside English, and a speaker can bring one without writing Python ([start here](https://github.com/willow-memory/Willow/issues/84))
+- **build demos from real situations**, so the add-ons have something real to be tested against ([start here](https://github.com/willow-memory/Willow/issues/86))
 
 The kernel doesn't change for any of that. Everything else is open.
 
@@ -107,7 +110,7 @@ That's why you can build your own stack. Take the kernel and add the pieces you 
 - **Privacy:** phone numbers, card numbers and keys hidden in answers, or found sitting in files
 - **Assistants:** AI assistants that can ask and suggest, but never approve
 
-There are 247 built add-ons today. Each one is a folder with its code, its tests and a card that says what it writes and whether it goes online. CI holds every add-on to its card.
+There are 253 built add-ons today. Each one is a folder with its code, its tests and a card that says what it writes and whether it goes online. CI holds every add-on to its card.
 
 ## Why real demos matter most
 
@@ -130,6 +133,7 @@ I want more of those. Your kind of situation is what I'm asking for: a club's mi
 - The repo: [willow-memory/Willow](https://github.com/willow-memory/Willow)
 - Every add-on, built and planned: [ADDONS.md](https://github.com/willow-memory/Willow/blob/main/ADDONS.md)
 - How to pick one up: [CONTRIBUTING.md](https://github.com/willow-memory/Willow/blob/main/CONTRIBUTING.md)
+- The front doors: [a language](https://github.com/willow-memory/Willow/issues/84) · [an add-on](https://github.com/willow-memory/Willow/issues/85) · [a demo](https://github.com/willow-memory/Willow/issues/86) · [your stack](https://github.com/willow-memory/Willow/issues/87)
 
 The kernel stays put. The rest is yours to grow.
 
