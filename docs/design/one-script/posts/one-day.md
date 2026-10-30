@@ -68,6 +68,16 @@ Sources (each checked 2026-10-30):
   study's README.
 - Known bugs: BUGS.md at eaa88b2, #89 to #96 (no #92: that number is the language PR).
 - Both jokes are the operator's, from this session.
+- Voice: the operator asked for "a more technical read, but with my humor still mixed in", using
+  rudi193-cmd/DispatchesFromReality (330dfb6) "for a better read". Its four essays, boxed with
+  Willow's kernel and scored by reading-level once their long lines were folded, run 57 to 67
+  at 15.8 to 19.3 words a sentence; this post's prose, code and tables left out, scores 70 at
+  15.9 (it was 79 at 10.0). "Nobody Adds It Up" (essays/nobody-adds-it-up/README.md, line 11)
+  gives the five questions and "Nothing on that list scored a 5."; claim-check and quote-check
+  found both.
+- The 47 lines past 500 characters: awk over DispatchesFromReality's essays/*/README.md at
+  330dfb6. The quote-check result, missing in the raw box and verbatim once folded: the desk's
+  run, 2026-10-30.
 - Code: copied from Willow at eaa88b2, each block's lines as they are there (kernel.py 85, 494,
   101, 410; test_kernel.py 714-722; words_tlh.py 34-39); a "..." gap is left as a blank line.
 - The make-it-so run: real, on Willow main eaa88b2, 2026-10-30, on demo/odile's life made by
@@ -88,6 +98,7 @@ a11y-check found no screen-reader problem. One paragraph ran past 500 characters
 kernel stops reading (bug #89); it is split.
 -->
 
+
 # One day of Willow: 80 add-ons, a language, and a goodbye
 
 > *Shaking hands:* kernel, kernel, colonel, kernel.
@@ -98,7 +109,7 @@ kernel stops reading (bug #89); it is split.
 
 ## One day
 
-This is one day of work on Willow, from Thursday morning to Friday morning, UTC.
+This is one day of work on Willow, measured the only way I trust anymore: by what landed on `main`, from Thursday morning to Friday morning, UTC.
 
 | | |
 |---|---|
@@ -109,17 +120,22 @@ This is one day of work on Willow, from Thursday morning to Friday morning, UTC.
 | Known bugs written down as tests | 7 |
 | Languages Willow reads | English, plus 13 packs (one of them new: Klingon) |
 
-It began as an ordinary day of building, and it turned into something else partway through, when the news came that Patrick Stewart had died.
+It started as an ordinary building day, the kind where the interesting decisions are about file formats, and it turned into something else partway through, when the news came that Patrick Stewart had died.
 
 ![A step line of Willow's built add-ons over the day, rising from 176 on Thursday morning to 256 on Friday morning, mostly in jumps of thirteen.](one-day-figures/fig1-day.png)
 
 ## The kernel, and what grows from it
 
-Willow is two things. **The kernel** is a single Python file, `kernel.py`, which uses only the standard library and contains no network code, and a test makes sure it stays that way.
+Willow is two things, and the split between them is the whole design.
+**The kernel** is a single Python file, `kernel.py`, standard library only, with no network code at all and a test that fails the build if any ever appears.
+You point it at a folder and ask a question; it answers with up to three passages from your own files, each carrying its file and line number, or it tells you, plainly and without apology, that your files don't hold the answer.
+Anything suggested by an AI model, a script or another person is held until you approve it with your key, and every step is appended to a hash-chained log you can verify later.
 
-You point it at a folder and ask a question, and it gives you back up to three passages from your own files, each with its file and line number, or it tells you plainly that your files don't hold the answer. Anything suggested by an AI model, a script or another person is held until you approve it with your key, and every step is written to a hash-chained log.
-
-The kernel serves a passage only when that passage holds at least half of the question's content words. Loosening the rule to a third of the words, or to any two, finds a few more passages, but it also answers questions about something else several times as often, so the line stays where it is. It is the `ESCALATE` answer from my benchmark series, built into the kernel: when your files don't hold the answer, it says so rather than guessing. The whole rule is one constant and one comparison:
+Retrieval systems usually fail toward confidence.
+This one fails toward silence on purpose: the kernel serves a passage only when it holds at least half of the question's content words.
+Loosen that to a third of the words, or to any two, and recall improves a little, while the rate of confident answers to questions about something else entirely goes up several times over.
+So the threshold stays where it is.
+It is the `ESCALATE` answer from my benchmark series, compiled into the retrieval path, and the entire rule is one constant and one comparison:
 
 ```python
 # kernel.py
@@ -128,9 +144,12 @@ HOLD = 0.5  # the share of a bite's words a chunk must hold
     return [(c, d, h) for c, d, h in held if len(h) >= HOLD * len(want)]
 ```
 
-**The add-ons** are everything else. An add-on uses the kernel, but the kernel never names an add-on, so you could delete every one of them and the kernel would run exactly as before.
+**The add-ons** are everything else, and the dependency arrow points one way.
+An add-on imports the kernel; the kernel never names an add-on, so you could delete every one of them and it would run byte-for-byte as before.
+If that sounds like a sovereignty argument, it is one: in [Nobody Adds It Up](https://github.com/rudi193-cmd/DispatchesFromReality/blob/main/essays/nobody-adds-it-up/README.md) I ran twelve popular products through five questions (no account, no server, no subscription, readable data, survives the vendor going away), and nothing scored five.
+A single file you can copy anywhere is my attempt at an honest five.
 
-The day's README rewrite put that idea first, and added a short section on what Willow is *not*:
+The day's README rewrite led with that split, and added a short section on what Willow is *not*:
 
 - Not a RAG framework that tries to do everything for you.
 - Not a system that generates answers: it quotes your files, and anything an assistant suggests waits for you.
@@ -139,41 +158,51 @@ The day's README rewrite put that idea first, and added a short section on what 
 
 ## 80 add-ons
 
-Most of the day went into building, in batches of thirteen. Each add-on is a folder holding its code, its tests and a card that states what it writes and whether it ever goes online, and CI holds every add-on to the promises on its card.
+Most of the day went into building, in pull requests of thirteen add-ons at a time.
+Each add-on is a folder with its code, its tests and a card declaring what it writes and whether it ever touches the network, and CI runs every add-on's tests under a guard that holds each write to that card while the tests run, not just in review.
 
-- **Your conversations**, from Slack, Discord, Matrix, Mastodon, IRC, Reddit and X archives, become text the kernel can search.
-- **Your tools and lists**, from Notion, Trello, Jira and Joplin exports to Goodreads and Letterboxd, come in the same way, along with odder shapes such as family trees, MusicXML scores and screenplays.
-- **Keeping track** covers bank statements, budgets, orders and subscriptions, and even livestock.
+- **Your conversations**, from Slack, Discord, Matrix, Mastodon, IRC, Reddit and X archives, become plain text the kernel can search.
+- **Your tools and lists**, from Notion, Trello, Jira and Joplin exports to Goodreads and Letterboxd, arrive the same way, along with stranger shapes: family trees, MusicXML scores and screenplays.
+- **Keeping track** covers bank statements, budgets, orders and subscriptions, and, because someone will need it, livestock.
 - **Programs it can call** include ripgrep for very large folders, OCR for photographs of letters, PGP signatures and a static search page. Ripgrep's hits are checked against the kernel's own passages, so a faster tool can't quietly answer something the kernel wouldn't.
-- **Guards** include `hook-guard`, which refuses, by rule, any AI assistant's tool call that would read your key or write the record behind the kernel's back.
+- **Guards** include `hook-guard`, which refuses, by rule rather than by judgement, any AI assistant's tool call that would read your key or write the record behind the kernel's back.
 
 ![Horizontal bars for each section of the add-on list, grey for what was built before the day and blue for what was added. Reading more kinds of files grew the most, by 42; Keeping track grew by 21.](one-day-figures/fig2-sections.png)
 
-Most of the growth went into reading more kinds of files, which is the part of Willow that decides how much of a life it can see. CI also got quicker: six Python versions accounted for 72 of a pull request's 84 jobs, so a pull request is now tested on the oldest and newest versions, and `main` on all six.
+Most of the growth went into reading more kinds of files, which is the part of Willow that decides how much of a life it can actually see.
+CI got cheaper as well: six Python versions accounted for 72 of a pull request's 84 jobs, so a pull request now tests on the oldest and newest interpreters, and `main` still runs all six.
 
 ## A study that half failed
 
-One of the day's studies pointed Willow at its own fleet's twelve known security gaps. Each question was written from the gap's own description and asked of the code as it stood just before the fix, to see whether Willow's tools could find the code that the fix went on to change.
+One of the day's studies pointed Willow at its own fleet's twelve known security gaps.
+Each question was written from the gap's original description and asked of the code as it stood just before the fix, to see whether the retrieval tools could find the code the fix went on to change.
 
-Asked of the whole old codebase, they could, and far more often than chance: 44 of 160 questions put the fixed lines in their top ten, where chance would give about 5.5. Asked to rank the changed passages among themselves, however, they did no better than a random ordering.
+Asked of the whole old codebase, they could, and well above chance: 44 of 160 questions put the fixed lines in their top ten, where a random ranking gives about 5.5.
+Asked to rank the changed passages against each other, though, they did no better than shuffling.
 
 ![Two pairs of bars. Strong gaps: 44 questions found the fixed lines in the top ten, against 5.55 by chance. Weaker gaps: 3 against 0.16.](one-day-figures/fig3-known-gaps.png)
 
-The README reports both halves, the failure first. The questions were frozen before any of them was asked, which is what makes the failure a real result rather than something to quietly drop.
+The README reports both halves, failure first.
+The questions were frozen before any of them was asked, which is what makes the failed half a result instead of an embarrassment to be quietly tidied away, and it would be dishonest to show you only the bar that went up.
 
 ## Patrick Stewart
 
-Partway through the day the news came that Patrick Stewart had died, at 86. I wanted to build something in his memory, and the first thing it needed turned out not to be his at all, but a language.
+Partway through the day the news came that Patrick Stewart had died, at 86.
+I wanted to build something in his memory, and the first thing it needed turned out not to be his at all, but a language.
 
-Captain Picard spent a great deal of his career among Klingons, and was once made the Klingon Empire's Arbiter of Succession, the outsider who rules on who may fight to lead it. If a demo was going to ask questions of that world, the kernel would have to read a question asked in Klingon.
+Captain Picard spent a good part of his career among Klingons, and was once made the Klingon Empire's Arbiter of Succession, the outsider who rules on who may fight to lead it.
+If a demo was going to ask questions of that world, the kernel would have to read a question asked in Klingon, and it had no idea how.
 
 ### 27 words of Klingon
 
-The kernel already ignores English's common words, such as "when", "is" and "the", but a question in any other language keeps all of its words. Ask *nuqDaq 'oH yIH'e'?* ("where is the tribble?") and the words for "where" and "it" count toward the match, and since nearly every Klingon passage contains them, the kernel would serve you noise.
+The kernel already discards English function words such as "when", "is" and "the" before it matches anything, but a question in any other language keeps every word it has.
+Ask *nuqDaq 'oH yIH'e'?* ("where is the tribble?") and the words for "where" and "it" count toward the match, and since nearly every Klingon passage contains them, the kernel would cheerfully serve you noise.
 
-`words-tlh` removes Klingon's common words first, so the kernel is asked only "yih", the tribble, which is the one word that carries meaning. A question made of nothing but common words is refused with "name the thing you mean".
+`words-tlh` strips Klingon's function words first, so the kernel is asked only "yih", the tribble, which is the one word in the sentence carrying any information.
+A question made of nothing but function words is refused with "name the thing you mean", which is also good advice outside of Klingon.
 
-Klingon has few speakers to consult, and its core reference is a book still in print, so the rule for the list was strict: **a word goes on the list only where two pinned sources agree on its spelling and its meaning.** The 27 that passed are the whole of the pack's list:
+Klingon has few speakers to consult and its core reference is a book still in print, so the inclusion rule was strict: **a word goes on the list only where two pinned sources agree on its spelling and its meaning.**
+The 27 that passed are the whole list:
 
 ```python
 # adapters/stdlib/words-tlh/words_tlh.py
@@ -185,30 +214,35 @@ SPELLED = (
 ).split()
 ```
 
-The sources were the boQwI' dictionary data, Wikipedia's article on Klingon grammar and Wikibooks' page on Klingon questions, each kept by its address and SHA-256 hash, with none of their text copied. Marc Okrand's *The Klingon Dictionary* is named but never copied. Twenty-seven words passed; four that only one source contained were left out, and the Klingon Language Institute's own page couldn't be counted, because its bytes change every time it is fetched.
+The sources were the boQwI' dictionary data, Wikipedia's article on Klingon grammar and Wikibooks' page on Klingon questions, each pinned by address and SHA-256 hash, with none of their text copied.
+Marc Okrand's *The Klingon Dictionary* is named and never copied.
+Four words that only one source contained were left out, and the Klingon Language Institute's own page couldn't be counted at all, because its bytes change on every fetch, which is a hard property to pin a hash to.
 
-The kernel doesn't change for an add-on, so a Klingon question pays for some English assumptions, and the pack's card sets out exactly what they cost:
+The kernel doesn't change for an add-on, so a Klingon question pays for a few English assumptions, and the pack's card itemises the bill:
 
-- **q and Q are different letters in Klingon**, but the kernel lowercases everything, so leaving out `qatlh` ("why") also leaves out `Qatlh` ("be difficult").
-- **Words that sound alike go together**: `jIH` means "I", but also "viewing screen".
-- **The apostrophe is a letter in Klingon**, and the kernel splits words on it, so `Qapla'` is read as `qapla`.
-- **Klingon builds words from parts**, so `yIH` won't find `yIHmey`, "tribbles".
+- **q and Q are different letters in Klingon**, but the kernel lowercases everything, so dropping `qatlh` ("why") also drops `Qatlh` ("be difficult").
+- **Homonyms travel together**: `jIH` means "I", and also "viewing screen".
+- **The apostrophe is a letter in Klingon**, and the kernel's tokenizer splits on it, so `Qapla'` is read as `qapla`.
+- **Klingon is agglutinative**, so `yIH` won't find `yIHmey`, "tribbles", without a words list saying they're the same.
 
-Across Willow's four other demo lives, all 63 English questions received the same passages with the pack as without it. Eleven Klingon words are also English words that the kernel keeps, among them `e`, `iv` and `oh`, so the pack is meant for questions asked in Klingon; ask about "vitamin e" through it and you lose the e.
+Across Willow's four other demo lives, all 63 English questions returned identical passages with the pack as without it.
+Eleven Klingon words are also English words the kernel keeps, among them `e`, `iv` and `oh`, so the pack is for questions asked in Klingon; ask about "vitamin e" through it and you lose the e.
 
-No Klingon speaker has reviewed the list yet. If you are one, it is only 27 words long.
+No Klingon speaker has reviewed the list yet. If you are one, it is 27 words long, and I would like to hear what's wrong with it.
 
 ### A fan's files beside his life
 
-Then came the demo itself, a study called `stewart-crossover`, which sets a fan's files beside the real record of a few years of his life, from 2020 to 2023: the three seasons of *Star Trek: Picard* and his memoir, *Making It So*.
+Then came the demo itself, a study called `stewart-crossover`, which sets a fan's files beside the real record of a few years of his life, 2020 to 2023: the three seasons of *Star Trek: Picard* and his memoir, *Making It So*.
 
-The fan is Wren Castellano, and she is fiction; every one of her files says so on its first line. He is not fiction, so nothing about him is invented. Her files end on 22 October 2026, six days before he died. The study asks a single question:
+The fan is Wren Castellano, and she is fiction; every one of her files says so on its first line.
+He is not fiction, so nothing about him is invented.
+Her files end on 22 October 2026, six days before he died, and the study asks a single question of them:
 
 **Can every word about him in her files be shown to come from a source, with whatever the sources don't hold shown as not held?**
 
-- **Eight sources** are kept by address, time and SHA-256, never by their text. A news page is held by its article's own lines, because its sidebars change by the hour; one of them was rotating a "Cause Of Death Revealed" headline.
-- **Everything was frozen first**: seven facts that two publishers must each hold, two quotes, five planted traps, five beats and eighteen pass rules, all committed before any of it was asked.
-- **Five repositories** each played a part: Willow's kernel and add-ons, willows-grove's checks on a sentence, willow-mcp's list of trusted hosts, willow-bot's own kernel verifying the record, and Forge's rule that anything nothing measured is unseen, never sound.
+- **Eight sources** are pinned by address, time and SHA-256, never by their text. A news page is held by its article's own lines, because its sidebars change by the hour; one of them was rotating a "Cause Of Death Revealed" headline, which is not a line you want your provenance hash to depend on.
+- **Everything was frozen first**: seven facts that two publishers must each hold, two quotes, five planted traps, five beats and eighteen pass rules, all committed before any of it was asked. That commit is the pre-registration.
+- **Five repositories** each did a part: Willow's kernel and add-ons, willows-grove's checks on a sentence, willow-mcp's list of trusted hosts, willow-bot's own kernel verifying the record, and Forge's rule that anything nothing measured is unseen, never sound.
 
 Five traps were planted in her files, and each was caught by the check named for it:
 
@@ -217,26 +251,31 @@ Five traps were planted in her files, and each was caught by the check named for
 | A friend's wrong fact | *Making It So* as "a 2021 memoir" | No source has it; the memoir is from 2023. |
 | A misquote | "the line between Jean-Luc Picard and Patrick Stewart got thinner and thinner" | No source has it. The closest passage is CNN's, with the real quote: "the distinction … became thinner and thinner". |
 | A reseller's claim | "signed by Patrick Stewart (seller's claim)" | No source has it, so the seller's claim stays the seller's. |
-| A Klingon case slip | *qapla'*, all lowercase | Found as "same words" but never verbatim, which is the q/Q cost the pack's card wrote down |
+| A Klingon case slip | *qapla'*, all lowercase | Found as "same words", never verbatim: the q/Q cost the card wrote down |
 | A wrong birth date | born 13 July 1941 | No source has it; two publishers hold 13 July 1940, in Mirfield. |
 
 Asked in Klingon, *nuq 'oH Qapla'?* went through the pack and was answered from the dictionary's entries.
 
 ### Gerald shows up
 
-A parody sits in the pile as well: Sir Patrik Stewpott, "always on a screen, never present". I kept it in on purpose: *"Keep it in, if Gerald shows up, we're on the right track."*
+A parody sits in the pile as well: Sir Patrik Stewpott, "always on a screen, never present".
+I kept it in on purpose: *"Keep it in, if Gerald shows up, we're on the right track."*
 
-Asked about Patrick Stewart on a screen, the parody's line comes first among the seven passages that hold the whole question; asked of the sources alone, nothing holds it. The kernel can show you the joke, and it can also show you that the joke isn't a source.
+Asked about Patrick Stewart on a screen, the parody's line ranks first among the seven passages that hold the whole question; asked of the sources alone, nothing holds it.
+The kernel can show you the joke, and it can also show you, with a line number, that the joke isn't a source.
 
 ### Her files don't know
 
-Asked whether he died, her files hold no passage that says so, and none of their dates falls after 22 October. They end before the news, and the kernel doesn't fill the gap.
+Asked whether he died, her files hold no passage that says so, and none of their dates falls after 22 October.
+They end before the news, and the kernel declines to fill the gap, which is the correct behaviour and, for once, also the kind one.
 
 ### Make it so
 
 His most famous line very nearly didn't make it.
 
-"Make it so" appears in CNN's obituary at the end of a 542-character paragraph, beginning at the 503rd character. The kernel keeps only the first 500 characters of a line and quietly drops the rest, so nothing built on it could find the line, and the first run failed on exactly that. Two lines of the kernel do it:
+"Make it so" appears in CNN's obituary at the end of a 542-character paragraph, beginning at the 503rd character.
+The kernel's chunker keeps only the first 500 characters of any line and silently drops the rest, so nothing built on it could find the line, and the first run failed on exactly that.
+Two lines of the kernel do it:
 
 ```python
 # kernel.py
@@ -245,7 +284,7 @@ MAX_CHUNK = 500  # characters in one chunk
                 para.append(line[:MAX_CHUNK])
 ```
 
-It is now **bug #89**, and the test that shows it is marked to fail, strictly, so the day someone fixes the bug, the test passes, the mark fails the run, and the fix can't go unnoticed:
+It is now **bug #89**, and the test that demonstrates it is marked as an expected failure, strictly, so that the day someone fixes the bug the test passes, the strict marker fails the run, and the fix can't slip in unannounced:
 
 ```python
 # test_kernel.py
@@ -260,13 +299,21 @@ def test_every_word_of_a_long_line_is_read(tmp_path):
     assert "airlock" in read
 ```
 
- The kernel was not changed to make the run pass; instead, the study fetches long lines as separate sentences, every word kept, and says why.
+The kernel was not patched to make the study pass.
+Instead the study fetches long lines as separate sentences, every word kept, and documents why.
+(When I later boxed my own essays with the same kernel, 47 of their paragraphs ran past 500 characters.
+Asked for the line *"Nothing on that list scored a 5."* from my own essay, `quote-check` reported it wasn't in the folder; folded into sentences, the same file gave it back verbatim.
+Bug #89 had been quietly half-reading me as well.)
 
-It took three runs to hold every rule: 15 of 17, then 16 of 18, then all 18. Each new freeze changed only what the previous run had shown to be broken, none loosened a rule, and runs 1 and 2 stay in the repo beside run 3, failures and all.
+It took three runs to hold every rule: 15 of 17, then 16 of 18, then all 18.
+Each new freeze changed only what the previous run had shown to be broken, none loosened a rule, and runs 1 and 2 stay in the repository beside run 3, failures included.
 
-The demo also brought an add-on named after the line, `make-it-so`. You give it an order and what the order rests on, and it writes the order down with the passages behind it and the hash of every file it cites, and then it stops. **It never carries the order out.**
+The demo also brought an add-on named after the line, `make-it-so`.
+You give it an order and the question the order rests on; it writes the order down with the supporting passages and the SHA-256 of every file it cites, and then it stops.
+**It never carries the order out.**
 
-Later, `check` tells you whether those files still hold what they held, so that a plan made on Monday isn't run on Thursday's files by accident. Here it is on Odile, one of Willow's invented demo lives, who has a county notice with a deadline in her mail:
+Later, `check` tells you whether those files still hold what they held, so that a plan made on Monday isn't executed against Thursday's files by accident.
+Here it is on Odile, one of Willow's invented demo lives, who has a county notice with a deadline sitting in her mail:
 
 ```
 $ python adapters/stdlib/make-it-so/make_it_so.py plan --box odile-record --to plan.json \
@@ -281,7 +328,7 @@ $ python adapters/stdlib/make-it-so/make_it_so.py check --box odile-record plan.
 holds
 ```
 
-Add one line to that letter, and the order no longer stands:
+Add one line to that letter and the order no longer stands:
 
 ```
 $ python adapters/stdlib/make-it-so/make_it_so.py check --box odile-record plan.json
@@ -289,11 +336,13 @@ changed: mail/2026-03-20-county.txt
 the plan no longer holds: 1 of 1 files differ
 ```
 
-A captain gives the order, and someone else carries it out. In Willow, code can search, suggest and record, but only a person acts.
+A captain gives the order, and someone else carries it out.
+In Willow, code can search, suggest and record, but only a person acts.
 
 ## What broke
 
-A day like this turns things up. Seven known bugs went into the repo as tests that fail on purpose, each one strict, so that when a bug is fixed its test notices:
+A day like this turns things up, and the useful response is to write them down where they can't be forgotten.
+Seven known bugs went into the repository as strict expected-failure tests, so each one stays visible until it's fixed and announces itself when it is:
 
 | Bug | What goes wrong |
 |---|---|
@@ -305,24 +354,26 @@ A day like this turns things up. Seven known bugs went into the repo as tests th
 | #95 | A date inside a web address dates the line around it |
 | #96 | `propose` exits 0 when every suggestion is refused |
 
-Two of them, #90 and #91, concern the key, the one thing no code is ever supposed to touch, and writing them down is the first step towards fixing them.
+Two of them, #90 and #91, concern the key, the one thing no code is ever supposed to touch.
+Finding them in your own guard is uncomfortable; finding them in someone else's breach report later would be worse.
 
 ## Come build
 
 By the end of the day Willow had four front doors, each an issue that explains how to start:
 
-- **[Add your language (#84)](https://github.com/willow-memory/Willow/issues/84).** There is now a form, and you don't need to write Python: bring the common words, what your language does that English doesn't, and where your list comes from, and someone can wrap it into a pack with your name on it. ADDONS.md keeps a table of the 13 packs built so far and the ones still waiting.
+- **[Add your language (#84)](https://github.com/willow-memory/Willow/issues/84).** There is a form now, and you don't need to write Python: bring the common words, what your language does that English doesn't, and where your list comes from, and someone can wrap it into a pack with your name on it. ADDONS.md keeps a generated table of the 13 packs built so far and the ones still waiting.
 - **[Build an add-on (#85)](https://github.com/willow-memory/Willow/issues/85).** 218 ideas are listed and waiting, and a draft pull request that names one is how you claim it.
 - **[Build a demo from a real situation (#86)](https://github.com/willow-memory/Willow/issues/86)**, whether an invented life like the four already there or a study on public sources like the one above, but never your own private files.
-- **[Show your stack (#87)](https://github.com/willow-memory/Willow/issues/87).** Tell us which add-ons you run and what is missing; seven example stacks are there to start from: choir, comeback, foster, maintainer, reporter, smallholding and teacher.
+- **[Show your stack (#87)](https://github.com/willow-memory/Willow/issues/87).** Tell us which add-ons you run and what's missing; seven example stacks are there to start from: choir, comeback, foster, maintainer, reporter, smallholding and teacher.
 
-The bot behind the repo helps as well: a new idea or language issue gets its entry for the list written out, ready to paste into a pull request, although the bot never opens the pull request itself.
+The bot behind the repository helps too: a new idea or language issue gets its entry for the list written out, ready to paste into a pull request, although the bot never opens the pull request itself, for the same reason `make-it-so` never runs the command.
 
 The kernel stays put. The rest is yours to grow.
 
 - The repo: [willow-memory/Willow](https://github.com/willow-memory/Willow)
 - Every add-on, built and planned: [ADDONS.md](https://github.com/willow-memory/Willow/blob/main/ADDONS.md)
 - What it falls short of: [LIMITS.md](https://github.com/willow-memory/Willow/blob/main/LIMITS.md)
+- The longer argument for software you can keep: [Nobody Adds It Up](https://github.com/rudi193-cmd/DispatchesFromReality/blob/main/essays/nobody-adds-it-up/README.md), and the systems behind it in [Case Study 4](https://github.com/rudi193-cmd/DispatchesFromReality/blob/main/professional/one-script-fleet-case-study.md)
 
 **Receipts.** Every number above is a line in the repo, at the commit this post describes:
 
