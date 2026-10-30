@@ -40,20 +40,20 @@ Sources:
   the session's scratchpad, not in a repo.
 - "13th language pack": PR 88's COMMANDS tuple, 12 codes before it. The PR text says
   "fourteenth words-* add-on"; the desk counts 13 packs, English built in besides.
-- The series link is a placeholder until the invitation post has its DEV URL.
+- The series line names the invitation post unlinked; link it once that post has its DEV URL.
 - Status: PR 88 merged; PR 100 merged 2026-10-30 07:13 UTC at head 342a0ba, its study and
   make-it-so unchanged from 2587221, which this was written from.
 -->
 
 # Teaching my kernel 27 words of Klingon
 
-*Part of my DEV series. Last time: [Come build your own stack on a kernel that won't guess](<invitation post URL>).*
+*Part of my DEV series. Last time: Come build your own stack on a kernel that won't guess.*
 
 > *For Patrick Stewart, 1940–2026.*
 
 ## Why Klingon, and why now
 
-Patrick Stewart died this week, at 86. I'm building a demo for Willow in his memory, and the first thing it needed wasn't his. It needed a language.
+Patrick Stewart died this week, at 86. I built a demo for Willow in his memory, and the first thing it needed wasn't his. It needed a language.
 
 Captain Picard spent a lot of his career among Klingons. He was once chosen to judge who would lead their empire. If a demo is going to ask questions of that world, the kernel has to read a question asked in Klingon without tripping over its small words.
 
@@ -182,7 +182,7 @@ Each new freeze changed only what the run before it showed was broken, each has 
 
 ## If you speak it, or any other language
 
-That last line is the invitation. If you know Klingon, the list is 27 words long, and you can tell me what's wrong with it. If you speak a language Willow doesn't read yet, it needs the same thing: its common words, what it does that English doesn't, and where your list comes from.
+No Klingon speaker has reviewed the list, and that's the invitation. If you know Klingon, the list is 27 words long, and you can tell me what's wrong with it. If you speak a language Willow doesn't read yet, it needs the same thing: its common words, what it does that English doesn't, and where your list comes from.
 
 [Add your language (#84)](https://github.com/willow-memory/Willow/issues/84) is the front door. You don't need to write Python. Bring the list, and someone can wrap it into a pack with your name on it.
 
