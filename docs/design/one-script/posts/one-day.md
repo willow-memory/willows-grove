@@ -68,6 +68,11 @@ Sources (each checked 2026-10-30):
   study's README.
 - Known bugs: BUGS.md at eaa88b2, #89 to #96 (no #92: that number is the language PR).
 - Both jokes are the operator's, from this session.
+- Code: copied from Willow at eaa88b2, each block's lines as they are there (kernel.py 85, 494,
+  101, 410; test_kernel.py 714-722; words_tlh.py 34-39); a "..." gap is left as a blank line.
+- The make-it-so run: real, on Willow main eaa88b2, 2026-10-30, on demo/odile's life made by
+  make_life.py; the box and plan paths are shortened to odile-record and plan.json. The
+  "changed:" run is on a copy of her files with one line added to the county letter.
 - Receipts: deep-links (Willow add-on) on a box of the repo's files at eaa88b2 gave each claim's
   file and lines; they are written as GitHub ?plain=1#L line anchors, since GitHub renders
   Markdown and a text fragment of the raw line would not match what it shows.
@@ -114,7 +119,14 @@ Willow is two things. **The kernel** is a single Python file, `kernel.py`, which
 
 You point it at a folder and ask a question, and it gives you back up to three passages from your own files, each with its file and line number, or it tells you plainly that your files don't hold the answer. Anything suggested by an AI model, a script or another person is held until you approve it with your key, and every step is written to a hash-chained log.
 
-The kernel serves a passage only when that passage holds at least half of the question's content words. Loosening the rule to a third of the words, or to any two, finds a few more passages, but it also answers questions about something else several times as often, so the line stays where it is. It is the `ESCALATE` answer from my benchmark series, built into the kernel: when your files don't hold the answer, it says so rather than guessing.
+The kernel serves a passage only when that passage holds at least half of the question's content words. Loosening the rule to a third of the words, or to any two, finds a few more passages, but it also answers questions about something else several times as often, so the line stays where it is. It is the `ESCALATE` answer from my benchmark series, built into the kernel: when your files don't hold the answer, it says so rather than guessing. The whole rule is one constant and one comparison:
+
+```python
+# kernel.py
+HOLD = 0.5  # the share of a bite's words a chunk must hold
+
+    return [(c, d, h) for c, d, h in held if len(h) >= HOLD * len(want)]
+```
 
 **The add-ons** are everything else. An add-on uses the kernel, but the kernel never names an add-on, so you could delete every one of them and the kernel would run exactly as before.
 
@@ -161,7 +173,17 @@ The kernel already ignores English's common words, such as "when", "is" and "the
 
 `words-tlh` removes Klingon's common words first, so the kernel is asked only "yih", the tribble, which is the one word that carries meaning. A question made of nothing but common words is refused with "name the thing you mean".
 
-Klingon has few speakers to consult, and its core reference is a book still in print, so the rule for the list was strict: **a word goes on the list only where two pinned sources agree on its spelling and its meaning.**
+Klingon has few speakers to consult, and its core reference is a book still in print, so the rule for the list was strict: **a word goes on the list only where two pinned sources agree on its spelling and its meaning.** The 27 that passed are the whole of the pack's list:
+
+```python
+# adapters/stdlib/words-tlh/words_tlh.py
+SPELLED = (
+    "jIH SoH ghaH 'oH maH tlhIH chaH bIH 'e' "
+    "je joq ghap 'ej qoj pagh 'ach 'a "
+    "nuq 'Iv nuqDaq ghorgh qatlh chay' 'ar "
+    "HIja' HISlaH ghobe'"
+).split()
+```
 
 The sources were the boQwI' dictionary data, Wikipedia's article on Klingon grammar and Wikibooks' page on Klingon questions, each kept by its address and SHA-256 hash, with none of their text copied. Marc Okrand's *The Klingon Dictionary* is named but never copied. Twenty-seven words passed; four that only one source contained were left out, and the Klingon Language Institute's own page couldn't be counted, because its bytes change every time it is fetched.
 
@@ -214,11 +236,58 @@ Asked whether he died, her files hold no passage that says so, and none of their
 
 His most famous line very nearly didn't make it.
 
-"Make it so" appears in CNN's obituary at the end of a 542-character paragraph, beginning at the 503rd character. The kernel keeps only the first 500 characters of a line and quietly drops the rest, so nothing built on it could find the line, and the first run failed on exactly that. It is now **bug #89**, with a test that demonstrates it. The kernel was not changed to make the run pass; instead, the study fetches long lines as separate sentences, every word kept, and says why.
+"Make it so" appears in CNN's obituary at the end of a 542-character paragraph, beginning at the 503rd character. The kernel keeps only the first 500 characters of a line and quietly drops the rest, so nothing built on it could find the line, and the first run failed on exactly that. Two lines of the kernel do it:
+
+```python
+# kernel.py
+MAX_CHUNK = 500  # characters in one chunk
+
+                para.append(line[:MAX_CHUNK])
+```
+
+It is now **bug #89**, and the test that shows it is marked to fail, strictly, so the day someone fixes the bug, the test passes, the mark fails the run, and the fix can't go unnoticed:
+
+```python
+# test_kernel.py
+@pytest.mark.xfail(
+    strict=True, reason="bug #89: a line's text past its 500th character is never read"
+)
+def test_every_word_of_a_long_line_is_read(tmp_path):
+    (tmp_path / "long.txt").write_text(
+        "word " * 110 + "the tribble is in the airlock.\n"
+    )
+    read = " ".join(c["text"] for c in k.chunks(tmp_path))
+    assert "airlock" in read
+```
+
+ The kernel was not changed to make the run pass; instead, the study fetches long lines as separate sentences, every word kept, and says why.
 
 It took three runs to hold every rule: 15 of 17, then 16 of 18, then all 18. Each new freeze changed only what the previous run had shown to be broken, none loosened a rule, and runs 1 and 2 stay in the repo beside run 3, failures and all.
 
-The demo also brought an add-on named after the line, `make-it-so`. You give it an order and what the order rests on, and it writes the order down with the passages behind it and the hash of every file it cites, and then it stops. **It never carries the order out.** Later, `check` tells you whether those files still hold what they held, so that a plan made on Monday isn't run on Thursday's files by accident.
+The demo also brought an add-on named after the line, `make-it-so`. You give it an order and what the order rests on, and it writes the order down with the passages behind it and the hash of every file it cites, and then it stops. **It never carries the order out.**
+
+Later, `check` tells you whether those files still hold what they held, so that a plan made on Monday isn't run on Thursday's files by accident. Here it is on Odile, one of Willow's invented demo lives, who has a county notice with a deadline in her mail:
+
+```
+$ python adapters/stdlib/make-it-so/make_it_so.py plan --box odile-record --to plan.json \
+    --cmd "draft a reply to the county notice" --limit 2 "county notice deadline"
+order: county notice deadline
+command (not run): draft a reply to the county notice
+  mail/2026-03-20-county.txt:12  The proposed determination limits the above well to in-house
+  mail/2026-03-20-county.txt:10  NOTICE OF PROPOSED DETERMINATION OF WATER RIGHT
+wrote plan.json; nothing was run. The command is yours to run.
+
+$ python adapters/stdlib/make-it-so/make_it_so.py check --box odile-record plan.json
+holds
+```
+
+Add one line to that letter, and the order no longer stands:
+
+```
+$ python adapters/stdlib/make-it-so/make_it_so.py check --box odile-record plan.json
+changed: mail/2026-03-20-county.txt
+the plan no longer holds: 1 of 1 files differ
+```
 
 A captain gives the order, and someone else carries it out. In Willow, code can search, suggest and record, but only a person acts.
 
@@ -266,6 +335,10 @@ The kernel stays put. The rest is yours to grow.
 - [Gerald first of seven passages](https://github.com/willow-memory/Willow/blob/eaa88b2/demo/stewart-crossover/README.md?plain=1#L278-L286)
 - [bug #89 and the rest](https://github.com/willow-memory/Willow/blob/eaa88b2/BUGS.md?plain=1#L9-L17)
 - [make-it-so never runs the command](https://github.com/willow-memory/Willow/blob/eaa88b2/adapters/stdlib/make-it-so/README.md?plain=1#L47-L48)
+- [`HOLD = 0.5`](https://github.com/willow-memory/Willow/blob/eaa88b2/kernel.py#L85) and [the comparison that uses it](https://github.com/willow-memory/Willow/blob/eaa88b2/kernel.py#L494)
+- [`MAX_CHUNK = 500`](https://github.com/willow-memory/Willow/blob/eaa88b2/kernel.py#L101) and [the line that cuts](https://github.com/willow-memory/Willow/blob/eaa88b2/kernel.py#L410)
+- [bug #89's strict test](https://github.com/willow-memory/Willow/blob/eaa88b2/test_kernel.py#L714-L722)
+- [the 27 Klingon words](https://github.com/willow-memory/Willow/blob/eaa88b2/adapters/stdlib/words-tlh/words_tlh.py#L34-L39)
 
 ---
 
