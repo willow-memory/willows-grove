@@ -25,8 +25,8 @@ Sources:
   bytes change on every fetch; Okrand named, never fetched or copied; q/Q, homonyms, apostrophes,
   affixes; 9 tests, mutants 6 of 6; the full cores.py comparison against main f301e24.
 - "nuqDaq 'oH yIH'e'?" asked as "yih": the card's own example and test.
-- The demo: willow-memory/Willow PR 100 ("make-it-so, and the stewart-crossover study"), head
-  2587221, stacked on PR 99; its demo/stewart-crossover/README.md, questions.json and the
+- The demo: willow-memory/Willow PR 100 ("make-it-so, and the stewart-crossover study"), read at
+  2587221; its demo/stewart-crossover/README.md, questions.json and the
   make-it-so card, read 2026-10-30. Wren Castellano is fiction; her files end 2026-10-22. Eight
   sources; seven facts in two publishers; two quotes; five traps (T1-T5); five beats (death, G1,
   G2, K1, M1); eighteen pass rules; three freezes; run 1 15 of 17, run 2 16 of 18, run 3 18 of
@@ -41,8 +41,8 @@ Sources:
 - "13th language pack": PR 88's COMMANDS tuple, 12 codes before it. The PR text says
   "fourteenth words-* add-on"; the desk counts 13 packs, English built in besides.
 - The series link is a placeholder until the invitation post has its DEV URL.
-- Status at drafting: PR 88 merged. PR 100 open, stacked on PR 99. Don't publish before PR 100
-  merges, and re-read its numbers if it changes.
+- Status: PR 88 merged; PR 100 merged 2026-10-30 07:13 UTC at head 342a0ba, its study and
+  make-it-so unchanged from 2587221, which this was written from.
 -->
 
 # Teaching my kernel 27 words of Klingon
