@@ -41,7 +41,10 @@ Sources (each checked 2026-10-30):
   (npr.org/2026/10/29/1230906945/patrick-stewart-dead), Deadline, CNN, Variety, ABC News, TIME,
   read 2026-10-30. The post says only what they report.
 - Picard as Arbiter of Succession for the Klingon Empire: Star Trek: The Next Generation,
-  "Reunion" (season 4, 1990). From the desk's knowledge, not fetched; check before publishing.
+  "Reunion" (season 4, episode 7). claim-check found it in no file of the sources box, so it
+  was looked up, 2026-10-30: en.wikipedia.org/wiki/Reunion_(Star_Trek:_The_Next_Generation),
+  memory-alpha.fandom.com (Klingon Civil War), tor.com's 2012 rewatch of "Reunion". K'mpec
+  makes Picard Arbiter; the Arbiter names the two strongest candidates, who then fight.
 - words-tlh: Willow PR 88 at 466404b (description, card, code, tests): 27 words, 37 forms; the
   two-sources rule; boQwI' data at commit 0f6018e (Apache-2.0), Wikipedia "Klingon grammar" at
   revision 1333803070, Wikibooks "Klingon/Grammar/Questions" at revision 4446920; net,
@@ -60,6 +63,14 @@ Sources (each checked 2026-10-30):
   study's README.
 - Known bugs: BUGS.md at eaa88b2, #89 to #96 (no #92: that number is the language PR).
 - Both jokes are the operator's, from this session.
+
+Checked with Willow's own add-ons, on main eaa88b2, 2026-10-30 (the session's scratchpad holds
+the boxes): quote-check found all 13 of the post's quotes verbatim in a box of its sources;
+claim-check found every factual claim whole in one source passage, but for Picard as Arbiter
+(sourced above since); reading-level scored every section "fairly easy" or "easy", the hardest
+"67 add-ons" at 16 words a sentence, since split; duplicates found no passage said twice;
+a11y-check found no screen-reader problem. One paragraph ran past 500 characters, where the
+kernel stops reading (bug #89); it is split.
 -->
 
 # One day of Willow: 67 add-ons, a language, and a goodbye
@@ -104,12 +115,14 @@ This day's README rewrite made that the first thing you read, and added a sectio
 
 Most of the day was building, in batches of thirteen. Each add-on is a folder with its code, its tests, and a card saying what it writes and whether it goes online. CI holds every one to its card.
 
-- **More of your life as text it can search:** Slack, Discord, Matrix, Mastodon, IRC, Reddit and X archives; Notion, Trello, Jira and Joplin exports; Goodreads and Letterboxd lists; family trees, MusicXML scores and screenplays.
+- **Your chats:** Slack, Discord, Matrix, Mastodon, IRC, Reddit and X archives.
+- **Your tools and lists:** Notion, Trello, Jira and Joplin exports, and Goodreads and Letterboxd lists.
+- **Odder shapes:** family trees, MusicXML scores and screenplays.
 - **Keeping track:** bank statements, budgets, orders, subscriptions, even livestock.
-- **Programs it can call:** ripgrep for big folders, OCR for photos of letters, PGP signatures, a static search page. Ripgrep's hits are checked against the kernel's own passages, so a faster tool can't quietly answer something the kernel wouldn't.
+- **Programs it can call:** ripgrep for big folders, OCR for photos of letters, PGP signatures, a static search page. Ripgrep's hits are checked against the kernel's own passages. A faster tool can't quietly answer something the kernel wouldn't.
 - **Guards:** `hook-guard` refuses, by rule, an AI assistant's tool call that would read your key or write the record outside the kernel.
 
-CI got faster too. Six Python versions were 72 of a pull request's 84 jobs, so a pull request now tests on the oldest and newest, and `main` on all six.
+CI got faster too. Six Python versions were 72 of a pull request's 84 jobs. Now a pull request tests on the oldest and newest, and `main` on all six.
 
 ## A study that half failed
 
@@ -124,7 +137,7 @@ Both results are in the README, the failed half first. The questions were frozen
 
 Partway through the day, the news came: Patrick Stewart had died, at 86. I wanted to build something in his memory, and the first thing it needed wasn't his. It needed a language.
 
-Captain Picard spent a lot of his career among Klingons. He was once chosen to judge who would lead their empire. If a demo was going to ask questions of that world, the kernel had to read a question asked in Klingon.
+Captain Picard spent a lot of his career among Klingons. He was once made the Klingon Empire's Arbiter of Succession, the outsider who rules on who may fight to lead it. If a demo was going to ask questions of that world, the kernel had to read a question asked in Klingon.
 
 ### 27 words of Klingon
 
@@ -132,7 +145,9 @@ The kernel ignores English's common words ("when", "is", "the"). A question in a
 
 `words-tlh` takes Klingon's common words out first, so the kernel is asked "yih", the tribble, the only word that says anything. A question of nothing but common words is refused with "name the thing you mean".
 
-Klingon has few speakers to ask and its core reference is a book in print, so the rule was strict: **a word is on the list only where two pinned sources agree on its spelling and meaning.** The sources were the boQwI' dictionary data, Wikipedia's "Klingon grammar" and Wikibooks' page on Klingon questions, each kept by address and SHA-256 with no text copied. Marc Okrand's *The Klingon Dictionary* is named and never copied. Twenty-seven words passed. Four that only one source had were left out. The Klingon Language Institute's own page couldn't be counted, because its bytes change on every fetch.
+Klingon has few speakers to ask and its core reference is a book in print. So the rule was strict: **a word is on the list only where two pinned sources agree on its spelling and meaning.**
+
+The sources were the boQwI' dictionary data, Wikipedia's "Klingon grammar" and Wikibooks' page on Klingon questions. Each is kept by address and SHA-256, with no text copied. Marc Okrand's *The Klingon Dictionary* is named and never copied. Twenty-seven words passed. Four that only one source had were left out. The Klingon Language Institute's own page couldn't be counted, because its bytes change on every fetch.
 
 The kernel doesn't change for an add-on, so a Klingon question pays for English assumptions, and the card says what:
 
