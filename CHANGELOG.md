@@ -80,6 +80,7 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Added
 
+- **docs:** the invitation post brought current before publishing: 253 add-ons built and 218 planned on Willow main, a fourth ask (a language), and each ask linked to its Willow issue, #84 to #87 (PR 169).
 - **docs:** the source of the DEV post "Come build your own stack on a kernel that won't guess" (`docs/design/one-script/posts/invitation.md`), an invitation to build stacks, add-ons and real demos on Willow's kernel, every fact checked against Willow `main` and cited in its header, with a Reddit short version and its cover prompt (PR 168).
 - **governance:** the constitution is pinned from `willow-memory/Willow`, its home again, where it is amended and always a draft: `governance/CONSTITUTION.md` is Willow's at `ce051b6` (Draft 0.15), `governance/constitution.pin` names the commit and sha256, and `tests/test_constitution_pin.py` fails if the copy and the pin disagree (PR 167).
 - **one-script:** the second flattening, Grove's side: one reach (`grove/onescript_reach.py`, a byte copy of the one script's bootstrap) for `seat_boxes`, `seat_cli.load_bot` and `--check`; the three states from the one script (`grove/three_states.py`) with a generated `web/lib/states.js` and `loading` UI-only; the served page starts and says `unreachable` with no one script beside it; canon, clock, scrub and sign taken from the one script; and the rulings' record F-19 to F-38 (`docs/design/one-script/flatten-2-2026-10-21.md`) (PR 164).
