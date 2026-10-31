@@ -7,6 +7,7 @@
 #       -e "s#@HOST@#127.0.0.1#g" \
 #       -e "s#@PORT@#8766#g" \
 #       -e "s#@DB_URL@#postgresql:///willow_20#g" \
+#       -e "s#@WILLOW_HOME@#$WILLOW_HOME#g" \
 #       deploy/grove-serve.service.template \
 #       > ~/.config/systemd/user/grove-serve.service
 #   systemctl --user daemon-reload
@@ -21,6 +22,13 @@
 # an honest three-state answer, but a permanently dark panel. It stays a
 # placeholder rather than a baked value for the same reason @WORKDIR@ does:
 # the DSN is box wiring, and this template is repo config.
+#
+# @WILLOW_HOME@ is the live willow home (the box). The page reaches
+# willow-mcp through a stdio child that inherits it; without it willow-mcp
+# falls back to the retired ~/.willow, refuses (RetiredHomeError: "Set
+# WILLOW_HOME to the live home"), and the journal, the human-required queue
+# and, through the envelope reader's $WILLOW_HOME/constitutional/ probe, the
+# envelopes all read unreachable or empty. Box wiring, so a placeholder.
 #
 # The served page ALWAYS binds loopback by default (127.0.0.1:8766); a
 # non-loopback @HOST@ still runs but grove_serve.py prints a warning at
@@ -38,6 +46,7 @@ Environment=GROVE_SERVE_HOST=@HOST@
 Environment=GROVE_SERVE_PORT=@PORT@
 Environment=WILLOW_HUMAN_ORCHESTRATOR=1
 Environment=WILLOW_DB_URL=@DB_URL@
+Environment=WILLOW_HOME=@WILLOW_HOME@
 ExecStart=@WORKDIR@/scripts/grove-serve-run
 Restart=on-failure
 RestartSec=2

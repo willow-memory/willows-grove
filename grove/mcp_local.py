@@ -1094,9 +1094,14 @@ def grove_human_required(limit: int = 30, open_only: bool = True) -> list[dict]:
         open_only: When true (default) only items with status='open'.
     """
     cap = max(1, min(int(limit), 100))
-    return _jsonify(
-        _grove_reader.human_required_queue(limit=cap, open_only=bool(open_only))
-    )
+    if not open_only:
+        # willow-mcp's queue is listed open here; the closed history is
+        # willow-mcp's own (human_required_list status='').
+        return _jsonify(_grove_reader.human_required_queue(limit=cap, open_only=False))
+    # The live queue: where the fleet files (willow-mcp), not the June table.
+    from grove import human_required_reader
+
+    return _jsonify(human_required_reader.read_open(limit=cap)["items"])
 
 
 @mcp.tool()

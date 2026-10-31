@@ -85,9 +85,15 @@ def _parse_stdio_tool_response(resp: Optional[dict[str, Any]]) -> Optional[Any]:
 
 
 def _payload_from_content(content: Any) -> Optional[Any]:
+    """The tool's payload from its text blocks. A tool that returns a list
+    arrives as one block per item (willow-mcp's ``kb_journal_read`` does), so
+    several JSON blocks are that list, in order; reading only the first
+    turned three journal atoms into one bare atom and the journal into
+    ``empty``."""
     if not content:
         return None
     blocks = content if isinstance(content, list) else [content]
+    parsed: list[Any] = []
     for block in blocks:
         if isinstance(block, dict):
             text = block.get("text")
@@ -96,16 +102,21 @@ def _payload_from_content(content: Any) -> Optional[Any]:
         if not isinstance(text, str) or not text.strip():
             continue
         try:
-            return json.loads(text)
+            parsed.append(json.loads(text))
         except json.JSONDecodeError:
-            return text
-    return None
+            if not parsed:
+                return text
+    if not parsed:
+        return None
+    return parsed[0] if len(parsed) == 1 else parsed
 
 
 def _parse_async_tool_result(result: Any) -> Optional[Any]:
     if result is None:
         return None
-    if getattr(result, "isError", False):
+    # SDK 1.x names it isError; 2.x (in this venv) is_error. Reading only the
+    # first, an error result was taken for a payload.
+    if getattr(result, "isError", False) or getattr(result, "is_error", False):
         sc = getattr(result, "structured_content", None)
         if isinstance(sc, dict) and "error" in sc:
             return sc
@@ -133,11 +144,39 @@ class WillowMcpClient:
         self._next_id = 0
         self._session_ready = False
         self._available: Optional[bool] = None
+        self._last_error = ""
 
     def available(self) -> bool:
         if self._available is None:
             self._available = bool(self._url) or self._stdio_argv is not None
         return self._available
+
+    def last_error(self) -> str:
+        """Why the last call reached nothing, in the child's own words when it
+        exited (``RetiredHomeError: ... Set WILLOW_HOME``), else ``""``. An
+        unreachable that says why points at the fix; one that doesn't sends
+        the operator looking."""
+        return self._last_error
+
+    def _note_exit(self, proc: "subprocess.Popen[str]") -> None:
+        """Called when the child's stdout reached end of file. The pipe closes
+        before the process is reaped, so ``poll()`` there can still say
+        running: wait a moment for the exit, then keep its last words. A child
+        that closed stdout and kept running is left alone."""
+        if proc.stderr is None:
+            return
+        try:
+            proc.wait(timeout=2)
+        except subprocess.TimeoutExpired:
+            return
+        try:
+            tail = [ln.strip() for ln in proc.stderr.read().splitlines() if ln.strip()]
+        except (OSError, ValueError):
+            tail = []
+        self._last_error = (
+            f"willow-mcp exited {proc.returncode}: "
+            + (tail[-1] if tail else "no output")
+        )[:300]
 
     def transport_label(self) -> str:
         return "http" if self._url else "stdio"
@@ -212,7 +251,9 @@ class WillowMcpClient:
                 self._session_ready = False
                 return None
         if not line:
+            self._note_exit(proc)
             return None
+        self._last_error = ""
         try:
             return json.loads(line)
         except json.JSONDecodeError as err:

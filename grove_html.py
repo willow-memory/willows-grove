@@ -173,6 +173,9 @@ _LENS_SWITCH_REMOVED_FROM_HERO = True  # documentation pin for greppers
 _CONSTITUTIONAL_PANELS = (
     '<section class="constitutional-panels">'
     '<grove-envelope-panel data-source="/api/envelopes"></grove-envelope-panel>'
+    # What waits on the human, from willow-mcp's live queue (where the fleet
+    # files), not the June Postgres table; same §8 rule: the live endpoint.
+    '<grove-human-required data-source="/api/human_required"></grove-human-required>'
     "</section>"
 )
 
@@ -265,6 +268,9 @@ def render_page() -> str:
         # <grove-envelope-panel> mounted in the constitutional-panels region.
         # Component module registered here so the tag upgrades on connect.
         '<script type="module" src="/web/components/grove-envelope-panel.js"></script>\n'
+        # <grove-human-required> beside it: the live queue of what waits on
+        # the human (/api/human_required).
+        '<script type="module" src="/web/components/grove-human-required.js"></script>\n'
         # D12/D14 summonable card primitive. Mounted even though the shell
         # renders no <grove-card> markup of its own: the layout-memory boot
         # below walks the DOM by tag name and cards are summoned at runtime,

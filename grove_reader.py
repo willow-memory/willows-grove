@@ -1480,6 +1480,10 @@ def human_required_queue(
     """Items from public.human_required_queue — work that pauses automation until a
     human acts (consent, attestation, review, onboarding). Priority-first, newest-first.
 
+    Not where the fleet files any more: willow-mcp's ``human_required_enqueue``
+    writes its own store, read by ``grove/human_required_reader.py``. This
+    table last took an item in June; it is kept for its schema and history.
+
     Each entry: {id, kind, title, summary, status, priority, source_agent,
                  source_ref, assignee, created_at}
 
