@@ -159,7 +159,15 @@ class WillowMcpClient:
         return self._last_error
 
     def _note_exit(self, proc: "subprocess.Popen[str]") -> None:
-        if proc.poll() is None or proc.stderr is None:
+        """Called when the child's stdout reached end of file. The pipe closes
+        before the process is reaped, so ``poll()`` there can still say
+        running: wait a moment for the exit, then keep its last words. A child
+        that closed stdout and kept running is left alone."""
+        if proc.stderr is None:
+            return
+        try:
+            proc.wait(timeout=2)
+        except subprocess.TimeoutExpired:
             return
         try:
             tail = [ln.strip() for ln in proc.stderr.read().splitlines() if ln.strip()]
