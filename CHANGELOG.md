@@ -2,6 +2,14 @@
 
 All notable changes land here per INVARIANTS.md §3. Format follows Keep a Changelog v1.1.0.
 
+## [0.27.2](https://github.com/willow-memory/willows-grove/compare/v0.27.1...v0.27.2) (2026-10-31)
+
+
+### Fixed
+
+* **grove:** the queue panel sorts the whole open queue and says how many wait ([ce81c4c](https://github.com/willow-memory/willows-grove/commit/ce81c4c421daf03e93f49d3d9619b2fe50514862))
+* **grove:** the queue panel sorts the whole open queue and says how many wait ([#173](https://github.com/willow-memory/willows-grove/issues/173)) ([642e467](https://github.com/willow-memory/willows-grove/commit/642e46782f08ae1a3492ad17d9003d564fa2f0f1))
+
 ## [0.27.1](https://github.com/willow-memory/willows-grove/compare/v0.27.0...v0.27.1) (2026-10-31)
 
 
