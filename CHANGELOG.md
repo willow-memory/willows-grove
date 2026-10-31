@@ -2,6 +2,15 @@
 
 All notable changes land here per INVARIANTS.md §3. Format follows Keep a Changelog v1.1.0.
 
+## [0.27.1](https://github.com/willow-memory/willows-grove/compare/v0.27.0...v0.27.1) (2026-10-31)
+
+
+### Fixed
+
+* **grove:** the desk reaches willow-mcp, says why when it can't, and shows the live queue ([99b6e6d](https://github.com/willow-memory/willows-grove/commit/99b6e6d36deb947e0b13ca799e3eef3846ab25b4))
+* **grove:** the desk reaches willow-mcp, says why when it can't, and shows the live queue ([#171](https://github.com/willow-memory/willows-grove/issues/171)) ([e5b56a2](https://github.com/willow-memory/willows-grove/commit/e5b56a235e332a17f6c359a25cef1a8fd59b3442))
+* **grove:** wait for the willow-mcp child's exit before keeping its last words ([8c53c26](https://github.com/willow-memory/willows-grove/commit/8c53c268cdff33ff36e76c71ce4982e43ff01780))
+
 ## [0.27.0](https://github.com/willow-memory/willows-grove/compare/v0.26.0...v0.27.0) (2026-10-21)
 
 
