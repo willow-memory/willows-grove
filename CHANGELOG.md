@@ -102,6 +102,7 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 
 ### Fixed
 
+- **grove:** the queue panel sorts the whole open queue before it cuts the page: `grove/human_required_reader.py` asks willow-mcp for up to 500, not 100 (newest first, so the oldest open items, urgent ones among them, never reached the sort), and returns `open`, willow-mcp's own count, with `shown`; the heading reads "139 wait on you · the 50 most urgent shown", not the length of the page (PR 173).
 - **grove:** the served page reaches willow-mcp: `deploy/grove-serve.service.template` carries `WILLOW_HOME`, without which the stdio child fell back to the retired `~/.willow` and refused; an unreachable now ends with the child's own last line (`RetiredHomeError … Set WILLOW_HOME`), an SDK 2.x error result is an error, and a list result is read whole, so the journal no longer reads empty while reachable (PR 171).
 - **deps:** cryptography raised to `>=50.0.0,<51` (GHSA-g6cj-pr64-35w5, PKCS7 decrypt; no Grove code calls PKCS7), run green on 50.0.2 (PR 166).
 - **seat:** one model for now: the chain's local rung runs on the seat's reply model (`--model`, else `GROVE_SAY_MODEL`, else `qwen3:4b`) instead of willow-bot's default `llama3.2:3b`, so a small box keeps one model loaded and the reply no longer waits behind a model swap (PR 154).
