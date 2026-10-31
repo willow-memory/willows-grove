@@ -217,8 +217,9 @@ async def _human_required(request: Request) -> JSONResponse:
 
     Three-state (INVARIANTS.md §1):
 
-    * 200 ``{"state": "populated", "items": [...], "stats": {...}, "open": N}``
-      — open items, priority first then newest.
+    * 200 ``{"state": "populated", "items": [...], "stats": {...}, "open": N,
+      "shown": M}`` — the first ``limit`` of every open item, priority first
+      then newest; ``open`` is willow-mcp's own count of the whole queue.
     * 200 ``{"state": "empty", "items": [], ...}`` — willow-mcp answered and
       nothing is open.
     * 503 ``{"state": "unreachable", "reason": "..."}`` — willow-mcp couldn't
