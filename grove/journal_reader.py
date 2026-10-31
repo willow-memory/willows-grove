@@ -106,6 +106,8 @@ def _normalize_atom(raw: Any) -> Optional[dict[str, Any]]:
 def _atoms_from_payload(payload: Any) -> list[dict[str, Any]]:
     if isinstance(payload, list):
         candidates = payload
+    elif isinstance(payload, dict) and "id" in payload and "content" in payload:
+        candidates = [payload]  # one atom, as a one-entry journal arrives
     elif isinstance(payload, dict):
         raw_list = payload.get("atoms") or payload.get("results") or []
         candidates = raw_list if isinstance(raw_list, list) else []
@@ -167,7 +169,10 @@ def read_recent(
 
     if atoms is None:
         _log_unreachable_once(f"tried={tried}")
-        raise Unreachable(f"willow-mcp not reachable (tried={tried})")
+        why = _wmc.get_client().last_error()
+        raise Unreachable(
+            f"willow-mcp not reachable (tried={tried})" + (f": {why}" if why else "")
+        )
 
     return atoms[:limit]
 

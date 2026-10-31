@@ -38,6 +38,7 @@ from starlette.websockets import WebSocket, WebSocketDisconnect
 
 import grove_reader
 from grove import envelope_reader
+from grove import human_required_reader
 from grove import journal_reader
 from grove import kart_reader
 from grove_html import render_page
@@ -209,6 +210,29 @@ async def _dispatch(request: Request) -> JSONResponse:
     serialized = [_serialize_row(r) for r in rows]
     state = POPULATED if serialized else EMPTY
     return JSONResponse({"state": state, "tasks": serialized})
+
+
+async def _human_required(request: Request) -> JSONResponse:
+    """GET /api/human_required — the live human-required queue (open items).
+
+    Three-state (INVARIANTS.md §1):
+
+    * 200 ``{"state": "populated", "items": [...], "stats": {...}, "open": N}``
+      — open items, priority first then newest.
+    * 200 ``{"state": "empty", "items": [], ...}`` — willow-mcp answered and
+      nothing is open.
+    * 503 ``{"state": "unreachable", "reason": "..."}`` — willow-mcp couldn't
+      be asked or refused; the reason is willow-mcp's own.
+    """
+    try:
+        limit = int(request.query_params.get("limit", "50"))
+    except ValueError:
+        limit = 50
+    try:
+        doc = await asyncio.to_thread(human_required_reader.read_open, limit)
+    except Unreachable as e:
+        return JSONResponse({"state": UNREACHABLE, "reason": e.reason}, status_code=503)
+    return JSONResponse({"state": POPULATED if doc["items"] else EMPTY, **doc})
 
 
 async def _envelopes(_request: Request) -> JSONResponse:
@@ -741,6 +765,7 @@ def build_app() -> Starlette:
         Route("/api/journal/recent", _journal_recent),
         Route("/api/dispatch", _dispatch),
         Route("/api/envelopes", _envelopes),
+        Route("/api/human_required", _human_required),
         Route("/api/personas", _personas),
         Route("/api/nestor/decide", _nestor_decide, methods=["POST"]),
         Route("/seed/", _seed_index),

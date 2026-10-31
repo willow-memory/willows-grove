@@ -119,7 +119,10 @@ def write_operator_turn(
 
     if result is None:
         _log_unreachable_once(f"tried={tried}")
-        raise Unreachable(f"willow-mcp not reachable (tried={tried})")
+        why = _wmc.get_client().last_error()
+        raise Unreachable(
+            f"willow-mcp not reachable (tried={tried})" + (f": {why}" if why else "")
+        )
 
     if isinstance(result, dict) and "error" in result:
         raise Unreachable(str(result.get("error")))
