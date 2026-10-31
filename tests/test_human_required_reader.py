@@ -56,6 +56,39 @@ def test_open_items_come_priority_first_then_newest(monkeypatch):
     assert doc["open"] == 5 and doc["stats"] == {"open": 5}
 
 
+def test_the_whole_open_queue_is_sorted_before_the_page_is_cut(monkeypatch):
+    """2026-10-31: 139 open, 100 asked for, newest first, so the oldest 39
+    (two urgent among them) never reached the sort, and the page heading
+    read the length of the page."""
+    newest = [_item(i, "normal", f"2026-10-30T{i % 24:02d}:00:00Z") for i in range(138)]
+    urgent = _item(999, "urgent", "2026-09-23T00:00:00Z")
+    asked = {}
+
+    def answer(name, args):
+        asked.update(args)
+        return {
+            "items": (newest + [urgent])[: args["limit"]],
+            "stats": {"open": 139, "resolved": 400},
+        }
+
+    monkeypatch.setattr(hrr._wmc, "call_tool", answer)
+    doc = hrr.read_open(limit=50)
+    assert asked["limit"] >= 139
+    assert doc["items"][0]["id"] == "id999"
+    assert doc["open"] == 139 and doc["shown"] == 50 and len(doc["items"]) == 50
+
+
+def test_open_is_never_less_than_what_was_read(monkeypatch):
+    items = [_item(i) for i in range(3)]
+    monkeypatch.setattr(
+        hrr._wmc, "call_tool", lambda name, args: {"items": items, "stats": {"open": 1}}
+    )
+    assert hrr.read_open()["open"] == 3
+    monkeypatch.setattr(hrr._wmc, "call_tool", lambda name, args: {"items": items})
+    doc = hrr.read_open(limit=2)
+    assert doc["open"] == 3 and doc["shown"] == 2
+
+
 def test_the_reader_asks_as_willow_grove_for_open_items(monkeypatch):
     asked = {}
     monkeypatch.setattr(

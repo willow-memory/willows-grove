@@ -29,7 +29,13 @@ from grove import willow_mcp_client as _wmc
 from grove.errors import Unreachable
 
 _APP_ID = "willow-grove"
+#: How many the desk shows at most.
 _LIMIT_CAP = 100
+#: How many it asks willow-mcp for: the whole open queue, as willow-mcp's own
+#: gates panel does. willow-mcp answers newest first, so asking for only
+#: what is shown dropped the OLDEST open items before they were sorted, the
+#: urgent ones from 09-23 among them (139 open, 100 asked, 2026-10-31).
+_FETCH_CAP = 500
 _PRIORITY = {"urgent": 0, "high": 1, "normal": 2, "low": 3}
 _FIELDS = (
     "id",
@@ -45,14 +51,17 @@ _FIELDS = (
 
 
 def read_open(limit: int = 50) -> dict[str, Any]:
-    """``{"items": [...], "stats": {...}}`` for the open queue. Raises
-    :class:`Unreachable` with willow-mcp's reason when it can't be read."""
+    """``{"items": [...], "stats": {...}, "open": n, "shown": m}`` for the
+    open queue: every open item sorted, the first ``limit`` returned. ``open``
+    is willow-mcp's own count when it gives one, so a long queue never reads
+    as the length of the page. Raises :class:`Unreachable` with willow-mcp's
+    reason when it can't be read."""
     if not isinstance(limit, int) or limit <= 0:
         limit = 50
     limit = min(limit, _LIMIT_CAP)
     payload = _wmc.call_tool(
         "human_required_list",
-        {"app_id": _APP_ID, "status": "open", "limit": _LIMIT_CAP},
+        {"app_id": _APP_ID, "status": "open", "limit": _FETCH_CAP},
     )
     if payload is None:
         why = _wmc.get_client().last_error()
@@ -74,4 +83,9 @@ def read_open(limit: int = 50) -> dict[str, Any]:
         if isinstance(payload, dict) and isinstance(payload.get("stats"), dict)
         else {}
     )
-    return {"items": items[:limit], "stats": stats, "open": len(items)}
+    counted = stats.get("open")
+    open_n = (
+        counted if isinstance(counted, int) and counted >= len(items) else len(items)
+    )
+    shown = items[:limit]
+    return {"items": shown, "stats": stats, "open": open_n, "shown": len(shown)}

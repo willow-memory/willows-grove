@@ -36,6 +36,7 @@ class GroveHumanRequired extends HTMLElement {
     super();
     this._root = this.attachShadow({ mode: "open" });
     this._items = [];
+    this._open = 0;
     /** @type {"populated"|"empty"|"unreachable"|null} */
     this._state = null;
     this._error = null;
@@ -71,6 +72,9 @@ class GroveHumanRequired extends HTMLElement {
     }
     if (!Array.isArray(doc.items)) return this._unreachable("unexpected response shape");
     this._items = doc.items;
+    // willow-mcp's own count: the page holds the first `limit`, most urgent
+    // first, and a long queue must not read as the length of the page.
+    this._open = Number.isInteger(doc.open) && doc.open >= doc.items.length ? doc.open : doc.items.length;
     this._state = doc.items.length ? POPULATED : EMPTY;
     this._error = null;
     this._paint();
@@ -115,7 +119,10 @@ class GroveHumanRequired extends HTMLElement {
     const groups = ORDER.map((p) => [p, this._items.filter((i) => (i.priority || "normal") === p)])
       .concat([["other", this._items.filter((i) => !ORDER.includes(i.priority || "normal"))]])
       .filter(([, list]) => list.length);
-    this._host.innerHTML = `<h3>${this._items.length} wait${this._items.length === 1 ? "s" : ""} on you</h3>` +
+    const open = this._open || this._items.length;
+    const part = open > this._items.length
+      ? ` <span class="who">· the ${this._items.length} most urgent shown</span>` : "";
+    this._host.innerHTML = `<h3>${open} wait${open === 1 ? "s" : ""} on you${part}</h3>` +
       groups.map(([p, list]) => `<h4 class="${p}">${p} · ${list.length}</h4>${list.map((i) => this._row(i)).join("")}`).join("");
   }
 
