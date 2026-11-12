@@ -82,6 +82,43 @@ A key replaced on the phone comes home as `share`'s `rotated` row, signed
 by the old key; home takes the new key only on the operator's word at the
 terminal, as u2u's `update_key` already demands.
 
+## A signer who can never be enrolled
+
+The shape above covers every signer who can be enrolled first. It doesn't
+name the one who never can be: an emergency card read at a door its
+writer was never at. Found and played by the cloud session working the
+shared-runs studies, in willow's `demo/wards/README.md`, "The emergency
+card, read by a stranger" (branch `health/minors-boxes`, its scene in
+`demo/wards/card.py`), and relayed by the operator.
+
+**How a package stands at the door.** *Enrolled*: its signer's key is one
+the door enrolled. *Vouched*: it is not, but it comes wrapped by a signer
+the door does know, who says whose key it is. *Unknown*: neither; the
+signature holds, and that is all that can be said.
+
+**What each line says, as the receiver reads it.** A *caution* makes the
+reader more careful; an *all-clear* makes them less careful; a *fact* is
+to be weighed; a *grant* gives someone a right or a call. The receiver
+decides which a line is: the sender's own label is never trusted for this.
+
+**The rule.** A caution is honoured however the package stands. An
+all-clear and a grant are honoured only enrolled or vouched. A fact is
+shown with how it stands. **An unknown signer can make the door more
+careful, never less.**
+
+What the scene found: the dangerous lie is the all-clear, and both cards
+in it arrived with good signatures, so a signature was never the
+question. One hop of vouching (a desk the person once stood at, which the
+door knows) is enough, and is something people already do.
+
+**For the phone coming home, the same split.** What an unenrolled device
+sends can add caution on sight: flag something, refuse something, hold
+something back. It can grant or relax anything only once enrolled, or
+vouched for by a signer home already knows. So step 4 above becomes: the
+door reads each row as caution, all-clear, fact or grant, and the
+standing decides only the all-clears and the grants; a fact
+goes in labelled with how its package stood.
+
 ## What it keeps, and what it leaves open
 
 - **It keeps** "Phone only proposes, seal in Nestor on the box"
