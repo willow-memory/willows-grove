@@ -89,22 +89,45 @@ name the one who never can be: an emergency card read at a door its
 writer was never at. Found and played by the cloud session working the
 shared-runs studies, in willow's `demo/wards/README.md`, "The emergency
 card, read by a stranger" (branch `health/minors-boxes`, its scene in
-`demo/wards/card.py`), and relayed by the operator.
+`demo/wards/card.py`), and relayed by the operator. That session then
+checked this section against its scene and found two weaknesses this page
+had taken over from it (`demo/wards/README.md`, commits 65e0957 and
+4adf0e0); both are written in below, on the operator's word.
 
 **How a package stands at the door.** *Enrolled*: its signer's key is one
-the door enrolled. *Vouched*: it is not, but it comes wrapped by a signer
-the door does know, who says whose key it is. *Unknown*: neither; the
-signature holds, and that is all that can be said.
+the door enrolled. *Vouched*: it is not, but a signer the door has enrolled
+has said whose key it is, in a signed statement of its own (below).
+*Unknown*: neither; the signature holds, and that is all that can be said.
+A package whose signature does not hold is not read by this rule at all:
+the door refuses it, as step 4 above says.
+
+**Vouching is a signed statement, not a pass-along.** A known signer who
+passes a stranger's package on, wrapped or forwarded, has said nothing
+about it, and the package stays unknown; a note on the wrapper says
+nothing either. Vouching is a package of its own, sealed by an enrolled
+signer, whose answer has one form:
+
+    The key <64 hex> is NAME's: how we know
+
+The door hears only that signer's own signed answer, and keeps each one it
+hears as a row on its record: the key, whose it is, who said so, and how
+they know. A side effect worth having: the voucher never needs to hold the
+package. The surgery in the scene speaks for the key, and the card handed
+over the night before is the one read again.
 
 **What each line says, as the receiver reads it.** A *caution* makes the
 reader more careful; an *all-clear* makes them less careful; a *fact* is
 to be weighed; a *grant* gives someone a right or a call. The receiver
 decides which a line is: the sender's own label is never trusted for this.
 
-**The rule.** A caution is honoured however the package stands. An
-all-clear and a grant are honoured only enrolled or vouched. A fact is
-shown with how it stands. **An unknown signer can make the door more
-careful, never less.**
+**The rule.** A caution is honoured however the package stands, where
+honouring it costs little: a warning shown, one thing withheld. A caution
+that *blocks* (refuse this, hold that back, stop) is shown and weighed, not
+obeyed, until its signer is enrolled or vouched: obeyed on sight, it would
+give anyone who can reach the door a way to make it refuse. An all-clear
+and a grant are honoured only enrolled or vouched. A fact is shown with how
+it stands. **An unknown signer can make the door more careful, never less,
+and can't make it stop.**
 
 What the scene found: the dangerous lie is the all-clear, and both cards
 in it arrived with good signatures, so a signature was never the
@@ -112,11 +135,12 @@ question. One hop of vouching (a desk the person once stood at, which the
 door knows) is enough, and is something people already do.
 
 **For the phone coming home, the same split.** What an unenrolled device
-sends can add caution on sight: flag something, refuse something, hold
-something back. It can grant or relax anything only once enrolled, or
-vouched for by a signer home already knows. So step 4 above becomes: the
+sends can add caution on sight: flag something, warn of something. A row
+that would refuse or hold something back is shown to the operator and
+weighed, not obeyed. It can grant or relax anything only once enrolled, or
+vouched for in a signed statement by a signer home already knows. So step 4 above becomes: the
 door reads each row as caution, all-clear, fact or grant, and the
-standing decides only the all-clears and the grants; a fact
+standing decides the all-clears, the grants and any caution that blocks; a fact
 goes in labelled with how its package stood.
 
 ## What it keeps, and what it leaves open
@@ -126,8 +150,11 @@ goes in labelled with how its package stood.
   a seal made on the phone arrives as *sealed by the phone*, and home can
   show it so, or hold it as a suggestion until the operator seals it at
   home. Which one is the operator's to choose.
-- **Open:** whether the ring is willow-mcp's verifier ring, Nestor's, or a
-  ring of its own; whether a lost phone's key is revoked by a row, and
+- **Open:** where the vouching statements home has heard are kept (a row
+  kind on the door's record, as the scene keeps `key-spoken-for`: key,
+  whose, by; or the ring itself); which cautions count as blocking, and
+  who says so (the receiver, never the sender's label); whether the ring
+  is willow-mcp's verifier ring, Nestor's, or a ring of its own; whether a lost phone's key is revoked by a row, and
   where that row lives; whether a deposit not yet checked waits at the
   door or is refused outright.
 
