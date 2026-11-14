@@ -6,7 +6,7 @@ product name is Willow.** The Capacitor tree remains at
 `safe-app-store-public/apps/jarvis/` until a later store rename.
 
 See also: [seat-stack.md](seat-stack.md) (how Ratatosk, MCP, and Grove fit
-together), [phone-tier0-sync.md](phone-tier0-sync.md) (homecoming deposit).
+together), [phone-homecoming.md](phone-homecoming.md) (homecoming deposit).
 
 ## Production ids
 
@@ -71,9 +71,9 @@ turn starts and ends on the box:
 | Step | Where |
 |---|---|
 | `checkin`, `scope`, seal the scope in Nestor, `serve` | box |
-| `served.json` to the phone | USB (tier 0) |
+| `served.json` to the phone | the person's carrier (USB on this box) |
 | Rat `--onescript` reads it, writes `proposals.jsonl` | phone, offline |
-| `proposals.jsonl` back to the box | USB (tier 0) |
+| `proposals.jsonl` back to the box | the person's carrier (USB on this box) |
 | `take_proposals`, seal each in Nestor, write, `checkout` | box |
 
 What follows from it:

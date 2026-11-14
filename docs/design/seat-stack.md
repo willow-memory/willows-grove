@@ -31,8 +31,8 @@ Persona partition still holds: **Willow** owns what the desk is for;
                 │
                 ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  Tier-0 homecoming — USB/adb deposit to the box (not vault)  │
-│  phone-tier0-sync.md                                         │
+│  Homecoming — the deposit, carried and landed where the      │
+│  person chooses; checked at home. phone-homecoming.md        │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -123,6 +123,6 @@ dry `grove.send()` receipt (skipped / sender-missing / ok).
 ## Related docs
 
 - [phone-seat-production.md](phone-seat-production.md) — Willow app ids + 8768
-- [phone-tier0-sync.md](phone-tier0-sync.md) — homecoming deposit
+- [phone-homecoming.md](phone-homecoming.md) — homecoming deposit
 - [phone-surface-context.md](phone-surface-context.md) — longer phone audit
 - [willow-grove-premise.md](willow-grove-premise.md) — Ratatosk row in org table

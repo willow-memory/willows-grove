@@ -6,7 +6,7 @@ migration 2026-09-08 evening** moved live paths into the vault box (see
 §6). Kart bind and Postgres data-directory move are still open.
 
 Stack context: [seat-stack.md](seat-stack.md),
-[phone-tier0-sync.md](phone-tier0-sync.md).
+[phone-homecoming.md](phone-homecoming.md).
 Architecture: [governance/architecture/README.md](../../governance/architecture/README.md),
 [willow-v03-full.drawio](../../governance/architecture/willow-v03-full.drawio),
 [willow-v04-full.drawio](../../governance/architecture/willow-v04-full.drawio),
@@ -36,9 +36,10 @@ folders). `Cloud should not see PII unless granted` is **pending**.
 Phone travel memory (USB-style / Capacitor store / optional on-device Nestor
 export, phone-class models) is not the home store.
 
-Homecoming is the tier-0 USB/`adb` deposit, then import
-([phone-tier0-sync.md](phone-tier0-sync.md)). That file already forbids
-`adb` of a live vault snapshot.
+Homecoming is the deposit, then import
+([phone-homecoming.md](phone-homecoming.md)); the carrier is the person's
+(USB/`adb` on this box). That file already forbids copying a live vault
+snapshot, by any carrier.
 
 The home store is the vault-resident slice. Postgres lives there **when the
 device is home**. Dumps under `sean-data-vault/postgres/` are a travel form.
@@ -49,10 +50,12 @@ live here, marked **not built**, hub edge labeled **user-granted paths**.
 The architecture README and `CURRENT-STATE-2026-08-28.md` still say that
 headline is unbuilt.
 
-[seat-stack.md](seat-stack.md) still says homecoming is USB/`adb` deposit
+[seat-stack.md](seat-stack.md) said homecoming was USB/`adb` deposit
 **to the box (not vault)**. That line mixed “the phone is not a vault
-replica” with “the vault is not the home.” Gap `97da538f7aa3`. This note
-does not rewrite the stack diagram.
+replica” with “the vault is not the home.” Gap `97da538f7aa3`, settled
+2026-11-13: neither the carrier nor the destination is the design's; both
+are the person's choice, and the stack diagram now says so. This note's
+three layers are this operator box's layout, not every person's.
 
 ## 2. Two axes, and the gate that belongs between them
 

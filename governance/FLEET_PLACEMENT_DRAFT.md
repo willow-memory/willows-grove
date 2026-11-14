@@ -303,7 +303,7 @@ Some human usages need a **charter fork** or a **different face**, not another r
 | **`willow-mcp`** | `~/github/willow-memory/willow-mcp` | Shipped MCP server |
 | **`willow-gate`** | `~/github/willow-memory/willow-gate` | Manifest / auth gate |
 | **`kartikeya`** | `~/github/willow-memory/kartikeya` | Kart worker (platform bundle with hub + gate) |
-| **`ratatosk`** | `~/github/willow-memory/ratatosk` | Platform session runtime — MCP client, capability gate, tier-0 sync (promoted 2026-09-07) |
+| **`ratatosk`** | `~/github/willow-memory/ratatosk` | Platform session runtime — MCP client, capability gate, homecoming (promoted 2026-09-07) |
 | **`safe-app-willow-grove`** | `~/github/willow-memory/willow-grove` | Grove fleet bus (Heimdallr seat) — **dev clone**; active on GitHub |
 
 **Fleet dev clones (operator box, 2026-08-18):** `willow`, `willow-mcp`, `willow-gate`, `kartikeya`, `safe-app-willow-grove` (`willow-grove` on disk). Not cloned locally: tier-F / remote-only repos below.
