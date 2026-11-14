@@ -108,6 +108,10 @@ All notable changes land here per INVARIANTS.md §3. Format follows Keep a Chang
 - **seat:** the box build: the table's boxes and a checked narrator (`grove/table_boxes.py`: per-clause checks, lore said by code, no model text on a card), the table surface on the seat (wager, verdict-session and `agm_head` lines; a read-only peeked table box), a hardened scrub and symbol-cite rows, `export.py` beside the forecasting game and `onescript_table.py wagers`, and the build's record with its cross-repo tests (`seat/willow/experiments/box-build-2026-10-17/`) (PR 157).
 - **seat:** desk experiments, not packaged: the foreshadow harness and the AI GM table's record as a one-script record with its importer (`seat/willow/experiments/foreshadow-2026-10-16/`), and a forecasting game that takes forecasts before a drand beacon round and grades them by Brier score once the beacon's randomness seeds the data, with its seven played rounds (`seat/willow/experiments/predictions-2026-10-17/`) (PR 156).
 
+### Changed
+
+- **docs:** the phone's homecoming names no carrier and no destination: `phone-tier0-sync.md` is `phone-homecoming.md` and the tier name is dropped; what the deposit is and that home checks it are fixed, and how it travels (USB, Bluetooth, Wi-Fi) and where it lands are the person's choice; `seat-stack.md`'s diagram follows, settling gap `97da538f7aa3` (PR 176).
+
 ### Fixed
 
 - **grove:** the queue panel sorts the whole open queue before it cuts the page: `grove/human_required_reader.py` asks willow-mcp for up to 500, not 100 (newest first, so the oldest open items, urgent ones among them, never reached the sort), and returns `open`, willow-mcp's own count, with `shown`; the heading reads "139 wait on you · the 50 most urgent shown", not the length of the page (PR 173).

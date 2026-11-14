@@ -24,7 +24,7 @@ One Jarvis seat — not a Governance / PM / PA mode switch. See
 | `jeles-intake/` | Novel intake pairs (Paperclip, willow-local, …) |
 
 Design: [docs/design/seat-stack.md](../../docs/design/seat-stack.md) —
-phone → Ratatosk → MCP / Grove bus → tier-0 homecoming.
+phone → Ratatosk → MCP / Grove bus → homecoming.
 
 ## Assumptions
 

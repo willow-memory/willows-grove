@@ -78,7 +78,7 @@ decisions that shaped what got built.
 | [`design/seat-stack.md`](design/seat-stack.md) | Willow seat stack: phone, session, bus, desk |
 | [`design/phone-seat-production.md`](design/phone-seat-production.md) | Phone seat: production name and serve URL |
 | [`design/phone-surface-context.md`](design/phone-surface-context.md) | Phone surface: context for the remote UI session |
-| [`design/phone-tier0-sync.md`](design/phone-tier0-sync.md) | Phone seat: tier 0 homecoming |
+| [`design/phone-homecoming.md`](design/phone-homecoming.md) | Phone seat: homecoming (carrier and destination are the person's) |
 | [`design/vault-home-store.md`](design/vault-home-store.md) | Vault home store: the cut, two axes, not a move |
 | [`design/willow-bot-box-spec.md`](design/willow-bot-box-spec.md) | willow-bot box spec (draft, operator shape 2026-09-28) |
 | [`design/willow-bot-usable-build-brief.md`](design/willow-bot-usable-build-brief.md) | willow-bot usable build brief |
