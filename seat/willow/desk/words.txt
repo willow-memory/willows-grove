@@ -1,0 +1,6 @@
+# The desk's words list, for kernel.py: one of your words, then the words
+# the piles might use for it, a comma between. Single words only.
+failed = failure, broken
+queue = queued
+approve = seal, ratify
+key = seal

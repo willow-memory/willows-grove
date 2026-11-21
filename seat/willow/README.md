@@ -22,6 +22,8 @@ One Jarvis seat — not a Governance / PM / PA mode switch. See
 | `willow-seat.sh intake` | Run `jeles-intake.py` using seated Python environment |
 | `scripts/jeles-intake.py` | Load / probe intake JSON (auto-resolves Jeles venv) |
 | `jeles-intake/` | Novel intake pairs (Paperclip, willow-local, …) |
+| `scripts/box-desk.sh` | The desk from Willow boxes over the piles and GitHub's state: no MCP, no database; runs kept under `$WILLOW_HOME/desk` |
+| `desk/` | That desk's stack and words list ([desk/README.md](desk/README.md)) |
 
 Design: [docs/design/seat-stack.md](../../docs/design/seat-stack.md) —
 phone → Ratatosk → MCP / Grove bus → homecoming.
